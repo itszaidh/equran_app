@@ -23,7 +23,7 @@ class FavouritesList extends StatefulWidget {
 }
 
 class _FavouritesListState extends State<FavouritesList> {
-  TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void dispose() {
@@ -33,17 +33,19 @@ class _FavouritesListState extends State<FavouritesList> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Item> _data = generateItems();
+    final List<Item> data = generateItems();
 
     return Wrap(direction: Axis.horizontal, children: [
       ExpansionTileGroup(
           spaceBetweenItem: 4,
           toggleType: ToggleType.expandOnlyCurrent,
-          children: _data.asMap().entries.map((e) {
+          children: data.asMap().entries.map((e) {
             final item = e.value;
             final surah = int.parse(item.panelTitle);
 
-            return ExpansionTileWithoutBorderItem(
+            return ExpansionTileItem(
+                backgroundColor: Colors.transparent,
+                collapsedBackgroundColor: Colors.transparent,
                 title: Text(quran.getSurahName(surah)),
                 children: item.children.asMap().entries.map((ee) {
                   final key = "${item.panelTitle}-${ee.value}";
@@ -139,28 +141,28 @@ void _showBottomSheetWithOptions(
 }
 
 void _showEditNoteDialog(BuildContext context, String key, String initialNote,
-    TextEditingController _controller) {
-  _controller.text = initialNote;
+    TextEditingController controller) {
+  controller.text = initialNote;
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Edit Note'),
+        title: const Text('Edit Note'),
         content: TextField(
-          controller: _controller,
+          controller: controller,
           maxLines: null, // Allows multiple lines
         ),
         actions: [
           TextButton(
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           TextButton(
-            child: Text('OK'),
+            child: const Text('OK'),
             onPressed: () {
-              String editedNote = _controller.text;
+              String editedNote = controller.text;
               // Save the edited note (e.g., update in a database)
               FavouritesDB().put(key, editedNote);
               Navigator.of(context).pop();
