@@ -1,29 +1,132 @@
-name: Deploy to GitHub Pages
+name: Build and Release
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
-  build-and-deploy:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      app_version: ${{ steps.get_version.outputs.app_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: get_version
+        shell: bash
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "app_version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build-android:
+    needs: version
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.1.5
+      - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2.16.0
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
 
-      - run: flutter build web --release
+      - run: flutter pub get
 
-      - name: Create CNAME file
-        run: echo 'quran.elbaesy.com' > build/web/CNAME
+      - name: Build Android Split APKs
+        run: flutter build apk --release --split-per-abi
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4.0.0
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
-          personal_token: ${{ secrets.DEPLOY_KEY }}
+          name: android-apk-split
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+
+  build-linux:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter config --enable-linux-desktop
+      - run: flutter pub get
+      - run: flutter build linux --release
+
+      - name: Package Linux Build
+        run: |
+          cd build/linux/x64/release
+          zip -r linux-release.zip bundle
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-bundle
+          path: build/linux/x64/release/linux-release.zip
+
+  build-windows:
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter config --enable-windows-desktop
+      - run: flutter pub get
+      - run: flutter build windows --release
+
+      - name: Package Windows Build
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath build/windows/windows-release.zip -Force
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-bundle
+          path: build/windows/windows-release.zip
+
+  release:
+    needs: [version, build-android, build-linux, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Update Tag to Current Commit
+        env:
+          VERSION: ${{ needs.version.outputs.app_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "$VERSION" "$GITHUB_SHA"
+          git push origin "refs/tags/$VERSION" --force
+
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.version.outputs.app_version }}
+          name: Release ${{ needs.version.outputs.app_version }}
+          generate_release_notes: true
+          files: |
+            dist/android-apk-split/app-*-release.apk
+            dist/linux-bundle/linux-release.zip
+            dist/windows-bundle/windows-release.zip

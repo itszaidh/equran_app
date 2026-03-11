@@ -1,5 +1,5 @@
-import 'package:eQuran/backend/surah_model.dart';
-import 'package:eQuran/home/read.dart';
+import 'package:equran/backend/surah_model.dart';
+import 'package:equran/home/read.dart';
 import 'package:flutter/material.dart';
 
 class QuranCard extends StatelessWidget {

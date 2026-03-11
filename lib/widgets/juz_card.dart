@@ -1,4 +1,4 @@
-import 'package:eQuran/home/read.dart';
+import 'package:equran/home/read.dart';
 import 'package:flutter/material.dart';
 
 class QuranJuzTile extends StatelessWidget {

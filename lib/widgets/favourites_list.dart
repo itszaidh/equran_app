@@ -1,5 +1,5 @@
-import 'package:eQuran/backend/library.dart';
-import 'package:eQuran/home/library.dart';
+import 'package:equran/backend/library.dart';
+import 'package:equran/home/library.dart';
 import 'package:expansion_tile_group/expansion_tile_group.dart';
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' as quran;

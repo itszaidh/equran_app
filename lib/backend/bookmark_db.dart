@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart' show minBy;
-import 'package:eQuran/backend/reading_model.dart';
+import 'package:equran/backend/reading_model.dart';
 
 import 'base_db.dart';
 

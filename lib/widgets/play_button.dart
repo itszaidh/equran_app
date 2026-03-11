@@ -1,5 +1,7 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
-import 'package:eQuran/backend/library.dart';
+import 'package:equran/backend/library.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
@@ -16,6 +18,9 @@ class PlayButton extends StatefulWidget {
 
 class _PlayButtonState extends State<PlayButton> {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  StreamSubscription<Duration>? _positionSubscription;
+  StreamSubscription<void>? _completeSubscription;
+  StreamSubscription<PlayerState>? _stateSubscription;
 
   bool _isPlaying = false;
   bool _isLoading = false;
@@ -27,24 +32,24 @@ class _PlayButtonState extends State<PlayButton> {
   void initState() {
     super.initState();
 
-    _audioPlayer.onPositionChanged.listen((position) {
+    _positionSubscription = _audioPlayer.onPositionChanged.listen((position) {
       if (_audioPlayer.state == PlayerState.playing) {
         _updateProgress(position);
       }
     });
 
     // When the audio has finished playing this is what to do...
-    _audioPlayer.onPlayerComplete.listen((event) {
-      setState(() {
+    _completeSubscription = _audioPlayer.onPlayerComplete.listen((event) {
+      _safeSetState(() {
         _isPlaying = false;
         _progress = 0.0;
       });
     });
 
     // Listen for errors
-    _audioPlayer.onPlayerStateChanged.listen((state) {
+    _stateSubscription = _audioPlayer.onPlayerStateChanged.listen((state) {
       if (state == PlayerState.stopped && _isPlaying) {
-        setState(() {
+        _safeSetState(() {
           _hasError = true;
           _isPlaying = false;
           _isLoading = false;
@@ -53,10 +58,16 @@ class _PlayButtonState extends State<PlayButton> {
     });
   }
 
+  void _safeSetState(VoidCallback fn) {
+    if (!mounted) return;
+    setState(fn);
+  }
+
   void _updateProgress(Duration position) async {
     Duration duration = await _audioPlayer.getDuration() ?? Duration.zero;
+    if (!mounted) return;
     if (duration.inMilliseconds > 0) {
-      setState(() {
+      _safeSetState(() {
         _progress = position.inMilliseconds / duration.inMilliseconds;
       });
     }
@@ -64,6 +75,9 @@ class _PlayButtonState extends State<PlayButton> {
 
   @override
   void dispose() {
+    _positionSubscription?.cancel();
+    _completeSubscription?.cancel();
+    _stateSubscription?.cancel();
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -91,12 +105,20 @@ class _PlayButtonState extends State<PlayButton> {
     }
   }
 
+  double _playbackRate() {
+    final dynamic value = SettingsDB().get("playbackRate", defaultValue: 1.0);
+    if (value is num) {
+      return value.toDouble().clamp(0.5, 2.0);
+    }
+    return 1.0;
+  }
+
   void _togglePlayPause() async {
     if (widget.url.isEmpty) {
       return;
     }
 
-    setState(() {
+    _safeSetState(() {
       _isLoading = true;
       _hasError = false;
     });
@@ -104,24 +126,29 @@ class _PlayButtonState extends State<PlayButton> {
     try {
       if (_isPlaying) {
         await _audioPlayer.pause();
-        setState(() {
+        _safeSetState(() {
           _isLoading = false;
           _isPlaying = false;
         });
       } else {
-        await _audioPlayer.setPlaybackRate(
-            SettingsDB().get("playbackRate", defaultValue: 1.0));
+        final double rate = _playbackRate();
+        await _audioPlayer.setPlaybackRate(rate);
+        if (_audioPlayer.state == PlayerState.paused) {
+          await _audioPlayer.resume();
+        } else {
+          await _playAudio(widget.url);
+        }
+        // Re-apply because some platforms reset rate when a source is (re)started.
+        await _audioPlayer.setPlaybackRate(rate);
 
-        await _playAudio(widget.url);
-
-        setState(() {
+        _safeSetState(() {
           _isLoading = false;
           _isPlaying = true;
         });
       }
     } catch (e) {
       debugPrint('Error playing audio: $e');
-      setState(() {
+      _safeSetState(() {
         _isLoading = false;
         _isPlaying = false;
         _hasError = true;

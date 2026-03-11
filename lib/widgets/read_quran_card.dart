@@ -1,5 +1,5 @@
-import 'package:eQuran/backend/favourites_db.dart';
-import 'package:eQuran/widgets/library.dart';
+import 'package:equran/backend/favourites_db.dart';
+import 'package:equran/widgets/library.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
 

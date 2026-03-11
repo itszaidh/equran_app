@@ -1,4 +1,4 @@
-import 'package:eQuran/backend/base_db.dart';
+import 'package:equran/backend/base_db.dart';
 
 class SurahDB extends BaseDB {
   SurahDB._privateConstructor() : super("surahs");

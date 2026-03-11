@@ -1,7 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:eQuran/backend/library.dart'
+import 'package:equran/backend/library.dart'
     show BookmarkDB, FavouritesDB, SettingsDB;
-import 'package:eQuran/widgets/library.dart'
+import 'package:equran/widgets/library.dart'
     show FontSlider, PlayBackSlider, SettingsSwitch;
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' show Translation;

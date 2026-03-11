@@ -1,6 +1,6 @@
-import 'package:eQuran/backend/library.dart';
-import 'package:eQuran/utils/debouncer.dart';
-import 'package:eQuran/widgets/library.dart';
+import 'package:equran/backend/library.dart';
+import 'package:equran/utils/debouncer.dart';
+import 'package:equran/widgets/library.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 

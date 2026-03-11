@@ -1,7 +1,10 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:eQuran/home/library.dart' show HomePage;
+import 'package:equran/home/library.dart' show HomePage;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'dart:io' show Platform;
 
 import 'backend/library.dart'
     show
@@ -13,6 +16,16 @@ import 'backend/library.dart'
         SurahDB;
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.app.equran.audio',
+      androidNotificationChannelName: 'Quran Audio Playback',
+      androidNotificationOngoing: true,
+    );
+  }
+
   // ----- HIVE -----
   await Hive.initFlutter();
 

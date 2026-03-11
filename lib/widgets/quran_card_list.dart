@@ -1,7 +1,7 @@
 import 'package:dynamic_height_grid_view/dynamic_height_grid_view.dart';
-import 'package:eQuran/backend/surah_db.dart';
-import 'package:eQuran/backend/surah_model.dart';
-import 'package:eQuran/widgets/quran_card.dart';
+import 'package:equran/backend/surah_db.dart';
+import 'package:equran/backend/surah_model.dart';
+import 'package:equran/widgets/quran_card.dart';
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' as quran;
 

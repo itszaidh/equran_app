@@ -1,5 +1,6 @@
-import 'package:eQuran/home/main_page.dart';
-import 'package:eQuran/home/settings.dart';
+import 'package:equran/home/main_page.dart';
+import 'package:equran/home/player.dart';
+import 'package:equran/home/settings.dart';
 import 'package:flutter/material.dart';
 
 class Destinations {
@@ -24,6 +25,8 @@ class _HomePageState extends State<HomePage> {
   final List<Destinations> _pageDestinations = <Destinations>[
     const Destinations(
         "eQuran", Icon(Icons.book_outlined), Icon(Icons.book), MainPage()),
+    const Destinations("Player", Icon(Icons.library_music_outlined),
+        Icon(Icons.library_music), PlayerPage()),
     const Destinations("Settings", Icon(Icons.settings_outlined),
         Icon(Icons.settings), SettingsPage()),
   ];
@@ -69,7 +72,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      appBar: _selectedIndex == 1
+      appBar: _selectedIndex == 2
           ? AppBar(
               title: Text(_pageDestinations[_selectedIndex].label),
               iconTheme: IconThemeData(

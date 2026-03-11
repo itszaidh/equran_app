@@ -1,6 +1,6 @@
-import 'package:eQuran/backend/bookmark_db.dart';
-import 'package:eQuran/backend/library.dart' show SettingsDB;
-import 'package:eQuran/widgets/library.dart' show ReadQuranCard;
+import 'package:equran/backend/bookmark_db.dart';
+import 'package:equran/backend/library.dart' show SettingsDB;
+import 'package:equran/widgets/library.dart' show ReadQuranCard;
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
