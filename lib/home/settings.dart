@@ -43,7 +43,7 @@ class SettingsPage extends StatelessWidget {
             subtitle: const Text("Choose your preferred language."),
             onTap: () {
               List<Translation> items = Translation.values;
-              int _selected = SettingsDB().get("translation", defaultValue: 0);
+              int selected = SettingsDB().get("translation", defaultValue: 0);
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -62,7 +62,7 @@ class SettingsPage extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(20)),
                                 title: Text(entry.value.name),
                                 value: index,
-                                groupValue: _selected,
+                                groupValue: selected,
                                 onChanged: (int? value) {
                                   SettingsDB().put("translation", value);
                                   Navigator.pop(context);

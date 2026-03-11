@@ -349,7 +349,7 @@ class _ReadPageState extends State<ReadPage> {
               child: Container(
                 height: 80,
                 padding: const EdgeInsets.only(right: 12, left: 12),
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment
                       .spaceBetween, // Distribute buttons horizontally

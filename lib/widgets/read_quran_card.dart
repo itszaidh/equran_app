@@ -30,7 +30,7 @@ class ReadQuranCard extends StatelessWidget {
   });
 
   void _showInputPrompt(
-      BuildContext context, TextEditingController _textController) {
+      BuildContext context, TextEditingController textController) {
     showDialog(
         context: context,
         builder: (context) {
@@ -38,7 +38,7 @@ class ReadQuranCard extends StatelessWidget {
             title: const Text('Enter a note:'),
             content: TextField(
               maxLines: null,
-              controller: _textController,
+              controller: textController,
               decoration: const InputDecoration(hintText: "Optional..."),
             ),
             actions: <Widget>[
@@ -48,7 +48,7 @@ class ReadQuranCard extends StatelessWidget {
                   // Process the submitted text (from _textController.text)
                   FavouritesDB().put(
                       "$currentChapter-${currentVerse.toString().padLeft(3, "0")}",
-                      _textController.text);
+                      textController.text);
                   Navigator.of(context).pop();
                 },
               ),
@@ -61,7 +61,7 @@ class ReadQuranCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Get the size of the screen
     Size screenSize = MediaQuery.of(context).size;
-    TextEditingController _textController = TextEditingController();
+    TextEditingController textController = TextEditingController();
 
     // Define margin values for different screen sizes
     double marginValue;
@@ -97,7 +97,7 @@ class ReadQuranCard extends StatelessWidget {
                       "$currentChapter-${currentVerse.toString().padLeft(3, "0")}"),
                   onTap: (bool isLiked) async {
                     if (!isLiked) {
-                      _showInputPrompt(context, _textController);
+                      _showInputPrompt(context, textController);
                     } else {
                       FavouritesDB().delete(
                           "$currentChapter-${currentVerse.toString().padLeft(3, "0")}");

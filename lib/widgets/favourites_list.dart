@@ -104,7 +104,7 @@ List<Item> generateItems() {
 }
 
 void _showBottomSheetWithOptions(
-    BuildContext context, String key, TextEditingController _controller) {
+    BuildContext context, String key, TextEditingController controller) {
   showModalBottomSheet(
     context: context,
     builder: (BuildContext context) {
@@ -118,7 +118,7 @@ void _showBottomSheetWithOptions(
                   context,
                   key,
                   FavouritesDB().get(key, defaultValue: ""),
-                  _controller); // Close the bottom sheet
+                  controller); // Close the bottom sheet
               // Implement your edit logic here
             },
             child: const ListTile(

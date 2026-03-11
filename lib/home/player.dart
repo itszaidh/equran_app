@@ -622,9 +622,9 @@ class _PlayerPageState extends State<PlayerPage> {
               ),
               MenuAnchor(
                 menuChildren: <Widget>[
-                  MenuItemButton(
+                  const MenuItemButton(
                     onPressed: null,
-                    child: const Text('Playback Speed'),
+                    child: Text('Playback Speed'),
                   ),
                   const Divider(height: 1),
                   ...playbackRates.map(
