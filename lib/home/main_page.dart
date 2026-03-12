@@ -181,7 +181,7 @@ class _MainPageState extends State<MainPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 180),

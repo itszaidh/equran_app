@@ -71,9 +71,8 @@ class LastReadCard extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: <Color>[
-                    Theme.of(context).colorScheme.primaryContainer.withOpacity(0.72),
-                    Theme.of(context).colorScheme.tertiaryContainer.withOpacity(0.52),
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                    Theme.of(context).colorScheme.primaryContainer.withOpacity(1),
+                    Theme.of(context).colorScheme.tertiaryContainer.withOpacity(1),
                   ],
                 ),
               ),

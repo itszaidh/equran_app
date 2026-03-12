@@ -58,7 +58,7 @@ class QuranCard extends StatelessWidget {
                       surah.transliteration,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: (compact ? theme.textTheme.titleMedium : theme.textTheme.titleLarge)
+                      style: (compact ? theme.textTheme.titleLarge : theme.textTheme.titleMedium)
                           ?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -80,7 +80,7 @@ class QuranCard extends StatelessWidget {
               ),
               Text(
                 surah.name,
-                style: (compact ? theme.textTheme.titleMedium : theme.textTheme.titleLarge)
+                style: (compact ? theme.textTheme.titleLarge : theme.textTheme.titleMedium)
                     ?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
