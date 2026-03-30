@@ -178,7 +178,7 @@ class _MainPageState extends State<MainPage> {
         Text(
           'Al Quran',
           style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const Spacer(),
