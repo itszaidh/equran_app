@@ -8,7 +8,6 @@ import 'package:numberpicker/numberpicker.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:simple_gesture_detector/simple_gesture_detector.dart';
 import 'package:vibration/vibration.dart';
 
 class ReadPage extends StatefulWidget {
@@ -36,6 +35,11 @@ class _ReadPageState extends State<ReadPage> {
   late ItemScrollController _isc;
   late bool _viewMode;
   bool _hasSavedOnExit = false;
+  bool _isScrubbingProgress = false;
+  int? _scrubStartVerse;
+  double? _scrubStartDx;
+  double? _scrubStartDy;
+  double _scrubPrecision = 1.0;
 
   @override
   void initState() {
@@ -318,13 +322,163 @@ class _ReadPageState extends State<ReadPage> {
     BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
   }
 
+  void _updateVerseFromProgress({
+    required double localDx,
+    required double localDy,
+    required double width,
+    bool vibrateOnChange = false,
+  }) {
+    if (_totalVerses <= 0 || width <= 0) return;
+
+    final double startDx = _scrubStartDx ?? localDx;
+    final double startDy = _scrubStartDy ?? localDy;
+    final int anchorVerse = _scrubStartVerse ?? _currentVerse;
+    final double downwardOffset = (localDy - startDy).clamp(0.0, double.infinity);
+
+    double precision = 1.0;
+    if (downwardOffset > 120) {
+      precision = 0.12;
+    } else if (downwardOffset > 80) {
+      precision = 0.2;
+    } else if (downwardOffset > 40) {
+      precision = 0.35;
+    } else if (downwardOffset > 16) {
+      precision = 0.6;
+    }
+
+    if ((precision - _scrubPrecision).abs() > 0.0001) {
+      _scrubPrecision = precision;
+      _scrubStartDx = localDx;
+      _scrubStartDy = localDy;
+      _scrubStartVerse = _currentVerse;
+      return;
+    }
+
+    final double verseDelta =
+        (((localDx - startDx) * precision) / width) * (_totalVerses - 1);
+    final int preciseTargetVerse =
+        (anchorVerse + verseDelta.round()).clamp(1, _totalVerses);
+
+    if (preciseTargetVerse == _currentVerse) return;
+
+    _setVerse(preciseTargetVerse);
+    _updateDB();
+
+    if (vibrateOnChange) {
+      _vibrate();
+    }
+  }
+
+  Widget _buildProgressBar(double marginValue) {
+    final int progressVerse = _isScrubbingProgress
+        ? (_scrubStartVerse ?? _currentVerse)
+        : _currentVerse;
+    final double percent = _totalVerses <= 1
+        ? 1
+        : ((progressVerse - 1) / (_totalVerses - 1)).clamp(0.0, 1.0);
+
+    return Container(
+      margin: EdgeInsets.only(left: marginValue, right: marginValue, top: 20),
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final double scrubPercent = _totalVerses <= 1
+              ? 1
+              : ((_currentVerse - 1) / (_totalVerses - 1)).clamp(0.0, 1.0);
+          final double indicatorSize = 16;
+          final double indicatorLeft =
+              (scrubPercent * constraints.maxWidth - (indicatorSize / 2))
+                  .clamp(0.0, constraints.maxWidth - indicatorSize)
+                  .toDouble();
+
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onLongPressStart: (details) {
+              setState(() {
+                _isScrubbingProgress = true;
+                _scrubStartVerse = _currentVerse;
+                _scrubStartDx = details.localPosition.dx;
+                _scrubStartDy = details.localPosition.dy;
+                _scrubPrecision = 1.0;
+              });
+              _updateVerseFromProgress(
+                localDx: details.localPosition.dx,
+                localDy: details.localPosition.dy,
+                width: constraints.maxWidth,
+              );
+            },
+            onLongPressMoveUpdate: (details) {
+              _updateVerseFromProgress(
+                localDx: details.localPosition.dx,
+                localDy: details.localPosition.dy,
+                width: constraints.maxWidth,
+                vibrateOnChange: true,
+              );
+            },
+            onLongPressEnd: (_) {
+              setState(() {
+                _isScrubbingProgress = false;
+                _scrubStartVerse = null;
+                _scrubStartDx = null;
+                _scrubStartDy = null;
+                _scrubPrecision = 1.0;
+              });
+            },
+            onLongPressCancel: () {
+              setState(() {
+                _isScrubbingProgress = false;
+                _scrubStartVerse = null;
+                _scrubStartDx = null;
+                _scrubStartDy = null;
+                _scrubPrecision = 1.0;
+              });
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.centerLeft,
+              children: <Widget>[
+                LinearPercentIndicator(
+                  barRadius: const Radius.circular(30),
+                  animation: !_isScrubbingProgress,
+                  animateFromLastPercent: !_isScrubbingProgress,
+                  backgroundColor: Theme.of(context).colorScheme.onTertiary,
+                  lineHeight: 20.0,
+                  percent: percent,
+                  progressColor: Theme.of(context).colorScheme.tertiary,
+                ),
+                if (_isScrubbingProgress)
+                  Positioned(
+                    left: indicatorLeft,
+                    child: IgnorePointer(
+                      child: Container(
+                        width: indicatorSize,
+                        height: indicatorSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context).colorScheme.surface,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.tertiary,
+                            width: 3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget cardView({required double marginValue}) {
     return SafeArea(
-      child: SimpleGestureDetector(
-        onHorizontalSwipe: (SwipeDirection direction) {
-          if (direction == SwipeDirection.left) {
+      child: GestureDetector(
+        onHorizontalDragEnd: (details) {
+          final double velocity = details.primaryVelocity ?? 0;
+          if (velocity < -200) {
             _increase();
-          } else if (direction == SwipeDirection.right) {
+          } else if (velocity > 200) {
             _decrease();
           }
         },
@@ -334,18 +488,7 @@ class _ReadPageState extends State<ReadPage> {
               controller: _scrollController,
               child: Column(
                 children: [
-                  Container(
-                    margin: EdgeInsets.only(
-                        left: marginValue, right: marginValue, top: 20),
-                    child: LinearPercentIndicator(
-                        barRadius: const Radius.circular(30),
-                        animation: true,
-                        animateFromLastPercent: true,
-                        backgroundColor: Theme.of(context).colorScheme.onTertiary,
-                        lineHeight: 20.0,
-                        percent: _currentVerse / _totalVerses,
-                        progressColor: Theme.of(context).colorScheme.tertiary),
-                  ),
+                  _buildProgressBar(marginValue),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: ReadQuranCard(
