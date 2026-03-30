@@ -5,9 +5,15 @@ import 'package:equran/widgets/library.dart'
     show FontSlider, PlayBackSlider, SettingsSwitch;
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' show Translation;
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
+
+  Future<String> getVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    return "${info.version}+${info.buildNumber}";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -232,6 +238,21 @@ class SettingsPage extends StatelessWidget {
                       ],
                     )),
           ),
+          Divider(),
+          FutureBuilder(future: getVersion(), builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Text("Loading...");
+            }
+            return ListTile(
+              title: Text(
+                "Version: ${snapshot.data}",
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
+              ),
+            );
+          })
         ],
       ),
     );
