@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart' as ja;
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:quran/quran.dart' as quran;
+import 'package:equran/backend/library.dart' show QuranAudioService;
 
 
 const List<String> _surahTransliterations = <String>[
@@ -281,7 +281,8 @@ class _PlayerPageState extends State<PlayerPage> {
 
   String _surahFileName(int surah) => '${surah.toString().padLeft(3, '0')}.mp3';
 
-  String _surahStreamUrl(int surah) => quran.getAudioURLBySurah(surah, reciter: quran.Reciter.arAlafasy);
+  String _surahStreamUrl(int surah) => QuranAudioService().getSurahUrl(surah);
+
 
   String _time(Duration value) {
     final int totalHours = value.inHours;
@@ -560,8 +561,8 @@ class _PlayerPageState extends State<PlayerPage> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: <Color>[
-              colorScheme.surfaceContainerHigh.withOpacity(0.78),
-              colorScheme.surfaceContainer.withOpacity(0.66),
+              colorScheme.surfaceContainerHigh.withAlpha((0.78 * 255).round()),
+              colorScheme.surfaceContainerHigh.withAlpha((0.64 * 255).round()),
             ],
           ),
           borderRadius: BorderRadius.circular(24),
@@ -813,18 +814,18 @@ class _PlayerPageState extends State<PlayerPage> {
 
         final Widget speedButton = MenuAnchor(
           style: MenuStyle(
-            backgroundColor: MaterialStatePropertyAll(colorScheme.surfaceContainer),
-            surfaceTintColor: MaterialStatePropertyAll(colorScheme.surfaceTint),
-            elevation: const MaterialStatePropertyAll(6),
-            side: MaterialStatePropertyAll(
+            backgroundColor: WidgetStatePropertyAll(colorScheme.surfaceContainer),
+            surfaceTintColor: WidgetStatePropertyAll(colorScheme.surfaceTint),
+            elevation: const WidgetStatePropertyAll(6),
+            side: WidgetStatePropertyAll(
               BorderSide(color: colorScheme.outlineVariant),
             ),
-            shape: MaterialStatePropertyAll(
+            shape: WidgetStatePropertyAll(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
               ),
             ),
-            padding: const MaterialStatePropertyAll(
+            padding: const WidgetStatePropertyAll(
               EdgeInsets.symmetric(vertical: 6),
             ),
           ),

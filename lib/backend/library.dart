@@ -5,3 +5,4 @@ export 'reading_model.dart';
 export 'settings_db.dart';
 export 'surah_db.dart';
 export 'surah_model.dart';
+export 'quran_stream_url.dart';

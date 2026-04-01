@@ -1,5 +1,5 @@
 import 'package:equran/backend/bookmark_db.dart';
-import 'package:equran/backend/library.dart' show SettingsDB;
+import 'package:equran/backend/library.dart' show SettingsDB, QuranAudioService;
 import 'package:equran/widgets/library.dart' show ReadQuranCard;
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
@@ -507,8 +507,7 @@ class _ReadPageState extends State<ReadPage> {
                           _currentChapter, _currentVerse,
                           translation: quran.Translation.values[
                               SettingsDB().get("translation", defaultValue: 0)]),
-                      url: quran.getAudioURLByVerse(
-                          _currentChapter, _currentVerse, reciter: quran.Reciter.arAlafasy),
+                      url: QuranAudioService().getAyahUrl(_currentChapter, _currentVerse),
                       fontSize: SettingsDB().get("fontSize", defaultValue: 38.0),
                     ),
                   ),

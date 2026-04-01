@@ -1,10 +1,12 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart'
     show BookmarkDB, FavouritesDB, SettingsDB;
+import 'package:equran/utils/library.dart';
 import 'package:equran/widgets/library.dart'
     show FontSlider, PlayBackSlider, SettingsSwitch;
 import 'package:flutter/material.dart';
-import 'package:quran/quran.dart' show Translation;
+import 'package:hive/hive.dart';
+import 'package:quran/quran.dart' show Translation, Reciter;
 import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -71,6 +73,48 @@ class SettingsPage extends StatelessWidget {
                                 groupValue: selected,
                                 onChanged: (int? value) {
                                   SettingsDB().put("translation", value);
+                                  Navigator.pop(context);
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+          ListTile(
+            title: const Text("Reciter"),
+            subtitle: const Text("Choose your preferred reciter."),
+            onTap: () {
+              List<AppReciter> items = AppReciter.values;
+              final selected = SettingsDB().get("reciter", defaultValue: "ar.yasseraldossari");
+              final selectedReciter = AppReciter.fromCode(selected);
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return StatefulBuilder(
+                    // Use StatefulBuilder to maintain radio state
+                    builder: (context, setState) {
+                      return AlertDialog(
+                        title: const Text("Select Reciter"),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            // Column for radio buttons
+                            children: items.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              return RadioListTile<AppReciter>(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                title: Text(entry.value.englishName),
+                                value: entry.value,
+                                groupValue: selectedReciter,
+                                onChanged: (value) {
+                                  if (value == null) return;
+                                  SettingsDB().put("reciter", value.code);
                                   Navigator.pop(context);
                                 },
                               );
