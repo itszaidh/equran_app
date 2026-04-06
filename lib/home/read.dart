@@ -502,14 +502,18 @@ class _ReadPageState extends State<ReadPage> {
                               _currentChapter != 9
                           ? quran.basmala
                           : null,
-                      verse: quran.getVerse(_currentChapter, _currentVerse),
+                      verse: _currentVerse == 1 && _currentChapter != 1 ?
+                      quran.getVerse(_currentChapter, _currentVerse).replaceAll("بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ", "") :
+                      quran.getVerse(_currentChapter, _currentVerse)
+
+                      ,
                       translation: quran.getVerseTranslation(
                           _currentChapter, _currentVerse,
                           translation: quran.Translation.values[
                               SettingsDB().get("translation", defaultValue: 0)]),
                       url: QuranAudioService().getAyahUrl(_currentChapter, _currentVerse),
                       fontSize: SettingsDB().get("fontSize", defaultValue: 38.0),
-                      fontSizeTranslation: SettingsDB().get("fontSizeTranslation", defaultValue: 20),
+                      fontSizeTranslation: SettingsDB().get("fontSizeTranslation", defaultValue: 20.0),
                     ),
                   ),
                   const SizedBox(
@@ -561,6 +565,7 @@ class _ReadPageState extends State<ReadPage> {
   }
 
   Widget listView() {
+
     return ScrollablePositionedList.builder(
         itemScrollController: _isc,
         initialScrollIndex: _currentVerse - 1,
@@ -580,7 +585,7 @@ class _ReadPageState extends State<ReadPage> {
                         _currentChapter != 9
                     ? quran.basmala
                     : null,
-                verse: quran.getVerse(_currentChapter, currentVerse),
+                verse: "",
                 translation: quran.getVerseTranslation(
                     _currentChapter, currentVerse,
                     translation: quran.Translation.values[
