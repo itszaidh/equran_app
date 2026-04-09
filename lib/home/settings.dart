@@ -6,7 +6,7 @@ import 'package:equran/widgets/library.dart'
     show FontSlider, PlayBackSlider, SettingsSwitch;
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:quran/quran.dart' show Translation, Reciter;
+import 'package:quran/quran.dart' show Translation;
 import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -90,8 +90,13 @@ class SettingsPage extends StatelessWidget {
             title: const Text("Reciter"),
             subtitle: const Text("Choose your preferred reciter."),
             onTap: () {
-              List<AppReciter> items = AppReciter.values;
-              final selected = SettingsDB().get("reciter", defaultValue: "ar.alafasi");
+              final List<AppReciter> items = AppReciter.values.toList()
+                ..sort(
+                  (a, b) => a.englishName.toLowerCase().compareTo(
+                        b.englishName.toLowerCase(),
+                      ),
+                );
+              final selected = SettingsDB().get("reciter", defaultValue: "1");
               final selectedReciter = AppReciter.fromCode(selected);
               showDialog(
                 context: context,

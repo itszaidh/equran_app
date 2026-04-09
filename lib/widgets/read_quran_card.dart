@@ -11,7 +11,7 @@ class ReadQuranCard extends StatelessWidget {
 
   final String translation;
   final String verse;
-  final String url;
+  final Future<String> url;
   final String? basmala;
 
   final double fontSize;
@@ -88,6 +88,7 @@ class ReadQuranCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 PlayButton(
+                  key: ValueKey('$currentChapter-$currentVerse'),
                   url: url,
                 ),
                 Text(

@@ -58,7 +58,7 @@ class _FontSliderState extends State<FontSlider> {
                 fontSize: fontSize,
                 fontSizeTranslation: fontSizeTranslation,
                 juzNumber: 1,
-                url: "",
+                url: Future<String>.value(""),
                 translation: quran.getVerseTranslation(1, 1),
                 verse: quran.getVerse(1, 1))
           ],

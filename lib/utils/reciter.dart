@@ -1,37 +1,50 @@
-import 'package:quran/quran.dart' as quran;
-
 enum AppReciter {
-  arAlafasy(
-    code: 'ar.alafasy',
-    englishName: 'Alafasy',
-    bitrate: 128,
+  misharyRashidAlAfasy(
+    code: '1',
+    englishName: 'Mishary Rashid Al Afasy',
+  ),
+  abuBakrAlShatri(
+    code: '2',
+    englishName: 'Abu Bakr Al Shatri',
+  ),
+  nasserAlQatami(
+    code: '3',
+    englishName: 'Nasser Al Qatami',
+  ),
+  yasserAlDosari(
+    code: '4',
+    englishName: 'Yasser Al Dosari',
+  ),
+  haniArRifai(
+    code: '5',
+    englishName: 'Hani Ar Rifai',
   );
 
   final String code;
   final String englishName;
-  final int bitrate;
 
   const AppReciter({
     required this.code,
     required this.englishName,
-    required this.bitrate,
   });
 
+  static const Map<String, String> _legacyCodeMap = <String, String>{
+    'ar.alafasy': '1',
+    'ar.alafasi': '1',
+  };
+
+  static String normalizeCode(String? code) {
+    if (code == null || code.isEmpty) {
+      return AppReciter.misharyRashidAlAfasy.code;
+    }
+    return _legacyCodeMap[code] ?? code;
+  }
+
   static AppReciter fromCode(String? code) {
+    final String normalizedCode = normalizeCode(code);
     return AppReciter.values.firstWhere(
-          (r) => r.code == code,
-      orElse: () => AppReciter.arAlafasy,
+          (r) => r.code == normalizedCode,
+      orElse: () => AppReciter.misharyRashidAlAfasy,
     );
-  }
-
-  String surahUrl(int surah) {
-    final String surahUrl = quran.getAudioURLBySurah(surah);
-    return surahUrl.replaceAll("ar.alafasy", code);
-  }
-
-  String ayahUrl(int surah, int ayah)
-  {
-    final String ayahUrl = quran.getAudioURLByVerse(surah, ayah);
-    return ayahUrl.replaceAll("ar.alafasy", code);
   }
 }

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:collection';
+import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:equran/backend/library.dart';
@@ -8,7 +10,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:http/http.dart' as http;
 
 class PlayButton extends StatefulWidget {
-  final String url;
+  final Future<String> url;
 
   const PlayButton({super.key, required this.url});
 
@@ -17,6 +19,10 @@ class PlayButton extends StatefulWidget {
 }
 
 class _PlayButtonState extends State<PlayButton> {
+  static const int _maxCachedAyahs = 5;
+  static final LinkedHashMap<String, Uint8List> _audioCache =
+      LinkedHashMap<String, Uint8List>();
+
   final AudioPlayer _audioPlayer = AudioPlayer();
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<void>? _completeSubscription;
@@ -73,6 +79,34 @@ class _PlayButtonState extends State<PlayButton> {
     }
   }
 
+  Uint8List? _getCachedAudio(String url) {
+    final Uint8List? cached = _audioCache.remove(url);
+    if (cached == null) {
+      return null;
+    }
+
+    _audioCache[url] = cached;
+    return cached;
+  }
+
+  void _cacheAudio(String url, Uint8List bytes) {
+    _audioCache.remove(url);
+    _audioCache[url] = bytes;
+
+    while (_audioCache.length > _maxCachedAyahs) {
+      _audioCache.remove(_audioCache.keys.first);
+    }
+  }
+
+  Future<Uint8List> _downloadAudioBytes(String url) async {
+    final http.Response response = await http.get(Uri.parse(url));
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load audio: ${response.statusCode}');
+    }
+
+    return Uint8List.fromList(response.bodyBytes);
+  }
+
   @override
   void dispose() {
     _positionSubscription?.cancel();
@@ -82,26 +116,25 @@ class _PlayButtonState extends State<PlayButton> {
     super.dispose();
   }
 
-  // Helper method to handle web CORS issues
   Future<void> _playAudio(String url) async {
-    if (kIsWeb) {
-      // For web, download the audio and play from bytes
-      try {
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          await _audioPlayer.play(BytesSource(response.bodyBytes));
-        } else {
-          throw Exception('Failed to load audio: ${response.statusCode}');
-        }
-      } catch (e) {
-        debugPrint('Error loading audio on web: $e');
-        // Fallback: try with CORS proxy
-        final proxiedUrl = 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
-        await _audioPlayer.play(UrlSource(proxiedUrl));
+    final Uint8List? cachedAudio = _getCachedAudio(url);
+    if (cachedAudio != null) {
+      await _audioPlayer.play(BytesSource(cachedAudio));
+      return;
+    }
+
+    try {
+      final Uint8List bytes = await _downloadAudioBytes(url);
+      _cacheAudio(url, bytes);
+      await _audioPlayer.play(BytesSource(bytes));
+    } catch (e) {
+      debugPrint('Error loading audio: $e');
+      if (!kIsWeb) {
+        rethrow;
       }
-    } else {
-      // For mobile, play directly from URL
-      await _audioPlayer.play(UrlSource(url));
+
+      final proxiedUrl = 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
+      await _audioPlayer.play(UrlSource(proxiedUrl));
     }
   }
 
@@ -114,10 +147,6 @@ class _PlayButtonState extends State<PlayButton> {
   }
 
   void _togglePlayPause() async {
-    if (widget.url.isEmpty) {
-      return;
-    }
-
     _safeSetState(() {
       _isLoading = true;
       _hasError = false;
@@ -131,12 +160,17 @@ class _PlayButtonState extends State<PlayButton> {
           _isPlaying = false;
         });
       } else {
+        final String resolvedUrl = await widget.url;
+        if (resolvedUrl.isEmpty) {
+          throw Exception('Audio URL is empty.');
+        }
+
         final double rate = _playbackRate();
         await _audioPlayer.setPlaybackRate(rate);
         if (_audioPlayer.state == PlayerState.paused) {
           await _audioPlayer.resume();
         } else {
-          await _playAudio(widget.url);
+          await _playAudio(resolvedUrl);
         }
         // Re-apply because some platforms reset rate when a source is (re)started.
         await _audioPlayer.setPlaybackRate(rate);

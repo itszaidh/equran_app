@@ -279,9 +279,13 @@ class _PlayerPageState extends State<PlayerPage> {
 
   String _surahName(int surah) => _surahTransliterations[surah - 1];
 
-  String _surahFileName(int surah) => '${surah.toString().padLeft(3, '0')}.mp3';
+  String _surahFileName(int surah) {
+    final String reciterCode = QuranAudioService().selectedReciter.code;
+    return '${reciterCode}_${surah.toString().padLeft(3, '0')}.mp3';
+  }
 
-  String _surahStreamUrl(int surah) => QuranAudioService().getSurahUrl(surah);
+  Future<String> _surahStreamUrl(int surah) =>
+      QuranAudioService().getSurahUrl(surah);
 
 
   String _time(Duration value) {
@@ -364,7 +368,8 @@ class _PlayerPageState extends State<PlayerPage> {
         final File file = await _surahFile(surah);
         await _linuxAudio.play(ap.DeviceFileSource(file.path));
       } else {
-        await _linuxAudio.play(ap.UrlSource(_surahStreamUrl(surah)));
+        final String url = await _surahStreamUrl(surah);
+        await _linuxAudio.play(ap.UrlSource(url));
       }
       await _linuxAudio.setPlaybackRate(_playbackRate);
       return;
@@ -375,7 +380,8 @@ class _PlayerPageState extends State<PlayerPage> {
       final File file = await _surahFile(surah);
       sourceUri = Uri.file(file.path);
     } else {
-      sourceUri = Uri.parse(_surahStreamUrl(surah));
+      final String url = await _surahStreamUrl(surah);
+      sourceUri = Uri.parse(url);
     }
 
     await _justAudio.setAudioSource(
@@ -655,8 +661,8 @@ class _PlayerPageState extends State<PlayerPage> {
     });
 
     try {
-      final http.Response response =
-          await http.get(Uri.parse(_surahStreamUrl(_selectedSurah)));
+      final String url = await _surahStreamUrl(_selectedSurah);
+      final http.Response response = await http.get(Uri.parse(url));
       if (response.statusCode != 200) {
         throw Exception('Download failed');
       }

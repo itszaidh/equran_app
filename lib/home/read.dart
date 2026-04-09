@@ -507,7 +507,8 @@ class _ReadPageState extends State<ReadPage> {
                           _currentChapter, _currentVerse,
                           translation: quran.Translation.values[
                               SettingsDB().get("translation", defaultValue: 0)]),
-                      url: QuranAudioService().getAyahUrl(_currentChapter, _currentVerse),
+                      url: QuranAudioService()
+                          .getAyahUrl(_currentChapter, _currentVerse),
                       fontSize: SettingsDB().get("fontSize", defaultValue: 38.0),
                       fontSizeTranslation: SettingsDB().get("fontSizeTranslation", defaultValue: 20.0),
                     ),
@@ -586,7 +587,8 @@ class _ReadPageState extends State<ReadPage> {
                     _currentChapter, currentVerse,
                     translation: quran.Translation.values[
                         SettingsDB().get("translation", defaultValue: 0)]),
-                url: quran.getAudioURLByVerse(_currentChapter, currentVerse),
+                url: QuranAudioService()
+                    .getAyahUrl(_currentChapter, currentVerse),
                 fontSize: SettingsDB().get("fontSize", defaultValue: 38.0),
                 fontSizeTranslation: SettingsDB().get("fontSizeTranslation", defaultValue: 20.0),
               ),
