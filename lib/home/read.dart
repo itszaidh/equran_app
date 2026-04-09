@@ -502,11 +502,7 @@ class _ReadPageState extends State<ReadPage> {
                               _currentChapter != 9
                           ? quran.basmala
                           : null,
-                      verse: _currentVerse == 1 && _currentChapter != 1 ?
-                      quran.getVerse(_currentChapter, _currentVerse).replaceAll("بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ", "") :
-                      quran.getVerse(_currentChapter, _currentVerse)
-
-                      ,
+                      verse: _buildVerseText(_currentChapter, _currentVerse),
                       translation: quran.getVerseTranslation(
                           _currentChapter, _currentVerse,
                           translation: quran.Translation.values[
@@ -585,7 +581,7 @@ class _ReadPageState extends State<ReadPage> {
                         _currentChapter != 9
                     ? quran.basmala
                     : null,
-                verse: "",
+                verse: _buildVerseText(_currentChapter, currentVerse),
                 translation: quran.getVerseTranslation(
                     _currentChapter, currentVerse,
                     translation: quran.Translation.values[
@@ -627,5 +623,15 @@ class _ReadPageState extends State<ReadPage> {
             ],
           );
         });
+  }
+  String _buildVerseText(int chapter, int verse) {
+    final verseText = quran.getVerse(chapter, verse);
+    if (verse == 1 && chapter != 1) {
+      return verseText.replaceAll(
+        "بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ",
+        "",
+      );
+    }
+    return verseText;
   }
 }
