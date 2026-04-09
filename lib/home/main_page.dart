@@ -28,6 +28,12 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final double width = MediaQuery.of(context).size.width;
+    final double horizontalPadding = width >= 1400
+        ? 36
+        : width >= 1100
+            ? 28
+            : 14;
     return NestedScrollView(
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
@@ -45,7 +51,12 @@ class _MainPageState extends State<MainPage> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 10, 14, 15),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                10,
+                horizontalPadding,
+                15,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
@@ -94,7 +105,7 @@ class _MainPageState extends State<MainPage> {
         ];
       },
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
         child: _buildSegmentBody(),
       ),
     );
