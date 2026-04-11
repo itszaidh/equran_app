@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui' show DisplayFeature, DisplayFeatureType;
 
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:equran/backend/library.dart' show SettingsDB;
@@ -785,22 +786,51 @@ class _PlayerPageState extends State<PlayerPage> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final MediaQueryData mediaQuery = MediaQuery.of(context);
+        final Size mediaSize = mediaQuery.size;
         final double width = constraints.maxWidth;
-        final bool isFoldableLayout = width >= 720 && width < 1100;
-        final bool isDesktop = width >= 1100;
+        final double height = constraints.maxHeight;
+        final bool hasFoldableDisplayFeature =
+            mediaQuery.displayFeatures.any((DisplayFeature feature) {
+          return feature.type == DisplayFeatureType.hinge ||
+              feature.type == DisplayFeatureType.fold;
+        });
+        final bool isFoldableLayout =
+            hasFoldableDisplayFeature && width >= 720;
+        final bool isIpadAirSizedTablet =
+            !hasFoldableDisplayFeature && mediaSize.shortestSide >= 820;
+        final bool isLandscapeTablet =
+            !hasFoldableDisplayFeature &&
+            mediaSize.shortestSide >= 600 &&
+            mediaSize.width > mediaSize.height;
+        final bool isDesktop = !isFoldableLayout &&
+            (width >= 1100 || isLandscapeTablet || isIpadAirSizedTablet);
+        final bool isCompactWidescreenLayout = isDesktop && width < 1100;
         final double maxContentWidth = isDesktop
             ? width
             : isFoldableLayout
                 ? min(width, 1000)
                 : 560;
-        final double artSize = isDesktop
-            ? 520
+        final double maxArtHeight = isDesktop
+            ? height - 260
             : isFoldableLayout
-                ? min(width * 0.42, 360)
-                : min(width - 56, 440);
+                ? height - 300
+                : height - 360;
+        final double artSize = min(
+          isDesktop
+              ? 520
+              : isFoldableLayout
+                  ? min(width * 0.42, 360)
+                  : min(width - 56, 440),
+          max(180, maxArtHeight),
+        );
+        final double bottomBarArtworkSize =
+            isCompactWidescreenLayout ? 64 : 84;
+        final double bottomBarCenterGap =
+            isCompactWidescreenLayout ? 96 : 220;
         final double desktopCenterWidth = min(
-          640.0,
-          max(320.0, width - 760),
+          isCompactWidescreenLayout ? 300.0 : 640.0,
+          max(isCompactWidescreenLayout ? 280.0 : 320.0, width - 760),
         );
 
         final header = Padding(
@@ -1095,8 +1125,8 @@ class _PlayerPageState extends State<PlayerPage> {
                       child: Row(
                         children: <Widget>[
                           Container(
-                            width: 84,
-                            height: 84,
+                            width: bottomBarArtworkSize,
+                            height: bottomBarArtworkSize,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(18),
                               gradient: LinearGradient(
@@ -1110,13 +1140,19 @@ class _PlayerPageState extends State<PlayerPage> {
                             ),
                             child: Icon(
                               Icons.graphic_eq_rounded,
-                              size: 42,
+                              size: isCompactWidescreenLayout ? 34 : 42,
                               color: colorScheme.onPrimaryContainer,
                             ),
                           ),
-                          const SizedBox(width: 18),
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 320),
+                          SizedBox(
+                            width: isCompactWidescreenLayout ? 12 : 18,
+                          ),
+                          Flexible(
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    isCompactWidescreenLayout ? 240 : 320,
+                              ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1150,11 +1186,12 @@ class _PlayerPageState extends State<PlayerPage> {
                                 ),
                               ],
                             ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 220),
+                    SizedBox(width: bottomBarCenterGap),
                     Expanded(
                       child: Align(
                         alignment: Alignment.centerRight,
