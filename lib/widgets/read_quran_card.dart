@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
 import 'package:equran/backend/library.dart' show SettingsDB;
 
+const int _favouriteNoteMaxLength = 80;
+
 class ReadQuranCard extends StatelessWidget {
   final int currentChapter;
   final int currentVerse;
@@ -42,6 +44,7 @@ class ReadQuranCard extends StatelessWidget {
         return AlertDialog(
           title: const Text('Enter a note:'),
           content: TextField(
+            maxLength: _favouriteNoteMaxLength,
             maxLines: null,
             controller: textController,
             decoration: const InputDecoration(hintText: "Optional..."),

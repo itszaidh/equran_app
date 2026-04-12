@@ -51,6 +51,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final AdaptiveThemeMode? savedThemeMode = _getSavedThemeMode();
+
     return AdaptiveTheme(
         light: ThemeData(
             useMaterial3: true,
@@ -60,7 +62,8 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
                 seedColor: mySeed, brightness: Brightness.dark)),
-        initial: AdaptiveThemeMode.system,
+        initial: savedThemeMode ?? AdaptiveThemeMode.system,
+        overrideMode: savedThemeMode,
         builder: (theme, darkTheme) => MaterialApp(
               scrollBehavior:
                   ScrollConfiguration.of(context).copyWith(scrollbars: false),
@@ -74,5 +77,14 @@ class MyApp extends StatelessWidget {
   static MaterialColor _getPrimaryColor() {
     final colorIndex = SettingsDB().get("color");
     return colorIndex != null ? Colors.primaries[colorIndex] : Colors.cyan;
+  }
+
+  static AdaptiveThemeMode? _getSavedThemeMode() {
+    final themeMode = SettingsDB().get("themeMode");
+    return switch (themeMode) {
+      "light" => AdaptiveThemeMode.light,
+      "dark" => AdaptiveThemeMode.dark,
+      _ => null,
+    };
   }
 }

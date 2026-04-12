@@ -3,7 +3,7 @@ description: "Application for reading the Holy Quran"
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 2.4.3+27
+version: 2.5.0+28
 environment:
   sdk: ">=3.10.3 <4.0.0"
   flutter: ">=3.38.4"
@@ -39,6 +39,8 @@ dependencies:
   http: ^1.6.0
   path_provider: ^2.1.5
   package_info_plus: ^8.3.1
+  share_plus: ^12.0.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

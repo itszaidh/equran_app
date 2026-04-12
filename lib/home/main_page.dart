@@ -11,16 +11,34 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin {
   final Debouncer _debouncer = Debouncer(milliseconds: 400);
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _surahScrollController = ScrollController();
+  final ScrollController _juzScrollController = ScrollController();
+  final ScrollController _favouritesScrollController = ScrollController();
+  late final TabController _tabController;
 
   String _searchQuery = '';
   int _selectedSegment = 0;
   bool _showSearch = false;
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_handleTabChanged);
+  }
+
+  @override
   void dispose() {
+    _debouncer.cancel();
+    _tabController.removeListener(_handleTabChanged);
+    _tabController.dispose();
+    _surahScrollController.dispose();
+    _juzScrollController.dispose();
+    _favouritesScrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -34,80 +52,36 @@ class _MainPageState extends State<MainPage> {
         : width >= 1100
             ? 28
             : 14;
-    return NestedScrollView(
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            pinned: true,
-            floating: false,
-            automaticallyImplyLeading: false,
-            elevation: innerBoxIsScrolled ? 1 : 0,
-            scrolledUnderElevation: 1,
-            titleSpacing: 0,
-            title: Padding(
-              padding: const EdgeInsets.fromLTRB(14, 8, 14, 0),
-              child: _buildTopBar(theme),
-            ),
+    return Column(
+      children: <Widget>[
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer,
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                horizontalPadding,
-                10,
-                horizontalPadding,
-                15,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  if (SettingsDB().get("showLastRead", defaultValue: true) == true)
-                    ValueListenableBuilder(
-                      valueListenable: BookmarkDB().listener,
-                      builder: (BuildContext context, Box<dynamic> box, child) {
-                        final entries = box.values.whereType<ReadingEntry>().toList();
-                        Widget currentChild = const SizedBox.shrink();
-
-                        if (entries.isNotEmpty) {
-                          entries.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-                          final latest = entries.first;
-                          currentChild = LastReadCard(
-                            key: ValueKey<String>(
-                              '${latest.surah}-${latest.verse}-${latest.timestamp.microsecondsSinceEpoch}',
-                            ),
-                          );
-                        }
-
-                        return AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 220),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SizeTransition(
-                                sizeFactor: animation,
-                                axisAlignment: -1,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: currentChild,
-                        );
-                      },
-                    ),
-                  if (SettingsDB().get("showLastRead", defaultValue: true) == true)
-                    const SizedBox(height: 18),
-                  _buildSectionHeader(theme),
-                ],
+          child: SafeArea(
+            bottom: false,
+            child: Material(
+              color: Colors.transparent,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+                child: _buildTopBar(theme),
               ),
             ),
           ),
-        ];
-      },
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-        child: _buildSegmentBody(),
-      ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            10,
+            horizontalPadding,
+            15,
+          ),
+          child: _buildSectionHeader(theme),
+        ),
+        Expanded(
+          child: _buildSegmentPager(horizontalPadding),
+        ),
+      ],
     );
   }
 
@@ -138,7 +112,20 @@ class _MainPageState extends State<MainPage> {
                     key: const ValueKey<String>('header-search'),
                     controller: _searchController,
                     leading: const Icon(Icons.search_rounded),
-                    hintText: 'Search surah name or number...',
+                    trailing: <Widget>[
+                      IconButton(
+                        tooltip: 'Close search',
+                        onPressed: _closeSearch,
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                    hintText: 'Surah name or number...',
+                    hintStyle: WidgetStatePropertyAll(
+                      theme.textTheme.bodyLarge?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                     onChanged: _changeSearchQuery,
                     elevation: const WidgetStatePropertyAll(0),
                     shape: WidgetStatePropertyAll(
@@ -147,105 +134,166 @@ class _MainPageState extends State<MainPage> {
                       ),
                     ),
                   )
-                : Text(
-                    'eQuran',
+                : GestureDetector(
                     key: const ValueKey<String>('header-title'),
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6,
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _scrollToTop,
+                    child: Text(
+                      'eQuran',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                      ),
                     ),
                   ),
           ),
         ),
-        IconButton(
-          onPressed: () {
-            setState(() {
-              _showSearch = !_showSearch;
-              if (!_showSearch) {
-                _searchController.clear();
-                _changeSearchQuery('');
-              }
-            });
-          },
-          icon: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
-            child: Icon(
-              _showSearch ? Icons.close_rounded : Icons.search_rounded,
-              key: ValueKey<bool>(_showSearch),
-            ),
-          ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: _showSearch
+              ? const SizedBox(
+                  key: ValueKey<String>('search-button-hidden'),
+                  width: 0,
+                )
+              : IconButton(
+                  key: const ValueKey<String>('search-button'),
+                  onPressed: _openSearch,
+                  icon: const Icon(Icons.search_rounded),
+                ),
         ),
       ],
     );
   }
 
   Widget _buildSectionHeader(ThemeData theme) {
-    return Row(
-      children: <Widget>[
-        Text(
-          'Al Quran',
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const Spacer(),
-        SegmentedButton<int>(
-          showSelectedIcon: false,
-          style: ButtonStyle(
-            visualDensity: VisualDensity.compact,
-            shape: WidgetStatePropertyAll(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest.withAlpha(150),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: colorScheme.primary.withAlpha(46),
+            ),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: colorScheme.primary.withAlpha(18),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
-            ),
-            padding: const WidgetStatePropertyAll(
-              EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: TabBar(
+              controller: _tabController,
+              dividerColor: Colors.transparent,
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicator: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[
+                    colorScheme.primaryContainer.withAlpha(245),
+                    colorScheme.tertiaryContainer.withAlpha(225),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: colorScheme.primary.withAlpha(42),
+                ),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: colorScheme.shadow.withAlpha(18),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              labelColor: colorScheme.onPrimaryContainer,
+              unselectedLabelColor: colorScheme.onSurfaceVariant,
+              labelStyle: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+              unselectedLabelStyle: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              overlayColor: WidgetStatePropertyAll(
+                colorScheme.primary.withAlpha(16),
+              ),
+              splashBorderRadius: BorderRadius.circular(14),
+              tabs: <Widget>[
+                _buildTabLabel(Icons.menu_book_outlined, 'Surah'),
+                _buildTabLabel(Icons.layers_outlined, 'Juz'),
+                _buildTabLabel(Icons.favorite_border_rounded, 'Saved'),
+              ],
             ),
           ),
-          segments: const <ButtonSegment<int>>[
-            ButtonSegment<int>(value: 0, label: Text('Surah')),
-            ButtonSegment<int>(value: 1, label: Text('Juz')),
-            ButtonSegment<int>(
-              value: 2,
-              icon: Icon(Icons.favorite_rounded),
-            ),
-          ],
-          selected: <int>{_selectedSegment},
-          onSelectionChanged: (selection) {
-            setState(() {
-              _selectedSegment = selection.first;
-            });
-          },
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildSegmentBody() {
-    if (_selectedSegment == 0) {
-      return QuranCardList(
-        key: const ValueKey<String>('surah-list'),
-        searchQuery: _searchQuery,
-      );
-    }
+  Widget _buildTabLabel(IconData icon, String label) {
+    return Tab(
+      height: 42,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 19),
+          const SizedBox(width: 6),
+          Text(label),
+        ],
+      ),
+    );
+  }
 
-    if (_selectedSegment == 1) {
-      return const JuzCardList(
-        key: ValueKey<String>('juz-list'),
-      );
-    }
-
-    return ValueListenableBuilder(
-      key: const ValueKey<String>('page-list'),
-      valueListenable: FavouritesDB().listener,
-      builder: (BuildContext context, Box<dynamic> box, child) {
-        if (box.length == 0) {
-          return const SizedBox.shrink();
-        } else {
-          return const FavouritesList();
-        }
-      },
+  Widget _buildSegmentPager(double horizontalPadding) {
+    return TabBarView(
+      controller: _tabController,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: PrimaryScrollController(
+            controller: _surahScrollController,
+            child: QuranCardList(
+              key: const ValueKey<String>('surah-list'),
+              searchQuery: _searchQuery,
+              header: _buildLastReadCard(),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: PrimaryScrollController(
+            controller: _juzScrollController,
+            child: const JuzCardList(
+              key: ValueKey<String>('juz-list'),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: ValueListenableBuilder(
+            key: const ValueKey<String>('page-list'),
+            valueListenable: FavouritesDB().listener,
+            builder: (BuildContext context, Box<dynamic> box, child) {
+              if (box.length == 0) {
+                return const SizedBox.shrink();
+              } else {
+                return PrimaryScrollController(
+                  controller: _favouritesScrollController,
+                  child: const FavouritesList(),
+                );
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -256,5 +304,83 @@ class _MainPageState extends State<MainPage> {
         _searchQuery = value;
       });
     });
+  }
+
+  void _openSearch() {
+    setState(() {
+      _showSearch = true;
+    });
+  }
+
+  void _closeSearch() {
+    _debouncer.cancel();
+    setState(() {
+      _showSearch = false;
+      _searchController.clear();
+      _searchQuery = '';
+    });
+  }
+
+  void _handleTabChanged() {
+    if (_selectedSegment == _tabController.index) return;
+    setState(() {
+      _selectedSegment = _tabController.index;
+    });
+  }
+
+  Widget? _buildLastReadCard() {
+    if (SettingsDB().get("showLastRead", defaultValue: true) != true) {
+      return null;
+    }
+
+    return ValueListenableBuilder(
+      valueListenable: BookmarkDB().listener,
+      builder: (BuildContext context, Box<dynamic> box, child) {
+        final entries = box.values.whereType<ReadingEntry>().toList();
+        Widget currentChild = const SizedBox.shrink();
+
+        if (entries.isNotEmpty) {
+          entries.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+          final latest = entries.first;
+          currentChild = LastReadCard(
+            key: ValueKey<String>(
+              '${latest.surah}-${latest.verse}-${latest.timestamp.microsecondsSinceEpoch}',
+            ),
+          );
+        }
+
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SizeTransition(
+                sizeFactor: animation,
+                axisAlignment: -1,
+                child: child,
+              ),
+            );
+          },
+          child: currentChild,
+        );
+      },
+    );
+  }
+
+  void _scrollToTop() {
+    final ScrollController scrollController = switch (_selectedSegment) {
+      0 => _surahScrollController,
+      1 => _juzScrollController,
+      _ => _favouritesScrollController,
+    };
+    if (!scrollController.hasClients) return;
+
+    scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 }

@@ -7,8 +7,13 @@ import 'package:quran/quran.dart' as quran;
 
 class QuranCardList extends StatefulWidget {
   final String searchQuery;
+  final Widget? header;
 
-  const QuranCardList({super.key, required this.searchQuery});
+  const QuranCardList({
+    super.key,
+    required this.searchQuery,
+    this.header,
+  });
 
   @override
   State<QuranCardList> createState() => _QuranCardListState();
@@ -17,6 +22,21 @@ class QuranCardList extends StatefulWidget {
 class _QuranCardListState extends State<QuranCardList>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _fallbackScrollController = ScrollController();
+  late Future<List<Surah>> _surahsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _surahsFuture = _fetchSurahs();
+  }
+
+  @override
+  void didUpdateWidget(covariant QuranCardList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchQuery != widget.searchQuery) {
+      _surahsFuture = _fetchSurahs();
+    }
+  }
 
   @override
   void dispose() {
@@ -31,7 +51,7 @@ class _QuranCardListState extends State<QuranCardList>
         PrimaryScrollController.maybeOf(context) ?? _fallbackScrollController;
 
     return FutureBuilder<List<Surah>>(
-      future: _fetchSurahs(),
+      future: _surahsFuture,
       builder: (BuildContext context, AsyncSnapshot<List<Surah>> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -53,14 +73,26 @@ class _QuranCardListState extends State<QuranCardList>
                 controller: scrollController,
                 thumbVisibility: true,
                 interactive: true,
-                child: ListView.separated(
+                child: ListView.builder(
                   controller: scrollController,
-                  physics: const BouncingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.only(bottom: 16),
-                  itemCount: data.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 6),
+                  itemCount: data.length + (widget.header == null ? 0 : 1),
                   itemBuilder: (BuildContext context, int index) {
-                    return QuranCard(surah: data[index], compact: false);
+                    if (widget.header != null && index == 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: widget.header!,
+                      );
+                    }
+
+                    final int dataIndex = index - (widget.header == null ? 0 : 1);
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: dataIndex == data.length - 1 ? 0 : 6,
+                      ),
+                      child: QuranCard(surah: data[dataIndex], compact: false),
+                    );
                   },
                 ),
               );
@@ -70,23 +102,30 @@ class _QuranCardListState extends State<QuranCardList>
               controller: scrollController,
               thumbVisibility: true,
               interactive: true,
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: DynamicHeightGridView(
-                    controller: scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: data.length,
-                    crossAxisCount: columns,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    builder: (BuildContext context, int index) {
-                      return QuranCard(surah: data[index], compact: true);
-                    },
+              child: CustomScrollView(
+                controller: scrollController,
+                physics: const ClampingScrollPhysics(),
+                slivers: <Widget>[
+                  if (widget.header != null)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: widget.header!,
+                      ),
+                    ),
+                  SliverPadding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    sliver: SliverDynamicHeightGridView(
+                      itemCount: data.length,
+                      crossAxisCount: columns,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      builder: (BuildContext context, int index) {
+                        return QuranCard(surah: data[index], compact: true);
+                      },
+                    ),
                   ),
-                ),
+                ],
               ),
             );
           },

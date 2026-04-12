@@ -32,7 +32,7 @@ class _JuzCardListState extends State<JuzCardList>
       child: ListView.builder(
         controller: scrollController,
         shrinkWrap: true,
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         itemCount: 30,
         itemBuilder: (BuildContext context, int index) {
           final juz = quran.getSurahAndVersesFromJuz(index + 1);

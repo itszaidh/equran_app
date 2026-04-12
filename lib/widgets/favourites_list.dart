@@ -1,7 +1,10 @@
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/library.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
+
+const int _favouriteNoteMaxLength = 80;
 
 class FavouritesList extends StatefulWidget {
   const FavouritesList({super.key});
@@ -23,94 +26,38 @@ class _FavouritesListState extends State<FavouritesList> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-    final List<_SavedAyah> items = _savedAyahs();
     final ScrollController scrollController =
         PrimaryScrollController.maybeOf(context) ?? _fallbackScrollController;
 
-    if (items.isEmpty) {
-      return const Center(child: Text('No saved ayahs yet.'));
-    }
+    return ValueListenableBuilder(
+      valueListenable: FavouritesDB().listener,
+      builder: (BuildContext context, Box<dynamic> box, child) {
+        final List<_SavedAyah> items = _savedAyahs();
 
-    return Scrollbar(
-      controller: scrollController,
-      thumbVisibility: true,
-      interactive: true,
-      child: ListView.separated(
-        controller: scrollController,
-        physics: const BouncingScrollPhysics(),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 6),
-        itemBuilder: (context, index) {
-          final _SavedAyah ayah = items[index];
-          return Card(
-            margin: EdgeInsets.zero,
-            elevation: 1,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => ReadPage(
-                    chapter: ayah.surah,
-                    startVerse: ayah.verse,
-                  ),
-                ),
-              ),
-              child: ListTile(
-                leading: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: colorScheme.secondaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    ayah.surah.toString().padLeft(2, '0'),
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSecondaryContainer,
-                    ),
-                  ),
-                ),
-                title: Text(
-                  quran.getSurahName(ayah.surah),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text('Ayah ${ayah.verse}'),
-                    if (ayah.note.isNotEmpty)
-                      Text(
-                        ayah.note,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.more_vert_rounded),
-                  onPressed: () => _showBottomSheetWithOptions(
-                    context,
-                    ayah.key,
-                    _controller,
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+        if (items.isEmpty) {
+          return const Center(child: Text('No saved ayahs yet.'));
+        }
+
+        return Scrollbar(
+          controller: scrollController,
+          thumbVisibility: true,
+          interactive: true,
+          child: ListView.separated(
+            controller: scrollController,
+            physics: const ClampingScrollPhysics(),
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 6),
+            itemBuilder: (context, index) {
+              final _SavedAyah ayah = items[index];
+              return _SavedAyahTile(
+                key: ValueKey<String>(ayah.key),
+                ayah: ayah,
+                controller: _controller,
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -141,6 +88,170 @@ class _FavouritesListState extends State<FavouritesList> {
   }
 }
 
+class _SavedAyahTile extends StatefulWidget {
+  const _SavedAyahTile({
+    super.key,
+    required this.ayah,
+    required this.controller,
+  });
+
+  final _SavedAyah ayah;
+  final TextEditingController controller;
+
+  @override
+  State<_SavedAyahTile> createState() => _SavedAyahTileState();
+}
+
+class _SavedAyahTileState extends State<_SavedAyahTile> {
+  static const double _revealWidth = 112;
+
+  double _dragOffset = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final _SavedAyah ayah = widget.ayah;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Stack(
+        alignment: Alignment.centerRight,
+        children: <Widget>[
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                width: _revealWidth,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    IconButton.filledTonal(
+                      tooltip: 'Edit',
+                      onPressed: () {
+                        _close();
+                        _showEditNoteDialog(
+                          context,
+                          ayah.key,
+                          FavouritesDB().get(ayah.key, defaultValue: ""),
+                          widget.controller,
+                        );
+                      },
+                      icon: const Icon(Icons.edit_outlined),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      tooltip: 'Delete',
+                      style: IconButton.styleFrom(
+                        backgroundColor: colorScheme.errorContainer,
+                        foregroundColor: colorScheme.onErrorContainer,
+                      ),
+                      onPressed: () => FavouritesDB().delete(ayah.key),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          GestureDetector(
+            onHorizontalDragUpdate: (details) {
+              setState(() {
+                _dragOffset = (_dragOffset - details.delta.dx)
+                    .clamp(0.0, _revealWidth)
+                    .toDouble();
+              });
+            },
+            onHorizontalDragEnd: (_) {
+              setState(() {
+                _dragOffset = _dragOffset >= _revealWidth / 2 ? _revealWidth : 0;
+              });
+            },
+            child: SizedBox(
+              width: double.infinity,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                curve: Curves.easeOutCubic,
+                transform: Matrix4.translationValues(-_dragOffset, 0, 0),
+                child: Card(
+                  margin: EdgeInsets.zero,
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      if (_dragOffset > 0) {
+                        _close();
+                        return;
+                      }
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => ReadPage(
+                            chapter: ayah.surah,
+                            startVerse: ayah.verse,
+                          ),
+                        ),
+                      );
+                    },
+                    child: ListTile(
+                      leading: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondaryContainer,
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          ayah.surah.toString().padLeft(2, '0'),
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        quran.getSurahName(ayah.surah),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text('Ayah ${ayah.verse}'),
+                          if (ayah.note.isNotEmpty)
+                            Text(
+                              ayah.note,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _close() {
+    setState(() {
+      _dragOffset = 0;
+    });
+  }
+}
+
 class _SavedAyah {
   final String key;
   final int surah;
@@ -155,45 +266,6 @@ class _SavedAyah {
   });
 }
 
-void _showBottomSheetWithOptions(
-    BuildContext context, String key, TextEditingController controller) {
-  showModalBottomSheet(
-    context: context,
-    builder: (BuildContext context) {
-      return Wrap(
-        children: <Widget>[
-          InkWell(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-            onTap: () {
-              _showEditNoteDialog(
-                context,
-                key,
-                FavouritesDB().get(key, defaultValue: ""),
-                controller,
-              );
-            },
-            child: const ListTile(
-              leading: Icon(Icons.edit_rounded),
-              title: Text('Edit'),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_rounded),
-            title: const Text('Delete'),
-            onTap: () {
-              Navigator.pop(context);
-              FavouritesDB().delete(key);
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
 void _showEditNoteDialog(BuildContext context, String key, String initialNote,
     TextEditingController controller) {
   controller.text = initialNote;
@@ -204,6 +276,7 @@ void _showEditNoteDialog(BuildContext context, String key, String initialNote,
         title: const Text('Edit Note'),
         content: TextField(
           controller: controller,
+          maxLength: _favouriteNoteMaxLength,
           maxLines: null,
         ),
         actions: [
@@ -215,7 +288,6 @@ void _showEditNoteDialog(BuildContext context, String key, String initialNote,
             child: const Text('OK'),
             onPressed: () {
               FavouritesDB().put(key, controller.text);
-              Navigator.of(context).pop();
               Navigator.of(context).pop();
             },
           ),

@@ -1,7 +1,20 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:equran/backend/library.dart' show SettingsDB;
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/player.dart';
 import 'package:equran/home/settings.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+const String _appDownloadUrl =
+    'https://f-droid.org/en/packages/com.app.equran/';
+const String _issueReportUrl = 'https://github.com/ya27hw/equran_app/issues';
+const String _contactEmail = 'equran@elbaesy.com';
+const EdgeInsets _drawerTilePadding = EdgeInsets.symmetric(horizontal: 12);
+const double _drawerTileLeadingGap = 16;
+const double _drawerTileIconLabelGap = 12;
 
 class Destinations {
   const Destinations(
@@ -49,14 +62,10 @@ class _HomePageState extends State<HomePage> {
           _onItemTapped(index);
         },
         selectedIndex: _selectedIndex,
+        tilePadding: _drawerTilePadding,
+        footer: _buildDrawerFooter(context),
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(28, 16, 16, 10),
-            child: Text(
-              '',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ),
+          const SizedBox(height: 72),
           ..._pageDestinations.map(
             (Destinations destination) {
               return NavigationDrawerDestination(
@@ -65,10 +74,6 @@ class _HomePageState extends State<HomePage> {
                 selectedIcon: destination.selectedIcon,
               );
             },
-          ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(28, 16, 28, 10),
-            child: Divider(),
           ),
         ],
       ),
@@ -88,5 +93,271 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Widget _buildThemeToggleFooterButton(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final AdaptiveThemeMode themeMode = AdaptiveTheme.of(context).mode;
+    final bool isDark = themeMode.isSystem
+        ? theme.brightness == Brightness.dark
+        : themeMode.isDark;
+
+    return _buildDrawerFooterButton(
+      context: context,
+      icon: isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+      label: isDark ? 'Light mode' : 'Dark mode',
+      onPressed: () async {
+        final AdaptiveThemeMode newMode =
+            isDark ? AdaptiveThemeMode.light : AdaptiveThemeMode.dark;
+        await SettingsDB().put(
+          'themeMode',
+          newMode.isDark ? 'dark' : 'light',
+        );
+        if (context.mounted) {
+          AdaptiveTheme.of(context).setThemeMode(newMode);
+        }
+      },
+    );
+  }
+
+  Widget _buildDrawerFooter(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            _buildThemeToggleFooterButton(context),
+            const SizedBox(height: 4),
+            _buildDrawerFooterButton(
+              context: context,
+              icon: Icons.info_outline,
+              label: 'About this app',
+              onPressed: () => _showAboutApp(context),
+            ),
+            const SizedBox(height: 4),
+            _buildDrawerFooterButton(
+              context: context,
+              icon: Icons.share_outlined,
+              label: 'Share this app',
+              onPressed: () => _shareApp(context),
+            ),
+            const SizedBox(height: 4),
+            _buildDrawerFooterButton(
+              context: context,
+              icon: Icons.feedback_outlined,
+              label: 'Feedback / Contact us',
+              onPressed: () => _openFeedbackContactPage(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerFooterButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final TextStyle? labelStyle = NavigationDrawerTheme.of(context)
+            .labelTextStyle
+            ?.resolve(<WidgetState>{}) ??
+        theme.textTheme.labelLarge?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        );
+
+    return Padding(
+      padding: _drawerTilePadding,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(28),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          child: SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: Row(
+              children: <Widget>[
+                const SizedBox(width: _drawerTileLeadingGap),
+                SizedBox(
+                  width: 24,
+                  child: Icon(
+                    icon,
+                    color: colorScheme.onSurfaceVariant,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: _drawerTileIconLabelGap),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: labelStyle,
+                  ),
+                ),
+                const SizedBox(width: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showAboutApp(BuildContext context) async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    if (!context.mounted) return;
+
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    showAboutDialog(
+      context: context,
+      applicationName: 'eQuran',
+      applicationVersion: 'Version ${packageInfo.version}',
+      applicationIcon: Icon(
+        Icons.menu_book_rounded,
+        color: colorScheme.primary,
+        size: 40,
+      ),
+      children: const <Widget>[
+        SizedBox(height: 16),
+        Text(
+          'eQuran is a modern Quran companion designed for focused reading, listening, and daily reflection.',
+        ),
+        SizedBox(height: 12),
+        Text(
+          'Use it to continue where you left off, browse by Surah or Juz, stream recitation, play specific ayahs, and download audio for offline listening.',
+        ),
+        SizedBox(height: 12),
+        Text(
+          'Built with a clean Material 3 interface, eQuran keeps the experience simple, elegant, and reliable.',
+        ),
+      ],
+    );
+  }
+
+  Future<void> _shareApp(BuildContext context) async {
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          title: 'eQuran',
+          subject: 'Download eQuran',
+          text: 'Download eQuran on F-Droid: $_appDownloadUrl',
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open the share sheet.')),
+      );
+    }
+  }
+
+  void _openFeedbackContactPage(BuildContext context) {
+    final NavigatorState navigator = Navigator.of(context);
+    navigator.pop();
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (context) => const FeedbackContactPage(),
+      ),
+    );
+  }
+}
+
+class FeedbackContactPage extends StatelessWidget {
+  const FeedbackContactPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Feedback / Contact us'),
+      ),
+      body: ListView(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+            child: Text(
+              'Help improve eQuran',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Text(
+              'We appreciate your suggestions and feedback; they help make eQuran better for everyone.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.bug_report_outlined),
+            title: const Text('Report issues'),
+            subtitle: const Text('Open the GitHub issue tracker.'),
+            trailing: const Icon(Icons.open_in_new_rounded),
+            onTap: () => _launchUri(
+              context,
+              Uri.parse(_issueReportUrl),
+              errorMessage: 'Unable to open the issue tracker.',
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.alternate_email_rounded),
+            title: const Text('Contact'),
+            subtitle: const Text(_contactEmail),
+            trailing: const Icon(Icons.open_in_new_rounded),
+            onTap: () => _launchUri(
+              context,
+              Uri(
+                scheme: 'mailto',
+                path: _contactEmail,
+                queryParameters: <String, String>{
+                  'subject': 'eQuran feedback',
+                },
+              ),
+              errorMessage: 'Unable to open your email app.',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchUri(
+    BuildContext context,
+    Uri uri, {
+    required String errorMessage,
+  }) async {
+    final bool didLaunch;
+    try {
+      didLaunch = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+      return;
+    }
+
+    if (didLaunch || !context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(errorMessage)),
+    );
   }
 }
