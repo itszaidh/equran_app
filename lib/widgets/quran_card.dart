@@ -1,5 +1,6 @@
 import 'package:equran/backend/surah_model.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 
 class QuranCard extends StatelessWidget {
@@ -17,10 +18,10 @@ class QuranCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       elevation: compact ? 0 : 1,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadii.medium),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadii.medium),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => ReadPage(chapter: surah.id),
@@ -42,7 +43,7 @@ class QuranCard extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  surah.id.toString().padLeft(2, '0'),
+                  surah.id.toString(),
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: colorScheme.onSecondaryContainer,

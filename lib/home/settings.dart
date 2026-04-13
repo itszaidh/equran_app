@@ -1,6 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart'
     show BookmarkDB, FavouritesDB, SettingsDB;
+import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/library.dart';
 import 'package:equran/widgets/library.dart'
     show FontSlider, PlayBackSlider, SettingsSwitch;
@@ -25,6 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Material(
       child: ListView(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
         children: <Widget>[
           _buildSettingsGroup(
@@ -126,11 +128,11 @@ class _SettingsPageState extends State<SettingsPage> {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadii.medium),
           border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadii.medium),
           child: ExpansionTile(
             initiallyExpanded: initiallyExpanded,
             shape: const Border(),
@@ -160,12 +162,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 return AlertDialog(
                   title: const Text("Select Language"),
                   content: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: items.asMap().entries.map((entry) {
                         int index = entry.key;
                         return RadioListTile(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppRadii.medium),
                           ),
                           title: Text(entry.value.name),
                           value: index,
@@ -211,11 +214,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 return AlertDialog(
                   title: const Text("Select Reciter"),
                   content: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
                     child: Column(
                       children: items.asMap().entries.map((entry) {
                         return RadioListTile<AppReciter>(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppRadii.medium),
                           ),
                           title: Text(entry.value.englishName),
                           value: entry.value,

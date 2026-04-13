@@ -511,6 +511,7 @@ class _ReadPageState extends State<ReadPage> {
           children: [
             SingleChildScrollView(
               controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
                   _buildProgressBar(marginValue),
@@ -592,6 +593,7 @@ class _ReadPageState extends State<ReadPage> {
         itemScrollController: _isc,
         initialScrollIndex: _currentVerse - 1,
         itemPositionsListener: _ipl,
+        physics: const BouncingScrollPhysics(),
         itemCount: _totalVerses,
         itemBuilder: (context, index) {
           int currentVerse = index + 1;

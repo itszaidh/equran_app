@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:quran/quran.dart';
@@ -63,7 +64,7 @@ class LastReadCard extends StatelessWidget {
           color: Colors.transparent,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
+            borderRadius: BorderRadius.circular(AppRadii.medium),
           ),
           child: InkWell(
             onTap: () => Navigator.of(context).push(MaterialPageRoute(

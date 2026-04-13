@@ -1,5 +1,6 @@
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/library.dart';
+import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
@@ -7,7 +8,12 @@ import 'package:quran/quran.dart' as quran;
 const int _favouriteNoteMaxLength = 80;
 
 class FavouritesList extends StatefulWidget {
-  const FavouritesList({super.key});
+  const FavouritesList({
+    super.key,
+    required this.searchQuery,
+  });
+
+  final String searchQuery;
 
   @override
   State<FavouritesList> createState() => _FavouritesListState();
@@ -32,10 +38,16 @@ class _FavouritesListState extends State<FavouritesList> {
     return ValueListenableBuilder(
       valueListenable: FavouritesDB().listener,
       builder: (BuildContext context, Box<dynamic> box, child) {
-        final List<_SavedAyah> items = _savedAyahs();
+        final List<_SavedAyah> items = _savedAyahs(widget.searchQuery);
 
         if (items.isEmpty) {
-          return const Center(child: Text('No saved ayahs yet.'));
+          return Center(
+            child: Text(
+              widget.searchQuery.trim().isEmpty
+                  ? 'No saved ayahs yet.'
+                  : 'No saved ayah results found.',
+            ),
+          );
         }
 
         return Scrollbar(
@@ -44,7 +56,7 @@ class _FavouritesListState extends State<FavouritesList> {
           interactive: true,
           child: ListView.separated(
             controller: scrollController,
-            physics: const ClampingScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             itemCount: items.length,
             separatorBuilder: (_, __) => const SizedBox(height: 6),
             itemBuilder: (context, index) {
@@ -61,9 +73,10 @@ class _FavouritesListState extends State<FavouritesList> {
     );
   }
 
-  List<_SavedAyah> _savedAyahs() {
+  List<_SavedAyah> _savedAyahs(String searchQuery) {
     final keys = FavouritesDB().getKeys().toList();
     final List<_SavedAyah> parsed = <_SavedAyah>[];
+    final String query = searchQuery.trim().toLowerCase();
     for (final dynamic raw in keys) {
       final key = raw.toString();
       final parts = key.split('-');
@@ -71,14 +84,15 @@ class _FavouritesListState extends State<FavouritesList> {
       final int? surah = int.tryParse(parts[0]);
       final int? verse = int.tryParse(parts[1]);
       if (surah == null || verse == null) continue;
-      parsed.add(
-        _SavedAyah(
-          key: key,
-          surah: surah,
-          verse: verse,
-          note: FavouritesDB().get(key, defaultValue: ''),
-        ),
+      final _SavedAyah ayah = _SavedAyah(
+        key: key,
+        surah: surah,
+        verse: verse,
+        note: FavouritesDB().get(key, defaultValue: ''),
       );
+      if (query.isEmpty || ayah.matches(query)) {
+        parsed.add(ayah);
+      }
     }
     parsed.sort((a, b) {
       if (a.surah != b.surah) return a.surah.compareTo(b.surah);
@@ -114,7 +128,7 @@ class _SavedAyahTileState extends State<_SavedAyahTile> {
     final _SavedAyah ayah = widget.ayah;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadii.medium),
       child: Stack(
         alignment: Alignment.centerRight,
         children: <Widget>[
@@ -178,10 +192,10 @@ class _SavedAyahTileState extends State<_SavedAyahTile> {
                   margin: EdgeInsets.zero,
                   elevation: 1,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadii.medium),
                   ),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadii.medium),
                     onTap: () {
                       if (_dragOffset > 0) {
                         _close();
@@ -264,6 +278,15 @@ class _SavedAyah {
     required this.verse,
     required this.note,
   });
+
+  bool matches(String query) {
+    return quran.getSurahName(surah).toLowerCase().contains(query) ||
+        quran.getSurahNameArabic(surah).toLowerCase().contains(query) ||
+        note.toLowerCase().contains(query) ||
+        surah.toString() == query ||
+        verse.toString() == query ||
+        'ayah $verse'.contains(query);
+  }
 }
 
 void _showEditNoteDialog(BuildContext context, String key, String initialNote,

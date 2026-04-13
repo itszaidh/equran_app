@@ -3,6 +3,7 @@ import 'package:equran/backend/library.dart' show SettingsDB;
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/player.dart';
 import 'package:equran/home/settings.dart';
+import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -175,7 +176,7 @@ class _HomePageState extends State<HomePage> {
       padding: _drawerTilePadding,
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadii.large),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onPressed,
@@ -282,6 +283,7 @@ class FeedbackContactPage extends StatelessWidget {
         title: const Text('Feedback / Contact us'),
       ),
       body: ListView(
+        physics: const BouncingScrollPhysics(),
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),

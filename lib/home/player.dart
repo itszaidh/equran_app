@@ -5,6 +5,7 @@ import 'dart:ui' show DisplayFeature, DisplayFeatureType;
 
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:equran/backend/library.dart' show SettingsDB;
+import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -512,7 +513,7 @@ class _PlayerPageState extends State<PlayerPage> {
     required bool closeOnSelect,
   }) {
     return ListView.builder(
-      physics: const ClampingScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
       itemCount: 114,
       itemBuilder: (context, index) {
@@ -523,7 +524,7 @@ class _PlayerPageState extends State<PlayerPage> {
           selectedTileColor: Colors.transparent,
           tileColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadii.small),
           ),
           selectedColor: colorScheme.onSurface,
           textColor: colorScheme.onSurface,
@@ -566,7 +567,7 @@ class _PlayerPageState extends State<PlayerPage> {
     required ColorScheme colorScheme,
   }) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(AppRadii.large),
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -577,7 +578,7 @@ class _PlayerPageState extends State<PlayerPage> {
               colorScheme.surfaceContainerHigh.withAlpha((0.64 * 255).round()),
             ],
           ),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadii.large),
           border: Border.all(
             color: colorScheme.outlineVariant.withOpacity(0.55),
           ),
@@ -619,7 +620,7 @@ class _PlayerPageState extends State<PlayerPage> {
       showDragHandle: true,
       backgroundColor: colorScheme.surfaceContainer,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadii.large)),
       ),
       builder: (context) {
         final double maxHeight = min(
@@ -858,7 +859,7 @@ class _PlayerPageState extends State<PlayerPage> {
             ),
             shape: WidgetStatePropertyAll(
               RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(AppRadii.medium),
               ),
             ),
             padding: const WidgetStatePropertyAll(
@@ -937,7 +938,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 width: artSize,
                 height: artSize,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(AppRadii.medium),
                   gradient: LinearGradient(
                     colors: <Color>[
                       colorScheme.primaryContainer,
@@ -1099,7 +1100,7 @@ class _PlayerPageState extends State<PlayerPage> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
           decoration: BoxDecoration(
             color: colorScheme.surface.withOpacity(0.92),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppRadii.large),
             border: Border.all(
               color: colorScheme.outlineVariant.withOpacity(0.4),
             ),
@@ -1128,7 +1129,7 @@ class _PlayerPageState extends State<PlayerPage> {
                             width: bottomBarArtworkSize,
                             height: bottomBarArtworkSize,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(AppRadii.medium),
                               gradient: LinearGradient(
                                 colors: <Color>[
                                   colorScheme.primaryContainer,
@@ -1344,7 +1345,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 children: <Widget>[
                   Expanded(
                     child: SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
+                      physics: const BouncingScrollPhysics(),
                       child: Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Column(
@@ -1354,7 +1355,7 @@ class _PlayerPageState extends State<PlayerPage> {
                                 width: artSize,
                                 height: artSize,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(AppRadii.medium),
                                   gradient: LinearGradient(
                                     colors: <Color>[
                                       colorScheme.primaryContainer,
@@ -1400,14 +1401,14 @@ class _PlayerPageState extends State<PlayerPage> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
+                      physics: const BouncingScrollPhysics(),
                       child: nowPlaying,
                     ),
                   ),
                 ],
               )
             : SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
+                physics: const BouncingScrollPhysics(),
                 child: nowPlaying,
               );
 

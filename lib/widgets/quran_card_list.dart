@@ -75,13 +75,13 @@ class _QuranCardListState extends State<QuranCardList>
                 interactive: true,
                 child: ListView.builder(
                   controller: scrollController,
-                  physics: const ClampingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 16),
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 30),
                   itemCount: data.length + (widget.header == null ? 0 : 1),
                   itemBuilder: (BuildContext context, int index) {
                     if (widget.header != null && index == 0) {
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
+                        padding: const EdgeInsets.only(bottom: 8),
                         child: widget.header!,
                       );
                     }
@@ -104,7 +104,7 @@ class _QuranCardListState extends State<QuranCardList>
               interactive: true,
               child: CustomScrollView(
                 controller: scrollController,
-                physics: const ClampingScrollPhysics(),
+                physics: const BouncingScrollPhysics(),
                 slivers: <Widget>[
                   if (widget.header != null)
                     SliverToBoxAdapter(

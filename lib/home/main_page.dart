@@ -1,4 +1,5 @@
 import 'package:equran/backend/library.dart';
+import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
 import 'package:equran/widgets/library.dart';
 import 'package:flutter/material.dart';
@@ -119,7 +120,7 @@ class _MainPageState extends State<MainPage>
                         icon: const Icon(Icons.close_rounded),
                       ),
                     ],
-                    hintText: 'Surah name or number...',
+                    hintText: _searchHint,
                     hintStyle: WidgetStatePropertyAll(
                       theme.textTheme.bodyLarge?.copyWith(
                         fontStyle: FontStyle.italic,
@@ -130,7 +131,7 @@ class _MainPageState extends State<MainPage>
                     elevation: const WidgetStatePropertyAll(0),
                     shape: WidgetStatePropertyAll(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(AppRadii.small),
                       ),
                     ),
                   )
@@ -175,7 +176,7 @@ class _MainPageState extends State<MainPage>
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerHighest.withAlpha(150),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadii.medium),
             border: Border.all(
               color: colorScheme.primary.withAlpha(46),
             ),
@@ -202,7 +203,7 @@ class _MainPageState extends State<MainPage>
                     colorScheme.tertiaryContainer.withAlpha(225),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadii.small),
                 border: Border.all(
                   color: colorScheme.primary.withAlpha(42),
                 ),
@@ -225,7 +226,7 @@ class _MainPageState extends State<MainPage>
               overlayColor: WidgetStatePropertyAll(
                 colorScheme.primary.withAlpha(16),
               ),
-              splashBorderRadius: BorderRadius.circular(14),
+              splashBorderRadius: BorderRadius.circular(AppRadii.small),
               tabs: <Widget>[
                 _buildTabLabel(Icons.menu_book_outlined, 'Surah'),
                 _buildTabLabel(Icons.layers_outlined, 'Juz'),
@@ -255,6 +256,7 @@ class _MainPageState extends State<MainPage>
   Widget _buildSegmentPager(double horizontalPadding) {
     return TabBarView(
       controller: _tabController,
+      physics: const BouncingScrollPhysics(),
       children: <Widget>[
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -271,8 +273,9 @@ class _MainPageState extends State<MainPage>
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: PrimaryScrollController(
             controller: _juzScrollController,
-            child: const JuzCardList(
+            child: JuzCardList(
               key: ValueKey<String>('juz-list'),
+              searchQuery: _searchQuery,
             ),
           ),
         ),
@@ -287,7 +290,7 @@ class _MainPageState extends State<MainPage>
               } else {
                 return PrimaryScrollController(
                   controller: _favouritesScrollController,
-                  child: const FavouritesList(),
+                  child: FavouritesList(searchQuery: _searchQuery),
                 );
               }
             },
@@ -327,6 +330,12 @@ class _MainPageState extends State<MainPage>
       _selectedSegment = _tabController.index;
     });
   }
+
+  String get _searchHint => switch (_selectedSegment) {
+        1 => "Juz, surah, or number...",
+        2 => "Saved ayah, surah, note, or number...",
+        _ => "Surah name or number...",
+      };
 
   Widget? _buildLastReadCard() {
     if (SettingsDB().get("showLastRead", defaultValue: true) != true) {
