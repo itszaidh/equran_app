@@ -1,6 +1,8 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart'
     show BookmarkDB, FavouritesDB, SettingsDB;
+import 'package:equran/backend/backup_service.dart';
+import 'package:equran/utils/app_theme.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/library.dart';
 import 'package:equran/widgets/library.dart'
@@ -92,9 +94,11 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSettingsGroup(
             context: context,
             title: "Data",
-            subtitle: "Clear saved local data",
+            subtitle: "Backup, restore, or clear saved local data",
             icon: Icons.storage_rounded,
             children: <Widget>[
+              _buildBackupDataTile(context),
+              _buildRestoreDataTile(context),
               _buildClearReadingHistoryTile(context),
               _buildClearFavouritesTile(context),
             ],
@@ -267,11 +271,8 @@ class _SettingsPageState extends State<SettingsPage> {
                       }
 
                       AdaptiveTheme.of(context).setTheme(
-                        light: ThemeData(colorSchemeSeed: color),
-                        dark: ThemeData(
-                          colorSchemeSeed: color,
-                          brightness: Brightness.dark,
-                        ),
+                        light: AppTheme.buildLightTheme(color),
+                        dark: AppTheme.buildDarkTheme(color),
                       );
                     },
                     child: CircleAvatar(
@@ -300,6 +301,68 @@ class _SettingsPageState extends State<SettingsPage> {
         message: "WARNING: Are you sure you want to clear your reading history?",
         onConfirm: () async => BookmarkDB().clear(),
       ),
+    );
+  }
+
+  Widget _buildBackupDataTile(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.backup_outlined),
+      title: const Text("Backup data"),
+      subtitle: const Text(
+        "Exports favourites, reading history, reciter, text sizes, and all settings.",
+      ),
+      onTap: () async {
+        try {
+          final String? outputPath = await BackupService.exportBackupFile();
+          if (!context.mounted) return;
+          _showMessage(
+            context,
+            outputPath == null
+                ? 'Backup file ready to share.'
+                : 'Backup saved to $outputPath',
+          );
+        } on AppBackupException catch (error) {
+          if (error.message != 'Backup cancelled.') {
+            _showMessage(context, error.message);
+          }
+        } catch (_) {
+          _showMessage(context, 'Unable to create the backup file.');
+        }
+      },
+    );
+  }
+
+  Widget _buildRestoreDataTile(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.restore_page_outlined),
+      title: const Text("Restore data"),
+      subtitle: const Text(
+        "Restores favourites, reading history, reciter, text sizes, and saved settings from a backup file.",
+      ),
+      onTap: () async {
+        final bool shouldRestore = await _showRestoreConfirmation(context);
+        if (!shouldRestore || !context.mounted) return;
+
+        try {
+          final BackupRestoreResult result =
+              await BackupService.restoreFromPickedFile();
+          if (!context.mounted) return;
+          await _applyRestoredTheme(context);
+          setState(() {});
+          _showMessage(
+            context,
+            'Restored ${result.favouritesCount} favourites, ${result.readingHistoryCount} history entries, and ${result.settingsCount} settings.',
+          );
+        } on AppBackupException catch (error) {
+          if (error.message != 'Restore cancelled.' && context.mounted) {
+            _showMessage(context, error.message);
+          }
+        } catch (_) {
+          if (context.mounted) {
+            _showMessage(context, 'Unable to restore the selected backup.');
+          }
+        }
+      },
     );
   }
 
@@ -377,6 +440,59 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _applyRestoredTheme(BuildContext context) async {
+    final dynamic savedColorIndex = SettingsDB().get("color");
+    final int colorIndex = savedColorIndex is int &&
+            savedColorIndex >= 0 &&
+            savedColorIndex < Colors.primaries.length
+        ? savedColorIndex
+        : 7;
+    final MaterialColor color = Colors.primaries[colorIndex];
+    final dynamic themeModeValue = SettingsDB().get("themeMode");
+    final AdaptiveThemeMode themeMode = switch (themeModeValue) {
+      "light" => AdaptiveThemeMode.light,
+      "dark" => AdaptiveThemeMode.dark,
+      _ => AdaptiveThemeMode.system,
+    };
+
+    AdaptiveTheme.of(context).setTheme(
+      light: AppTheme.buildLightTheme(color),
+      dark: AppTheme.buildDarkTheme(color),
+    );
+    AdaptiveTheme.of(context).setThemeMode(themeMode);
+  }
+
+  Future<bool> _showRestoreConfirmation(BuildContext context) async {
+    final bool? shouldRestore = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text("Restore backup"),
+        icon: const Icon(Icons.restore_page_outlined),
+        content: const Text(
+          "This will replace your current favourites, reading history, and saved settings with the contents of the backup file.",
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("Cancel"),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text("Restore"),
+          ),
+        ],
+      ),
+    );
+
+    return shouldRestore == true;
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 

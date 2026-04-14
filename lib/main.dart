@@ -1,5 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/home/library.dart' show HomePage;
+import 'package:equran/utils/app_theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -46,22 +47,15 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  static MaterialColor mySeed = _getPrimaryColor();
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     final AdaptiveThemeMode? savedThemeMode = _getSavedThemeMode();
+    final MaterialColor seedColor = _getPrimaryColor();
 
     return AdaptiveTheme(
-        light: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-                seedColor: mySeed, brightness: Brightness.light)),
-        dark: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-                seedColor: mySeed, brightness: Brightness.dark)),
+        light: AppTheme.buildLightTheme(seedColor),
+        dark: AppTheme.buildDarkTheme(seedColor),
         initial: savedThemeMode ?? AdaptiveThemeMode.system,
         overrideMode: savedThemeMode,
         builder: (theme, darkTheme) => MaterialApp(
