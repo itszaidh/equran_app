@@ -31,7 +31,6 @@ class _ReadPageState extends State<ReadPage> {
   late int _currentChapter;
   late ScrollController _scrollController;
   late int _totalVerses;
-  late FocusNode _buttonFocusNode;
   late FocusNode _pageFocusNode;
   late ItemPositionsListener _ipl;
   late ItemScrollController _isc;
@@ -57,7 +56,6 @@ class _ReadPageState extends State<ReadPage> {
     _scrollController = ScrollController();
     _currentChapter = widget.chapter;
     _currentVerse = widget.startVerse is int ? widget.startVerse! : 1;
-    _buttonFocusNode = FocusNode(debugLabel: 'Menu Button');
     _pageFocusNode = FocusNode(debugLabel: 'Read Page Keyboard Focus');
     _getTotalVerses();
   }
@@ -68,7 +66,6 @@ class _ReadPageState extends State<ReadPage> {
       BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
     }
     _scrollController.dispose();
-    _buttonFocusNode.dispose();
     _pageFocusNode.dispose();
     super.dispose();
   }
@@ -85,7 +82,6 @@ class _ReadPageState extends State<ReadPage> {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
-    int picker = _currentVerse;
 
     // Define margin values for different screen sizes
     double marginValue;
@@ -123,111 +119,91 @@ class _ReadPageState extends State<ReadPage> {
         },
         child: Scaffold(
           appBar: AppBar(
-        leading: const BackButton(),
-        title: Text(quran.getSurahName(_currentChapter)),
-        centerTitle: true,
-        actions: <Widget>[
-          MenuAnchor(
-            childFocusNode: _buttonFocusNode,
-            menuChildren: <Widget>[
-              MenuItemButton(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      right: 120, bottom: 10, top: 10, left: 5),
-                  child: Text(
-                    "Reset",
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                onPressed: () => showDialog(
-                    context: context,
-                    builder: (BuildContext context) => AlertDialog(
-                          icon: const Icon(Icons.warning_amber),
-                          title: const Text(
-                            "Reset",
-                          ),
-                          content: const Text(
-                            "Would you like to start over?",
-                          ),
-                          actions: <Widget>[
-                            TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text("CANCEL")),
-                            TextButton(
-                              child: const Text("OK"),
-                              onPressed: () {
-                                _reset();
-                                _updateDB();
-                                if (!SettingsDB()
-                                    .get("viewMode", defaultValue: true)) {
-                                  _isc.jumpTo(index: 0);
-                                }
-                                Navigator.of(context).pop();
-                              },
-                            )
-                          ],
-                        )),
+            leading: const BackButton(),
+            title: Text(quran.getSurahName(_currentChapter)),
+            centerTitle: true,
+            actions: <Widget>[
+              IconButton(
+                tooltip: 'Reset',
+                onPressed: () => _showResetDialog(context),
+                icon: const Icon(Icons.refresh_rounded),
               ),
-              MenuItemButton(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: 10, top: 10, left: 5),
-                    child: Text(
-                      "Jump to Verse",
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                  onPressed: () => showDialog(
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text("Select Verse"),
-                          actions: [
-                            TextButton(
-                                child: const Text("CONFIRM"),
-                                onPressed: () {
-                                  _setVerse(picker);
-                                  if (!SettingsDB()
-                                      .get("viewMode", defaultValue: true)) {
-                                    _isc.jumpTo(index: picker - 1);
-                                  }
-                                  _updateDB();
-                                  Navigator.of(context).pop();
-                                }),
-                            TextButton(
-                                child: const Text("CANCEL"),
-                                onPressed: () => Navigator.of(context).pop())
-                          ],
-                          content: StatefulBuilder(
-                            builder: (context, sBsetState) => NumberPicker(
-                                minValue: 1,
-                                maxValue: _totalVerses,
-                                value: picker,
-                                onChanged: (int value) {
-                                  setState(() => picker = value);
-                                  sBsetState(() => picker = value);
-                                }),
-                          ),
-                        ),
-                      )),
+              IconButton(
+                tooltip: 'Jump to verse',
+                onPressed: () => _showJumpToVerseDialog(context),
+                icon: const Icon(Icons.format_list_numbered_rounded),
+              ),
+              const SizedBox(width: 6),
             ],
-            child: const Text('Background Color'),
-            builder: (BuildContext context, MenuController controller,
-                Widget? child) {
-              return TextButton(
-                  focusNode: _buttonFocusNode,
-                  onPressed: () {
-                    if (controller.isOpen) {
-                      controller.close();
-                    } else {
-                      controller.open();
-                    }
-                  },
-                  child: const Icon(Icons.more_vert));
+          ),
+          body: _viewMode ? cardView(marginValue: marginValue) : listView(),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showResetDialog(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        icon: const Icon(Icons.warning_amber),
+        title: const Text('Reset'),
+        content: const Text('Would you like to start over?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () {
+              _reset();
+              _updateDB();
+              if (!SettingsDB().get("viewMode", defaultValue: true)) {
+                _isc.jumpTo(index: 0);
+              }
+              Navigator.of(context).pop();
             },
+            child: const Text('OK'),
           ),
         ],
       ),
-        body: _viewMode ? cardView(marginValue: marginValue) : listView(),
+    );
+  }
+
+  Future<void> _showJumpToVerseDialog(BuildContext context) async {
+    int picker = _currentVerse;
+
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Select Verse'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              _setVerse(picker);
+              if (!SettingsDB().get("viewMode", defaultValue: true)) {
+                _isc.jumpTo(index: picker - 1);
+              }
+              _updateDB();
+              Navigator.of(context).pop();
+            },
+            child: const Text('CONFIRM'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('CANCEL'),
+          ),
+        ],
+        content: StatefulBuilder(
+          builder: (context, sBsetState) => NumberPicker(
+            minValue: 1,
+            maxValue: _totalVerses,
+            value: picker,
+            onChanged: (int value) {
+              setState(() => picker = value);
+              sBsetState(() => picker = value);
+            },
+          ),
         ),
       ),
     );
