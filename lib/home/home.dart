@@ -1,5 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart' show SettingsDB;
+import 'package:equran/home/downloads.dart';
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/player.dart';
 import 'package:equran/home/settings.dart';
@@ -19,7 +20,11 @@ const double _drawerTileIconLabelGap = 12;
 
 class Destinations {
   const Destinations(
-      this.label, this.icon, this.selectedIcon, this.destination);
+    this.label,
+    this.icon,
+    this.selectedIcon,
+    this.destination,
+  );
 
   final String label;
   final Widget icon;
@@ -31,18 +36,36 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final List<Destinations> _pageDestinations = <Destinations>[
     const Destinations(
-        "eQuran", Icon(Icons.book_outlined), Icon(Icons.book), MainPage()),
-    const Destinations("Player", Icon(Icons.library_music_outlined),
-        Icon(Icons.library_music), PlayerPage()),
-    const Destinations("Settings", Icon(Icons.settings_outlined),
-        Icon(Icons.settings), SettingsPage()),
+      "eQuran",
+      Icon(Icons.book_outlined),
+      Icon(Icons.book),
+      MainPage(),
+    ),
+    const Destinations(
+      "Player",
+      Icon(Icons.library_music_outlined),
+      Icon(Icons.library_music),
+      PlayerPage(),
+    ),
+    const Destinations(
+      "Downloads",
+      Icon(Icons.download_done_outlined),
+      Icon(Icons.download_done_rounded),
+      DownloadsPage(),
+    ),
+    const Destinations(
+      "Settings",
+      Icon(Icons.settings_outlined),
+      Icon(Icons.settings),
+      SettingsPage(),
+    ),
   ];
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -67,22 +90,21 @@ class _HomePageState extends State<HomePage> {
         footer: _buildDrawerFooter(context),
         children: <Widget>[
           const SizedBox(height: 72),
-          ..._pageDestinations.map(
-            (Destinations destination) {
-              return NavigationDrawerDestination(
-                label: Text(destination.label),
-                icon: destination.icon,
-                selectedIcon: destination.selectedIcon,
-              );
-            },
-          ),
+          ..._pageDestinations.map((Destinations destination) {
+            return NavigationDrawerDestination(
+              label: Text(destination.label),
+              icon: destination.icon,
+              selectedIcon: destination.selectedIcon,
+            );
+          }),
         ],
       ),
-      appBar: _selectedIndex == 2
+      appBar: _selectedIndex >= 2
           ? AppBar(
               title: Text(_pageDestinations[_selectedIndex].label),
               iconTheme: IconThemeData(
-                  color: Theme.of(context).colorScheme.onSurface),
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               centerTitle: true,
             )
           : null,
@@ -108,12 +130,10 @@ class _HomePageState extends State<HomePage> {
       icon: isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
       label: isDark ? 'Light mode' : 'Dark mode',
       onPressed: () async {
-        final AdaptiveThemeMode newMode =
-            isDark ? AdaptiveThemeMode.light : AdaptiveThemeMode.dark;
-        await SettingsDB().put(
-          'themeMode',
-          newMode.isDark ? 'dark' : 'light',
-        );
+        final AdaptiveThemeMode newMode = isDark
+            ? AdaptiveThemeMode.light
+            : AdaptiveThemeMode.dark;
+        await SettingsDB().put('themeMode', newMode.isDark ? 'dark' : 'light');
         if (context.mounted) {
           AdaptiveTheme.of(context).setThemeMode(newMode);
         }
@@ -165,9 +185,10 @@ class _HomePageState extends State<HomePage> {
   }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
-    final TextStyle? labelStyle = NavigationDrawerTheme.of(context)
-            .labelTextStyle
-            ?.resolve(<WidgetState>{}) ??
+    final TextStyle? labelStyle =
+        NavigationDrawerTheme.of(
+          context,
+        ).labelTextStyle?.resolve(<WidgetState>{}) ??
         theme.textTheme.labelLarge?.copyWith(
           color: colorScheme.onSurfaceVariant,
         );
@@ -279,9 +300,7 @@ class FeedbackContactPage extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Feedback / Contact us'),
-      ),
+      appBar: AppBar(title: const Text('Feedback / Contact us')),
       body: ListView(
         physics: const BouncingScrollPhysics(),
         children: <Widget>[
@@ -325,9 +344,7 @@ class FeedbackContactPage extends StatelessWidget {
               Uri(
                 scheme: 'mailto',
                 path: _contactEmail,
-                queryParameters: <String, String>{
-                  'subject': 'eQuran feedback',
-                },
+                queryParameters: <String, String>{'subject': 'eQuran feedback'},
               ),
               errorMessage: 'Unable to open your email app.',
             ),
@@ -344,22 +361,19 @@ class FeedbackContactPage extends StatelessWidget {
   }) async {
     final bool didLaunch;
     try {
-      didLaunch = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
+      didLaunch = await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
       return;
     }
 
     if (didLaunch || !context.mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(errorMessage)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(errorMessage)));
   }
 }

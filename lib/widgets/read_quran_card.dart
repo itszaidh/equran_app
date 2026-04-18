@@ -98,6 +98,8 @@ class ReadQuranCard extends StatelessWidget {
                 PlayButton(
                   key: ValueKey('$currentChapter-$currentVerse'),
                   url: url,
+                  surah: currentChapter,
+                  ayah: currentVerse,
                 ),
                 Text(
                   "Juz' $juzNumber • $currentVerse/$totalVerses",

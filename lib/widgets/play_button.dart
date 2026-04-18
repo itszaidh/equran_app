@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -11,8 +12,15 @@ import 'package:http/http.dart' as http;
 
 class PlayButton extends StatefulWidget {
   final Future<String> url;
+  final int surah;
+  final int ayah;
 
-  const PlayButton({super.key, required this.url});
+  const PlayButton({
+    super.key,
+    required this.url,
+    required this.surah,
+    required this.ayah,
+  });
 
   @override
   State<PlayButton> createState() => _PlayButtonState();
@@ -30,6 +38,8 @@ class _PlayButtonState extends State<PlayButton> {
 
   bool _isPlaying = false;
   bool _isLoading = false;
+  bool _isDownloading = false;
+  bool _isDownloaded = false;
   bool _hasError = false;
 
   double _progress = 0.0;
@@ -62,6 +72,8 @@ class _PlayButtonState extends State<PlayButton> {
         });
       }
     });
+
+    unawaited(_refreshDownloadState());
   }
 
   void _safeSetState(VoidCallback fn) {
@@ -107,6 +119,17 @@ class _PlayButtonState extends State<PlayButton> {
     return Uint8List.fromList(response.bodyBytes);
   }
 
+  Future<void> _refreshDownloadState() async {
+    if (kIsWeb) return;
+    final bool isDownloaded = await AudioDownloadService().hasAyah(
+      widget.surah,
+      widget.ayah,
+    );
+    _safeSetState(() {
+      _isDownloaded = isDownloaded;
+    });
+  }
+
   @override
   void dispose() {
     _positionSubscription?.cancel();
@@ -117,6 +140,17 @@ class _PlayButtonState extends State<PlayButton> {
   }
 
   Future<void> _playAudio(String url) async {
+    if (!kIsWeb) {
+      final File offlineFile = await AudioDownloadService().ayahFile(
+        widget.surah,
+        widget.ayah,
+      );
+      if (offlineFile.existsSync()) {
+        await _audioPlayer.play(DeviceFileSource(offlineFile.path));
+        return;
+      }
+    }
+
     final Uint8List? cachedAudio = _getCachedAudio(url);
     if (cachedAudio != null) {
       await _audioPlayer.play(BytesSource(cachedAudio));
@@ -135,6 +169,95 @@ class _PlayButtonState extends State<PlayButton> {
 
       final proxiedUrl = 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
       await _audioPlayer.play(UrlSource(proxiedUrl));
+    }
+  }
+
+  Future<void> _handleLongPress() async {
+    if (kIsWeb || _isDownloading) return;
+    if (_isDownloaded) {
+      await _confirmDeleteDownload();
+      return;
+    }
+    await _downloadAyah();
+  }
+
+  Future<void> _downloadAyah() async {
+    _safeSetState(() {
+      _isDownloading = true;
+      _hasError = false;
+    });
+
+    try {
+      await AudioDownloadService().downloadAyah(widget.surah, widget.ayah);
+      await _refreshDownloadState();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Downloaded ayah ${widget.surah}:${widget.ayah}'),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error downloading ayah audio: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to download ayah audio.')),
+        );
+      }
+    } finally {
+      _safeSetState(() {
+        _isDownloading = false;
+      });
+    }
+  }
+
+  Future<void> _confirmDeleteDownload() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          icon: const Icon(Icons.warning_amber_rounded),
+          title: const Text('Delete Downloaded Ayah?'),
+          content: Text(
+            'This will remove ayah ${widget.surah}:${widget.ayah} from offline storage.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await _deleteDownload();
+    }
+  }
+
+  Future<void> _deleteDownload() async {
+    try {
+      await AudioDownloadService().deleteAyah(widget.surah, widget.ayah);
+      await _refreshDownloadState();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Deleted ayah ${widget.surah}:${widget.ayah} audio'),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error deleting ayah audio: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete downloaded ayah.')),
+        );
+      }
     }
   }
 
@@ -192,9 +315,11 @@ class _PlayButtonState extends State<PlayButton> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(kIsWeb
-                ? 'Unable to play audio on web. Try downloading the app for better experience.'
-                : 'Failed to play audio. Please check your internet connection.'),
+            content: Text(
+              kIsWeb
+                  ? 'Unable to play audio on web. Try downloading the app for better experience.'
+                  : 'Failed to play audio. Please check your internet connection.',
+            ),
             duration: Duration(seconds: 3),
           ),
         );
@@ -214,26 +339,38 @@ class _PlayButtonState extends State<PlayButton> {
             lineWidth: 3.5,
             percent: _progress,
           ),
-        IconButton(
-          onPressed: _togglePlayPause,
-          icon: _isLoading
-              ? const SizedBox(
-            width: 29,
-            height: 29,
-            child: CircularProgressIndicator(
-              strokeWidth: 1,
-            ),
-          )
-              : Icon(
-            _hasError
-                ? Icons.error_outline_rounded
-                : !_isPlaying
-                ? Icons.play_circle_outline_rounded
-                : Icons.pause_circle_outline_rounded,
-            size: 29,
-            color: _hasError ? Colors.red : null,
+        GestureDetector(
+          onLongPress: _handleLongPress,
+          child: IconButton(
+            tooltip: _isDownloaded
+                ? 'Play downloaded ayah. Long press to delete.'
+                : 'Play ayah. Long press to download.',
+            onPressed: _togglePlayPause,
+            icon: _isLoading || _isDownloading
+                ? SizedBox(
+                    width: 29,
+                    height: 29,
+                    child: CircularProgressIndicator(
+                      strokeWidth: _isDownloading ? 2 : 1,
+                    ),
+                  )
+                : Icon(
+                    _hasError
+                        ? Icons.error_outline_rounded
+                        : _isPlaying
+                        ? Icons.pause_circle_outline_rounded
+                        : _isDownloaded
+                        ? Icons.offline_pin_rounded
+                        : Icons.play_circle_outline_rounded,
+                    size: 29,
+                    color: _hasError
+                        ? Colors.red
+                        : _isDownloaded
+                        ? Theme.of(context).colorScheme.primary
+                        : null,
+                  ),
           ),
-        )
+        ),
       ],
     );
   }

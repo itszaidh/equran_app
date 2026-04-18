@@ -1,4 +1,5 @@
 export 'home.dart';
+export 'downloads.dart';
 export 'main_page.dart';
 export 'player.dart';
 export 'read.dart';
