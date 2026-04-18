@@ -342,9 +342,6 @@ class _PlayButtonState extends State<PlayButton> {
         GestureDetector(
           onLongPress: _handleLongPress,
           child: IconButton(
-            tooltip: _isDownloaded
-                ? 'Play downloaded ayah. Long press to delete.'
-                : 'Play ayah. Long press to download.',
             onPressed: _togglePlayPause,
             icon: _isLoading || _isDownloading
                 ? SizedBox(
