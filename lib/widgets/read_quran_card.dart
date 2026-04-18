@@ -19,6 +19,7 @@ class ReadQuranCard extends StatelessWidget {
 
   final double fontSize;
   final double fontSizeTranslation;
+  final Future<void> Function(int surah, int ayah)? onPlayRequested;
 
   const ReadQuranCard({
     super.key,
@@ -32,6 +33,7 @@ class ReadQuranCard extends StatelessWidget {
     this.basmala,
     required this.verse,
     required this.url,
+    this.onPlayRequested,
   });
 
   void _showInputPrompt(
@@ -100,6 +102,7 @@ class ReadQuranCard extends StatelessWidget {
                   url: url,
                   surah: currentChapter,
                   ayah: currentVerse,
+                  onPlayRequested: onPlayRequested,
                 ),
                 Text(
                   "Juz' $juzNumber • $currentVerse/$totalVerses",

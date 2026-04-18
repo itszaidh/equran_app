@@ -14,12 +14,14 @@ class PlayButton extends StatefulWidget {
   final Future<String> url;
   final int surah;
   final int ayah;
+  final Future<void> Function(int surah, int ayah)? onPlayRequested;
 
   const PlayButton({
     super.key,
     required this.url,
     required this.surah,
     required this.ayah,
+    this.onPlayRequested,
   });
 
   @override
@@ -270,6 +272,13 @@ class _PlayButtonState extends State<PlayButton> {
   }
 
   void _togglePlayPause() async {
+    final Future<void> Function(int surah, int ayah)? playRequested =
+        widget.onPlayRequested;
+    if (playRequested != null) {
+      await playRequested(widget.surah, widget.ayah);
+      return;
+    }
+
     _safeSetState(() {
       _isLoading = true;
       _hasError = false;
