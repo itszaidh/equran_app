@@ -38,6 +38,13 @@ class MainActivity : AudioServiceActivity() {
                         }
                         result.success(null)
                     }
+                    "setPreferredFrameRate" -> {
+                        val frameRate = call.argument<Number>("frameRate")?.toFloat() ?: 0f
+                        runOnUiThread {
+                            applyPreferredFrameRate(frameRate)
+                        }
+                        result.success(null)
+                    }
                     "showDownloadProgress" -> {
                         val id = call.argument<Int>("id") ?: 1001
                         val title = call.argument<String>("title") ?: "Downloading audio"
@@ -67,6 +74,15 @@ class MainActivity : AudioServiceActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    private fun applyPreferredFrameRate(frameRate: Float) {
+        val layoutParams = window.attributes
+        layoutParams.preferredRefreshRate = if (frameRate > 0f) frameRate else 0f
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            layoutParams.preferredDisplayModeId = 0
+        }
+        window.attributes = layoutParams
     }
 
     private fun createDownloadNotificationChannel() {
