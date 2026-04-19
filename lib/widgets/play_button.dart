@@ -35,6 +35,7 @@ class _PlayButtonState extends State<PlayButton> {
 
   final AudioPlayer _audioPlayer = AudioPlayer();
   StreamSubscription<Duration>? _positionSubscription;
+  StreamSubscription<Duration>? _durationSubscription;
   StreamSubscription<void>? _completeSubscription;
   StreamSubscription<PlayerState>? _stateSubscription;
 
@@ -45,6 +46,7 @@ class _PlayButtonState extends State<PlayButton> {
   bool _hasError = false;
 
   double _progress = 0.0;
+  Duration _duration = Duration.zero;
 
   @override
   void initState() {
@@ -54,6 +56,10 @@ class _PlayButtonState extends State<PlayButton> {
       if (_audioPlayer.state == PlayerState.playing) {
         _updateProgress(position);
       }
+    });
+
+    _durationSubscription = _audioPlayer.onDurationChanged.listen((duration) {
+      _duration = duration;
     });
 
     // When the audio has finished playing this is what to do...
@@ -83,12 +89,10 @@ class _PlayButtonState extends State<PlayButton> {
     setState(fn);
   }
 
-  void _updateProgress(Duration position) async {
-    Duration duration = await _audioPlayer.getDuration() ?? Duration.zero;
-    if (!mounted) return;
-    if (duration.inMilliseconds > 0) {
+  void _updateProgress(Duration position) {
+    if (_duration.inMilliseconds > 0) {
       _safeSetState(() {
-        _progress = position.inMilliseconds / duration.inMilliseconds;
+        _progress = position.inMilliseconds / _duration.inMilliseconds;
       });
     }
   }
@@ -135,6 +139,7 @@ class _PlayButtonState extends State<PlayButton> {
   @override
   void dispose() {
     _positionSubscription?.cancel();
+    _durationSubscription?.cancel();
     _completeSubscription?.cancel();
     _stateSubscription?.cancel();
     _audioPlayer.dispose();
@@ -163,8 +168,7 @@ class _PlayButtonState extends State<PlayButton> {
       final Uint8List bytes = await _downloadAudioBytes(url);
       _cacheAudio(url, bytes);
       await _audioPlayer.play(BytesSource(bytes));
-    } catch (e) {
-      debugPrint('Error loading audio: $e');
+    } catch (_) {
       if (!kIsWeb) {
         rethrow;
       }
@@ -222,14 +226,13 @@ class _PlayButtonState extends State<PlayButton> {
           ),
         );
       }
-    } catch (e) {
+    } catch (_) {
       await DownloadNotifications.fail(
         id: DownloadNotifications.notificationId(
           'ayah-${widget.surah}-${widget.ayah}',
         ),
         title: 'Failed to download ayah ${widget.surah}:${widget.ayah}',
       );
-      debugPrint('Error downloading ayah audio: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to download ayah audio.')),
@@ -282,8 +285,7 @@ class _PlayButtonState extends State<PlayButton> {
           ),
         );
       }
-    } catch (e) {
-      debugPrint('Error deleting ayah audio: $e');
+    } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to delete downloaded ayah.')),
@@ -341,8 +343,7 @@ class _PlayButtonState extends State<PlayButton> {
           _isPlaying = true;
         });
       }
-    } catch (e) {
-      debugPrint('Error playing audio: $e');
+    } catch (_) {
       _safeSetState(() {
         _isLoading = false;
         _isPlaying = false;
