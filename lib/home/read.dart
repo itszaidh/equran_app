@@ -76,6 +76,10 @@ class _ReadPageState extends State<ReadPage> {
   int _repeatEndVerse = 1;
   Duration _playerPosition = Duration.zero;
   Duration _playerDuration = Duration.zero;
+  final ValueNotifier<Duration> _playerPositionValue =
+      ValueNotifier<Duration>(Duration.zero);
+  final ValueNotifier<Duration> _playerDurationValue =
+      ValueNotifier<Duration>(Duration.zero);
   StreamSubscription<Duration>? _playerPositionSubscription;
   StreamSubscription<Duration>? _playerDurationSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
@@ -83,8 +87,10 @@ class _ReadPageState extends State<ReadPage> {
   Timer? _pageScrollProgressTimer;
   final Map<int, LongPressGestureRecognizer> _inlineAyahRecognizers =
       <int, LongPressGestureRecognizer>{};
-  final Map<int, GlobalKey> _inlineAyahKeys = <int, GlobalKey>{};
   final GlobalKey _pageViewViewportKey = GlobalKey();
+  final GlobalKey _inlineSurahTextKey = GlobalKey();
+  List<int>? _verseTextCumulativeLengths;
+  int _verseTextTotalLength = 0;
   int? _selectedInlineVerse;
   bool _isProgrammaticPageScroll = false;
   bool _isScrubbingProgress = false;
@@ -129,10 +135,26 @@ class _ReadPageState extends State<ReadPage> {
     _playerCompleteSubscription?.cancel();
     _pageScrollProgressTimer?.cancel();
     _versePlayer.dispose();
+    _playerPositionValue.dispose();
+    _playerDurationValue.dispose();
     _disposeInlineAyahRecognizers();
     _scrollController.dispose();
     _pageFocusNode.dispose();
     super.dispose();
+  }
+
+  void _notifyAudioUserActivity() {
+    AndroidAudioDisplayMode.notifyUserActivity();
+  }
+
+  void _setPlayerPosition(Duration position) {
+    _playerPosition = position;
+    _playerPositionValue.value = position;
+  }
+
+  void _setPlayerDuration(Duration duration) {
+    _playerDuration = duration;
+    _playerDurationValue.value = duration;
   }
 
   void _disposeInlineAyahRecognizers() {
@@ -149,10 +171,6 @@ class _ReadPageState extends State<ReadPage> {
     return recognizer;
   }
 
-  GlobalKey _inlineAyahKeyForVerse(int verse) {
-    return _inlineAyahKeys.putIfAbsent(verse, GlobalKey.new);
-  }
-
   void _syncPageProgressFromScroll() {
     if (_viewMode ||
         !_scrollController.hasClients ||
@@ -163,39 +181,135 @@ class _ReadPageState extends State<ReadPage> {
     _pageScrollProgressTimer?.cancel();
     _pageScrollProgressTimer = Timer(const Duration(milliseconds: 80), () {
       if (!mounted || _viewMode || _isProgrammaticPageScroll) return;
-      final int visibleVerse = _lastVersePastPageTop();
+      final int visibleVerse = _verseForCurrentScrollOffset();
       if (visibleVerse == _currentVerse) return;
       _currentVerse = visibleVerse;
       _updateDB();
     });
   }
 
-  int _lastVersePastPageTop() {
-    final BuildContext? viewportContext = _pageViewViewportKey.currentContext;
-    final RenderObject? viewportRenderObject = viewportContext
-        ?.findRenderObject();
-    if (viewportRenderObject is! RenderBox) {
+  void _ensureVerseTextMetrics() {
+    if (_verseTextCumulativeLengths != null) return;
+
+    final List<int> lengths = <int>[0];
+    int total = 0;
+    for (int verse = 1; verse <= _totalVerses; verse++) {
+      total += _inlineVerseTextSegment(verse).length;
+      lengths.add(total);
+    }
+
+    _verseTextCumulativeLengths = lengths;
+    _verseTextTotalLength = total;
+  }
+
+  void _clearVerseTextMetrics() {
+    _verseTextCumulativeLengths = null;
+    _verseTextTotalLength = 0;
+  }
+
+  int _verseForCurrentScrollOffset() {
+    if (!_scrollController.hasClients) {
       return _currentVerse;
     }
 
-    final double viewportTop =
-        viewportRenderObject.localToGlobal(Offset.zero).dy + 8;
-    int visibleVerse = 1;
+    _ensureVerseTextMetrics();
+    final List<int> lengths = _verseTextCumulativeLengths ?? <int>[0];
+    if (_verseTextTotalLength <= 0 || lengths.length <= 1) return _currentVerse;
 
-    for (int verse = 1; verse <= _totalVerses; verse++) {
-      final BuildContext? ayahContext = _inlineAyahKeys[verse]?.currentContext;
-      final RenderObject? ayahRenderObject = ayahContext?.findRenderObject();
-      if (ayahRenderObject is! RenderBox) continue;
+    final ScrollPosition position = _scrollController.position;
+    final double maxScrollExtent = position.maxScrollExtent;
+    if (maxScrollExtent <= 0) return 1;
 
-      final double ayahTop = ayahRenderObject.localToGlobal(Offset.zero).dy;
-      if (ayahTop <= viewportTop) {
-        visibleVerse = verse;
+    final double scrollFraction = (position.pixels / maxScrollExtent).clamp(
+      0.0,
+      1.0,
+    );
+    final int targetLength = (_verseTextTotalLength * scrollFraction).round();
+
+    int low = 1;
+    int high = lengths.length - 1;
+    while (low < high) {
+      final int mid = (low + high) >> 1;
+      if (lengths[mid] < targetLength) {
+        low = mid + 1;
       } else {
-        break;
+        high = mid;
       }
     }
 
-    return visibleVerse.clamp(1, _totalVerses).toInt();
+    return low.clamp(1, _totalVerses).toInt();
+  }
+
+  double _scrollOffsetForVerse(int verse) {
+    if (!_scrollController.hasClients) return 0;
+
+    final BuildContext? textContext = _inlineSurahTextKey.currentContext;
+    final BuildContext? viewportContext = _pageViewViewportKey.currentContext;
+    final RenderObject? textRenderObject = textContext?.findRenderObject();
+    final RenderObject? viewportRenderObject =
+        viewportContext?.findRenderObject();
+
+    final ScrollPosition position = _scrollController.position;
+    if (textRenderObject is! RenderBox || viewportRenderObject is! RenderBox) {
+      return _estimatedScrollOffsetForVerse(verse);
+    }
+
+    final double fontSize = SettingsDB().get("fontSize", defaultValue: 38.0);
+    final TextPainter textPainter = TextPainter(
+      text: _buildInlineSurahTextSpan(
+        fontSize,
+        Theme.of(context).colorScheme,
+        includeRecognizers: false,
+      ),
+      textAlign: TextAlign.justify,
+      textDirection: TextDirection.rtl,
+      textScaler: MediaQuery.textScalerOf(context),
+    );
+
+    try {
+      textPainter.layout(maxWidth: textRenderObject.size.width);
+      final int textOffset = _textOffsetForVerse(verse);
+      final Offset caretOffset = textPainter.getOffsetForCaret(
+        TextPosition(offset: textOffset),
+        Rect.zero,
+      );
+      final double verseGlobalY =
+          textRenderObject.localToGlobal(Offset(0, caretOffset.dy)).dy;
+      final double viewportTop =
+          viewportRenderObject.localToGlobal(Offset.zero).dy;
+
+      return (position.pixels + verseGlobalY - viewportTop - 12)
+          .clamp(position.minScrollExtent, position.maxScrollExtent)
+          .toDouble();
+    } finally {
+      textPainter.dispose();
+    }
+  }
+
+  double _estimatedScrollOffsetForVerse(int verse) {
+    _ensureVerseTextMetrics();
+    final List<int> lengths = _verseTextCumulativeLengths ?? <int>[0];
+    if (_verseTextTotalLength <= 0 || lengths.length <= 1) return 0;
+
+    final int safeVerse = verse.clamp(1, _totalVerses).toInt();
+    final int previousLength = lengths[safeVerse - 1];
+    final double scrollFraction = previousLength / _verseTextTotalLength;
+    final ScrollPosition position = _scrollController.position;
+    return (position.maxScrollExtent * scrollFraction)
+        .clamp(position.minScrollExtent, position.maxScrollExtent)
+        .toDouble();
+  }
+
+  int _textOffsetForVerse(int verse) {
+    _ensureVerseTextMetrics();
+    final List<int> lengths = _verseTextCumulativeLengths ?? <int>[0];
+    final int safeVerse = verse.clamp(1, _totalVerses).toInt();
+    if (lengths.length <= safeVerse) return 0;
+    return lengths[safeVerse - 1] + 1;
+  }
+
+  String _inlineVerseTextSegment(int verse) {
+    return '\u2067${_buildVerseText(_currentChapter, verse)}\u2069  ';
   }
 
   @override
@@ -218,80 +332,89 @@ class _ReadPageState extends State<ReadPage> {
           await _saveProgressOnExit();
         }
       },
-      child: Focus(
-        autofocus: true,
-        focusNode: _pageFocusNode,
-        onKeyEvent: (node, event) {
-          if (event is! KeyDownEvent) {
+      child: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => _notifyAudioUserActivity(),
+        onPointerMove: (_) => _notifyAudioUserActivity(),
+        onPointerSignal: (_) => _notifyAudioUserActivity(),
+        child: Focus(
+          autofocus: true,
+          focusNode: _pageFocusNode,
+          onKeyEvent: (node, event) {
+            if (event is! KeyDownEvent) {
+              return KeyEventResult.ignored;
+            }
+
+            _notifyAudioUserActivity();
+
+            if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+              _increase();
+              return KeyEventResult.handled;
+            }
+
+            if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+              _decrease();
+              return KeyEventResult.handled;
+            }
+
             return KeyEventResult.ignored;
-          }
-
-          if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-            _increase();
-            return KeyEventResult.handled;
-          }
-
-          if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            _decrease();
-            return KeyEventResult.handled;
-          }
-
-          return KeyEventResult.ignored;
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            leading: const BackButton(),
-            title: Text(quran.getSurahName(_currentChapter)),
-            centerTitle: true,
-            actions: <Widget>[
-              if (!_viewMode)
-                IconButton(
-                  tooltip: _isVersePlaying && _playingVerse == _currentVerse
-                      ? 'Pause'
-                      : 'Play current ayah',
-                  onPressed: _togglePageViewPlayback,
-                  icon: Icon(
-                    _isVersePlaying && _playingVerse == _currentVerse
-                        ? Icons.pause_circle_rounded
-                        : Icons.play_circle_rounded,
+          },
+          child: Scaffold(
+            appBar: AppBar(
+              leading: const BackButton(),
+              title: Text(quran.getSurahName(_currentChapter)),
+              centerTitle: true,
+              actions: <Widget>[
+                if (!_viewMode)
+                  IconButton(
+                    tooltip: _isVersePlaying && _playingVerse == _currentVerse
+                        ? 'Pause'
+                        : 'Play current ayah',
+                    onPressed: _togglePageViewPlayback,
+                    icon: Icon(
+                      _isVersePlaying && _playingVerse == _currentVerse
+                          ? Icons.pause_circle_rounded
+                          : Icons.play_circle_rounded,
+                    ),
                   ),
-                ),
-              if (!_viewMode)
+                if (!_viewMode)
+                  IconButton(
+                    tooltip: _hasDownloadedSurahAyahs
+                        ? 'All ayahs downloaded'
+                        : 'Download all ayahs',
+                    onPressed: _isDownloadingSurahAyahs
+                        ? null
+                        : _downloadCurrentSurahAyahs,
+                    icon: _isDownloadingSurahAyahs
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(
+                            _hasDownloadedSurahAyahs
+                                ? Icons.offline_pin_rounded
+                                : Icons.download_for_offline_rounded,
+                          ),
+                  ),
+                if (_viewMode)
+                  IconButton(
+                    tooltip: 'Reset',
+                    onPressed: () => _showResetDialog(context),
+                    icon: const Icon(Icons.refresh_rounded),
+                  ),
                 IconButton(
-                  tooltip: _hasDownloadedSurahAyahs
-                      ? 'All ayahs downloaded'
-                      : 'Download all ayahs',
-                  onPressed: _isDownloadingSurahAyahs
-                      ? null
-                      : _downloadCurrentSurahAyahs,
-                  icon: _isDownloadingSurahAyahs
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(
-                          _hasDownloadedSurahAyahs
-                              ? Icons.offline_pin_rounded
-                              : Icons.download_for_offline_rounded,
-                        ),
+                  tooltip: 'Jump to verse',
+                  onPressed: () => _showJumpToVerseDialog(context),
+                  icon: const Icon(Icons.format_list_numbered_rounded),
                 ),
-              IconButton(
-                tooltip: 'Reset',
-                onPressed: () => _showResetDialog(context),
-                icon: const Icon(Icons.refresh_rounded),
-              ),
-              IconButton(
-                tooltip: 'Jump to verse',
-                onPressed: () => _showJumpToVerseDialog(context),
-                icon: const Icon(Icons.format_list_numbered_rounded),
-              ),
-              const SizedBox(width: 6),
-            ],
+                const SizedBox(width: 6),
+              ],
+            ),
+            body: _viewMode
+                ? cardView(marginValue: marginValue)
+                : listView(marginValue: marginValue),
           ),
-          body: _viewMode
-              ? cardView(marginValue: marginValue)
-              : listView(marginValue: marginValue),
         ),
       ),
     );
@@ -302,18 +425,14 @@ class _ReadPageState extends State<ReadPage> {
       position,
     ) {
       if (!mounted) return;
-      setState(() {
-        _playerPosition = position;
-      });
+      _setPlayerPosition(position);
     });
 
     _playerDurationSubscription = _versePlayer.onDurationChanged.listen((
       duration,
     ) {
       if (!mounted) return;
-      setState(() {
-        _playerDuration = duration;
-      });
+      _setPlayerDuration(duration);
     });
 
     _playerStateSubscription = _versePlayer.onPlayerStateChanged.listen((
@@ -454,8 +573,8 @@ class _ReadPageState extends State<ReadPage> {
       }
       _playingVerse = verse;
       _currentVerse = verse;
-      _playerPosition = Duration.zero;
-      _playerDuration = Duration.zero;
+      _setPlayerPosition(Duration.zero);
+      _setPlayerDuration(Duration.zero);
     });
     _updateDB();
     _scrollToVerseIfNeeded(verse, smooth: smoothScroll);
@@ -730,8 +849,8 @@ class _ReadPageState extends State<ReadPage> {
       _continuousPlayback = false;
       _repeatIntervalEnabled = false;
       _playingVerse = null;
-      _playerPosition = Duration.zero;
-      _playerDuration = Duration.zero;
+      _setPlayerPosition(Duration.zero);
+      _setPlayerDuration(Duration.zero);
     });
     await _versePlayer.stop();
     await _setKeepScreenOn(false);
@@ -893,22 +1012,20 @@ class _ReadPageState extends State<ReadPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted || !_scrollController.hasClients) return;
 
-      final BuildContext? ayahContext = _inlineAyahKeys[verse]?.currentContext;
-      if (ayahContext == null) return;
-
       _isProgrammaticPageScroll = true;
       try {
-        await Scrollable.ensureVisible(
-          ayahContext,
-          alignment: 0.08,
-          duration: animate
-              ? smooth
-                    ? const Duration(milliseconds: 700)
-                    : const Duration(milliseconds: 320)
-              : Duration.zero,
-          curve: smooth ? Curves.easeInOutCubic : Curves.easeOutCubic,
-          alignmentPolicy: ScrollPositionAlignmentPolicy.explicit,
-        );
+        final double offset = _scrollOffsetForVerse(verse);
+        if (animate) {
+          await _scrollController.animateTo(
+            offset,
+            duration: smooth
+                ? const Duration(milliseconds: 700)
+                : const Duration(milliseconds: 320),
+            curve: smooth ? Curves.easeInOutCubic : Curves.easeOutCubic,
+          );
+        } else {
+          _scrollController.jumpTo(offset);
+        }
       } finally {
         if (mounted) {
           _isProgrammaticPageScroll = false;
@@ -969,6 +1086,7 @@ class _ReadPageState extends State<ReadPage> {
       unawaited(_stopBottomPlayer());
     }
     BookmarkDB().delete(_currentChapter);
+    _clearVerseTextMetrics();
     setState(() {
       _currentChapter = _currentChapter == 114 ? 1 : _currentChapter + 1;
       _currentVerse = 1;
@@ -987,6 +1105,7 @@ class _ReadPageState extends State<ReadPage> {
     if (_playerMounted || _playingVerse != null) {
       unawaited(_stopBottomPlayer());
     }
+    _clearVerseTextMetrics();
     setState(() {
       _currentChapter = _currentChapter == 1 ? 114 : _currentChapter - 1;
       _currentVerse = 1;
@@ -1026,18 +1145,21 @@ class _ReadPageState extends State<ReadPage> {
   }
 
   void _getTotalVerses() {
+    _clearVerseTextMetrics();
     setState(() {
       _totalVerses = quran.getVerseCount(_currentChapter);
     });
   }
 
   void _incrementChapter() {
+    _clearVerseTextMetrics();
     setState(() {
       _currentChapter++;
     });
   }
 
   void _resetChapter() {
+    _clearVerseTextMetrics();
     setState(() {
       _currentChapter = 1;
     });
@@ -1243,9 +1365,6 @@ class _ReadPageState extends State<ReadPage> {
     if (!_playerMounted) return const SizedBox.shrink();
 
     final double width = MediaQuery.sizeOf(context).width;
-    final Widget bar = width < 900
-        ? _buildCompactVersePlayerBar()
-        : _buildWidescreenVersePlayerBar(width);
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -1269,18 +1388,40 @@ class _ReadPageState extends State<ReadPage> {
           opacity: _playerVisible ? 1 : 0,
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          child: bar,
+          child: ValueListenableBuilder<Duration>(
+            valueListenable: _playerPositionValue,
+            builder: (context, position, _) {
+              return ValueListenableBuilder<Duration>(
+                valueListenable: _playerDurationValue,
+                builder: (context, duration, _) {
+                  return width < 900
+                      ? _buildCompactVersePlayerBar(
+                          position: position,
+                          duration: duration,
+                        )
+                      : _buildWidescreenVersePlayerBar(
+                          width,
+                          position: position,
+                          duration: duration,
+                        );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCompactVersePlayerBar() {
+  Widget _buildCompactVersePlayerBar({
+    required Duration position,
+    required Duration duration,
+  }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
-    final double progress = _playerDuration.inMilliseconds <= 0
+    final double progress = duration.inMilliseconds <= 0
         ? 0
-        : (_playerPosition.inMilliseconds / _playerDuration.inMilliseconds)
+        : (position.inMilliseconds / duration.inMilliseconds)
               .clamp(0.0, 1.0)
               .toDouble();
     return Padding(
@@ -1300,7 +1441,7 @@ class _ReadPageState extends State<ReadPage> {
                     padding: const EdgeInsets.only(right: 36),
                     child: Slider(
                       value: progress,
-                      onChanged: _playerDuration.inMilliseconds <= 0
+                      onChanged: duration.inMilliseconds <= 0
                           ? null
                           : _seekBottomPlayer,
                     ),
@@ -1309,13 +1450,13 @@ class _ReadPageState extends State<ReadPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Text(
-                        _formatDuration(_playerPosition),
+                        _formatDuration(position),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       Text(
-                        _formatDuration(_playerDuration),
+                        _formatDuration(duration),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -1394,12 +1535,16 @@ class _ReadPageState extends State<ReadPage> {
     );
   }
 
-  Widget _buildWidescreenVersePlayerBar(double width) {
+  Widget _buildWidescreenVersePlayerBar(
+    double width, {
+    required Duration position,
+    required Duration duration,
+  }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
-    final double progress = _playerDuration.inMilliseconds <= 0
+    final double progress = duration.inMilliseconds <= 0
         ? 0
-        : (_playerPosition.inMilliseconds / _playerDuration.inMilliseconds)
+        : (position.inMilliseconds / duration.inMilliseconds)
               .clamp(0.0, 1.0)
               .toDouble();
     final bool isCompactWidescreenLayout = width < 1100;
@@ -1514,7 +1659,7 @@ class _ReadPageState extends State<ReadPage> {
                               SizedBox(
                                 width: 64,
                                 child: Text(
-                                  _formatDuration(_playerPosition),
+                                  _formatDuration(position),
                                   maxLines: 1,
                                   softWrap: false,
                                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -1526,7 +1671,7 @@ class _ReadPageState extends State<ReadPage> {
                               Expanded(
                                 child: Slider(
                                   value: progress,
-                                  onChanged: _playerDuration.inMilliseconds <= 0
+                                  onChanged: duration.inMilliseconds <= 0
                                       ? null
                                       : _seekBottomPlayer,
                                 ),
@@ -1534,7 +1679,7 @@ class _ReadPageState extends State<ReadPage> {
                               SizedBox(
                                 width: 64,
                                 child: Text(
-                                  _formatDuration(_playerDuration),
+                                  _formatDuration(duration),
                                   maxLines: 1,
                                   softWrap: false,
                                   textAlign: TextAlign.right,
@@ -1698,63 +1843,69 @@ class _ReadPageState extends State<ReadPage> {
         },
         child: Stack(
           children: [
-            SingleChildScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  _buildProgressBar(marginValue),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    child: ReadQuranCard(
-                      currentChapter: _currentChapter,
-                      currentVerse: _currentVerse,
-                      totalVerses: _totalVerses,
-                      juzNumber: quran.getJuzNumber(
-                        _currentChapter,
-                        _currentVerse,
-                      ),
-                      basmala:
-                          _currentChapter != 1 &&
-                              _currentVerse == 1 &&
-                              _currentChapter != 9
-                          ? quran.basmala
-                          : null,
-                      verse: _buildVerseText(_currentChapter, _currentVerse),
-                      translation: quran.getVerseTranslation(
-                        _currentChapter,
-                        _currentVerse,
-                        translation:
-                            quran.Translation.values[SettingsDB().get(
-                              "translation",
-                              defaultValue: 0,
-                            )],
-                      ),
-                      url: QuranAudioService().getAyahUrl(
-                        _currentChapter,
-                        _currentVerse,
-                      ),
-                      fontSize: SettingsDB().get(
-                        "fontSize",
-                        defaultValue: 38.0,
-                      ),
-                      fontSizeTranslation: SettingsDB().get(
-                        "fontSizeTranslation",
-                        defaultValue: 20.0,
-                      ),
-                      onPlayRequested: (surah, ayah) => _playVerse(
-                        surah,
-                        ayah,
-                        continuous: _continuousPlayback,
+            NotificationListener<ScrollNotification>(
+              onNotification: (_) {
+                _notifyAudioUserActivity();
+                return false;
+              },
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    _buildProgressBar(marginValue),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: ReadQuranCard(
+                        currentChapter: _currentChapter,
+                        currentVerse: _currentVerse,
+                        totalVerses: _totalVerses,
+                        juzNumber: quran.getJuzNumber(
+                          _currentChapter,
+                          _currentVerse,
+                        ),
+                        basmala:
+                            _currentChapter != 1 &&
+                                _currentVerse == 1 &&
+                                _currentChapter != 9
+                            ? quran.basmala
+                            : null,
+                        verse: _buildVerseText(_currentChapter, _currentVerse),
+                        translation: quran.getVerseTranslation(
+                          _currentChapter,
+                          _currentVerse,
+                          translation:
+                              quran.Translation.values[SettingsDB().get(
+                                "translation",
+                                defaultValue: 0,
+                              )],
+                        ),
+                        url: QuranAudioService().getAyahUrl(
+                          _currentChapter,
+                          _currentVerse,
+                        ),
+                        fontSize: SettingsDB().get(
+                          "fontSize",
+                          defaultValue: 38.0,
+                        ),
+                        fontSizeTranslation: SettingsDB().get(
+                          "fontSizeTranslation",
+                          defaultValue: 20.0,
+                        ),
+                        onPlayRequested: (surah, ayah) => _playVerse(
+                          surah,
+                          ayah,
+                          continuous: _continuousPlayback,
+                        ),
                       ),
                     ),
-                  ),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 260),
-                    curve: Curves.easeOutCubic,
-                    height: bottomSpacer,
-                  ),
-                ],
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeOutCubic,
+                      height: bottomSpacer,
+                    ),
+                  ],
+                ),
               ),
             ),
             _buildCardViewBottomBars(),
@@ -1766,7 +1917,7 @@ class _ReadPageState extends State<ReadPage> {
 
   Widget listView({required double marginValue}) {
     final double fontSize = SettingsDB().get("fontSize", defaultValue: 38.0);
-    final double pageMargin = marginValue > 8 ? 20 : 12;
+    final double pageMargin = marginValue > 8 ? 16 : 8;
     final bool compactPlayerLayout = MediaQuery.sizeOf(context).width < 700;
     final double playerBottomPadding = compactPlayerLayout ? 260 : 190;
 
@@ -1776,6 +1927,7 @@ class _ReadPageState extends State<ReadPage> {
         children: <Widget>[
           NotificationListener<ScrollNotification>(
             onNotification: (notification) {
+              _notifyAudioUserActivity();
               if (notification is ScrollEndNotification) {
                 _syncPageProgressFromScroll();
               } else if (notification is UserScrollNotification &&
@@ -1784,49 +1936,23 @@ class _ReadPageState extends State<ReadPage> {
               }
               return false;
             },
-            child: SingleChildScrollView(
+            child: ListView.builder(
               controller: _scrollController,
+              itemCount: 2,
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.only(
                 bottom: _playerMounted ? playerBottomPadding : 24,
               ),
-              child: Column(
-                children: <Widget>[
-                  Card(
-                    elevation: 4,
-                    margin: EdgeInsets.symmetric(
-                      horizontal: pageMargin,
-                      vertical: 10,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          if (_currentChapter != 1 && _currentChapter != 9)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 16),
-                              child: Text(
-                                quran.basmala,
-                                textDirection: TextDirection.rtl,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  height: 2,
-                                  fontFamily: 'Hafs',
-                                  fontSize: fontSize,
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 16),
-                          _buildInlineSurahText(fontSize),
-                        ],
-                      ),
-                    ),
-                  ),
-                  _buildNavigationButtons(),
-                ],
-              ),
+              itemBuilder: (context, index) {
+                if (index == 1) {
+                  return _buildNavigationButtons();
+                }
+
+                return _buildPageViewSurahCard(
+                  fontSize: fontSize,
+                  pageMargin: pageMargin,
+                );
+              },
             ),
           ),
           _buildFixedPlayerBar(),
@@ -1835,8 +1961,56 @@ class _ReadPageState extends State<ReadPage> {
     );
   }
 
+  Widget _buildPageViewSurahCard({
+    required double fontSize,
+    required double pageMargin,
+  }) {
+    return Card(
+      elevation: 1,
+      margin: EdgeInsets.symmetric(horizontal: pageMargin, vertical: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            if (_currentChapter != 1 && _currentChapter != 9)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(
+                  quran.basmala,
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    height: 2,
+                    fontFamily: 'Hafs',
+                    fontSize: fontSize,
+                  ),
+                ),
+              ),
+            const SizedBox(height: 16),
+            _buildInlineSurahText(fontSize),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildInlineSurahText(double fontSize) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return RichText(
+      key: _inlineSurahTextKey,
+      textDirection: TextDirection.rtl,
+      textAlign: TextAlign.justify,
+      text: _buildInlineSurahTextSpan(fontSize, colorScheme),
+    );
+  }
+
+  TextSpan _buildInlineSurahTextSpan(
+    double fontSize,
+    ColorScheme colorScheme, {
+    bool includeRecognizers = true,
+  }) {
     final TextStyle baseStyle = TextStyle(
       fontFamily: 'Hafs',
       height: 1.8,
@@ -1844,47 +2018,30 @@ class _ReadPageState extends State<ReadPage> {
       color: colorScheme.onSurface,
     );
 
-    return RichText(
-      textDirection: TextDirection.rtl,
-      textAlign: TextAlign.justify,
-      text: TextSpan(
-        children: List<InlineSpan>.generate(_totalVerses, (index) {
-          final int verse = index + 1;
-          final bool isSelected =
-              _selectedInlineVerse == verse || _playingVerse == verse;
-          final LongPressGestureRecognizer recognizer =
-              _inlineRecognizerForVerse(verse);
+    return TextSpan(
+      children: List<InlineSpan>.generate(_totalVerses, (index) {
+        final int verse = index + 1;
+        final bool isSelected =
+            _selectedInlineVerse == verse || _playingVerse == verse;
+        final LongPressGestureRecognizer? recognizer = includeRecognizers
+            ? _inlineRecognizerForVerse(verse)
+            : null;
 
-          return TextSpan(
-            style: baseStyle.copyWith(
-              color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+        return TextSpan(
+          style: baseStyle.copyWith(
+            color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+          ),
+          recognizer: recognizer,
+          children: <InlineSpan>[
+            const TextSpan(text: '\u2067'),
+            TextSpan(
+              text: _buildVerseText(_currentChapter, verse),
+              recognizer: recognizer,
             ),
-            recognizer: recognizer,
-            children: <InlineSpan>[
-              const TextSpan(text: '\u2067'),
-              TextSpan(
-                text: '\u200b',
-                style: const TextStyle(fontSize: 0),
-                recognizer: recognizer,
-                children: <InlineSpan>[
-                  WidgetSpan(
-                    child: SizedBox(
-                      key: _inlineAyahKeyForVerse(verse),
-                      width: 0,
-                      height: fontSize,
-                    ),
-                  ),
-                ],
-              ),
-              TextSpan(
-                text: _buildVerseText(_currentChapter, verse),
-                recognizer: recognizer,
-              ),
-              const TextSpan(text: '\u2069  '),
-            ],
-          );
-        }),
-      ),
+            const TextSpan(text: '\u2069  '),
+          ],
+        );
+      }),
     );
   }
 
