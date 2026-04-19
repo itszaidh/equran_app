@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:flutter/services.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -76,7 +77,6 @@ class _ReadPageState extends State<ReadPage> {
     _viewMode = SettingsDB().get("viewMode", defaultValue: true);
 
     _scrollController = ScrollController();
-    _scrollController.addListener(_handlePageViewScroll);
     _currentChapter = widget.chapter;
     _currentVerse = widget.startVerse is int ? widget.startVerse! : 1;
     _pageFocusNode = FocusNode(debugLabel: 'Read Page Keyboard Focus');
@@ -103,7 +103,6 @@ class _ReadPageState extends State<ReadPage> {
     _pageScrollProgressTimer?.cancel();
     _versePlayer.dispose();
     _disposeInlineAyahRecognizers();
-    _scrollController.removeListener(_handlePageViewScroll);
     _scrollController.dispose();
     _pageFocusNode.dispose();
     super.dispose();
@@ -127,14 +126,14 @@ class _ReadPageState extends State<ReadPage> {
     return _inlineAyahKeys.putIfAbsent(verse, GlobalKey.new);
   }
 
-  void _handlePageViewScroll() {
+  void _syncPageProgressFromScroll() {
     if (_viewMode ||
         !_scrollController.hasClients ||
         _isProgrammaticPageScroll) {
       return;
     }
 
-    if (_pageScrollProgressTimer?.isActive ?? false) return;
+    _pageScrollProgressTimer?.cancel();
     _pageScrollProgressTimer = Timer(const Duration(milliseconds: 80), () {
       if (!mounted || _viewMode || _isProgrammaticPageScroll) return;
       final int visibleVerse = _lastVersePastPageTop();
@@ -218,6 +217,18 @@ class _ReadPageState extends State<ReadPage> {
             title: Text(quran.getSurahName(_currentChapter)),
             centerTitle: true,
             actions: <Widget>[
+              if (!_viewMode)
+                IconButton(
+                  tooltip: _isVersePlaying && _playingVerse == _currentVerse
+                      ? 'Pause'
+                      : 'Play current ayah',
+                  onPressed: _togglePageViewPlayback,
+                  icon: Icon(
+                    _isVersePlaying && _playingVerse == _currentVerse
+                        ? Icons.pause_circle_rounded
+                        : Icons.play_circle_rounded,
+                  ),
+                ),
               IconButton(
                 tooltip: 'Reset',
                 onPressed: () => _showResetDialog(context),
@@ -377,6 +388,8 @@ class _ReadPageState extends State<ReadPage> {
 
     try {
       await _versePlayer.stop();
+      final double rate = _playbackRate();
+      await _versePlayer.setPlaybackRate(rate);
       final offlineFile = await AudioDownloadService().ayahFile(surah, verse);
       if (!kIsWeb && offlineFile.existsSync()) {
         await _versePlayer.play(DeviceFileSource(offlineFile.path));
@@ -384,6 +397,7 @@ class _ReadPageState extends State<ReadPage> {
         final String url = await QuranAudioService().getAyahUrl(surah, verse);
         await _versePlayer.play(UrlSource(url));
       }
+      await _versePlayer.setPlaybackRate(rate);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -397,6 +411,14 @@ class _ReadPageState extends State<ReadPage> {
         });
       }
     }
+  }
+
+  double _playbackRate() {
+    final dynamic value = SettingsDB().get("playbackRate", defaultValue: 1.0);
+    if (value is num) {
+      return value.toDouble().clamp(0.5, 2.0);
+    }
+    return 1.0;
   }
 
   Future<void> _handleVerseComplete() async {
@@ -434,6 +456,21 @@ class _ReadPageState extends State<ReadPage> {
       _currentChapter,
       _playingVerse ?? _currentVerse,
       continuous: _continuousPlayback,
+    );
+  }
+
+  void _togglePageViewPlayback() {
+    if (_isVersePlaying && _playingVerse == _currentVerse) {
+      unawaited(_toggleBottomPlayer());
+      return;
+    }
+
+    unawaited(
+      _playVerse(
+        _currentChapter,
+        _currentVerse,
+        continuous: _continuousPlayback,
+      ),
     );
   }
 
@@ -932,7 +969,7 @@ class _ReadPageState extends State<ReadPage> {
     if (!_playerMounted) return const SizedBox.shrink();
 
     final double width = MediaQuery.sizeOf(context).width;
-    final Widget bar = width < 700
+    final Widget bar = width < 900
         ? _buildCompactVersePlayerBar()
         : _buildWidescreenVersePlayerBar(width);
 
@@ -1021,7 +1058,7 @@ class _ReadPageState extends State<ReadPage> {
                         onPressed: _toggleBottomPlayer,
                         style: FilledButton.styleFrom(
                           shape: const CircleBorder(),
-                          padding: const EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(18),
                         ),
                         child: _isVerseLoading
                             ? SizedBox(
@@ -1036,7 +1073,7 @@ class _ReadPageState extends State<ReadPage> {
                                 _isVersePlaying
                                     ? Icons.pause_rounded
                                     : Icons.play_arrow_rounded,
-                                size: 34,
+                                size: 32,
                               ),
                       ),
                       const SizedBox(width: 20),
@@ -1132,7 +1169,7 @@ class _ReadPageState extends State<ReadPage> {
                                 onPressed: _toggleBottomPlayer,
                                 style: FilledButton.styleFrom(
                                   shape: const CircleBorder(),
-                                  padding: const EdgeInsets.all(20),
+                                  padding: const EdgeInsets.all(18),
                                 ),
                                 child: _isVerseLoading
                                     ? SizedBox(
@@ -1147,7 +1184,7 @@ class _ReadPageState extends State<ReadPage> {
                                         _isVersePlaying
                                             ? Icons.pause_rounded
                                             : Icons.play_arrow_rounded,
-                                        size: 34,
+                                        size: 32,
                                       ),
                               ),
                               _buildRepeatIntervalButton(colorScheme),
@@ -1267,7 +1304,6 @@ class _ReadPageState extends State<ReadPage> {
   }
 
   Widget _buildNavigationButtons({bool fixed = false}) {
-    final bool showPagePlayButton = !_viewMode && !fixed;
     final Widget buttons = Container(
       height: 80,
       padding: const EdgeInsets.only(right: 12, left: 12),
@@ -1284,30 +1320,6 @@ class _ReadPageState extends State<ReadPage> {
                 child: Icon(Icons.arrow_back_rounded, size: 30),
               ),
             ),
-            if (showPagePlayButton)
-              FilledButton(
-                onPressed: () {
-                  if (_isVersePlaying && _playingVerse == _currentVerse) {
-                    _toggleBottomPlayer();
-                    return;
-                  }
-                  _playVerse(
-                    _currentChapter,
-                    _currentVerse,
-                    continuous: _continuousPlayback,
-                  );
-                },
-                style: FilledButton.styleFrom(
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(18),
-                ),
-                child: Icon(
-                  _isVersePlaying
-                      ? Icons.pause_rounded
-                      : Icons.play_arrow_rounded,
-                  size: 30,
-                ),
-              ),
             ElevatedButton(
               onPressed: () => _increase(),
               child: const Padding(
@@ -1431,48 +1443,59 @@ class _ReadPageState extends State<ReadPage> {
       key: _pageViewViewportKey,
       child: Stack(
         children: <Widget>[
-          SingleChildScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.only(
-              bottom: _playerMounted ? playerBottomPadding : 24,
-            ),
-            child: Column(
-              children: <Widget>[
-                Card(
-                  elevation: 4,
-                  margin: EdgeInsets.symmetric(
-                    horizontal: pageMargin,
-                    vertical: 10,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        if (_currentChapter != 1 && _currentChapter != 9)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16),
-                            child: Text(
-                              quran.basmala,
-                              textDirection: TextDirection.rtl,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                height: 2,
-                                fontFamily: 'Hafs',
-                                fontSize: fontSize,
+          NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification is ScrollEndNotification) {
+                _syncPageProgressFromScroll();
+              } else if (notification is UserScrollNotification &&
+                  notification.direction == ScrollDirection.idle) {
+                _syncPageProgressFromScroll();
+              }
+              return false;
+            },
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.only(
+                bottom: _playerMounted ? playerBottomPadding : 24,
+              ),
+              child: Column(
+                children: <Widget>[
+                  Card(
+                    elevation: 4,
+                    margin: EdgeInsets.symmetric(
+                      horizontal: pageMargin,
+                      vertical: 10,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          if (_currentChapter != 1 && _currentChapter != 9)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16),
+                              child: Text(
+                                quran.basmala,
+                                textDirection: TextDirection.rtl,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  height: 2,
+                                  fontFamily: 'Hafs',
+                                  fontSize: fontSize,
+                                ),
                               ),
                             ),
-                          ),
-                        const SizedBox(height: 16),
-                        _buildInlineSurahText(fontSize),
-                      ],
+                          const SizedBox(height: 16),
+                          _buildInlineSurahText(fontSize),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                _buildNavigationButtons(),
-              ],
+                  _buildNavigationButtons(),
+                ],
+              ),
             ),
           ),
           _buildFixedPlayerBar(),
@@ -1507,77 +1530,29 @@ class _ReadPageState extends State<ReadPage> {
             ),
             recognizer: recognizer,
             children: <InlineSpan>[
-              WidgetSpan(
-                child: SizedBox(
-                  key: _inlineAyahKeyForVerse(verse),
-                  width: 0,
-                  height: fontSize,
-                ),
+              const TextSpan(text: '\u2067'),
+              TextSpan(
+                text: '\u200b',
+                style: const TextStyle(fontSize: 0),
+                recognizer: recognizer,
+                children: <InlineSpan>[
+                  WidgetSpan(
+                    child: SizedBox(
+                      key: _inlineAyahKeyForVerse(verse),
+                      width: 0,
+                      height: fontSize,
+                    ),
+                  ),
+                ],
               ),
               TextSpan(
-                text: '${_buildVerseText(_currentChapter, verse)} ',
+                text: _buildVerseText(_currentChapter, verse),
                 recognizer: recognizer,
               ),
-              WidgetSpan(
-                alignment: PlaceholderAlignment.middle,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onLongPress: () => _showAyahActions(verse),
-                  child: _buildInlineAyahNumberBadge(
-                    verse,
-                    fontSize: fontSize,
-                    isSelected: isSelected,
-                    colorScheme: colorScheme,
-                  ),
-                ),
-              ),
-              const TextSpan(text: ' '),
+              const TextSpan(text: '\u2069  '),
             ],
           );
         }),
-      ),
-    );
-  }
-
-  Widget _buildInlineAyahNumberBadge(
-    int verse, {
-    required double fontSize,
-    required bool isSelected,
-    required ColorScheme colorScheme,
-  }) {
-    final double badgeSize = (fontSize * 0.9).clamp(30.0, 46.0);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Container(
-        width: badgeSize,
-        height: badgeSize,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.primary
-              : colorScheme.secondaryContainer,
-          shape: BoxShape.circle,
-        ),
-        alignment: Alignment.center,
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              child: Text(
-                verse.toString(),
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: isSelected
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSecondaryContainer,
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -1694,7 +1669,8 @@ class _ReadPageState extends State<ReadPage> {
   }
 
   String _buildVerseText(int chapter, int verse) {
-    final verseText = quran.getVerse(chapter, verse);
+    final verseText =
+        '${quran.getVerse(chapter, verse)} ${_arabicVerseNumber(verse)}';
     if (verse == 1 && chapter != 1) {
       return verseText.replaceAll(
         "بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ",
@@ -1702,5 +1678,26 @@ class _ReadPageState extends State<ReadPage> {
       );
     }
     return verseText;
+  }
+
+  String _arabicVerseNumber(int verse) {
+    const Map<String, String> arabicDigits = <String, String>{
+      '0': '٠',
+      '1': '١',
+      '2': '٢',
+      '3': '٣',
+      '4': '٤',
+      '5': '٥',
+      '6': '٦',
+      '7': '٧',
+      '8': '٨',
+      '9': '٩',
+    };
+
+    return verse
+        .toString()
+        .split('')
+        .map((digit) => arabicDigits[digit] ?? digit)
+        .join();
   }
 }

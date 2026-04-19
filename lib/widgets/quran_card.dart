@@ -16,16 +16,14 @@ class QuranCard extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      elevation: compact ? 0 : 1,
+      elevation: 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.medium),
         onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ReadPage(chapter: surah.id),
-          ),
+          MaterialPageRoute(builder: (context) => ReadPage(chapter: surah.id)),
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -59,20 +57,24 @@ class QuranCard extends StatelessWidget {
                       surah.transliteration,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: (compact ? theme.textTheme.titleLarge : theme.textTheme.titleMedium)
-                          ?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style:
+                          (compact
+                                  ? theme.textTheme.titleLarge
+                                  : theme.textTheme.titleMedium)
+                              ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 2),
                     Row(
                       children: <Widget>[
                         Text(
                           '${surah.verses} Ayahs',
-                          style: (compact ? theme.textTheme.bodyMedium : theme.textTheme.bodyLarge)
-                              ?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          style:
+                              (compact
+                                      ? theme.textTheme.bodyMedium
+                                      : theme.textTheme.bodyLarge)
+                                  ?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                         ),
                       ],
                     ),
@@ -81,10 +83,11 @@ class QuranCard extends StatelessWidget {
               ),
               Text(
                 surah.name,
-                style: (compact ? theme.textTheme.titleLarge : theme.textTheme.titleMedium)
-                    ?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style:
+                    (compact
+                            ? theme.textTheme.titleLarge
+                            : theme.textTheme.titleMedium)
+                        ?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
             ],
           ),
