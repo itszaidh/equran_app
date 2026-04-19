@@ -54,9 +54,9 @@ class BackupService {
 
   static Future<String?> exportBackupFile() async {
     final String fileName = _buildFileName();
-    final String encoded = const JsonEncoder.withIndent('  ').convert(
-      _buildBackupPayload(),
-    );
+    final String encoded = const JsonEncoder.withIndent(
+      '  ',
+    ).convert(_buildBackupPayload());
 
     final String? outputPath = await FilePicker.saveFile(
       dialogTitle: 'Save eQuran backup',
@@ -109,7 +109,9 @@ class BackupService {
       payload['favourites'],
     );
     _validateFavourites(favourites);
-    final List<ReadingEntry> readingHistory = _readHistoryEntries(payload['readingHistory']);
+    final List<ReadingEntry> readingHistory = _readHistoryEntries(
+      payload['readingHistory'],
+    );
 
     await SettingsDB().clear();
     await FavouritesDB().clear();
@@ -168,7 +170,9 @@ class BackupService {
   static List<ReadingEntry> _readHistoryEntries(dynamic value) {
     if (value == null) return <ReadingEntry>[];
     if (value is! List) {
-      throw AppBackupException('The backup file has an invalid reading history.');
+      throw AppBackupException(
+        'The backup file has an invalid reading history.',
+      );
     }
 
     return value.map<ReadingEntry>((dynamic item) {
@@ -209,7 +213,9 @@ class BackupService {
   static Map<String, dynamic> _validateSettings(Map<String, dynamic> settings) {
     for (final String key in settings.keys) {
       if (!_allowedSettings.contains(key)) {
-        throw AppBackupException('The backup file contains an unknown setting: $key.');
+        throw AppBackupException(
+          'The backup file contains an unknown setting: $key.',
+        );
       }
     }
 
@@ -262,10 +268,13 @@ class BackupService {
 
   static void _validateFavourites(Map<String, dynamic> favourites) {
     for (final MapEntry<String, dynamic> entry in favourites.entries) {
-      final RegExpMatch? match =
-          RegExp(r'^(\d{1,3})-(\d{3})$').firstMatch(entry.key);
+      final RegExpMatch? match = RegExp(
+        r'^(\d{1,3})-(\d{3})$',
+      ).firstMatch(entry.key);
       if (match == null) {
-        throw AppBackupException('The backup file contains an invalid favourite key.');
+        throw AppBackupException(
+          'The backup file contains an invalid favourite key.',
+        );
       }
 
       final int surah = int.parse(match.group(1)!);
@@ -279,7 +288,9 @@ class BackupService {
         throw AppBackupException('Favourite notes must be stored as text.');
       }
       if ((entry.value as String).length > 80) {
-        throw AppBackupException('A favourite note exceeds the supported length.');
+        throw AppBackupException(
+          'A favourite note exceeds the supported length.',
+        );
       }
     }
   }
@@ -336,7 +347,8 @@ class BackupService {
   }
 
   static String _requireThemeMode(dynamic value) {
-    if (value is! String || (value != 'light' && value != 'dark')) {
+    if (value is! String ||
+        (value != 'light' && value != 'dark' && value != 'auto')) {
       throw AppBackupException('Invalid value for "themeMode".');
     }
     return value;
@@ -359,7 +371,9 @@ class BackupService {
   static void _verifyPayloadIntegrity(Map<dynamic, dynamic> payload) {
     final dynamic integrity = payload['integrity'];
     if (integrity is! String || integrity.isEmpty) {
-      throw AppBackupException('The backup file is missing its integrity check.');
+      throw AppBackupException(
+        'The backup file is missing its integrity check.',
+      );
     }
 
     final String expected = _integrityHashFor(
@@ -397,13 +411,10 @@ class BackupService {
 
   static Object? _canonicalize(Object? value) {
     if (value is Map) {
-      final List<String> sortedKeys = value.keys
-          .map((dynamic key) => key.toString())
-          .toList()
-        ..sort();
+      final List<String> sortedKeys =
+          value.keys.map((dynamic key) => key.toString()).toList()..sort();
       return <String, Object?>{
-        for (final String key in sortedKeys)
-          key: _canonicalize(value[key]),
+        for (final String key in sortedKeys) key: _canonicalize(value[key]),
       };
     }
     if (value is List) {

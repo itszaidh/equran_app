@@ -1,3 +1,4 @@
+export 'android_audio_display_mode.dart';
 export 'bookmark_db.dart';
 export 'audio_downloads.dart';
 export 'download_notifications.dart';

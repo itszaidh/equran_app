@@ -54,18 +54,20 @@ class MyApp extends StatelessWidget {
     final MaterialColor seedColor = _getPrimaryColor();
 
     return AdaptiveTheme(
-        light: AppTheme.buildLightTheme(seedColor),
-        dark: AppTheme.buildDarkTheme(seedColor),
-        initial: savedThemeMode ?? AdaptiveThemeMode.system,
-        overrideMode: savedThemeMode,
-        builder: (theme, darkTheme) => MaterialApp(
-              scrollBehavior:
-                  ScrollConfiguration.of(context).copyWith(scrollbars: false),
-              debugShowCheckedModeBanner: false,
-              theme: theme,
-              darkTheme: darkTheme,
-              home: const HomePage(),
-            ));
+      light: AppTheme.buildLightTheme(seedColor),
+      dark: AppTheme.buildDarkTheme(seedColor),
+      initial: savedThemeMode ?? AdaptiveThemeMode.dark,
+      overrideMode: savedThemeMode,
+      builder: (theme, darkTheme) => MaterialApp(
+        scrollBehavior: ScrollConfiguration.of(
+          context,
+        ).copyWith(scrollbars: false),
+        debugShowCheckedModeBanner: false,
+        theme: theme,
+        darkTheme: darkTheme,
+        home: const HomePage(),
+      ),
+    );
   }
 
   static MaterialColor _getPrimaryColor() {
@@ -78,6 +80,7 @@ class MyApp extends StatelessWidget {
     return switch (themeMode) {
       "light" => AdaptiveThemeMode.light,
       "dark" => AdaptiveThemeMode.dark,
+      "auto" => AdaptiveThemeMode.system,
       _ => null,
     };
   }

@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:equran/backend/bookmark_db.dart';
 import 'package:equran/backend/library.dart'
     show
+        AndroidAudioDisplayMode,
         AudioDownloadService,
         DownloadNotifications,
         FavouritesDB,
@@ -121,6 +122,7 @@ class _ReadPageState extends State<ReadPage> {
       BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
     }
     unawaited(_setKeepScreenOn(false));
+    unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(false));
     _playerPositionSubscription?.cancel();
     _playerDurationSubscription?.cancel();
     _playerStateSubscription?.cancel();
@@ -325,6 +327,9 @@ class _ReadPageState extends State<ReadPage> {
         }
       });
       unawaited(_updateKeepScreenOn());
+      unawaited(
+        AndroidAudioDisplayMode.setAudioPlaybackActive(_isVersePlaying),
+      );
     });
 
     _playerCompleteSubscription = _versePlayer.onPlayerComplete.listen((
@@ -730,6 +735,7 @@ class _ReadPageState extends State<ReadPage> {
     });
     await _versePlayer.stop();
     await _setKeepScreenOn(false);
+    await AndroidAudioDisplayMode.setAudioPlaybackActive(false);
   }
 
   void _toggleContinuousPlayback(bool value) {

@@ -108,9 +108,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: "About",
             subtitle: "App version",
             icon: Icons.info_outline_rounded,
-            children: <Widget>[
-              _buildVersionTile(context),
-            ],
+            children: <Widget>[_buildVersionTile(context)],
           ),
         ],
       ),
@@ -172,7 +170,9 @@ class _SettingsPageState extends State<SettingsPage> {
                         int index = entry.key;
                         return RadioListTile(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadii.medium),
+                            borderRadius: BorderRadius.circular(
+                              AppRadii.medium,
+                            ),
                           ),
                           title: Text(entry.value.name),
                           value: index,
@@ -223,7 +223,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       children: items.asMap().entries.map((entry) {
                         return RadioListTile<AppReciter>(
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadii.medium),
+                            borderRadius: BorderRadius.circular(
+                              AppRadii.medium,
+                            ),
                           ),
                           title: Text(entry.value.englishName),
                           value: entry.value,
@@ -275,10 +277,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         dark: AppTheme.buildDarkTheme(color),
                       );
                     },
-                    child: CircleAvatar(
-                      backgroundColor: color,
-                      radius: 18,
-                    ),
+                    child: CircleAvatar(backgroundColor: color, radius: 18),
                   );
                 }),
               ),
@@ -298,7 +297,8 @@ class _SettingsPageState extends State<SettingsPage> {
       onTap: () => _showClearDataDialog(
         context: context,
         title: "Clear reading history",
-        message: "WARNING: Are you sure you want to clear your reading history?",
+        message:
+            "WARNING: Are you sure you want to clear your reading history?",
         onConfirm: () async => BookmarkDB().clear(),
       ),
     );
@@ -386,9 +386,7 @@ class _SettingsPageState extends State<SettingsPage> {
         if (!snapshot.hasData) {
           return const ListTile(title: Text("Loading..."));
         }
-        return ListTile(
-          title: Text("Version: ${snapshot.data}"),
-        );
+        return ListTile(title: Text("Version: ${snapshot.data}"));
       },
     );
   }
@@ -445,7 +443,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _applyRestoredTheme(BuildContext context) async {
     final dynamic savedColorIndex = SettingsDB().get("color");
-    final int colorIndex = savedColorIndex is int &&
+    final int colorIndex =
+        savedColorIndex is int &&
             savedColorIndex >= 0 &&
             savedColorIndex < Colors.primaries.length
         ? savedColorIndex
@@ -455,6 +454,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final AdaptiveThemeMode themeMode = switch (themeModeValue) {
       "light" => AdaptiveThemeMode.light,
       "dark" => AdaptiveThemeMode.dark,
+      "auto" => AdaptiveThemeMode.system,
       _ => AdaptiveThemeMode.system,
     };
 
@@ -491,37 +491,105 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Widget _buildThemeModeTile(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
     final AdaptiveThemeMode themeMode = AdaptiveTheme.of(context).mode;
-    final bool isDark = themeMode.isSystem
-        ? theme.brightness == Brightness.dark
-        : themeMode.isDark;
 
-    return SwitchListTile(
-      secondary: Icon(
-        isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-      ),
-      title: const Text("Dark mode"),
-      subtitle: Text(isDark ? "Using dark theme." : "Using light theme."),
-      value: isDark,
-      onChanged: (value) async {
-        final AdaptiveThemeMode newMode =
-            value ? AdaptiveThemeMode.dark : AdaptiveThemeMode.light;
-        await SettingsDB().put(
-          "themeMode",
-          value ? "dark" : "light",
+    return ListTile(
+      leading: Icon(_themeModeIcon(themeMode)),
+      title: const Text("Theme mode"),
+      subtitle: Text(_themeModeLabel(themeMode)),
+      onTap: () => _showThemeModeDialog(context),
+    );
+  }
+
+  Future<void> _showThemeModeDialog(BuildContext context) async {
+    final AdaptiveThemeMode currentMode = AdaptiveTheme.of(context).mode;
+    final AdaptiveThemeMode? selectedMode = await showDialog<AdaptiveThemeMode>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Choose theme mode"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _buildThemeModeOptionTile(
+                context: context,
+                currentMode: currentMode,
+                mode: AdaptiveThemeMode.dark,
+                icon: Icons.dark_mode_rounded,
+                title: const Text("Dark"),
+                subtitle: const Text("Always use night mode."),
+              ),
+              _buildThemeModeOptionTile(
+                context: context,
+                currentMode: currentMode,
+                mode: AdaptiveThemeMode.light,
+                icon: Icons.light_mode_rounded,
+                title: const Text("Light"),
+                subtitle: const Text("Always use light mode."),
+              ),
+              _buildThemeModeOptionTile(
+                context: context,
+                currentMode: currentMode,
+                mode: AdaptiveThemeMode.system,
+                icon: Icons.brightness_auto_rounded,
+                title: const Text("Auto"),
+                subtitle: const Text("Follow the system theme."),
+              ),
+            ],
+          ),
         );
-        if (context.mounted) {
-          AdaptiveTheme.of(context).setThemeMode(newMode);
-        }
       },
     );
+
+    if (selectedMode == null) return;
+    await SettingsDB().put("themeMode", _themeModeSettingValue(selectedMode));
+    if (context.mounted) {
+      AdaptiveTheme.of(context).setThemeMode(selectedMode);
+      setState(() {});
+    }
+  }
+
+  Widget _buildThemeModeOptionTile({
+    required BuildContext context,
+    required AdaptiveThemeMode currentMode,
+    required AdaptiveThemeMode mode,
+    required IconData icon,
+    required Widget title,
+    required Widget subtitle,
+  }) {
+    final bool selected =
+        _themeModeSettingValue(currentMode) == _themeModeSettingValue(mode);
+    return ListTile(
+      leading: Icon(icon),
+      title: title,
+      subtitle: subtitle,
+      trailing: selected ? const Icon(Icons.check_rounded) : null,
+      onTap: () => Navigator.of(context).pop(mode),
+    );
+  }
+
+  IconData _themeModeIcon(AdaptiveThemeMode themeMode) {
+    if (themeMode.isDark) return Icons.dark_mode_rounded;
+    if (themeMode.isSystem) return Icons.brightness_auto_rounded;
+    return Icons.light_mode_rounded;
+  }
+
+  String _themeModeLabel(AdaptiveThemeMode themeMode) {
+    if (themeMode.isDark) return "Dark";
+    if (themeMode.isSystem) return "Auto";
+    return "Light";
+  }
+
+  String _themeModeSettingValue(AdaptiveThemeMode themeMode) {
+    if (themeMode.isDark) return "dark";
+    if (themeMode.isSystem) return "auto";
+    return "light";
   }
 
   String _selectedThemeName() {
@@ -535,8 +603,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   String _selectedTranslationName() {
-    final dynamic savedTranslation =
-        SettingsDB().get("translation", defaultValue: 0);
+    final dynamic savedTranslation = SettingsDB().get(
+      "translation",
+      defaultValue: 0,
+    );
     if (savedTranslation is int &&
         savedTranslation >= 0 &&
         savedTranslation < Translation.values.length) {

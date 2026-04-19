@@ -5,7 +5,11 @@ import 'dart:ui' show DisplayFeature, DisplayFeatureType;
 
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:equran/backend/library.dart'
-    show AudioDownloadService, DownloadNotifications, SettingsDB;
+    show
+        AndroidAudioDisplayMode,
+        AudioDownloadService,
+        DownloadNotifications,
+        SettingsDB;
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -215,6 +219,11 @@ class _PlayerPageState extends State<PlayerPage> {
             _isLoading = false;
           }
         });
+        unawaited(
+          AndroidAudioDisplayMode.setAudioPlaybackActive(
+            state == ap.PlayerState.playing,
+          ),
+        );
       });
 
       _fallbackCompleteSubscription = _fallbackAudio.onPlayerComplete.listen((
@@ -252,6 +261,7 @@ class _PlayerPageState extends State<PlayerPage> {
       if (state.processingState == ja.ProcessingState.completed) {
         await _handleTrackComplete();
       }
+      unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(state.playing));
     });
   }
 
@@ -415,6 +425,7 @@ class _PlayerPageState extends State<PlayerPage> {
     } else {
       await _justAudio.pause();
     }
+    await AndroidAudioDisplayMode.setAudioPlaybackActive(false);
   }
 
   Future<void> _stopCurrentTrack() async {
@@ -423,6 +434,7 @@ class _PlayerPageState extends State<PlayerPage> {
     } else {
       await _justAudio.stop();
     }
+    await AndroidAudioDisplayMode.setAudioPlaybackActive(false);
   }
 
   Future<void> _seekCurrentTrack(Duration position) async {
@@ -776,6 +788,7 @@ class _PlayerPageState extends State<PlayerPage> {
 
   @override
   void dispose() {
+    unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(false));
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _stateSubscription?.cancel();
