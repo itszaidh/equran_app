@@ -1,5 +1,5 @@
 import 'package:equran/backend/library.dart' show SettingsDB;
-import 'package:equran/widgets/library.dart' show ReadQuranCard;
+import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' as quran;
 
@@ -14,10 +14,14 @@ class _FontSliderState extends State<FontSlider> {
   @override
   Widget build(BuildContext context) {
     double fontSize = SettingsDB().get("fontSize", defaultValue: 38.0);
-    double fontSizeTranslation =
-        SettingsDB().get("fontSizeTranslation", defaultValue: 20.0);
-    final bool enableTranslation =
-        SettingsDB().get("enableTranslation", defaultValue: true);
+    double fontSizeTranslation = SettingsDB().get(
+      "fontSizeTranslation",
+      defaultValue: 20.0,
+    );
+    final bool enableTranslation = SettingsDB().get(
+      "enableTranslation",
+      defaultValue: true,
+    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -55,19 +59,78 @@ class _FontSliderState extends State<FontSlider> {
                   },
                 ),
               ),
-            ReadQuranCard(
-              currentChapter: 1,
-              currentVerse: 1,
-              totalVerses: 7,
+            _FontPreview(
               fontSize: fontSize,
               fontSizeTranslation: fontSizeTranslation,
-              juzNumber: 1,
-              url: Future<String>.value(""),
-              translation: quran.getVerseTranslation(1, 1),
-              verse: quran.getVerse(1, 1),
-              showActions: false,
+              showTranslation: enableTranslation,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FontPreview extends StatelessWidget {
+  const _FontPreview({
+    required this.fontSize,
+    required this.fontSizeTranslation,
+    required this.showTranslation,
+  });
+
+  final double fontSize;
+  final double fontSizeTranslation;
+  final bool showTranslation;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          border: Border.all(color: colorScheme.outlineVariant),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(
+                'Preview',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                quran.getVerse(1, 1),
+                textAlign: TextAlign.center,
+                textDirection: TextDirection.rtl,
+                style: TextStyle(
+                  fontFamily: 'Hafs',
+                  height: 1.65,
+                  fontSize: fontSize,
+                ),
+              ),
+              if (showTranslation) ...<Widget>[
+                const SizedBox(height: 12),
+                Text(
+                  quran.getVerseTranslation(1, 1),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: fontSizeTranslation,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
