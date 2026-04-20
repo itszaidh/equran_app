@@ -128,7 +128,7 @@ class ReadQuranCard extends StatelessWidget {
     } else if (screenSize.width > 700) {
       marginValue = 40.0;
     } else {
-      marginValue = 8.0;
+      marginValue = 6.0;
     }
 
     return Card(
@@ -191,7 +191,11 @@ class ReadQuranCard extends StatelessWidget {
                   fontSize: fontSize,
                 ),
               ),
-              if (SettingsDB().get("enableTranslation", defaultValue: true))
+              if (SettingsDB().get(
+                "enableTranslation",
+                defaultValue: true,
+              )) ...[
+                const SizedBox(height: 12),
                 Text(
                   translation,
                   textAlign: TextAlign.justify,
@@ -199,6 +203,7 @@ class ReadQuranCard extends StatelessWidget {
                     fontSize: fontSizeTranslation,
                   ),
                 ),
+              ],
             ],
           ),
         ),
