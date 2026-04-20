@@ -16,7 +16,7 @@ class _FontSliderState extends State<FontSlider> {
     double fontSize = SettingsDB().get("fontSize", defaultValue: 38.0);
     double fontSizeTranslation = SettingsDB().get(
       "fontSizeTranslation",
-      defaultValue: 20.0,
+      defaultValue: 18.0,
     );
     final bool enableTranslation = SettingsDB().get(
       "enableTranslation",
