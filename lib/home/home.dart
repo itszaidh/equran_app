@@ -5,6 +5,7 @@ import 'package:equran/home/main_page.dart';
 import 'package:equran/home/player.dart';
 import 'package:equran/home/settings.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/responsive_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -78,32 +79,57 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool tabletLayout = ResponsiveNav.isTablet(context);
+    final double navIconSize = ResponsiveNav.iconSize(context);
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       key: _scaffoldKey,
-      drawer: NavigationDrawer(
-        onDestinationSelected: (index) {
-          _scaffoldKey.currentState!.closeDrawer();
-          _onItemTapped(index);
-        },
-        selectedIndex: _selectedIndex,
-        tilePadding: _drawerTilePadding,
-        footer: _buildDrawerFooter(context),
-        children: <Widget>[
-          const SizedBox(height: 72),
-          ..._pageDestinations.map((Destinations destination) {
-            return NavigationDrawerDestination(
-              label: Text(destination.label),
-              icon: destination.icon,
-              selectedIcon: destination.selectedIcon,
-            );
-          }),
-        ],
+      drawer: NavigationDrawerTheme(
+        data: NavigationDrawerTheme.of(context).copyWith(
+          labelTextStyle: WidgetStatePropertyAll(
+            ResponsiveNav.drawerLabelStyle(context),
+          ),
+          tileHeight: ResponsiveNav.drawerTileHeight(context),
+        ),
+        child: NavigationDrawer(
+          onDestinationSelected: (index) {
+            _scaffoldKey.currentState!.closeDrawer();
+            _onItemTapped(index);
+          },
+          selectedIndex: _selectedIndex,
+          tilePadding: _drawerTilePadding,
+          footer: _buildDrawerFooter(context),
+          children: <Widget>[
+            SizedBox(height: tabletLayout ? 84 : 72),
+            ..._pageDestinations.map((Destinations destination) {
+              return NavigationDrawerDestination(
+                label: Text(destination.label),
+                icon: IconTheme(
+                  data: IconThemeData(
+                    color: colorScheme.onSurfaceVariant,
+                    size: navIconSize,
+                  ),
+                  child: destination.icon,
+                ),
+                selectedIcon: IconTheme(
+                  data: IconThemeData(
+                    color: colorScheme.onSecondaryContainer,
+                    size: navIconSize,
+                  ),
+                  child: destination.selectedIcon,
+                ),
+              );
+            }),
+          ],
+        ),
       ),
       appBar: _selectedIndex >= 2
           ? AppBar(
+              toolbarHeight: ResponsiveNav.toolbarHeight(context),
               title: Text(_pageDestinations[_selectedIndex].label),
               iconTheme: IconThemeData(
                 color: Theme.of(context).colorScheme.onSurface,
+                size: navIconSize,
               ),
               centerTitle: true,
             )
@@ -203,16 +229,16 @@ class _HomePageState extends State<HomePage> {
           onTap: onPressed,
           child: SizedBox(
             width: double.infinity,
-            height: 48,
+            height: ResponsiveNav.drawerTileHeight(context),
             child: Row(
               children: <Widget>[
                 const SizedBox(width: _drawerTileLeadingGap),
                 SizedBox(
-                  width: 24,
+                  width: ResponsiveNav.iconSize(context),
                   child: Icon(
                     icon,
                     color: colorScheme.onSurfaceVariant,
-                    size: 24,
+                    size: ResponsiveNav.iconSize(context),
                   ),
                 ),
                 const SizedBox(width: _drawerTileIconLabelGap),
@@ -300,7 +326,11 @@ class FeedbackContactPage extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Feedback / Contact us')),
+      appBar: AppBar(
+        toolbarHeight: ResponsiveNav.toolbarHeight(context),
+        iconTheme: IconThemeData(size: ResponsiveNav.iconSize(context)),
+        title: const Text('Feedback / Contact us'),
+      ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
         children: <Widget>[
