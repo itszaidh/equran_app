@@ -9,22 +9,22 @@ class AppTheme {
       brightness: Brightness.light,
     );
     final ColorScheme colorScheme = baseScheme.copyWith(
-      surface: const Color(0xFFF5F0E6),
-      surfaceContainerLowest: const Color(0xFFFFFBF5),
-      surfaceContainerLow: const Color(0xFFF8F2E8),
-      surfaceContainer: const Color(0xFFF2EBE0),
-      surfaceContainerHigh: const Color(0xFFECE4D8),
-      surfaceContainerHighest: const Color(0xFFE4DACB),
+      surface: const Color(0xFFF3EFE8),
+      surfaceContainerLowest: const Color(0xFFFFFDF9),
+      surfaceContainerLow: const Color(0xFFFCF8F1),
+      surfaceContainer: const Color(0xFFF7F1E8),
+      surfaceContainerHigh: const Color(0xFFEFE7DC),
+      surfaceContainerHighest: const Color(0xFFE7DDD0),
       primaryContainer: Color.alphaBlend(
-        Colors.white.withOpacity(0.42),
+        Colors.white.withAlpha((0.56 * 255).round()),
         baseScheme.primaryContainer,
       ),
       secondaryContainer: Color.alphaBlend(
-        Colors.white.withOpacity(0.28),
+        Colors.white.withAlpha((0.60 * 255).round()),
         baseScheme.secondaryContainer,
       ),
       tertiaryContainer: Color.alphaBlend(
-        Colors.white.withOpacity(0.32),
+        Colors.white.withAlpha((0.60 * 255).round()),
         baseScheme.tertiaryContainer,
       ),
     );
@@ -32,14 +32,16 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFFF7F2E9),
-      canvasColor: const Color(0xFFF7F2E9),
+      scaffoldBackgroundColor: const Color(0xFFF3EFE8),
+      canvasColor: const Color(0xFFF3EFE8),
       cardTheme: CardThemeData(
         color: colorScheme.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
       ),
       searchBarTheme: SearchBarThemeData(
-        backgroundColor: WidgetStatePropertyAll(colorScheme.surfaceContainerLow),
+        backgroundColor: WidgetStatePropertyAll(
+          colorScheme.surfaceContainerLow,
+        ),
         surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
       ),
     );
