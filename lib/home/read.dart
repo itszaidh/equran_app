@@ -988,6 +988,7 @@ class _ReadPageState extends State<ReadPage> {
   }
 
   Future<void> _showRepeatIntervalSheet() async {
+    _notifyAudioUserActivity();
     int start = _repeatIntervalEnabled ? _repeatStartVerse : _currentVerse;
     int end = _repeatIntervalEnabled ? _repeatEndVerse : _currentVerse;
 
@@ -997,75 +998,88 @@ class _ReadPageState extends State<ReadPage> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      'Repeat Ayah Interval',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
+            return Listener(
+              behavior: HitTestBehavior.translucent,
+              onPointerDown: (_) => _notifyAudioUserActivity(),
+              onPointerMove: (_) => _notifyAudioUserActivity(),
+              onPointerSignal: (_) => _notifyAudioUserActivity(),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        'Repeat Ayah Interval',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Column(
-                          children: <Widget>[
-                            const Text('From'),
-                            NumberPicker(
-                              minValue: 1,
-                              maxValue: _totalVerses,
-                              value: start,
-                              onChanged: (value) {
-                                setSheetState(() {
-                                  start = value;
-                                  if (end < start) end = start;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: <Widget>[
-                            const Text('To'),
-                            NumberPicker(
-                              minValue: 1,
-                              maxValue: _totalVerses,
-                              value: end,
-                              onChanged: (value) {
-                                setSheetState(() {
-                                  end = value;
-                                  if (start > end) start = end;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('Disable'),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Column(
+                            children: <Widget>[
+                              const Text('From'),
+                              NumberPicker(
+                                minValue: 1,
+                                maxValue: _totalVerses,
+                                value: start,
+                                onChanged: (value) {
+                                  _notifyAudioUserActivity();
+                                  setSheetState(() {
+                                    start = value;
+                                    if (end < start) end = start;
+                                  });
+                                },
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Repeat Interval'),
+                          Column(
+                            children: <Widget>[
+                              const Text('To'),
+                              NumberPicker(
+                                minValue: 1,
+                                maxValue: _totalVerses,
+                                value: end,
+                                onChanged: (value) {
+                                  _notifyAudioUserActivity();
+                                  setSheetState(() {
+                                    end = value;
+                                    if (start > end) start = end;
+                                  });
+                                },
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                _notifyAudioUserActivity();
+                                Navigator.of(context).pop(false);
+                              },
+                              child: const Text('Disable'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: () {
+                                _notifyAudioUserActivity();
+                                Navigator.of(context).pop(true);
+                              },
+                              child: const Text('Repeat Interval'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

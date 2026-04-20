@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 
 class AndroidAudioDisplayMode {
   static const double _systemFrameRate = 0.0;
-  static const double _idleAudioFrameRate = 24.0;
-  static const Duration _defaultIdleDelay = Duration(milliseconds: 1400);
+  static const double _idleAudioFrameRate = 30.0;
+  static const Duration _defaultIdleDelay = Duration(milliseconds: 500);
   static const MethodChannel _channel = MethodChannel(
     'com.app.equran/read_page',
   );
@@ -37,9 +37,7 @@ class AndroidAudioDisplayMode {
     _scheduleIdleFrameRate();
   }
 
-  static void notifyUserActivity({
-    Duration idleDelay = const Duration(milliseconds: 1400),
-  }) {
+  static void notifyUserActivity({Duration idleDelay = _defaultIdleDelay}) {
     if (!_isSupported || !_audioPlaybackActive) return;
 
     _lastUserActivityAt = DateTime.now();

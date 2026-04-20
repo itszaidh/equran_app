@@ -196,45 +196,93 @@ class AudioDownloadService {
     int surah, {
     AudioDownloadProgressCallback? onProgress,
   }) async {
-    final int totalFiles = quran.getVerseCount(surah);
-    final List<File> files = <File>[];
-    int completedFiles = 0;
+    final int totalAyahs = quran.getVerseCount(surah);
+    final List<File?> files = List<File?>.filled(totalAyahs, null);
+    final List<({int ayah, File file})> pendingDownloads =
+        <({int ayah, File file})>[];
+    final Map<int, double> fileFractions = <int, double>{};
 
-    for (int ayah = 1; ayah <= totalFiles; ayah++) {
+    for (int ayah = 1; ayah <= totalAyahs; ayah++) {
       final File file = await ayahFile(surah, ayah);
       if (_isCompleteDownload(file)) {
-        files.add(file);
-        completedFiles++;
-        onProgress?.call(
-          DownloadProgress(
-            receivedBytes: 1,
-            totalBytes: 1,
-            completedFiles: completedFiles,
-            totalFiles: totalFiles,
-          ),
-        );
+        files[ayah - 1] = file;
         continue;
       }
 
-      final String url = await QuranAudioService().getAyahUrl(surah, ayah);
-      await _downloadToFile(
-        url,
-        file,
-        onProgress: (receivedBytes, totalBytes) {
-          onProgress?.call(
-            DownloadProgress(
-              receivedBytes: receivedBytes,
-              totalBytes: totalBytes,
-              completedFiles: completedFiles,
-              totalFiles: totalFiles,
-            ),
-          );
-        },
-      );
-      files.add(file);
-      completedFiles++;
+      pendingDownloads.add((ayah: ayah, file: file));
+      fileFractions[ayah] = 0.0;
     }
-    return files;
+
+    final int totalPendingFiles = pendingDownloads.length;
+    if (totalPendingFiles == 0) {
+      return files.whereType<File>().toList(growable: false);
+    }
+
+    int nextIndex = 0;
+    final int workerCount = min(6, totalPendingFiles);
+    Future<void> worker() async {
+      while (true) {
+        final int taskIndex = nextIndex++;
+        if (taskIndex >= pendingDownloads.length) return;
+
+        final task = pendingDownloads[taskIndex];
+        final String url = await QuranAudioService().getAyahUrl(
+          surah,
+          task.ayah,
+        );
+        await _downloadToFile(
+          url,
+          task.file,
+          onProgress: (receivedBytes, totalBytes) {
+            if (totalBytes != null && totalBytes > 0) {
+              fileFractions[task.ayah] = (receivedBytes / totalBytes).clamp(
+                0.0,
+                1.0,
+              );
+              _reportAggregateAyahProgress(
+                onProgress: onProgress,
+                fileFractions: fileFractions,
+                totalFiles: totalPendingFiles,
+              );
+            }
+          },
+        );
+        files[task.ayah - 1] = task.file;
+        fileFractions[task.ayah] = 1.0;
+        _reportAggregateAyahProgress(
+          onProgress: onProgress,
+          fileFractions: fileFractions,
+          totalFiles: totalPendingFiles,
+        );
+      }
+    }
+
+    await Future.wait<void>(
+      List<Future<void>>.generate(workerCount, (_) => worker()),
+    );
+
+    return files.whereType<File>().toList(growable: false);
+  }
+
+  void _reportAggregateAyahProgress({
+    required AudioDownloadProgressCallback? onProgress,
+    required Map<int, double> fileFractions,
+    required int totalFiles,
+  }) {
+    if (onProgress == null || totalFiles <= 0) return;
+
+    final double completedFraction =
+        fileFractions.values.fold<double>(0.0, (sum, value) => sum + value) /
+        totalFiles;
+    const int progressUnits = 1000000;
+    onProgress(
+      DownloadProgress(
+        receivedBytes: (completedFraction * progressUnits).round(),
+        totalBytes: progressUnits,
+        completedFiles: 0,
+        totalFiles: 1,
+      ),
+    );
   }
 
   Future<void> _downloadToFile(

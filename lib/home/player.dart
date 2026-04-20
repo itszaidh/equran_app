@@ -589,7 +589,7 @@ class _PlayerPageState extends State<PlayerPage> {
           ),
           borderRadius: BorderRadius.circular(AppRadii.large),
           border: Border.all(
-            color: colorScheme.outlineVariant.withOpacity(0.55),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
           ),
         ),
         child: Column(
@@ -606,7 +606,7 @@ class _PlayerPageState extends State<PlayerPage> {
             ),
             Divider(
               height: 1,
-              color: colorScheme.outlineVariant.withOpacity(0.35),
+              color: colorScheme.outlineVariant.withValues(alpha: 0.35),
             ),
             Expanded(
               child: _buildSurahSelectionList(
@@ -856,13 +856,36 @@ class _PlayerPageState extends State<PlayerPage> {
             !isFoldableLayout &&
             (width >= 1100 || isLandscapeTablet || isIpadAirSizedTablet);
         final bool isCompactWidescreenLayout = isDesktop && width < 1100;
+        final double desktopHeightScale = isDesktop
+            ? ((height - 540) / 260).clamp(0.78, 1.0).toDouble()
+            : 1.0;
+        final double desktopBottomBarMinHeight =
+            (width >= 1500 ? 132 : 124) * desktopHeightScale;
+        final double desktopBottomBarVerticalPadding = 18 * desktopHeightScale;
+        final double playerControlIconSize = isDesktop
+            ? (34 * desktopHeightScale).clamp(28.0, 34.0).toDouble()
+            : 34.0;
+        final double playButtonPadding = isDesktop
+            ? (20 * desktopHeightScale).clamp(15.0, 20.0).toDouble()
+            : 20.0;
+        final double loadingIndicatorSize = isDesktop
+            ? (30 * desktopHeightScale).clamp(24.0, 30.0).toDouble()
+            : 30.0;
+        final double actionIconSize = isDesktop
+            ? (28 * desktopHeightScale).clamp(24.0, 28.0).toDouble()
+            : 28.0;
         final double maxContentWidth = isDesktop
             ? width
             : isFoldableLayout
             ? min(width, 1000)
             : 560;
         final double maxArtHeight = isDesktop
-            ? height - 260
+            ? height -
+                  76 -
+                  20 -
+                  desktopBottomBarMinHeight -
+                  (desktopBottomBarVerticalPadding * 2) -
+                  24
             : isFoldableLayout
             ? height - 380
             : height - 360;
@@ -872,13 +895,21 @@ class _PlayerPageState extends State<PlayerPage> {
               : isFoldableLayout
               ? min(width * 0.34, 300)
               : min(width - 56, 440),
-          max(180, maxArtHeight),
+          max(isDesktop ? 120 : 180, maxArtHeight),
         );
-        final double bottomBarArtworkSize = isCompactWidescreenLayout ? 64 : 84;
-        final double bottomBarCenterGap = isCompactWidescreenLayout ? 96 : 220;
+        final double artIconSize = isDesktop
+            ? min(170 * desktopHeightScale, artSize * 0.38)
+            : 130;
+        final double bottomBarArtworkSize =
+            (isCompactWidescreenLayout ? 64 : 84) * desktopHeightScale;
+        final double bottomBarCenterGap =
+            (isCompactWidescreenLayout ? 96 : 220) * desktopHeightScale;
         final double desktopCenterWidth = min(
-          isCompactWidescreenLayout ? 300.0 : 640.0,
-          max(isCompactWidescreenLayout ? 280.0 : 320.0, width - 760),
+          (isCompactWidescreenLayout ? 300.0 : 640.0) * desktopHeightScale,
+          max(
+            (isCompactWidescreenLayout ? 280.0 : 320.0) * desktopHeightScale,
+            width - 760,
+          ),
         );
 
         final header = Padding(
@@ -953,7 +984,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 controller.open();
               }
             },
-            icon: const Icon(Icons.speed_rounded, size: 28),
+            icon: Icon(Icons.speed_rounded, size: actionIconSize),
           ),
         );
 
@@ -963,7 +994,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 onPressed: _confirmDeleteSurahDownload,
                 icon: Icon(
                   Icons.check_circle_rounded,
-                  size: 28,
+                  size: actionIconSize,
                   color: colorScheme.primary,
                 ),
               )
@@ -979,56 +1010,80 @@ class _PlayerPageState extends State<PlayerPage> {
                           color: colorScheme.primary,
                         ),
                       )
-                    : const Icon(Icons.download_rounded, size: 28),
+                    : Icon(Icons.download_rounded, size: actionIconSize),
               );
 
-        final Widget artworkPanel = Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Center(
-              child: Container(
-                width: artSize,
-                height: artSize,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppRadii.medium),
-                  gradient: LinearGradient(
-                    colors: <Color>[
-                      colorScheme.primaryContainer,
-                      colorScheme.tertiaryContainer,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: colorScheme.shadow.withOpacity(0.18),
-                      blurRadius: 26,
-                      offset: const Offset(0, 14),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.graphic_eq_rounded,
-                  size: isDesktop ? 170 : 130,
-                  color: colorScheme.onPrimaryContainer,
-                ),
+        Widget buildArtworkSquare({
+          required double panelArtSize,
+          required double panelIconSize,
+        }) {
+          return Container(
+            width: panelArtSize,
+            height: panelArtSize,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              gradient: LinearGradient(
+                colors: <Color>[
+                  colorScheme.primaryContainer,
+                  colorScheme.tertiaryContainer,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                if (!isFoldableLayout)
-                  IconButton(
-                    tooltip: 'Choose Surah',
-                    onPressed: _openSurahPickerSheet,
-                    icon: const Icon(Icons.queue_music_rounded),
-                  ),
-                speedButton,
-                downloadButton,
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: colorScheme.shadow.withValues(alpha: 0.18),
+                  blurRadius: 26,
+                  offset: const Offset(0, 14),
+                ),
               ],
             ),
-          ],
+            child: Icon(
+              Icons.graphic_eq_rounded,
+              size: panelIconSize,
+              color: colorScheme.onPrimaryContainer,
+            ),
+          );
+        }
+
+        Widget buildArtworkActions() {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              if (!isFoldableLayout)
+                IconButton(
+                  tooltip: 'Choose Surah',
+                  onPressed: _openSurahPickerSheet,
+                  icon: const Icon(Icons.queue_music_rounded),
+                ),
+              speedButton,
+              downloadButton,
+            ],
+          );
+        }
+
+        Widget buildArtworkPanel({
+          required double panelArtSize,
+          required double panelIconSize,
+        }) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Center(
+                child: buildArtworkSquare(
+                  panelArtSize: panelArtSize,
+                  panelIconSize: panelIconSize,
+                ),
+              ),
+              const SizedBox(height: 10),
+              buildArtworkActions(),
+            ],
+          );
+        }
+
+        final Widget artworkPanel = buildArtworkPanel(
+          panelArtSize: artSize,
+          panelIconSize: artIconSize,
         );
 
         final Widget playbackPanel = Column(
@@ -1103,18 +1158,18 @@ class _PlayerPageState extends State<PlayerPage> {
                   tooltip: 'Previous',
                   onPressed: _playPrevious,
                   icon: const Icon(Icons.skip_previous_rounded),
-                  iconSize: 34,
+                  iconSize: playerControlIconSize,
                 ),
                 FilledButton(
                   onPressed: _togglePlayPause,
                   style: FilledButton.styleFrom(
                     shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(playButtonPadding),
                   ),
                   child: _isLoading
                       ? SizedBox(
-                          width: 30,
-                          height: 30,
+                          width: loadingIndicatorSize,
+                          height: loadingIndicatorSize,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.4,
                             color: colorScheme.onPrimary,
@@ -1124,14 +1179,14 @@ class _PlayerPageState extends State<PlayerPage> {
                           _isPlaying
                               ? Icons.pause_rounded
                               : Icons.play_arrow_rounded,
-                          size: 34,
+                          size: playerControlIconSize,
                         ),
                 ),
                 IconButton(
                   tooltip: 'Next',
                   onPressed: _playNext,
                   icon: const Icon(Icons.skip_next_rounded),
-                  iconSize: 34,
+                  iconSize: playerControlIconSize,
                 ),
                 IconButton(
                   tooltip: 'Loop',
@@ -1151,23 +1206,26 @@ class _PlayerPageState extends State<PlayerPage> {
         );
 
         final Widget desktopBottomBar = Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+          padding: EdgeInsets.symmetric(
+            horizontal: max(18, 24 * desktopHeightScale),
+            vertical: desktopBottomBarVerticalPadding,
+          ),
           decoration: BoxDecoration(
-            color: colorScheme.surface.withOpacity(0.92),
+            color: colorScheme.surface.withValues(alpha: 0.92),
             borderRadius: BorderRadius.circular(AppRadii.large),
             border: Border.all(
-              color: colorScheme.outlineVariant.withOpacity(0.4),
+              color: colorScheme.outlineVariant.withValues(alpha: 0.4),
             ),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: colorScheme.shadow.withOpacity(0.18),
+                color: colorScheme.shadow.withValues(alpha: 0.18),
                 blurRadius: 28,
                 offset: const Offset(0, 12),
               ),
             ],
           ),
           child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: width >= 1500 ? 132 : 124),
+            constraints: BoxConstraints(minHeight: desktopBottomBarMinHeight),
             child: Stack(
               alignment: Alignment.center,
               children: <Widget>[
@@ -1195,7 +1253,9 @@ class _PlayerPageState extends State<PlayerPage> {
                             ),
                             child: Icon(
                               Icons.graphic_eq_rounded,
-                              size: isCompactWidescreenLayout ? 34 : 42,
+                              size:
+                                  (isCompactWidescreenLayout ? 34 : 42) *
+                                  desktopHeightScale,
                               color: colorScheme.onPrimaryContainer,
                             ),
                           ),
@@ -1253,9 +1313,9 @@ class _PlayerPageState extends State<PlayerPage> {
                             IconButton(
                               tooltip: 'Choose Surah',
                               onPressed: _openSurahPickerSheet,
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.queue_music_rounded,
-                                size: 28,
+                                size: actionIconSize,
                               ),
                             ),
                             speedButton,
@@ -1293,18 +1353,18 @@ class _PlayerPageState extends State<PlayerPage> {
                                 tooltip: 'Previous',
                                 onPressed: _playPrevious,
                                 icon: const Icon(Icons.skip_previous_rounded),
-                                iconSize: 34,
+                                iconSize: playerControlIconSize,
                               ),
                               FilledButton(
                                 onPressed: _togglePlayPause,
                                 style: FilledButton.styleFrom(
                                   shape: const CircleBorder(),
-                                  padding: const EdgeInsets.all(20),
+                                  padding: EdgeInsets.all(playButtonPadding),
                                 ),
                                 child: _isLoading
                                     ? SizedBox(
-                                        width: 30,
-                                        height: 30,
+                                        width: loadingIndicatorSize,
+                                        height: loadingIndicatorSize,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2.4,
                                           color: colorScheme.onPrimary,
@@ -1314,14 +1374,14 @@ class _PlayerPageState extends State<PlayerPage> {
                                         _isPlaying
                                             ? Icons.pause_rounded
                                             : Icons.play_arrow_rounded,
-                                        size: 34,
+                                        size: playerControlIconSize,
                                       ),
                               ),
                               IconButton(
                                 tooltip: 'Next',
                                 onPressed: _playNext,
                                 icon: const Icon(Icons.skip_next_rounded),
-                                iconSize: 34,
+                                iconSize: playerControlIconSize,
                               ),
                               IconButton(
                                 tooltip: 'Loop',
@@ -1383,15 +1443,6 @@ class _PlayerPageState extends State<PlayerPage> {
           ),
         );
 
-        final Widget nowPlaying = Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            artworkPanel,
-            const SizedBox(height: 22),
-            playbackPanel,
-          ],
-        );
-
         final Widget foldableNowPlaying = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -1407,6 +1458,38 @@ class _PlayerPageState extends State<PlayerPage> {
             const SizedBox(height: 12),
             playbackPanel,
           ],
+        );
+
+        final Widget mobileNowPlaying = LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints bodyConstraints) {
+            final double availableHeight = bodyConstraints.maxHeight;
+            final double mobileArtSize = min(
+              min(width - 56, 440),
+              max(72.0, availableHeight - 350),
+            );
+            final double mobileGap = (availableHeight - mobileArtSize - 336)
+                .clamp(4.0, 16.0)
+                .toDouble();
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Center(
+                    child: buildArtworkSquare(
+                      panelArtSize: mobileArtSize,
+                      panelIconSize: min(130, mobileArtSize * 0.42),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                buildArtworkActions(),
+                SizedBox(height: mobileGap),
+                playbackPanel,
+              ],
+            );
+          },
         );
 
         final Widget bodyContent = isDesktop
@@ -1437,8 +1520,8 @@ class _PlayerPageState extends State<PlayerPage> {
                                   ),
                                   boxShadow: <BoxShadow>[
                                     BoxShadow(
-                                      color: colorScheme.shadow.withOpacity(
-                                        0.18,
+                                      color: colorScheme.shadow.withValues(
+                                        alpha: 0.18,
                                       ),
                                       blurRadius: 26,
                                       offset: const Offset(0, 14),
@@ -1447,7 +1530,7 @@ class _PlayerPageState extends State<PlayerPage> {
                                 ),
                                 child: Icon(
                                   Icons.graphic_eq_rounded,
-                                  size: 170,
+                                  size: artIconSize,
                                   color: colorScheme.onPrimaryContainer,
                                 ),
                               ),
@@ -1475,10 +1558,7 @@ class _PlayerPageState extends State<PlayerPage> {
                   Expanded(child: foldableNowPlaying),
                 ],
               )
-            : SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: nowPlaying,
-              );
+            : mobileNowPlaying;
 
         return _buildAudioInteractionBoundary(
           child: Container(
@@ -1487,8 +1567,8 @@ class _PlayerPageState extends State<PlayerPage> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: <Color>[
-                  colorScheme.primaryContainer.withOpacity(0.60),
-                  colorScheme.tertiaryContainer.withOpacity(0.35),
+                  colorScheme.primaryContainer.withValues(alpha: 0.60),
+                  colorScheme.tertiaryContainer.withValues(alpha: 0.35),
                   colorScheme.surface,
                 ],
               ),

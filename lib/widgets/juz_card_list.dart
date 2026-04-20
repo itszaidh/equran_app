@@ -5,21 +5,17 @@ import 'package:quran/quran.dart' as quran;
 import 'juz_card.dart';
 
 class JuzCardList extends StatefulWidget {
-  const JuzCardList({
-    super.key,
-    required this.searchQuery,
-  });
+  const JuzCardList({super.key, required this.searchQuery});
 
   final String searchQuery;
 
   @override
-  _JuzCardListState createState() => _JuzCardListState();
+  State<JuzCardList> createState() => _JuzCardListState();
 }
 
 class _JuzCardListState extends State<JuzCardList>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _fallbackScrollController = ScrollController();
-  final Map<int, GlobalKey> _sectionKeys = <int, GlobalKey>{};
 
   @override
   void dispose() {
@@ -38,56 +34,71 @@ class _JuzCardListState extends State<JuzCardList>
       return const Center(child: Text('No juz results found.'));
     }
 
-    _syncSectionKeys(juzGroups);
+    final List<_JuzListItem> items = _buildListItems(juzGroups);
+    final double textScale = MediaQuery.textScalerOf(
+      context,
+    ).scale(1.0).clamp(1.0, 1.2).toDouble();
+    final double headerExtent = 58 * textScale;
+    final double tileExtent = 132 * textScale;
 
     return Scrollbar(
       controller: scrollController,
       thumbVisibility: true,
       interactive: true,
-      child: SingleChildScrollView(
+      child: ListView.builder(
         controller: scrollController,
         physics: const BouncingScrollPhysics(),
-        child: Padding(
-          padding: const EdgeInsets.only(right: 8, bottom: 24),
-          child: Column(
-            children: juzGroups.map((group) {
-              final List<QuranJuzTile> juzCards = group.entries
-                  .map(
-                    (_JuzEntry entry) => QuranJuzTile(
-                      id: entry.surahId,
-                      transliteration: entry.transliteration,
-                      name: entry.name,
-                      startVerse: entry.startVerse,
-                      endVerse: entry.endVerse,
-                    ),
-                  )
-                  .toList();
-
-              return KeyedSubtree(
-                key: _sectionKeys[group.juzNumber],
-                child: _JuzGroupSection(
+        padding: const EdgeInsets.only(right: 8, bottom: 24),
+        itemCount: items.length,
+        itemExtentBuilder: (int index, _) {
+          return items[index].group != null ? headerExtent : tileExtent;
+        },
+        cacheExtent: tileExtent * 8,
+        itemBuilder: (BuildContext context, int index) {
+          final _JuzListItem item = items[index];
+          final _JuzGroup? group = item.group;
+          if (group != null) {
+            return SizedBox(
+              key: ValueKey<String>('juz-header-${group.juzNumber}'),
+              height: headerExtent,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(6, 10, 6, 10),
+                child: _JuzSectionHeader(
                   juzNumber: group.juzNumber,
                   surahCount: group.entries.length,
-                  children: juzCards,
                 ),
-              );
-            }).toList(),
-          ),
-        ),
+              ),
+            );
+          }
+
+          final _JuzEntry entry = item.entry!;
+          return SizedBox(
+            key: ValueKey<String>(
+              'juz-${entry.surahId}-${entry.startVerse}-${entry.endVerse}',
+            ),
+            height: tileExtent,
+            child: QuranJuzTile(
+              id: entry.surahId,
+              transliteration: entry.transliteration,
+              name: entry.name,
+              startVerse: entry.startVerse,
+              endVerse: entry.endVerse,
+            ),
+          );
+        },
       ),
     );
   }
 
-  void _syncSectionKeys(List<_JuzGroup> groups) {
-    final Set<int> groupNumbers =
-        groups.map((group) => group.juzNumber).toSet();
-    _sectionKeys.removeWhere((int juzNumber, GlobalKey _) {
-      return !groupNumbers.contains(juzNumber);
-    });
-
+  List<_JuzListItem> _buildListItems(List<_JuzGroup> groups) {
+    final List<_JuzListItem> items = <_JuzListItem>[];
     for (final _JuzGroup group in groups) {
-      _sectionKeys.putIfAbsent(group.juzNumber, GlobalKey.new);
+      items.add(_JuzListItem.group(group));
+      for (final _JuzEntry entry in group.entries) {
+        items.add(_JuzListItem.entry(entry));
+      }
     }
+    return items;
   }
 
   List<_JuzGroup> _buildJuzGroups(String searchQuery) {
@@ -125,10 +136,7 @@ class _JuzCardListState extends State<JuzCardList>
 }
 
 class _JuzSectionHeader extends StatelessWidget {
-  const _JuzSectionHeader({
-    required this.juzNumber,
-    required this.surahCount,
-  });
+  const _JuzSectionHeader({required this.juzNumber, required this.surahCount});
 
   final int juzNumber;
   final int surahCount;
@@ -147,13 +155,13 @@ class _JuzSectionHeader extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: <Color>[
-                colorScheme.primaryContainer.withOpacity(0.9),
-                colorScheme.tertiaryContainer.withOpacity(0.72),
+                colorScheme.primaryContainer.withValues(alpha: 0.9),
+                colorScheme.tertiaryContainer.withValues(alpha: 0.72),
               ],
             ),
             borderRadius: BorderRadius.circular(AppRadii.small),
             border: Border.all(
-              color: colorScheme.primary.withOpacity(0.12),
+              color: colorScheme.primary.withValues(alpha: 0.12),
             ),
           ),
           child: Text(
@@ -169,7 +177,7 @@ class _JuzSectionHeader extends StatelessWidget {
         Expanded(
           child: Container(
             height: 1,
-            color: colorScheme.outlineVariant.withOpacity(0.45),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.45),
           ),
         ),
         const SizedBox(width: 12),
@@ -185,46 +193,20 @@ class _JuzSectionHeader extends StatelessWidget {
   }
 }
 
-class _JuzGroupSection extends StatelessWidget {
-  const _JuzGroupSection({
-    required this.juzNumber,
-    required this.surahCount,
-    required this.children,
-  });
-
-  final int juzNumber;
-  final int surahCount;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(6, 0, 6, 10),
-            child: _JuzSectionHeader(
-              juzNumber: juzNumber,
-              surahCount: surahCount,
-            ),
-          ),
-          ...children,
-        ],
-      ),
-    );
-  }
-}
-
 class _JuzGroup {
-  const _JuzGroup({
-    required this.juzNumber,
-    required this.entries,
-  });
+  const _JuzGroup({required this.juzNumber, required this.entries});
 
   final int juzNumber;
   final List<_JuzEntry> entries;
+}
+
+class _JuzListItem {
+  const _JuzListItem.group(this.group) : entry = null;
+
+  const _JuzListItem.entry(this.entry) : group = null;
+
+  final _JuzGroup? group;
+  final _JuzEntry? entry;
 }
 
 class _JuzEntry {

@@ -8,6 +8,7 @@ class DownloadNotifications {
   static const MethodChannel _channel = MethodChannel(
     'com.app.equran/read_page',
   );
+  static final Map<int, int> _lastProgressPercent = <int, int>{};
 
   static int notificationId(String key) {
     return 10000 + key.hashCode.abs() % 80000;
@@ -20,35 +21,50 @@ class DownloadNotifications {
   }) async {
     if (!_isSupported) return;
 
-    final int percentage = progress == null
-        ? 0
-        : (progress.clamp(0.0, 1.0) * 100).round();
-    if (percentage >= 100 && progress != null) {
-      await cancel(id);
+    if (progress == null) {
+      _lastProgressPercent.remove(id);
+      await _invoke('showDownloadProgress', <String, Object>{
+        'id': id,
+        'title': title,
+        'progress': 0,
+        'max': 100,
+        'indeterminate': true,
+      });
       return;
     }
+
+    final int rawPercentage = (progress.clamp(0.0, 1.0) * 100).round();
+    final int percentage = rawPercentage >= 100 ? 99 : rawPercentage;
+    final int? previousPercentage = _lastProgressPercent[id];
+    if (previousPercentage != null && percentage <= previousPercentage) {
+      return;
+    }
+    _lastProgressPercent[id] = percentage;
 
     await _invoke('showDownloadProgress', <String, Object>{
       'id': id,
       'title': title,
       'progress': percentage,
       'max': 100,
-      'indeterminate': progress == null,
+      'indeterminate': false,
     });
   }
 
   static Future<void> complete({required int id, required String title}) async {
     if (!_isSupported) return;
+    _lastProgressPercent.remove(id);
     await cancel(id);
   }
 
   static Future<void> fail({required int id, required String title}) async {
     if (!_isSupported) return;
+    _lastProgressPercent.remove(id);
     await _invoke('failDownload', <String, Object>{'id': id, 'title': title});
   }
 
   static Future<void> cancel(int id) async {
     if (!_isSupported) return;
+    _lastProgressPercent.remove(id);
     await _invoke('cancelDownloadNotification', <String, Object>{'id': id});
   }
 

@@ -33,7 +33,9 @@ class ResponsiveNav {
 
   static TextStyle? drawerLabelStyle(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    return isTablet(context) ? theme.textTheme.titleMedium : null;
+    return isTablet(context)
+        ? theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600)
+        : null;
   }
 
   static ButtonStyle iconButtonStyle(BuildContext context) {
