@@ -471,36 +471,38 @@ class _ReadPageState extends State<ReadPage> {
               title: Text(quran.getSurahName(_currentChapter)),
               centerTitle: true,
               actions: <Widget>[
-                // IconButton(
-                //   tooltip: _isVersePlaying && _playingVerse == _currentVerse
-                //       ? 'Pause'
-                //       : 'Play current ayah',
-                //   onPressed: _togglePageViewPlayback,
-                //   icon: Icon(
-                //     _isVersePlaying && _playingVerse == _currentVerse
-                //         ? Icons.pause_circle_rounded
-                //         : Icons.play_circle_rounded,
-                //   ),
-                // ),
-                // IconButton(
-                //   tooltip: _hasDownloadedSurahAyahs
-                //       ? 'All ayahs downloaded'
-                //       : 'Download all ayahs',
-                //   onPressed: _isDownloadingSurahAyahs
-                //       ? null
-                //       : _downloadCurrentSurahAyahs,
-                //   icon: _isDownloadingSurahAyahs
-                //       ? const SizedBox(
-                //           width: 22,
-                //           height: 22,
-                //           child: CircularProgressIndicator(strokeWidth: 2),
-                //         )
-                //       : Icon(
-                //           _hasDownloadedSurahAyahs
-                //               ? Icons.offline_pin_rounded
-                //               : Icons.download_for_offline_rounded,
-                //         ),
-                // ),
+                                if (!_viewMode)
+                  IconButton(
+                    tooltip: _isVersePlaying && _playingVerse == _currentVerse
+                        ? 'Pause'
+                        : 'Play current ayah',
+                    onPressed: _togglePageViewPlayback,
+                    icon: Icon(
+                      _isVersePlaying && _playingVerse == _currentVerse
+                          ? Icons.pause_circle_rounded
+                          : Icons.play_circle_rounded,
+                    ),
+                  ),
+                if (!_viewMode)
+                  IconButton(
+                    tooltip: _hasDownloadedSurahAyahs
+                        ? 'All ayahs downloaded'
+                        : 'Download all ayahs',
+                    onPressed: _isDownloadingSurahAyahs
+                        ? null
+                        : _downloadCurrentSurahAyahs,
+                    icon: _isDownloadingSurahAyahs
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(
+                            _hasDownloadedSurahAyahs
+                                ? Icons.offline_pin_rounded
+                                : Icons.download_for_offline_rounded,
+                          ),
+                  ),
                 IconButton(
                   tooltip: 'Jump to verse',
                   onPressed: () => _showJumpToVerseDialog(context),
