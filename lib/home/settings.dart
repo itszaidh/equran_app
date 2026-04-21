@@ -6,7 +6,12 @@ import 'package:equran/utils/app_theme.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/library.dart';
 import 'package:equran/widgets/library.dart'
-    show FontSlider, PlayBackSlider, SettingsSwitch;
+    show
+        AppSelectionDialog,
+        AppSelectionOption,
+        FontSlider,
+        PlayBackSlider,
+        SettingsSwitch;
 import 'package:flutter/material.dart';
 import 'package:quran/quran.dart' show Translation;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -34,8 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
       "enableTranslation",
       defaultValue: true,
     );
-    final bool showTranslationControls =
-        cardViewEnabled && translationEnabled;
+    final bool showTranslationControls = cardViewEnabled && translationEnabled;
 
     return Material(
       child: ListView(
@@ -76,12 +80,12 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               if (cardViewEnabled)
                 SettingsSwitch(
-                  title: "Enable Translation",
-                  subtitle: "Enables translation for each verse.",
+                  title: "Display Translation",
+                  subtitle: "Display translation for each verse in card view.",
                   settingsKey: "enableTranslation",
                   onChanged: (_) => setState(() {}),
                 ),
-              if (showTranslationControls) _buildTranslationTile(context),
+              _buildTranslationTile(context),
               FontSlider(showTranslationControls: showTranslationControls),
             ],
           ),
@@ -160,47 +164,50 @@ class _SettingsPageState extends State<SettingsPage> {
     return ListTile(
       title: const Text("Translation"),
       subtitle: Text(_selectedTranslationName()),
-      onTap: () {
-        List<Translation> items = Translation.values;
-        int selected = SettingsDB().get("translation", defaultValue: 0);
-        showDialog(
+      onTap: () async {
+        final int selected = SettingsDB().get("translation", defaultValue: 0);
+        final int? value = await _showSelectionDialog<int>(
           context: context,
-          builder: (BuildContext context) {
-            return StatefulBuilder(
-              builder: (context, dialogSetState) {
-                return AlertDialog(
-                  title: const Text("Select Language"),
-                  content: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      children: items.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        return RadioListTile(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppRadii.medium,
-                            ),
-                          ),
-                          title: Text(entry.value.name),
-                          value: index,
-                          groupValue: selected,
-                          onChanged: (int? value) {
-                            SettingsDB().put("translation", value);
-                            if (mounted) {
-                              setState(() {});
-                            }
-                            Navigator.pop(context);
-                          },
-                        );
-                      }).toList(),
+          title: "Translation Language",
+          icon: Icons.translate_rounded,
+          selectedValue: selected,
+          options:
+              Translation.values
+                  .asMap()
+                  .entries
+                  .map(
+                    (entry) => AppSelectionOption<int>(
+                      value: entry.key,
+                      title: translationDisplayName(entry.value),
                     ),
-                  ),
-                );
-              },
-            );
-          },
+                  )
+                  .toList()
+                ..sort((a, b) => a.title.compareTo(b.title)),
         );
+        if (value == null) return;
+        SettingsDB().put("translation", value);
+        if (mounted) {
+          setState(() {});
+        }
       },
+    );
+  }
+
+  Future<T?> _showSelectionDialog<T>({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required T selectedValue,
+    required List<AppSelectionOption<T>> options,
+  }) {
+    return showDialog<T>(
+      context: context,
+      builder: (context) => AppSelectionDialog<T>(
+        title: title,
+        icon: icon,
+        selectedValue: selectedValue,
+        options: options,
+      ),
     );
   }
 
@@ -208,7 +215,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return ListTile(
       title: const Text("Reciter"),
       subtitle: Text(_selectedReciterName()),
-      onTap: () {
+      onTap: () async {
         final List<AppReciter> items = AppReciter.values.toList()
           ..sort(
             (a, b) => a.englishName.toLowerCase().compareTo(
@@ -217,83 +224,146 @@ class _SettingsPageState extends State<SettingsPage> {
           );
         final selected = SettingsDB().get("reciter", defaultValue: "1");
         final selectedReciter = AppReciter.fromCode(selected);
-        showDialog(
+        final AppReciter? value = await _showSelectionDialog<AppReciter>(
           context: context,
-          builder: (BuildContext context) {
-            return StatefulBuilder(
-              builder: (context, dialogSetState) {
-                return AlertDialog(
-                  title: const Text("Select Reciter"),
-                  content: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      children: items.asMap().entries.map((entry) {
-                        return RadioListTile<AppReciter>(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppRadii.medium,
-                            ),
-                          ),
-                          title: Text(entry.value.englishName),
-                          value: entry.value,
-                          groupValue: selectedReciter,
-                          onChanged: (value) {
-                            if (value == null) return;
-                            SettingsDB().put("reciter", value.code);
-                            if (mounted) {
-                              setState(() {});
-                            }
-                            Navigator.pop(context);
-                          },
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
+          title: "Reciter",
+          icon: Icons.record_voice_over_rounded,
+          selectedValue: selectedReciter,
+          options: items
+              .map(
+                (reciter) => AppSelectionOption<AppReciter>(
+                  value: reciter,
+                  title: reciter.englishName,
+                ),
+              )
+              .toList(),
         );
+        if (value == null) return;
+        SettingsDB().put("reciter", value.code);
+        if (mounted) {
+          setState(() {});
+        }
       },
     );
   }
 
   Widget _buildThemeColorTile(BuildContext context) {
     return ListTile(
-      onTap: () {
-        showDialog<void>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Choose a Color'),
-              icon: const Icon(Icons.format_paint_rounded),
-              content: Wrap(
-                runSpacing: 10,
-                spacing: 10,
-                children: List.generate(Colors.primaries.length, (index) {
-                  final color = Colors.primaries[index];
-                  return InkWell(
-                    onTap: () {
-                      SettingsDB().put("color", index);
-                      if (mounted) {
-                        setState(() {});
-                      }
+      onTap: () async {
+        final int? selectedColor = await _showColorPickerDialog(context);
+        if (selectedColor == null) return;
+        SettingsDB().put("color", selectedColor);
+        if (mounted) {
+          setState(() {});
+        }
 
-                      AdaptiveTheme.of(context).setTheme(
-                        light: AppTheme.buildLightTheme(color),
-                        dark: AppTheme.buildDarkTheme(color),
-                      );
-                    },
-                    child: CircleAvatar(backgroundColor: color, radius: 18),
-                  );
-                }),
-              ),
-            );
-          },
-        );
+        final MaterialColor color = Colors.primaries[selectedColor];
+        if (context.mounted) {
+          AdaptiveTheme.of(context).setTheme(
+            light: AppTheme.buildLightTheme(color),
+            dark: AppTheme.buildDarkTheme(color),
+          );
+        }
       },
       title: const Text("Color scheme"),
       subtitle: Text(_selectedThemeName()),
+    );
+  }
+
+  Future<int?> _showColorPickerDialog(BuildContext context) {
+    final dynamic savedColor = SettingsDB().get("color");
+    final int selectedColor =
+        savedColor is int &&
+            savedColor >= 0 &&
+            savedColor < Colors.primaries.length
+        ? savedColor
+        : 7;
+
+    return showDialog<int>(
+      context: context,
+      builder: (context) {
+        final ThemeData theme = Theme.of(context);
+        final ColorScheme colorScheme = theme.colorScheme;
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 32,
+          ),
+          backgroundColor: colorScheme.surfaceContainer,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.large),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadii.large),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Icon(
+                          Icons.format_paint_rounded,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Color Scheme',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Close',
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close_rounded),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      runSpacing: 12,
+                      spacing: 12,
+                      children: List.generate(Colors.primaries.length, (index) {
+                        final MaterialColor color = Colors.primaries[index];
+                        final bool isSelected = index == selectedColor;
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: () => Navigator.of(context).pop(index),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: color,
+                              border: Border.all(
+                                color: isSelected
+                                    ? colorScheme.onSurface
+                                    : colorScheme.outlineVariant,
+                                width: isSelected ? 3 : 1,
+                              ),
+                            ),
+                            child: isSelected
+                                ? const Icon(
+                                    Icons.check_rounded,
+                                    color: Colors.white,
+                                  )
+                                : null,
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -516,43 +586,33 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _showThemeModeDialog(BuildContext context) async {
     final AdaptiveThemeMode currentMode = AdaptiveTheme.of(context).mode;
-    final AdaptiveThemeMode? selectedMode = await showDialog<AdaptiveThemeMode>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Choose theme mode"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              _buildThemeModeOptionTile(
-                context: context,
-                currentMode: currentMode,
-                mode: AdaptiveThemeMode.dark,
-                icon: Icons.dark_mode_rounded,
-                title: const Text("Dark"),
-                subtitle: const Text("Always use night mode."),
-              ),
-              _buildThemeModeOptionTile(
-                context: context,
-                currentMode: currentMode,
-                mode: AdaptiveThemeMode.light,
-                icon: Icons.light_mode_rounded,
-                title: const Text("Light"),
-                subtitle: const Text("Always use light mode."),
-              ),
-              _buildThemeModeOptionTile(
-                context: context,
-                currentMode: currentMode,
-                mode: AdaptiveThemeMode.system,
-                icon: Icons.brightness_auto_rounded,
-                title: const Text("Auto"),
-                subtitle: const Text("Follow the system theme."),
-              ),
-            ],
-          ),
+    final AdaptiveThemeMode? selectedMode =
+        await _showSelectionDialog<AdaptiveThemeMode>(
+          context: context,
+          title: "Theme Mode",
+          icon: Icons.palette_outlined,
+          selectedValue: currentMode,
+          options: const <AppSelectionOption<AdaptiveThemeMode>>[
+            AppSelectionOption<AdaptiveThemeMode>(
+              value: AdaptiveThemeMode.dark,
+              title: "Dark",
+              subtitle: "Always use night mode.",
+              leading: Icon(Icons.dark_mode_rounded),
+            ),
+            AppSelectionOption<AdaptiveThemeMode>(
+              value: AdaptiveThemeMode.light,
+              title: "Light",
+              subtitle: "Always use light mode.",
+              leading: Icon(Icons.light_mode_rounded),
+            ),
+            AppSelectionOption<AdaptiveThemeMode>(
+              value: AdaptiveThemeMode.system,
+              title: "Auto",
+              subtitle: "Follow the system theme.",
+              leading: Icon(Icons.brightness_auto_rounded),
+            ),
+          ],
         );
-      },
-    );
 
     if (selectedMode == null) return;
     await SettingsDB().put("themeMode", _themeModeSettingValue(selectedMode));
@@ -560,25 +620,6 @@ class _SettingsPageState extends State<SettingsPage> {
       AdaptiveTheme.of(context).setThemeMode(selectedMode);
       setState(() {});
     }
-  }
-
-  Widget _buildThemeModeOptionTile({
-    required BuildContext context,
-    required AdaptiveThemeMode currentMode,
-    required AdaptiveThemeMode mode,
-    required IconData icon,
-    required Widget title,
-    required Widget subtitle,
-  }) {
-    final bool selected =
-        _themeModeSettingValue(currentMode) == _themeModeSettingValue(mode);
-    return ListTile(
-      leading: Icon(icon),
-      title: title,
-      subtitle: subtitle,
-      trailing: selected ? const Icon(Icons.check_rounded) : null,
-      onTap: () => Navigator.of(context).pop(mode),
-    );
   }
 
   IconData _themeModeIcon(AdaptiveThemeMode themeMode) {
@@ -617,9 +658,9 @@ class _SettingsPageState extends State<SettingsPage> {
     if (savedTranslation is int &&
         savedTranslation >= 0 &&
         savedTranslation < Translation.values.length) {
-      return Translation.values[savedTranslation].name;
+      return translationDisplayName(Translation.values[savedTranslation]);
     }
-    return Translation.values.first.name;
+    return translationDisplayName(Translation.values.first);
   }
 
   String _selectedReciterName() {
