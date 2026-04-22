@@ -22,18 +22,30 @@ class QuranCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     final bool tabletLayout = ResponsiveNav.isTablet(context);
+    final bool compactText = compact && reduceTitleSize;
     final double verticalPadding = compact
         ? (tabletLayout ? 12 : 10)
         : (tabletLayout ? 14 : 12);
     final TextStyle? titleStyle =
-        (compact && !reduceTitleSize
+        (compactText
+                ? theme.textTheme.titleSmall
+                : compact
                 ? theme.textTheme.titleLarge
                 : theme.textTheme.titleMedium)
             ?.copyWith(fontWeight: FontWeight.w600);
     final TextStyle? arabicTitleStyle =
-        (compact && !reduceTitleSize
+        (compactText
+                ? theme.textTheme.titleSmall
+                : compact
                 ? theme.textTheme.titleLarge
                 : theme.textTheme.titleMedium)
+            ?.copyWith(color: colorScheme.onSurfaceVariant);
+    final TextStyle? versesStyle =
+        (compactText
+                ? theme.textTheme.bodySmall
+                : compact
+                ? theme.textTheme.bodyMedium
+                : theme.textTheme.bodyLarge)
             ?.copyWith(color: colorScheme.onSurfaceVariant);
 
     return Card(
@@ -71,13 +83,7 @@ class QuranCard extends StatelessWidget {
                       children: <Widget>[
                         Text(
                           '${surah.verses} Ayahs',
-                          style:
-                              (compact
-                                      ? theme.textTheme.bodyMedium
-                                      : theme.textTheme.bodyLarge)
-                                  ?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
+                          style: versesStyle,
                         ),
                       ],
                     ),

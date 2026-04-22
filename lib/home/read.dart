@@ -87,7 +87,7 @@ class _ReadPageState extends State<ReadPage> {
   bool _isVersePlaying = false;
   bool _isVerseLoading = false;
   bool _isDownloadingSurahAyahs = false;
-  bool _isDownloadingCurrentAyah = false;
+  final Set<String> _downloadingAyahKeys = <String>{};
   bool _hasDownloadedSurahAyahs = false;
   bool _hasDownloadedCurrentAyah = false;
   bool _continuousPlayback = false;
@@ -1086,19 +1086,51 @@ class _ReadPageState extends State<ReadPage> {
   }
 
   Future<void> _downloadCurrentAyah() async {
-    if (_isDownloadingCurrentAyah) return;
+    final int chapter = _currentChapter;
+    final int verse = _currentVerse;
+    final String downloadKey = '$chapter-$verse';
+    if (_downloadingAyahKeys.contains(downloadKey)) return;
+
     try {
       setState(() {
-        _isDownloadingCurrentAyah = true;
+        _downloadingAyahKeys.add(downloadKey);
       });
-      await AudioDownloadService().downloadAyah(_currentChapter, _currentVerse);
+
+      final int notificationId = DownloadNotifications.notificationId(
+        'ayah-$chapter-$verse',
+      );
+      final String title = 'Downloading ayah $chapter:$verse';
+      await DownloadNotifications.progress(
+        id: notificationId,
+        title: title,
+        progress: null,
+      );
+      await AudioDownloadService().downloadAyah(
+        chapter,
+        verse,
+        onProgress: (progress) => unawaited(
+          DownloadNotifications.progress(
+            id: notificationId,
+            title: title,
+            progress: progress.fraction,
+          ),
+        ),
+      );
+      await DownloadNotifications.complete(
+        id: notificationId,
+        title: 'Downloaded ayah $chapter:$verse',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Downloaded ayah $_currentChapter:$_currentVerse'),
+          content: Text('Downloaded ayah $chapter:$verse'),
         ),
       );
     } catch (_) {
+      await DownloadNotifications.fail(
+        id: DownloadNotifications.notificationId('ayah-$chapter-$verse'),
+        title: 'Failed to download ayah $chapter:$verse',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to download ayah audio.')),
@@ -1106,7 +1138,7 @@ class _ReadPageState extends State<ReadPage> {
     } finally {
       if (mounted) {
         setState(() {
-          _isDownloadingCurrentAyah = false;
+          _downloadingAyahKeys.remove(downloadKey);
         });
       }
       unawaited(_refreshCurrentAyahDownloadState());
@@ -2573,7 +2605,9 @@ class _ReadPageState extends State<ReadPage> {
                             isPlaying:
                                 _isVersePlaying &&
                                 _playingVerse == _currentVerse,
-                            isDownloading: _isDownloadingCurrentAyah,
+                            isDownloading: _downloadingAyahKeys.contains(
+                              '${_currentChapter}-${_currentVerse}',
+                            ),
                             isDownloaded: _hasDownloadedCurrentAyah,
                           ),
                         ),

@@ -129,6 +129,9 @@ class ReadQuranCard extends StatelessWidget {
               fontSize: shareImageMode ? 24 : null,
               fontWeight: FontWeight.w600,
             );
+    final String ayahLabel = shareImageMode
+        ? 'Ayah $currentVerse'
+        : 'Ayah $currentVerse of $totalVerses';
 
     return Row(
       children: <Widget>[
@@ -147,7 +150,7 @@ class ReadQuranCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Ayah $currentVerse of $totalVerses',
+                  ayahLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: mutedStyle?.copyWith(
@@ -204,17 +207,17 @@ class ReadQuranCard extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            _buildActionButton(
-              context: context,
-              tooltip: isPlaying ? 'Pause' : 'Play',
-              onPressed: onPlay,
-              isPrimary: true,
-              child: Icon(
-                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                size: 21,
-                color: colorScheme.primary,
+              _buildActionButton(
+                context: context,
+                tooltip: isPlaying ? 'Pause' : 'Play',
+                onPressed: onPlay,
+                isPrimary: true,
+                child: Icon(
+                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  size: 22,
+                  color: colorScheme.primary,
+                ),
               ),
-            ),
 
             if (onTafsir != null) ...<Widget>[
               SizedBox(width: actionGap),
@@ -224,13 +227,17 @@ class ReadQuranCard extends StatelessWidget {
                 onPressed: onTafsir,
                 child: Icon(
                   Icons.chrome_reader_mode_rounded,
-                  size: 18,
+                  size: 19,
                   color: colorScheme.onSurface.withAlpha(185),
                 ),
               ),
             ],
             SizedBox(width: actionGap),
-            _buildOverflowMenu(context: context, isFavourite: isFavourite),
+            _buildOverflowMenu(
+              context: context,
+              isFavourite: isFavourite,
+              showTranslation: showTranslation,
+            ),
           ],
         );
       },
@@ -240,91 +247,98 @@ class ReadQuranCard extends StatelessWidget {
   Widget _buildOverflowMenu({
     required BuildContext context,
     required bool isFavourite,
+    required bool showTranslation,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Material(
       color: colorScheme.surfaceContainerHighest.withAlpha(72),
       borderRadius: BorderRadius.circular(12),
-      child: PopupMenuButton<_CardOverflowAction>(
-        tooltip: 'More actions',
-        position: PopupMenuPosition.under,
-        padding: EdgeInsets.zero,
-        icon: Icon(
-          Icons.more_horiz_rounded,
-          size: 20,
-          color: colorScheme.onSurface.withAlpha(185),
-        ),
-        onSelected: (action) {
-          switch (action) {
-            case _CardOverflowAction.downloadOrDelete:
-              if (isDownloaded) {
-                onDeleteDownload?.call();
-              } else {
-                onDownload?.call();
+      child: SizedBox(
+        height: 36,
+        width: 36,
+        child: Center(
+          child: PopupMenuButton<_CardOverflowAction>(
+            tooltip: 'More actions',
+            position: PopupMenuPosition.under,
+            padding: EdgeInsets.zero,
+            icon: Icon(
+              Icons.more_horiz_rounded,
+              size: 21,
+              color: colorScheme.onSurface.withAlpha(185),
+            ),
+            onSelected: (action) {
+              switch (action) {
+                case _CardOverflowAction.downloadOrDelete:
+                  if (isDownloaded) {
+                    onDeleteDownload?.call();
+                  } else {
+                    onDownload?.call();
+                  }
+                  break;
+                case _CardOverflowAction.favourite:
+                  if (isFavourite) {
+                    FavouritesDB().delete(_favouriteKey);
+                  } else {
+                    unawaited(_showInputPrompt(context));
+                  }
+                  break;
+                case _CardOverflowAction.share:
+                  onShare?.call();
+                  break;
+                case _CardOverflowAction.switchTranslation:
+                  onSwitchTranslation?.call();
+                  break;
               }
-              break;
-            case _CardOverflowAction.favourite:
-              if (isFavourite) {
-                FavouritesDB().delete(_favouriteKey);
-              } else {
-                unawaited(_showInputPrompt(context));
-              }
-              break;
-            case _CardOverflowAction.share:
-              onShare?.call();
-              break;
-            case _CardOverflowAction.switchTranslation:
-              onSwitchTranslation?.call();
-              break;
-          }
-        },
-        itemBuilder: (context) {
-          return <PopupMenuEntry<_CardOverflowAction>>[
-            PopupMenuItem<_CardOverflowAction>(
-              value: _CardOverflowAction.downloadOrDelete,
-              enabled: !isDownloading &&
-                  (isDownloaded ? onDeleteDownload != null : onDownload != null),
-              child: _OverflowMenuItem(
-                icon: isDownloading
-                    ? Icons.downloading_rounded
-                    : isDownloaded
-                        ? Icons.delete_outline_rounded
-                        : Icons.download_rounded,
-                label: isDownloading
-                    ? 'Downloading'
-                    : isDownloaded
-                        ? 'Delete downloaded ayah'
-                        : 'Download ayah',
-              ),
-            ),
-            PopupMenuItem<_CardOverflowAction>(
-              value: _CardOverflowAction.switchTranslation,
-              enabled: onSwitchTranslation != null,
-              child: const _OverflowMenuItem(
-                icon: Icons.language_rounded,
-                label: 'Translation language',
-              ),
-            ),
-            PopupMenuItem<_CardOverflowAction>(
-              value: _CardOverflowAction.favourite,
-              child: _OverflowMenuItem(
-                icon: isFavourite
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
-                label: isFavourite ? 'Remove favourite' : 'Favourite',
-              ),
-            ),
-            if (onShare != null)
-              const PopupMenuItem<_CardOverflowAction>(
-                value: _CardOverflowAction.share,
-                child: _OverflowMenuItem(
-                  icon: Icons.ios_share_rounded,
-                  label: 'Share image',
+            },
+            itemBuilder: (context) {
+              return <PopupMenuEntry<_CardOverflowAction>>[
+                PopupMenuItem<_CardOverflowAction>(
+                  value: _CardOverflowAction.downloadOrDelete,
+                  enabled: !isDownloading &&
+                      (isDownloaded ? onDeleteDownload != null : onDownload != null),
+                  child: _OverflowMenuItem(
+                    icon: isDownloading
+                        ? Icons.downloading_rounded
+                        : isDownloaded
+                            ? Icons.delete_outline_rounded
+                            : Icons.download_rounded,
+                    label: isDownloading
+                        ? 'Downloading'
+                        : isDownloaded
+                            ? 'Delete downloaded ayah'
+                            : 'Download ayah',
+                  ),
                 ),
-              ),
-          ];
-        },
+                if (showTranslation && onSwitchTranslation != null)
+                  PopupMenuItem<_CardOverflowAction>(
+                    value: _CardOverflowAction.switchTranslation,
+                    child: const _OverflowMenuItem(
+                      icon: Icons.language_rounded,
+                      label: 'Translation language',
+                    ),
+                  ),
+                PopupMenuItem<_CardOverflowAction>(
+                  value: _CardOverflowAction.favourite,
+                  child: _OverflowMenuItem(
+                    icon: isFavourite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    label: isFavourite ? 'Remove favourite' : 'Favourite',
+                  ),
+                ),
+                if (onShare != null)
+                  const PopupMenuItem<_CardOverflowAction>(
+                    value: _CardOverflowAction.share,
+                    child: _OverflowMenuItem(
+                      icon: Icons.ios_share_rounded,
+                      label: 'Share image',
+                    ),
+                  ),
+              ];
+            },
+          ),
+        ),
       ),
     );
   }

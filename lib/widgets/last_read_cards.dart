@@ -8,27 +8,12 @@ import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:quran/quran.dart';
 
 class LastReadCard extends StatefulWidget {
-  const LastReadCard({super.key});
+  const LastReadCard({super.key, required this.entries});
 
-  Future<void> _handleMenuAction(String value, ReadingEntry entry) async {
-    if (value == 'delete') {
-      await BookmarkDB().delete(entry.surah);
-    }
-  }
+  final List<ReadingEntry> entries;
 
-  @override
-  State<LastReadCard> createState() => _LastReadCardState();
-}
-
-class _LastReadCardState extends State<LastReadCard> {
-  int _currentPage = 0;
-
-  List<ReadingEntry> displayReadingHistory() {
-    final rawEntries = BookmarkDB().box
-        .toMap()
-        .values
-        .whereType<ReadingEntry>()
-        .toList();
+  static List<ReadingEntry> displayReadingHistory(Iterable<dynamic> values) {
+    final rawEntries = values.whereType<ReadingEntry>().toList();
 
     // Keep one record per surah: latest ayah read only.
     final Map<int, ReadingEntry> latestPerSurah = <int, ReadingEntry>{};
@@ -44,6 +29,35 @@ class _LastReadCardState extends State<LastReadCard> {
     return entries.take(7).toList();
   }
 
+  Future<void> _handleMenuAction(String value, ReadingEntry entry) async {
+    if (value == 'delete') {
+      await BookmarkDB().delete(entry.surah);
+    }
+  }
+
+  @override
+  State<LastReadCard> createState() => _LastReadCardState();
+}
+
+class _LastReadCardState extends State<LastReadCard> {
+  static const double _estimatedCarouselPageSize = 158;
+
+  int _currentPage = 0;
+
+  @override
+  void didUpdateWidget(covariant LastReadCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.entries.isEmpty) {
+      _currentPage = 0;
+      return;
+    }
+
+    final int maxPage = widget.entries.length - 1;
+    if (_currentPage > maxPage) {
+      _currentPage = maxPage;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -57,7 +71,11 @@ class _LastReadCardState extends State<LastReadCard> {
       viewportFraction = 1;
     }
 
-    List<ReadingEntry> entries = displayReadingHistory();
+    final List<ReadingEntry> entries = widget.entries;
+    if (entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     final int activeIndex = entries.isEmpty
         ? 0
         : _currentPage.clamp(0, entries.length - 1).toInt();
@@ -65,56 +83,76 @@ class _LastReadCardState extends State<LastReadCard> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        ExpandableCarousel.builder(
-          itemCount: entries.length,
-          itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
-            final ReadingEntry entry = entries[itemIndex];
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 260),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) {
-                final Animation<Offset> offsetAnimation = Tween<Offset>(
-                  begin: const Offset(0.04, 0),
-                  end: Offset.zero,
-                ).animate(animation);
+        Stack(
+          children: <Widget>[
+            ExpandableCarousel.builder(
+              itemCount: entries.length,
+              itemBuilder:
+                  (BuildContext context, int itemIndex, int pageViewIndex) {
+                    final ReadingEntry entry = entries[itemIndex];
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 260),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) {
+                        final Animation<Offset> offsetAnimation =
+                            Tween<Offset>(
+                              begin: const Offset(0.04, 0),
+                              end: Offset.zero,
+                            ).animate(animation);
 
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: offsetAnimation,
-                    child: child,
-                  ),
-                );
-              },
-              child: _LastReadEntryCard(
-                key: ValueKey<String>(
-                  '${entry.surah}-${entry.verse}-${entry.timestamp.microsecondsSinceEpoch}',
-                ),
-                entry: entry,
-                onMenuAction: widget._handleMenuAction,
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: offsetAnimation,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: _LastReadEntryCard(
+                        key: ValueKey<String>(
+                          '${entry.surah}-${entry.verse}-${entry.timestamp.microsecondsSinceEpoch}',
+                        ),
+                        entry: entry,
+                        onMenuAction: widget._handleMenuAction,
+                        showIndicatorSpace: entries.length > 1,
+                      ),
+                    );
+                  },
+              options: ExpandableCarouselOptions(
+                showIndicator: false,
+                estimatedPageSize: _estimatedCarouselPageSize,
+                enableInfiniteScroll: false,
+                viewportFraction: viewportFraction,
+                initialPage: 0,
+                onPageChanged: (int index, _) {
+                  if (!mounted) return;
+                  final int normalizedIndex = index
+                      .clamp(0, entries.length - 1)
+                      .toInt();
+                  setState(() {
+                    _currentPage = normalizedIndex;
+                  });
+                },
               ),
-            );
-          },
-          options: ExpandableCarouselOptions(
-            showIndicator: false,
-            viewportFraction: viewportFraction,
-            initialPage: 0,
-            onPageChanged: (int index, _) {
-              if (!mounted) return;
-              setState(() {
-                _currentPage = index;
-              });
-            },
-          ),
+            ),
+            if (entries.length > 1)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: _CarouselPillsIndicator(
+                        itemCount: entries.length,
+                        activeIndex: activeIndex,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
-        if (entries.length > 1) ...<Widget>[
-          const SizedBox(height: 10),
-          _CarouselPillsIndicator(
-            itemCount: entries.length,
-            activeIndex: activeIndex,
-          ),
-        ],
       ],
     );
   }
@@ -131,8 +169,7 @@ class _CarouselPillsIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -140,22 +177,22 @@ class _CarouselPillsIndicator extends StatelessWidget {
       children: List<Widget>.generate(itemCount, (index) {
         final bool isActive = index == activeIndex;
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 260),
+          duration: const Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 2.5),
-          width: isActive ? 18 : 6,
-          height: 6,
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          width: isActive ? 14 : 5,
+          height: 5,
           decoration: BoxDecoration(
             color: isActive
                 ? colorScheme.primary
-                : colorScheme.onSurfaceVariant.withAlpha(90),
+                : colorScheme.onSurfaceVariant.withAlpha(88),
             borderRadius: BorderRadius.circular(999),
             boxShadow: isActive
                 ? <BoxShadow>[
                     BoxShadow(
-                      color: colorScheme.primary.withAlpha(40),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+                      color: colorScheme.primary.withAlpha(34),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
                   ]
                 : null,
@@ -171,10 +208,12 @@ class _LastReadEntryCard extends StatelessWidget {
     super.key,
     required this.entry,
     required this.onMenuAction,
+    required this.showIndicatorSpace,
   });
 
   final ReadingEntry entry;
   final Future<void> Function(String value, ReadingEntry entry) onMenuAction;
+  final bool showIndicatorSpace;
 
   @override
   Widget build(BuildContext context) {
@@ -277,6 +316,7 @@ class _LastReadEntryCard extends StatelessWidget {
                     fontSize: 15,
                   ),
                 ),
+                if (showIndicatorSpace) const SizedBox(height: 26),
               ],
             ),
           ),

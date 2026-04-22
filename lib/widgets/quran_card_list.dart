@@ -121,7 +121,7 @@ class _QuranCardListState extends State<QuranCardList>
                         return QuranCard(
                           surah: data[index],
                           compact: true,
-                          reduceTitleSize: columns == 2,
+                          reduceTitleSize: columns == 3,
                         );
                       },
                     ),

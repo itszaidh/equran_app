@@ -405,7 +405,7 @@ class _MainPageState extends State<MainPage>
     return ValueListenableBuilder(
       valueListenable: BookmarkDB().listener,
       builder: (BuildContext context, Box<dynamic> box, child) {
-        final entries = box.values.whereType<ReadingEntry>().toList();
+        final entries = LastReadCard.displayReadingHistory(box.values);
         Widget currentChild = const SizedBox.shrink(
           key: ValueKey<String>('last-read-empty'),
         );
@@ -413,6 +413,7 @@ class _MainPageState extends State<MainPage>
         if (entries.isNotEmpty) {
           currentChild = LastReadCard(
             key: const ValueKey<String>('last-read-card'),
+            entries: entries,
           );
         }
 
@@ -423,11 +424,7 @@ class _MainPageState extends State<MainPage>
           transitionBuilder: (child, animation) {
             return FadeTransition(
               opacity: animation,
-              child: SizeTransition(
-                sizeFactor: animation,
-                axisAlignment: -1,
-                child: child,
-              ),
+              child: child,
             );
           },
           child: currentChild,

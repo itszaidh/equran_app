@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui' show DisplayFeature, DisplayFeatureType;
+import 'dart:ui' show DisplayFeature, DisplayFeatureType, ImageFilter;
 
 import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:equran/backend/library.dart'
@@ -173,7 +173,9 @@ class _PlayerPageState extends State<PlayerPage> {
   bool _loopEnabled = false;
   bool _isCompletingTrack = false;
   bool _showProgressThumb = false;
+  bool _isScrubbing = false;
   double? _pendingSeekProgress;
+  Duration? _scrubPreviewPosition;
 
   double _playbackRate = 1.0;
   Duration _position = Duration.zero;
@@ -202,6 +204,7 @@ class _PlayerPageState extends State<PlayerPage> {
       _fallbackPositionSubscription = _fallbackAudio.onPositionChanged.listen((
         position,
       ) {
+        if (_isScrubbing) return;
         _safeSetState(() {
           _position = position;
         });
@@ -221,7 +224,11 @@ class _PlayerPageState extends State<PlayerPage> {
         _safeSetState(() {
           _isPlaying = state == ap.PlayerState.playing;
           _isPaused = state == ap.PlayerState.paused;
-          if (_isPlaying || _isPaused || state == ap.PlayerState.stopped) {
+          if (_isLoading) {
+            if (_isPlaying) {
+              _isLoading = false;
+            }
+          } else if (_isPaused || state == ap.PlayerState.stopped) {
             _isLoading = false;
           }
         });
@@ -241,6 +248,7 @@ class _PlayerPageState extends State<PlayerPage> {
     }
 
     _positionSubscription = _justAudio.positionStream.listen((position) {
+      if (_isScrubbing) return;
       _safeSetState(() {
         _position = position;
       });
@@ -257,8 +265,8 @@ class _PlayerPageState extends State<PlayerPage> {
         _isPlaying = state.playing;
         _isPaused =
             !state.playing && state.processingState == ja.ProcessingState.ready;
-        if (_isPlaying ||
-            state.processingState == ja.ProcessingState.ready ||
+        if ((state.playing &&
+                state.processingState == ja.ProcessingState.ready) ||
             state.processingState == ja.ProcessingState.completed) {
           _isLoading = false;
         }
@@ -452,16 +460,20 @@ class _PlayerPageState extends State<PlayerPage> {
   }
 
   Future<void> _playSurah(int surah, {bool forceRestart = false}) async {
-    final bool shouldPlayOffline = await _hasOfflineFile(surah);
-
     _safeSetState(() {
       _selectedSurah = surah;
-      _isDownloaded = shouldPlayOffline;
-      _playingFromOffline = shouldPlayOffline;
       _isLoading = true;
     });
 
     try {
+      final bool shouldPlayOffline = await _hasOfflineFile(surah);
+
+      _safeSetState(() {
+        _selectedSurah = surah;
+        _isDownloaded = shouldPlayOffline;
+        _playingFromOffline = shouldPlayOffline;
+      });
+
       final bool sameTrack =
           _loadedSurah == surah &&
           _loadedFromOffline == shouldPlayOffline &&
@@ -480,7 +492,6 @@ class _PlayerPageState extends State<PlayerPage> {
           const SnackBar(content: Text('Unable to play surah audio.')),
         );
       }
-    } finally {
       _safeSetState(() {
         _isLoading = false;
       });
@@ -511,6 +522,10 @@ class _PlayerPageState extends State<PlayerPage> {
     if (_duration.inMilliseconds <= 0) return;
     final int ms = (_duration.inMilliseconds * fraction).round();
     await _seekCurrentTrack(Duration(milliseconds: ms));
+  }
+
+  Duration _positionForProgress() {
+    return _scrubPreviewPosition ?? _position;
   }
 
   void _revealProgressThumb() {
@@ -545,21 +560,36 @@ class _PlayerPageState extends State<PlayerPage> {
       ),
       child: Slider(
         value: (_pendingSeekProgress ?? progress).clamp(0.0, 1.0),
-        onChangeStart: (_) => _revealProgressThumb(),
+        onChangeStart: (value) {
+          _revealProgressThumb();
+          _safeSetState(() {
+            _isScrubbing = true;
+            _pendingSeekProgress = value;
+            final int pendingMs = (_duration.inMilliseconds * value).round();
+            _scrubPreviewPosition = Duration(milliseconds: pendingMs);
+          });
+        },
         onChanged: (value) {
           _revealProgressThumb();
           _safeSetState(() {
             _pendingSeekProgress = value;
             final int pendingMs = (_duration.inMilliseconds * value).round();
-            _position = Duration(milliseconds: pendingMs);
+            _scrubPreviewPosition = Duration(milliseconds: pendingMs);
           });
         },
         onChangeEnd: (value) async {
           _hideProgressThumbSoon();
-          await _seek(value);
-          _safeSetState(() {
-            _pendingSeekProgress = null;
-          });
+          final int pendingMs = (_duration.inMilliseconds * value).round();
+          try {
+            await _seek(value);
+          } finally {
+            _safeSetState(() {
+              _position = Duration(milliseconds: pendingMs);
+              _isScrubbing = false;
+              _pendingSeekProgress = null;
+              _scrubPreviewPosition = null;
+            });
+          }
         },
       ),
     );
@@ -636,46 +666,56 @@ class _PlayerPageState extends State<PlayerPage> {
   }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadii.large),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: <Color>[
-              colorScheme.surfaceContainerHigh.withAlpha((0.78 * 255).round()),
-              colorScheme.surfaceContainerHigh.withAlpha((0.64 * 255).round()),
-            ],
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: const SizedBox.expand(),
           ),
-          borderRadius: BorderRadius.circular(AppRadii.large),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(8),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  colorScheme.surface.withValues(alpha: 0.14),
+                  colorScheme.surfaceContainerHigh.withValues(alpha: 0.10),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(AppRadii.large),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.36),
+              ),
+            ),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-              child: Text(
-                'Choose Surah',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                child: Text(
+                  'Choose Surah',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-            Divider(
-              height: 1,
-              color: colorScheme.outlineVariant.withValues(alpha: 0.35),
-            ),
-            Expanded(
-              child: _buildSurahSelectionList(
-                theme: theme,
-                colorScheme: colorScheme,
-                closeOnSelect: false,
+              Divider(
+                height: 1,
+                color: colorScheme.outlineVariant.withValues(alpha: 0.28),
               ),
-            ),
-          ],
-        ),
+              Expanded(
+                child: _buildSurahSelectionList(
+                  theme: theme,
+                  colorScheme: colorScheme,
+                  closeOnSelect: false,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -895,8 +935,12 @@ class _PlayerPageState extends State<PlayerPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final Duration displayedPosition = _positionForProgress();
     final double progress = _duration.inMilliseconds > 0
-        ? (_position.inMilliseconds / _duration.inMilliseconds).clamp(0.0, 1.0)
+        ? (displayedPosition.inMilliseconds / _duration.inMilliseconds).clamp(
+            0.0,
+            1.0,
+          )
         : 0.0;
 
     final List<double> playbackRates = <double>[0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
@@ -995,6 +1039,26 @@ class _PlayerPageState extends State<PlayerPage> {
                   double.infinity,
                 ) +
                 16);
+        final double timeLabelWidth = _duration.inHours > 0 ? 76.0 : 56.0;
+
+        Widget buildTimeLabel(
+          Duration value, {
+          TextAlign textAlign = TextAlign.left,
+        }) {
+          return SizedBox(
+            width: timeLabelWidth,
+            child: Text(
+              _time(value),
+              maxLines: 1,
+              softWrap: false,
+              textAlign: textAlign,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          );
+        }
 
         final header = Padding(
           padding: EdgeInsets.only(bottom: isDesktop ? 24 : 16),
@@ -1134,6 +1198,29 @@ class _PlayerPageState extends State<PlayerPage> {
           );
         }
 
+        Widget buildPlayPauseChild() {
+          return SizedBox.square(
+            dimension: playerControlIconSize,
+            child: Center(
+              child: _isLoading
+                  ? SizedBox(
+                      width: loadingIndicatorSize,
+                      height: loadingIndicatorSize,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        color: colorScheme.onPrimary,
+                      ),
+                    )
+                  : Icon(
+                      _isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      size: playerControlIconSize,
+                    ),
+            ),
+          );
+        }
+
         Widget buildArtworkActions() {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1213,18 +1300,8 @@ class _PlayerPageState extends State<PlayerPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text(
-                  _time(_position),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                Text(
-                  _time(_duration),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
+                buildTimeLabel(displayedPosition),
+                buildTimeLabel(_duration, textAlign: TextAlign.right),
               ],
             ),
             const SizedBox(height: 8),
@@ -1255,21 +1332,7 @@ class _PlayerPageState extends State<PlayerPage> {
                     shape: const CircleBorder(),
                     padding: EdgeInsets.all(playButtonPadding),
                   ),
-                  child: _isLoading
-                      ? SizedBox(
-                          width: loadingIndicatorSize,
-                          height: loadingIndicatorSize,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.4,
-                            color: colorScheme.onPrimary,
-                          ),
-                        )
-                      : Icon(
-                          _isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          size: playerControlIconSize,
-                        ),
+                  child: buildPlayPauseChild(),
                 ),
                 IconButton(
                   tooltip: 'Next',
@@ -1452,21 +1515,7 @@ class _PlayerPageState extends State<PlayerPage> {
                                   shape: const CircleBorder(),
                                   padding: EdgeInsets.all(playButtonPadding),
                                 ),
-                                child: _isLoading
-                                    ? SizedBox(
-                                        width: loadingIndicatorSize,
-                                        height: loadingIndicatorSize,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.4,
-                                          color: colorScheme.onPrimary,
-                                        ),
-                                      )
-                                    : Icon(
-                                        _isPlaying
-                                            ? Icons.pause_rounded
-                                            : Icons.play_arrow_rounded,
-                                        size: playerControlIconSize,
-                                      ),
+                                child: buildPlayPauseChild(),
                               ),
                               const SizedBox(width: 6),
                               IconButton(
@@ -1493,15 +1542,7 @@ class _PlayerPageState extends State<PlayerPage> {
                           const SizedBox(height: 14),
                           Row(
                             children: <Widget>[
-                              Text(
-                                _time(_position),
-                                maxLines: 1,
-                                softWrap: false,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              buildTimeLabel(displayedPosition),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: _buildProgressSlider(
@@ -1510,15 +1551,9 @@ class _PlayerPageState extends State<PlayerPage> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Text(
-                                _time(_duration),
-                                maxLines: 1,
-                                softWrap: false,
+                              buildTimeLabel(
+                                _duration,
                                 textAlign: TextAlign.right,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.w500,
-                                ),
                               ),
                             ],
                           ),
