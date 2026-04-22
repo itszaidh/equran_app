@@ -371,7 +371,7 @@ class _MainPageState extends State<MainPage>
   }
 
   String get _searchHint => switch (_selectedSegment) {
-    1 => "Juz, surah, or number...",
+    1 => "Juz number or surah name...",
     2 => "Saved ayah, surah, note, or number...",
     _ => "Surah name or number...",
   };

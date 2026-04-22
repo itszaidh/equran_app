@@ -10,9 +10,13 @@ import 'package:equran/backend/library.dart'
         AudioDownloadService,
         DownloadNotifications,
         FavouritesDB,
+        QuranTransliterationService,
         QuranAudioService,
-        SettingsDB;
+        SettingsDB,
+        TafsirService,
+        TafsirSource;
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/app_slider_theme.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/utils/translation_display.dart';
 import 'package:equran/widgets/library.dart'
@@ -70,7 +74,10 @@ class _ReadPageState extends State<ReadPage> {
   bool _isVersePlaying = false;
   bool _isVerseLoading = false;
   bool _isDownloadingSurahAyahs = false;
+  bool _isDownloadingCurrentAyah = false;
   bool _hasDownloadedSurahAyahs = false;
+  bool _hasDownloadedCurrentAyah = false;
+  List<String> _chapterTransliterations = const <String>[];
   bool _continuousPlayback = false;
   bool _repeatIntervalEnabled = false;
   int _playbackRequestId = 0;
@@ -115,6 +122,8 @@ class _ReadPageState extends State<ReadPage> {
     _isDownloadingSurahAyahs = AudioDownloadService()
         .isSurahAyahsDownloadInProgress(_currentChapter);
     unawaited(_refreshSurahAyahDownloadState());
+    unawaited(_refreshCurrentAyahDownloadState());
+    unawaited(_loadChapterTransliterations());
     _pageFocusNode = FocusNode(debugLabel: 'Read Page Keyboard Focus');
     _getTotalVerses();
     _repeatStartVerse = _currentVerse;
@@ -132,6 +141,7 @@ class _ReadPageState extends State<ReadPage> {
       BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
     }
     unawaited(_setKeepScreenOn(false));
+    unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
     unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(false));
     _playerPositionSubscription?.cancel();
     _playerDurationSubscription?.cancel();
@@ -504,9 +514,9 @@ class _ReadPageState extends State<ReadPage> {
                           ),
                   ),
                 IconButton(
-                  tooltip: 'Jump to verse',
+                  tooltip: 'Go to ayah',
                   onPressed: () => _showJumpToVerseDialog(context),
-                  icon: const Icon(Icons.format_list_numbered_rounded),
+                  icon: const Icon(Icons.my_location_rounded),
                 ),
                 const SizedBox(width: 6),
               ],
@@ -558,129 +568,129 @@ class _ReadPageState extends State<ReadPage> {
     });
   }
 
-Future<void> _showJumpToVerseDialog(BuildContext context) async {
-  if (!_viewMode) {
-    _syncCurrentVerseWithVisibleText(persist: true);
-  }
+  Future<void> _showJumpToVerseDialog(BuildContext context) async {
+    if (!_viewMode) {
+      _syncCurrentVerseWithVisibleText(persist: true);
+    }
 
-  final TextEditingController controller = TextEditingController(
-    text: _currentVerse.toString(),
-  );
-  final FocusNode focusNode = FocusNode();
-  String? errorText;
+    final TextEditingController controller = TextEditingController(
+      text: _currentVerse.toString(),
+    );
+    final FocusNode focusNode = FocusNode();
+    String? errorText;
 
-  await showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (sheetContext) {
-      final theme = Theme.of(sheetContext);
-      final colorScheme = theme.colorScheme;
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final ThemeData theme = Theme.of(sheetContext);
+        final ColorScheme colorScheme = theme.colorScheme;
 
-      Future<void> submit(StateSetter setSheetState) async {
-        final int? value = int.tryParse(controller.text.trim());
+        Future<void> submit(StateSetter setSheetState) async {
+          final int? value = int.tryParse(controller.text.trim());
 
-        if (value == null || value < 1 || value > _totalVerses) {
-          setSheetState(() {
-            errorText = 'Enter a verse between 1 and $_totalVerses';
-          });
-          return;
+          if (value == null || value < 1 || value > _totalVerses) {
+            setSheetState(() {
+              errorText = 'Enter a verse between 1 and $_totalVerses';
+            });
+            return;
+          }
+
+          _setVerse(value);
+          if (!_viewMode) {
+            _scrollToInlineVerse(value, highlight: true);
+          } else {
+            _scrollUp();
+          }
+          _updateDB();
+
+          if (Navigator.of(sheetContext).canPop()) {
+            Navigator.of(sheetContext).pop();
+          }
         }
 
-        _setVerse(value);
-        if (!_viewMode) {
-          _scrollToInlineVerse(value, highlight: true);
-        } else {
-          _scrollUp();
-        }
-        _updateDB();
-
-        if (Navigator.of(sheetContext).canPop()) {
-          Navigator.of(sheetContext).pop();
-        }
-      }
-
-      return StatefulBuilder(
-        builder: (context, setSheetState) {
-          return SingleChildScrollView(
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(
-    20,
-    8,
-    20,
-    MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-  ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  'Jump to verse',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Enter a verse number from 1 to $_totalVerses',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  autofocus: true,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.go,
-                  textAlign: TextAlign.center,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  decoration: InputDecoration(
-                    hintText: 'Verse number',
-                    errorText: errorText,
-                    filled: true,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                20,
+                8,
+                20,
+                MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Text(
+                    'Go to ayah',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  onChanged: (_) {
-                    if (errorText != null) {
-                      setSheetState(() {
-                        errorText = null;
-                      });
-                    }
-                  },
-                  onSubmitted: (_) => submit(setSheetState),
-                ),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: () => submit(setSheetState),
-                  child: const Text('Go'),
-                ),
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(),
-                  child: const Text('Cancel'),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
-  );
+                  const SizedBox(height: 6),
+                  Text(
+                    'Enter a verse number from 1 to $_totalVerses',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.go,
+                    textAlign: TextAlign.center,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    decoration: InputDecoration(
+                      hintText: 'Verse number',
+                      errorText: errorText,
+                      filled: true,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onChanged: (_) {
+                      if (errorText != null) {
+                        setSheetState(() {
+                          errorText = null;
+                        });
+                      }
+                    },
+                    onSubmitted: (_) => submit(setSheetState),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: () => submit(setSheetState),
+                    child: const Text('Go'),
+                  ),
+                  const SizedBox(height: 4),
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
 
-  controller.dispose();
-  focusNode.dispose();
-}
+    controller.dispose();
+    focusNode.dispose();
+  }
 
   Future<void> _saveProgressOnExit() async {
     if (_hasSavedOnExit) return;
@@ -705,10 +715,38 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
 
   Future<void> _updateKeepScreenOn() async {
     await _setKeepScreenOn(
-      !_viewMode &&
-          _playerVisible &&
+      _playerVisible &&
           (_continuousPlayback || _repeatIntervalEnabled),
     );
+  }
+
+  Future<void> _refreshCurrentAyahDownloadState() async {
+    final bool hasAyah = await AudioDownloadService().hasAyah(
+      _currentChapter,
+      _currentVerse,
+    );
+    if (!mounted) return;
+    setState(() {
+      _hasDownloadedCurrentAyah = hasAyah;
+    });
+  }
+
+  Future<void> _loadChapterTransliterations() async {
+    final int chapter = _currentChapter;
+    final List<String> transliterations = await QuranTransliterationService
+        .instance
+        .versesForSurah(chapter);
+    if (!mounted || chapter != _currentChapter) return;
+    setState(() {
+      _chapterTransliterations = transliterations;
+    });
+  }
+
+  String _currentVerseTransliteration() {
+    if (_currentVerse < 1 || _currentVerse > _chapterTransliterations.length) {
+      return '';
+    }
+    return _chapterTransliterations[_currentVerse - 1];
   }
 
   Future<void> _playVerse(
@@ -891,8 +929,8 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
     );
   }
 
-  Future<void> _playAdjacentPageViewAyah(int direction) async {
-    if (_viewMode || _isVerseLoading) return;
+  Future<void> _playAdjacentAyah(int direction) async {
+    if (_isVerseLoading) return;
 
     final int currentVerse = _playingVerse ?? _currentVerse;
     final int targetVerse = currentVerse + direction;
@@ -980,6 +1018,32 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
           _isDownloadingSurahAyahs = false;
         });
       }
+    }
+  }
+
+  Future<void> _downloadCurrentAyah() async {
+    if (_isDownloadingCurrentAyah || _isDownloadingSurahAyahs) return;
+    try {
+      setState(() {
+        _isDownloadingCurrentAyah = true;
+      });
+      await AudioDownloadService().downloadAyah(_currentChapter, _currentVerse);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Downloaded ayah $_currentChapter:$_currentVerse')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to download ayah audio.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isDownloadingCurrentAyah = false;
+        });
+      }
+      unawaited(_refreshCurrentAyahDownloadState());
     }
   }
 
@@ -1284,6 +1348,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
       _hasDownloadedSurahAyahs = false;
     });
     unawaited(_refreshSurahAyahDownloadState());
+    unawaited(_loadChapterTransliterations());
     _updateDB();
   }
 
@@ -1303,6 +1368,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
       _hasDownloadedSurahAyahs = false;
     });
     unawaited(_refreshSurahAyahDownloadState());
+    unawaited(_loadChapterTransliterations());
     _updateDB();
   }
 
@@ -1316,6 +1382,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
     setState(() {
       _currentVerse = value;
     });
+    unawaited(_refreshCurrentAyahDownloadState());
   }
 
   void _decrementVerse() {
@@ -1342,6 +1409,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
     setState(() {
       _currentChapter++;
     });
+    unawaited(_loadChapterTransliterations());
   }
 
   void _resetChapter() {
@@ -1349,6 +1417,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
     setState(() {
       _currentChapter = 1;
     });
+    unawaited(_loadChapterTransliterations());
   }
 
   void _vibrate() async {
@@ -1376,6 +1445,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
 
   void _updateDB() {
     BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
+    unawaited(_refreshCurrentAyahDownloadState());
   }
 
   void _updateVerseFromProgress({
@@ -1454,6 +1524,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
             onLongPressStart: (details) {
+              unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
               setState(() {
                 _isScrubbingProgress = true;
                 _scrubStartVerse = _currentVerse;
@@ -1476,6 +1547,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
               );
             },
             onLongPressEnd: (_) {
+              unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
               setState(() {
                 _isScrubbingProgress = false;
                 _scrubStartVerse = null;
@@ -1485,6 +1557,7 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
               });
             },
             onLongPressCancel: () {
+              unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
               setState(() {
                 _isScrubbingProgress = false;
                 _scrubStartVerse = null;
@@ -1625,11 +1698,14 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
                 children: <Widget>[
                   Padding(
                     padding: const EdgeInsets.only(right: 36),
-                    child: Slider(
-                      value: progress,
-                      onChanged: duration.inMilliseconds <= 0
-                          ? null
-                          : _seekBottomPlayer,
+                    child: SliderTheme(
+                      data: AppSliderTheme.standard(context),
+                      child: Slider(
+                        value: progress,
+                        onChanged: duration.inMilliseconds <= 0
+                            ? null
+                            : _seekBottomPlayer,
+                      ),
                     ),
                   ),
                   Row(
@@ -1654,17 +1730,15 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       _buildAutoPlaybackButton(colorScheme),
-                      if (!_viewMode) ...<Widget>[
-                        const SizedBox(width: 8),
-                        _buildPageViewAyahNavButton(
-                          icon: Icons.skip_previous_rounded,
-                          tooltip: 'Previous ayah',
-                          onPressed: (_playingVerse ?? _currentVerse) <= 1
-                              ? null
-                              : () => unawaited(_playAdjacentPageViewAyah(-1)),
-                        ),
-                      ],
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 14),
+                      _buildPageViewAyahNavButton(
+                        icon: Icons.skip_previous_rounded,
+                        tooltip: 'Previous ayah',
+                        onPressed: (_playingVerse ?? _currentVerse) <= 1
+                            ? null
+                            : () => unawaited(_playAdjacentAyah(-1)),
+                      ),
+                      const SizedBox(width: 14),
                       FilledButton(
                         onPressed: _toggleBottomPlayer,
                         style: FilledButton.styleFrom(
@@ -1687,18 +1761,16 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
                                 size: 32,
                               ),
                       ),
-                      if (!_viewMode) ...<Widget>[
-                        const SizedBox(width: 8),
-                        _buildPageViewAyahNavButton(
-                          icon: Icons.skip_next_rounded,
-                          tooltip: 'Next ayah',
-                          onPressed:
-                              (_playingVerse ?? _currentVerse) >= _totalVerses
-                              ? null
-                              : () => unawaited(_playAdjacentPageViewAyah(1)),
-                        ),
-                      ],
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 14),
+                      _buildPageViewAyahNavButton(
+                        icon: Icons.skip_next_rounded,
+                        tooltip: 'Next ayah',
+                        onPressed:
+                            (_playingVerse ?? _currentVerse) >= _totalVerses
+                            ? null
+                            : () => unawaited(_playAdjacentAyah(1)),
+                      ),
+                      const SizedBox(width: 14),
                       _buildRepeatIntervalButton(colorScheme),
                     ],
                   ),
@@ -1787,17 +1859,15 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               _buildAutoPlaybackButton(colorScheme),
-                              if (!_viewMode)
-                                _buildPageViewAyahNavButton(
-                                  icon: Icons.skip_previous_rounded,
-                                  tooltip: 'Previous ayah',
-                                  onPressed:
-                                      (_playingVerse ?? _currentVerse) <= 1
-                                      ? null
-                                      : () => unawaited(
-                                          _playAdjacentPageViewAyah(-1),
-                                        ),
-                                ),
+                              const SizedBox(width: 10),
+                              _buildPageViewAyahNavButton(
+                                icon: Icons.skip_previous_rounded,
+                                tooltip: 'Previous ayah',
+                                onPressed: (_playingVerse ?? _currentVerse) <= 1
+                                    ? null
+                                    : () => unawaited(_playAdjacentAyah(-1)),
+                              ),
+                              const SizedBox(width: 10),
                               FilledButton(
                                 onPressed: _toggleBottomPlayer,
                                 style: FilledButton.styleFrom(
@@ -1820,18 +1890,16 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
                                         size: 32,
                                       ),
                               ),
-                              if (!_viewMode)
-                                _buildPageViewAyahNavButton(
-                                  icon: Icons.skip_next_rounded,
-                                  tooltip: 'Next ayah',
-                                  onPressed:
-                                      (_playingVerse ?? _currentVerse) >=
-                                          _totalVerses
-                                      ? null
-                                      : () => unawaited(
-                                          _playAdjacentPageViewAyah(1),
-                                        ),
-                                ),
+                              _buildPageViewAyahNavButton(
+                                icon: Icons.skip_next_rounded,
+                                tooltip: 'Next ayah',
+                                onPressed:
+                                    (_playingVerse ?? _currentVerse) >=
+                                        _totalVerses
+                                    ? null
+                                    : () => unawaited(_playAdjacentAyah(1)),
+                              ),
+                              const SizedBox(width: 10),
                               _buildRepeatIntervalButton(colorScheme),
                             ],
                           ),
@@ -1851,11 +1919,14 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
                                 ),
                               ),
                               Expanded(
-                                child: Slider(
-                                  value: progress,
-                                  onChanged: duration.inMilliseconds <= 0
-                                      ? null
-                                      : _seekBottomPlayer,
+                                child: SliderTheme(
+                                  data: AppSliderTheme.standard(context),
+                                  child: Slider(
+                                    value: progress,
+                                    onChanged: duration.inMilliseconds <= 0
+                                        ? null
+                                        : _seekBottomPlayer,
+                                  ),
                                 ),
                               ),
                               SizedBox(
@@ -2061,45 +2132,52 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: ReadQuranCard(
-  currentChapter: _currentChapter,
-  currentVerse: _currentVerse,
-  totalVerses: _totalVerses,
-  juzNumber: quran.getJuzNumber(
-    _currentChapter,
-    _currentVerse,
-  ),
-  basmala:
-      _currentChapter != 1 &&
-          _currentVerse == 1 &&
-          _currentChapter != 9
-      ? quran.basmala
-      : null,
-  verse: _buildCardVerseText(
-    _currentChapter,
-    _currentVerse,
-  ),
-  translation: quran.getVerseTranslation(
-    _currentChapter,
-    _currentVerse,
-    translation: quran.Translation.values[SettingsDB().get(
-      "translation",
-      defaultValue: 0,
-    )],
-  ),
-  fontSize: SettingsDB().get(
-    "fontSize",
-    defaultValue: 38.0,
-  ),
-  fontSizeTranslation: SettingsDB().get(
-    "fontSizeTranslation",
-    defaultValue: 18.0,
-  ),
-  onPlay: _togglePageViewPlayback,
-  onDownload: _downloadCurrentSurahAyahs,
-  isPlaying: _isVersePlaying && _playingVerse == _currentVerse,
-  isDownloading: _isDownloadingSurahAyahs,
-  isDownloaded: _hasDownloadedSurahAyahs,
-),
+                        currentChapter: _currentChapter,
+                        currentVerse: _currentVerse,
+                        totalVerses: _totalVerses,
+                        juzNumber: quran.getJuzNumber(
+                          _currentChapter,
+                          _currentVerse,
+                        ),
+                        basmala:
+                            _currentChapter != 1 &&
+                                _currentVerse == 1 &&
+                                _currentChapter != 9
+                            ? quran.basmala
+                            : null,
+                        verse: _buildCardVerseText(
+                          _currentChapter,
+                          _currentVerse,
+                        ),
+                        translation: quran.getVerseTranslation(
+                          _currentChapter,
+                          _currentVerse,
+                          translation: quran.Translation.values[SettingsDB().get(
+                            "translation",
+                            defaultValue: 0,
+                          )],
+                        ),
+                        transliteration: _currentVerseTransliteration(),
+                        showTransliteration: SettingsDB().get(
+                          "enableTransliteration",
+                          defaultValue: false,
+                        ),
+                        fontSize: SettingsDB().get(
+                          "fontSize",
+                          defaultValue: 38.0,
+                        ),
+                        fontSizeTranslation: SettingsDB().get(
+                          "fontSizeTranslation",
+                          defaultValue: 18.0,
+                        ),
+                        onPlay: _togglePageViewPlayback,
+                        onDownload: _downloadCurrentAyah,
+                        onTafsir: () => _showTafsirSheet(_currentVerse),
+                        isPlaying:
+                            _isVersePlaying && _playingVerse == _currentVerse,
+                        isDownloading: _isDownloadingCurrentAyah,
+                        isDownloaded: _hasDownloadedCurrentAyah,
+                      ),
                     ),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 260),
@@ -2321,6 +2399,14 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.chrome_reader_mode_rounded),
+                title: const Text('Show tafsir'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _showTafsirSheet(verse);
+                },
+              ),
+              ListTile(
                 leading: Icon(
                   isFavourite
                       ? Icons.favorite_rounded
@@ -2487,6 +2573,141 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
     return 0;
   }
 
+
+  TafsirSource _selectedTafsirSource() {
+    final String saved = SettingsDB().get(
+      'tafsirSource',
+      defaultValue: TafsirSource.jalalayn.key,
+    );
+    return TafsirSource.values.firstWhere(
+      (source) => source.key == saved,
+      orElse: () => TafsirSource.jalalayn,
+    );
+  }
+
+  Future<void> _showTafsirSheet(int verse) async {
+    TafsirSource selectedSource = _selectedTafsirSource();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return FutureBuilder<String>(
+              future: TafsirService.instance.verseTafsir(
+                source: selectedSource,
+                surah: _currentChapter,
+                ayah: verse,
+              ),
+              builder: (context, tafsirSnapshot) {
+                final String tafsirText = tafsirSnapshot.data?.trim() ?? '';
+                return DraggableScrollableSheet(
+                  expand: false,
+                  initialChildSize: 0.56,
+                  minChildSize: 0.28,
+                  maxChildSize: 0.92,
+                  builder: (context, scrollController) {
+                    return SizedBox(
+                      width: double.infinity,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                                IconButton.filledTonal(
+                                  tooltip: 'Switch tafsir source',
+                                  icon: const Icon(Icons.layers_outlined),
+                                  onPressed: () async {
+                                    final TafsirSource? value =
+                                        await _showTafsirSourceDialog(
+                                      selectedSource,
+                                    );
+                                    if (value == null || !mounted) return;
+                                    SettingsDB().put('tafsirSource', value.key);
+                                    setSheetState(() {
+                                      selectedSource = value;
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              selectedSource.displayName,
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            const SizedBox(height: 12),
+                            Expanded(
+                              child: tafsirSnapshot.connectionState !=
+                                      ConnectionState.done
+                                  ? const Center(
+                                      child: CircularProgressIndicator(),
+                                    )
+                                  : SingleChildScrollView(
+                                      controller: scrollController,
+                                      physics: const BouncingScrollPhysics(),
+                                      child: Text(
+                                        tafsirText.isEmpty
+                                            ? 'No tafsir text available for this ayah in the selected source.'
+                                            : tafsirText,
+                                        textAlign: TextAlign.start,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(height: 1.6),
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<TafsirSource?> _showTafsirSourceDialog(TafsirSource selectedSource) {
+    return showDialog<TafsirSource>(
+      context: context,
+      builder: (context) => AppSelectionDialog<TafsirSource>(
+        title: 'Tafsir Source',
+        icon: Icons.chrome_reader_mode_rounded,
+        selectedValue: selectedSource,
+        maxWidth: 420,
+        maxHeight: 460,
+        options: TafsirSource.values
+            .map(
+              (source) => AppSelectionOption<TafsirSource>(
+                value: source,
+                title: source.displayName,
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
   Future<void> _showFavouriteNotePrompt(int verse) async {
     final TextEditingController textController = TextEditingController();
     try {
@@ -2527,6 +2748,11 @@ Future<void> _showJumpToVerseDialog(BuildContext context) async {
     final String key = _favouriteKey(_currentChapter, verse);
     if (isFavourite) {
       FavouritesDB().delete(key);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Removed from favourites.')),
+        );
+      }
       return;
     }
     FavouritesDB().put(key, '');
