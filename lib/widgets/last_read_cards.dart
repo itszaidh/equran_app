@@ -40,7 +40,7 @@ class LastReadCard extends StatefulWidget {
 }
 
 class _LastReadCardState extends State<LastReadCard> {
-  static const double _estimatedCarouselPageSize = 158;
+  static const double _estimatedCarouselPageSize = 146;
 
   int _currentPage = 0;
 
@@ -265,7 +265,7 @@ class _LastReadEntryCard extends StatelessWidget {
             ),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +299,7 @@ class _LastReadEntryCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   getSurahName(keySurah),
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -316,7 +316,7 @@ class _LastReadEntryCard extends StatelessWidget {
                     fontSize: 15,
                   ),
                 ),
-                if (showIndicatorSpace) const SizedBox(height: 26),
+                if (showIndicatorSpace) const SizedBox(height: 20),
               ],
             ),
           ),

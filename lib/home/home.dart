@@ -1,6 +1,5 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart' show SettingsDB;
-import 'package:equran/home/daily_guidance.dart';
 import 'package:equran/home/downloads.dart';
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/player.dart';

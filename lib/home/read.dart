@@ -2606,7 +2606,7 @@ class _ReadPageState extends State<ReadPage> {
                                 _isVersePlaying &&
                                 _playingVerse == _currentVerse,
                             isDownloading: _downloadingAyahKeys.contains(
-                              '${_currentChapter}-${_currentVerse}',
+                              '$_currentChapter-$_currentVerse',
                             ),
                             isDownloaded: _hasDownloadedCurrentAyah,
                           ),
