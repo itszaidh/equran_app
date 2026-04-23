@@ -542,7 +542,10 @@ class _ReadPageState extends State<ReadPage> {
                       _isVersePlaying && _playingVerse == _currentVerse
                           ? Icons.pause_circle_rounded
                           : Icons.play_circle_rounded,
+                      size: 24,
                     ),
+                    visualDensity: VisualDensity.compact,
+                    splashRadius: 20,
                   ),
                 if (!_viewMode)
                   IconButton(
@@ -562,14 +565,19 @@ class _ReadPageState extends State<ReadPage> {
                             _hasDownloadedSurahAyahs
                                 ? Icons.offline_pin_rounded
                                 : Icons.download_for_offline_rounded,
+                            size: 22,
                           ),
+                    visualDensity: VisualDensity.compact,
+                    splashRadius: 20,
                   ),
                 IconButton(
                   tooltip: 'Go to ayah',
                   onPressed: () => _showJumpToVerseDialog(context),
-                  icon: const Icon(Icons.double_arrow_outlined),
+                  icon: const Icon(Icons.double_arrow_outlined, size: 22),
+                  visualDensity: VisualDensity.compact,
+                  splashRadius: 20,
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 10),
               ],
             ),
             body: _viewMode
@@ -673,6 +681,11 @@ class _ReadPageState extends State<ReadPage> {
 
             isSubmitting = true;
             focusNode.unfocus();
+            final bool shouldRetargetContinuousPlayback =
+                _isVersePlaying &&
+                _continuousPlayback &&
+                !_repeatIntervalEnabled &&
+                value != (_playingVerse ?? _currentVerse);
             _setVerse(value);
             if (!_viewMode) {
               _scrollToInlineVerse(value, highlight: true);
@@ -683,6 +696,17 @@ class _ReadPageState extends State<ReadPage> {
 
             if (Navigator.of(sheetContext).canPop()) {
               Navigator.of(sheetContext).pop();
+            }
+
+            if (shouldRetargetContinuousPlayback) {
+              unawaited(
+                _playVerse(
+                  _currentChapter,
+                  value,
+                  continuous: true,
+                  smoothScroll: !_viewMode,
+                ),
+              );
             }
           }
 
@@ -992,20 +1016,6 @@ class _ReadPageState extends State<ReadPage> {
     );
   }
 
-  Future<void> _playAdjacentAyah(int direction) async {
-    if (_isVerseLoading) return;
-
-    final int currentVerse = _playingVerse ?? _currentVerse;
-    final int targetVerse = currentVerse + direction;
-    if (targetVerse < 1 || targetVerse > _totalVerses) return;
-
-    await _playVerse(
-      _currentChapter,
-      targetVerse,
-      continuous: _continuousPlayback,
-    );
-  }
-
   Future<void> _playAdjacentPageViewAyah(int direction) async {
     if (_isVerseLoading) return;
 
@@ -1136,9 +1146,7 @@ class _ReadPageState extends State<ReadPage> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Downloaded ayah $chapter:$verse'),
-        ),
+        SnackBar(content: Text('Downloaded ayah $chapter:$verse')),
       );
     } catch (_) {
       await DownloadNotifications.fail(
@@ -1375,6 +1383,10 @@ class _ReadPageState extends State<ReadPage> {
       return;
     }
 
+    final int currentPlayingVerse = _playingVerse ?? _currentVerse;
+    final bool shouldKeepCurrentPlayback =
+        _isVersePlaying && currentPlayingVerse == start;
+
     setState(() {
       _repeatIntervalEnabled = true;
       _continuousPlayback = false;
@@ -1382,9 +1394,12 @@ class _ReadPageState extends State<ReadPage> {
       _playerMounted = true;
       _repeatStartVerse = start;
       _repeatEndVerse = end;
-      _playingVerse = start;
+      _playingVerse = shouldKeepCurrentPlayback ? currentPlayingVerse : start;
     });
     unawaited(_updateKeepScreenOn());
+    if (shouldKeepCurrentPlayback) {
+      return;
+    }
     await _playVerse(_currentChapter, start);
   }
 
@@ -1672,13 +1687,13 @@ class _ReadPageState extends State<ReadPage> {
         : ((progressVerse - 1) / (_totalVerses - 1)).clamp(0.0, 1.0);
 
     return Container(
-      margin: EdgeInsets.only(left: marginValue, right: marginValue, top: 20),
+      margin: EdgeInsets.only(left: marginValue, right: marginValue, top: 14),
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double scrubPercent = _totalVerses <= 1
               ? 1
               : ((_currentVerse - 1) / (_totalVerses - 1)).clamp(0.0, 1.0);
-          final double indicatorSize = 16;
+          final double indicatorSize = 12;
           final double indicatorLeft =
               (scrubPercent * constraints.maxWidth - (indicatorSize / 2))
                   .clamp(0.0, constraints.maxWidth - indicatorSize)
@@ -1734,13 +1749,17 @@ class _ReadPageState extends State<ReadPage> {
               alignment: Alignment.centerLeft,
               children: <Widget>[
                 LinearPercentIndicator(
-                  barRadius: const Radius.circular(30),
+                  barRadius: const Radius.circular(999),
                   animation: !_isScrubbingProgress,
                   animateFromLastPercent: !_isScrubbingProgress,
-                  backgroundColor: Theme.of(context).colorScheme.onTertiary,
-                  lineHeight: 20.0,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withAlpha(42),
+                  lineHeight: 10.0,
                   percent: percent,
-                  progressColor: Theme.of(context).colorScheme.tertiary,
+                  progressColor: Theme.of(
+                    context,
+                  ).colorScheme.tertiary.withAlpha(190),
                 ),
                 if (_isScrubbingProgress)
                   Positioned(
@@ -1754,7 +1773,7 @@ class _ReadPageState extends State<ReadPage> {
                           color: Theme.of(context).colorScheme.surface,
                           border: Border.all(
                             color: Theme.of(context).colorScheme.tertiary,
-                            width: 3,
+                            width: 2.5,
                           ),
                         ),
                       ),
@@ -1835,33 +1854,43 @@ class _ReadPageState extends State<ReadPage> {
     );
   }
 
+  double _readCardHorizontalInset(double width) {
+    if (width > 1200) return 120;
+    if (width > 700) return 40;
+    return 6;
+  }
+
   Widget _buildCompactVersePlayerBar({
     required Duration position,
     required Duration duration,
   }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final double width = MediaQuery.sizeOf(context).width;
+    final double horizontalInset = _viewMode
+        ? _readCardHorizontalInset(width)
+        : 9;
     final double progress = duration.inMilliseconds <= 0
         ? 0
         : (position.inMilliseconds / duration.inMilliseconds)
               .clamp(0.0, 1.0)
               .toDouble();
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      padding: EdgeInsets.fromLTRB(horizontalInset, 0, horizontalInset, 10),
       child: _buildFrostedPlayerSurface(
         colorScheme: colorScheme,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
         child: SafeArea(
           top: false,
           child: Stack(
             children: <Widget>[
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 36),
-                    child: SliderTheme(
+              Padding(
+                padding: const EdgeInsets.only(top: 25),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    SliderTheme(
                       data: AppSliderTheme.standard(context),
                       child: Slider(
                         value: progress,
@@ -1870,87 +1899,41 @@ class _ReadPageState extends State<ReadPage> {
                             : _seekBottomPlayer,
                       ),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        _formatDuration(position),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text(
+                          _formatDuration(position),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                      Text(
-                        _formatDuration(duration),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      _buildAutoPlaybackButton(colorScheme),
-                      if (!_viewMode) ...<Widget>[
-                        const SizedBox(width: 14),
-                        _buildPageViewAyahNavButton(
-                          icon: Icons.skip_previous_rounded,
-                          tooltip: 'Previous ayah',
-                          onPressed: (_playingVerse ?? _currentVerse) <= 1
-                              ? null
-                              : () => unawaited(_playAdjacentPageViewAyah(-1)),
+                        Text(
+                          _formatDuration(duration),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
-                      const SizedBox(width: 14),
-                      FilledButton(
-                        onPressed: _toggleBottomPlayer,
-                        style: FilledButton.styleFrom(
-                          shape: const CircleBorder(),
-                          padding: const EdgeInsets.all(18),
-                        ),
-                        child: _isVerseLoading
-                            ? SizedBox(
-                                width: 30,
-                                height: 30,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.4,
-                                  color: colorScheme.onPrimary,
-                                ),
-                              )
-                            : Icon(
-                                _isVersePlaying
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
-                                size: 32,
-                              ),
-                      ),
-                      if (!_viewMode) ...<Widget>[
-                        const SizedBox(width: 14),
-                        _buildPageViewAyahNavButton(
-                          icon: Icons.skip_next_rounded,
-                          tooltip: 'Next ayah',
-                          onPressed:
-                              (_playingVerse ?? _currentVerse) >= _totalVerses
-                              ? null
-                              : () => unawaited(_playAdjacentPageViewAyah(1)),
-                        ),
-                      ],
-                      const SizedBox(width: 14),
-                      _buildRepeatIntervalButton(colorScheme),
-                    ],
-                  ),
-                ],
+                    ),
+                    const SizedBox(height: 8),
+                    _buildSharedPlayerControls(colorScheme, spacing: 4),
+                  ],
+                ),
               ),
               Positioned(
-                top: -8,
-                right: -8,
-                child: IconButton(
-                  tooltip: 'Dismiss player',
-                  onPressed: _stopBottomPlayer,
-                  icon: const Icon(Icons.close_rounded),
-                  color: colorScheme.onSurfaceVariant,
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    width: 34,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurfaceVariant.withAlpha(140),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -1967,6 +1950,9 @@ class _ReadPageState extends State<ReadPage> {
   }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final double horizontalInset = _viewMode
+        ? _readCardHorizontalInset(width)
+        : 12;
     final double progress = duration.inMilliseconds <= 0
         ? 0
         : (position.inMilliseconds / duration.inMilliseconds)
@@ -1975,12 +1961,12 @@ class _ReadPageState extends State<ReadPage> {
     final bool isCompactWidescreenLayout = width < 1100;
     final double centerGap = isCompactWidescreenLayout ? 96 : 220;
     final double centerWidth = min(
-      isCompactWidescreenLayout ? 300.0 : 640.0,
-      max(isCompactWidescreenLayout ? 280.0 : 320.0, width - 760),
+      isCompactWidescreenLayout ? 500.0 : 640.0,
+      max(isCompactWidescreenLayout ? 460.0 : 320.0, width - 620),
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      padding: EdgeInsets.fromLTRB(horizontalInset, 0, horizontalInset, 12),
       child: _buildFrostedPlayerSurface(
         colorScheme: colorScheme,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
@@ -2022,62 +2008,8 @@ class _ReadPageState extends State<ReadPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              _buildAutoPlaybackButton(colorScheme),
-
-                              if (!_viewMode)
-                                _buildPageViewAyahNavButton(
-                                  icon: Icons.skip_previous_rounded,
-                                  tooltip: 'Previous ayah',
-                                  onPressed:
-                                      (_playingVerse ?? _currentVerse) <= 1
-                                      ? null
-                                      : () => unawaited(
-                                          _playAdjacentPageViewAyah(-1),
-                                        ),
-                                ),
-                              const SizedBox(width: 10),
-                              FilledButton(
-                                onPressed: _toggleBottomPlayer,
-                                style: FilledButton.styleFrom(
-                                  shape: const CircleBorder(),
-                                  padding: const EdgeInsets.all(18),
-                                ),
-                                child: _isVerseLoading
-                                    ? SizedBox(
-                                        width: 30,
-                                        height: 30,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.4,
-                                          color: colorScheme.onPrimary,
-                                        ),
-                                      )
-                                    : Icon(
-                                        _isVersePlaying
-                                            ? Icons.pause_rounded
-                                            : Icons.play_arrow_rounded,
-                                        size: 32,
-                                      ),
-                              ),
-                              if (!_viewMode)
-                                _buildPageViewAyahNavButton(
-                                  icon: Icons.skip_next_rounded,
-                                  tooltip: 'Next ayah',
-                                  onPressed:
-                                      (_playingVerse ?? _currentVerse) >=
-                                          _totalVerses
-                                      ? null
-                                      : () => unawaited(
-                                          _playAdjacentPageViewAyah(1),
-                                        ),
-                                ),
-                              const SizedBox(width: 10),
-                              _buildRepeatIntervalButton(colorScheme),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
+                          _buildSharedPlayerControls(colorScheme, spacing: 12),
+                          const SizedBox(height: 25),
                           Row(
                             children: <Widget>[
                               SizedBox(
@@ -2133,16 +2065,19 @@ class _ReadPageState extends State<ReadPage> {
 
   BoxDecoration _readPlayerDecoration(ColorScheme colorScheme) {
     return BoxDecoration(
-      color: colorScheme.surface.withAlpha((0.72 * 255).round()),
+      color: Color.alphaBlend(
+        colorScheme.primary.withAlpha(10),
+        colorScheme.surfaceContainerLow.withAlpha((0.92 * 255).round()),
+      ),
       borderRadius: BorderRadius.circular(AppRadii.large),
       border: Border.all(
-        color: colorScheme.outlineVariant.withAlpha((0.4 * 255).round()),
+        color: colorScheme.outlineVariant.withAlpha((0.52 * 255).round()),
       ),
       boxShadow: <BoxShadow>[
         BoxShadow(
-          color: colorScheme.shadow.withAlpha((0.18 * 255).round()),
-          blurRadius: 28,
-          offset: const Offset(0, 12),
+          color: colorScheme.shadow.withAlpha((0.12 * 255).round()),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
         ),
       ],
     );
@@ -2169,21 +2104,17 @@ class _ReadPageState extends State<ReadPage> {
   Widget _buildAutoPlaybackButton(ColorScheme colorScheme) {
     final bool isActive = _continuousPlayback && !_repeatIntervalEnabled;
 
-    return IconButton(
+    return _buildPlayerModeButton(
       tooltip: 'Auto Playback',
+      icon: Icons.playlist_play_rounded,
+      isActive: isActive,
+      colorScheme: colorScheme,
       onPressed: () => _toggleContinuousPlayback(!isActive),
-      icon: const Icon(Icons.playlist_play_rounded),
-      color: isActive ? colorScheme.primary : colorScheme.onSurfaceVariant,
-      style: IconButton.styleFrom(
-        shape: const CircleBorder(),
-        side: isActive
-            ? BorderSide(color: colorScheme.primary, width: 1.8)
-            : BorderSide.none,
-      ),
+      underlineOffsetX: -1,
     );
   }
 
-  Widget _buildPageViewAyahNavButton({
+  Widget _buildPlayerAyahNavButton({
     required IconData icon,
     required String tooltip,
     required VoidCallback? onPressed,
@@ -2196,23 +2127,136 @@ class _ReadPageState extends State<ReadPage> {
     );
   }
 
+  Widget _buildSharedPlayerControls(
+    ColorScheme colorScheme, {
+    required double spacing,
+  }) {
+    final int currentVerse = _playingVerse ?? _currentVerse;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        _buildAutoPlaybackButton(colorScheme),
+        SizedBox(width: spacing),
+        _buildPlayerAyahNavButton(
+          icon: Icons.skip_previous_rounded,
+          tooltip: 'Previous ayah',
+          onPressed: currentVerse <= 1
+              ? null
+              : () => unawaited(_playAdjacentPageViewAyah(-1)),
+        ),
+        SizedBox(width: spacing),
+        FilledButton.tonal(
+          onPressed: _toggleBottomPlayer,
+          style: FilledButton.styleFrom(
+            shape: const CircleBorder(),
+            padding: const EdgeInsets.all(16),
+          ),
+          child: _isVerseLoading
+              ? SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: colorScheme.onPrimary,
+                  ),
+                )
+              : Icon(
+                  _isVersePlaying
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
+                  size: 30,
+                ),
+        ),
+        SizedBox(width: spacing),
+        _buildPlayerAyahNavButton(
+          icon: Icons.skip_next_rounded,
+          tooltip: 'Next ayah',
+          onPressed: currentVerse >= _totalVerses
+              ? null
+              : () => unawaited(_playAdjacentPageViewAyah(1)),
+        ),
+        SizedBox(width: spacing),
+        _buildRepeatIntervalButton(colorScheme),
+      ],
+    );
+  }
+
   Widget _buildRepeatIntervalButton(
     ColorScheme colorScheme, {
     IconData icon = Icons.all_inclusive_rounded,
     double? iconSize,
   }) {
-    return IconButton(
+    return _buildPlayerModeButton(
       tooltip: 'Repeat Interval',
-      onPressed: _showRepeatIntervalSheet,
-      icon: Icon(icon, size: iconSize),
-      color: _repeatIntervalEnabled
-          ? colorScheme.primary
-          : colorScheme.onSurfaceVariant,
-      style: IconButton.styleFrom(
-        shape: const CircleBorder(),
-        side: _repeatIntervalEnabled
-            ? BorderSide(color: colorScheme.primary, width: 1.8)
-            : BorderSide.none,
+      icon: icon,
+      iconSize: iconSize,
+      isActive: _repeatIntervalEnabled,
+      colorScheme: colorScheme,
+      onPressed: () {
+        if (_repeatIntervalEnabled) {
+          setState(() {
+            _repeatIntervalEnabled = false;
+          });
+          unawaited(_updateKeepScreenOn());
+          return;
+        }
+
+        unawaited(_showRepeatIntervalSheet());
+      },
+    );
+  }
+
+  Widget _buildPlayerModeButton({
+    required String tooltip,
+    required IconData icon,
+    required bool isActive,
+    required ColorScheme colorScheme,
+    required VoidCallback onPressed,
+    double? iconSize,
+    double underlineOffsetX = 0,
+  }) {
+    final Color activeColor = colorScheme.primary;
+    final Color inactiveColor = colorScheme.onSurfaceVariant;
+
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  icon,
+                  size: iconSize,
+                  color: isActive ? activeColor : inactiveColor,
+                ),
+              ),
+
+              Transform.translate(
+                offset: Offset(underlineOffsetX, 0),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  width: 18,
+                  height: 2.5,
+                  decoration: BoxDecoration(
+                    color: isActive ? activeColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -2227,27 +2271,48 @@ class _ReadPageState extends State<ReadPage> {
   }
 
   Widget _buildNavigationButtons({bool fixed = false}) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final double width = MediaQuery.sizeOf(context).width;
+    final double horizontalInset = _viewMode
+        ? _readCardHorizontalInset(width)
+        : (width > 700 ? 16 : 8);
     final Widget buttons = Container(
-      height: 80,
-      padding: const EdgeInsets.only(right: 12, left: 12),
-      color: fixed ? Theme.of(context).colorScheme.surface : Colors.transparent,
+      height: 62,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      color: Colors.transparent,
       child: SafeArea(
         top: false,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            ElevatedButton(
+            FilledButton.tonal(
               onPressed: () => _decrease(),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
+                minimumSize: const Size(0, 44),
+                foregroundColor: colorScheme.onSurfaceVariant,
+              ),
               child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 18),
-                child: Icon(Icons.arrow_back_rounded, size: 30),
+                padding: EdgeInsets.symmetric(horizontal: 2),
+                child: Icon(Icons.arrow_back_rounded, size: 22),
               ),
             ),
-            ElevatedButton(
+            FilledButton.tonal(
               onPressed: () => _increase(),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
+                minimumSize: const Size(0, 44),
+                foregroundColor: colorScheme.onSurfaceVariant,
+              ),
               child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 18),
-                child: Icon(Icons.arrow_forward_rounded, size: 30),
+                padding: EdgeInsets.symmetric(horizontal: 2),
+                child: Icon(Icons.arrow_forward_rounded, size: 22),
               ),
             ),
           ],
@@ -2255,8 +2320,13 @@ class _ReadPageState extends State<ReadPage> {
       ),
     );
 
-    if (!fixed) return buttons;
-    return Align(alignment: Alignment.bottomCenter, child: buttons);
+    final Widget insetButtons = Padding(
+      padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+      child: buttons,
+    );
+
+    if (!fixed) return insetButtons;
+    return Align(alignment: Alignment.bottomCenter, child: insetButtons);
   }
 
   Widget _buildCardViewBottomBars() {
@@ -2267,6 +2337,7 @@ class _ReadPageState extends State<ReadPage> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             _buildVersePlayerBar(),
+            const SizedBox(height: 0),
             _buildNavigationButtons(fixed: true),
           ],
         ),
@@ -2512,7 +2583,7 @@ class _ReadPageState extends State<ReadPage> {
   Widget cardView({required double marginValue}) {
     final bool compactPlayerLayout = MediaQuery.sizeOf(context).width < 700;
     final double bottomSpacer = _playerMounted
-        ? (compactPlayerLayout ? 360 : 280)
+        ? (compactPlayerLayout ? 392 : 304)
         : 180;
 
     return SafeArea(
@@ -2596,8 +2667,7 @@ class _ReadPageState extends State<ReadPage> {
                             ),
                             onPlay: _togglePageViewPlayback,
                             onDownload: _downloadCurrentAyah,
-                            onDeleteDownload:
-                                _confirmDeleteCurrentAyahDownload,
+                            onDeleteDownload: _confirmDeleteCurrentAyahDownload,
                             onShare: _shareCurrentAyahImage,
                             onSwitchTranslation:
                                 _showCardTranslationLanguagePicker,
@@ -2816,74 +2886,74 @@ class _ReadPageState extends State<ReadPage> {
 
     await _withLowFpsSuppressed(() {
       return showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        final String key = _favouriteKey(_currentChapter, verse);
-        final bool isFavourite = FavouritesDB().contains(key);
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                title: Text(
-                  '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+        context: context,
+        showDragHandle: true,
+        builder: (context) {
+          final String key = _favouriteKey(_currentChapter, verse);
+          final bool isFavourite = FavouritesDB().contains(key);
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ListTile(
+                  title: Text(
+                    '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                  ),
+                  subtitle: const Text('Choose an action'),
                 ),
-                subtitle: const Text('Choose an action'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.play_circle_outline_rounded),
-                title: const Text('Play this ayah'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _playVerse(_currentChapter, verse, continuous: false);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.translate_rounded),
-                title: const Text('Show translation'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _showTranslationSheet(verse);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.notes_rounded),
-                title: const Text('Show transliteration'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _showTransliterationSheet(verse);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.chrome_reader_mode_rounded),
-                title: const Text('Show tafsir'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _showTafsirSheet(verse);
-                },
-              ),
-              ListTile(
-                leading: Icon(
-                  isFavourite
-                      ? Icons.favorite_rounded
-                      : Icons.favorite_border_rounded,
+                ListTile(
+                  leading: const Icon(Icons.play_circle_outline_rounded),
+                  title: const Text('Play this ayah'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _playVerse(_currentChapter, verse, continuous: false);
+                  },
                 ),
-                title: Text(isFavourite ? 'Remove favourite' : 'Favourite'),
-                onTap: () async {
-                  Navigator.of(context).pop();
-                  if (isFavourite) {
-                    _toggleFavourite(verse, isFavourite: true);
-                  } else {
-                    await _showFavouriteNotePrompt(verse);
-                  }
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
+                ListTile(
+                  leading: const Icon(Icons.translate_rounded),
+                  title: const Text('Show translation'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _showTranslationSheet(verse);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.notes_rounded),
+                  title: const Text('Show transliteration'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _showTransliterationSheet(verse);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.chrome_reader_mode_rounded),
+                  title: const Text('Show tafsir'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _showTafsirSheet(verse);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    isFavourite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                  ),
+                  title: Text(isFavourite ? 'Remove favourite' : 'Favourite'),
+                  onTap: () async {
+                    Navigator.of(context).pop();
+                    if (isFavourite) {
+                      _toggleFavourite(verse, isFavourite: true);
+                    } else {
+                      await _showFavouriteNotePrompt(verse);
+                    }
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
     });
     if (!mounted) return;
     setState(() {
@@ -2896,101 +2966,101 @@ class _ReadPageState extends State<ReadPage> {
 
     await _withLowFpsSuppressed(() {
       return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            final String translation = quran.getVerseTranslation(
-              _currentChapter,
-              verse,
-              translation: quran.Translation.values[selectedTranslation],
-            );
-            final Size sheetSize = MediaQuery.sizeOf(context);
-            final TextStyle translationStyle =
-                Theme.of(context).textTheme.bodyLarge ??
-                const TextStyle(fontSize: 16);
-            final double fontSize = MediaQuery.textScalerOf(
-              context,
-            ).scale(translationStyle.fontSize ?? 16);
-            final double charsPerLine = max(
-              18.0,
-              (sheetSize.width - 40) / (fontSize * 0.55),
-            );
-            final double estimatedLineCount = max(
-              1.0,
-              translation.length / charsPerLine,
-            );
-            final double estimatedContentHeight =
-                104 + (estimatedLineCount * fontSize * 1.45);
-            final double initialSheetSize =
-                (estimatedContentHeight / sheetSize.height)
-                    .clamp(0.28, 0.58)
-                    .toDouble();
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setSheetState) {
+              final String translation = quran.getVerseTranslation(
+                _currentChapter,
+                verse,
+                translation: quran.Translation.values[selectedTranslation],
+              );
+              final Size sheetSize = MediaQuery.sizeOf(context);
+              final TextStyle translationStyle =
+                  Theme.of(context).textTheme.bodyLarge ??
+                  const TextStyle(fontSize: 16);
+              final double fontSize = MediaQuery.textScalerOf(
+                context,
+              ).scale(translationStyle.fontSize ?? 16);
+              final double charsPerLine = max(
+                18.0,
+                (sheetSize.width - 40) / (fontSize * 0.55),
+              );
+              final double estimatedLineCount = max(
+                1.0,
+                translation.length / charsPerLine,
+              );
+              final double estimatedContentHeight =
+                  104 + (estimatedLineCount * fontSize * 1.45);
+              final double initialSheetSize =
+                  (estimatedContentHeight / sheetSize.height)
+                      .clamp(0.28, 0.58)
+                      .toDouble();
 
-            return DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: initialSheetSize,
-              minChildSize: 0.25,
-              maxChildSize: 0.92,
-              builder: (context, scrollController) {
-                return SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Expanded(
+              return DraggableScrollableSheet(
+                expand: false,
+                initialChildSize: initialSheetSize,
+                minChildSize: 0.25,
+                maxChildSize: 0.92,
+                builder: (context, scrollController) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: Text(
+                                  '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              IconButton.filledTonal(
+                                tooltip: 'Switch translation',
+                                icon: const Icon(Icons.language_rounded),
+                                onPressed: () async {
+                                  final int? value =
+                                      await _showTranslationPickerDialog(
+                                        selectedTranslation,
+                                      );
+                                  if (value == null || !mounted) return;
+                                  SettingsDB().put("translation", value);
+                                  setSheetState(() {
+                                    selectedTranslation = value;
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              controller: scrollController,
+                              physics: const BouncingScrollPhysics(),
                               child: Text(
-                                '${quran.getSurahName(_currentChapter)} • Ayah $verse',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700),
+                                translation,
+                                textAlign: TextAlign.justify,
+                                style: translationStyle,
                               ),
                             ),
-                            IconButton.filledTonal(
-                              tooltip: 'Switch translation',
-                              icon: const Icon(Icons.language_rounded),
-                              onPressed: () async {
-                                final int? value =
-                                    await _showTranslationPickerDialog(
-                                      selectedTranslation,
-                                    );
-                                if (value == null || !mounted) return;
-                                SettingsDB().put("translation", value);
-                                setSheetState(() {
-                                  selectedTranslation = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            controller: scrollController,
-                            physics: const BouncingScrollPhysics(),
-                            child: Text(
-                              translation,
-                              textAlign: TextAlign.justify,
-                              style: translationStyle,
-                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
+                  );
+                },
+              );
+            },
+          );
+        },
       );
     });
   }
@@ -3051,56 +3121,56 @@ class _ReadPageState extends State<ReadPage> {
 
     await _withLowFpsSuppressed(() {
       return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
-      builder: (context) {
-        final ThemeData theme = Theme.of(context);
-        final TextStyle transliterationStyle =
-            theme.textTheme.bodyLarge ?? const TextStyle(fontSize: 16);
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
+        builder: (context) {
+          final ThemeData theme = Theme.of(context);
+          final TextStyle transliterationStyle =
+              theme.textTheme.bodyLarge ?? const TextStyle(fontSize: 16);
 
-        return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.34,
-          minChildSize: 0.24,
-          maxChildSize: 0.72,
-          builder: (context, scrollController) {
-            return SizedBox(
-              width: double.infinity,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      '${quran.getSurahName(_currentChapter)} • Ayah $verse',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        controller: scrollController,
-                        physics: const BouncingScrollPhysics(),
-                        child: Text(
-                          transliteration.isEmpty
-                              ? 'No transliteration available for this ayah.'
-                              : transliteration,
-                          style: transliterationStyle,
+          return DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.34,
+            minChildSize: 0.24,
+            maxChildSize: 0.72,
+            builder: (context, scrollController) {
+              return SizedBox(
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          physics: const BouncingScrollPhysics(),
+                          child: Text(
+                            transliteration.isEmpty
+                                ? 'No transliteration available for this ayah.'
+                                : transliteration,
+                            style: transliterationStyle,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-    );
+              );
+            },
+          );
+        },
+      );
     });
   }
 
@@ -3114,68 +3184,72 @@ class _ReadPageState extends State<ReadPage> {
 
     await _withLowFpsSuppressed(() {
       return showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
-      builder: (context) {
-        return FutureBuilder<String>(
-          future: tafsirFuture,
-          builder: (context, tafsirSnapshot) {
-            final String tafsirText = tafsirSnapshot.data?.trim() ?? '';
-            return DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: 0.56,
-              minChildSize: 0.28,
-              maxChildSize: 0.92,
-              builder: (context, scrollController) {
-                return SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          '${quran.getSurahName(_currentChapter)} • Ayah $verse',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          selectedSource.displayName,
-                          style: Theme.of(context).textTheme.labelLarge,
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(
-                          child:
-                              tafsirSnapshot.connectionState !=
-                                  ConnectionState.done
-                              ? const Center(child: CircularProgressIndicator())
-                              : SingleChildScrollView(
-                                  controller: scrollController,
-                                  physics: const BouncingScrollPhysics(),
-                                  child: Text(
-                                    tafsirText.isEmpty
-                                        ? 'No tafsir text available for this ayah.'
-                                        : tafsirText,
-                                    textAlign: TextAlign.start,
-                                    style: Theme.of(context).textTheme.bodyLarge
-                                        ?.copyWith(height: 1.6),
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
+        builder: (context) {
+          return FutureBuilder<String>(
+            future: tafsirFuture,
+            builder: (context, tafsirSnapshot) {
+              final String tafsirText = tafsirSnapshot.data?.trim() ?? '';
+              return DraggableScrollableSheet(
+                expand: false,
+                initialChildSize: 0.56,
+                minChildSize: 0.28,
+                maxChildSize: 0.92,
+                builder: (context, scrollController) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            selectedSource.displayName,
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 12),
+                          Expanded(
+                            child:
+                                tafsirSnapshot.connectionState !=
+                                    ConnectionState.done
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : SingleChildScrollView(
+                                    controller: scrollController,
+                                    physics: const BouncingScrollPhysics(),
+                                    child: Text(
+                                      tafsirText.isEmpty
+                                          ? 'No tafsir text available for this ayah.'
+                                          : tafsirText,
+                                      textAlign: TextAlign.start,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(height: 1.6),
+                                    ),
                                   ),
-                                ),
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
-    );
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
     });
   }
 

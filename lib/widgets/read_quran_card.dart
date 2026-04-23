@@ -166,7 +166,7 @@ class ReadQuranCard extends StatelessWidget {
           ),
         ),
         if (showActions && !shareImageMode) ...<Widget>[
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           _buildHeaderActions(context),
         ],
       ],
@@ -183,16 +183,14 @@ class ReadQuranCard extends StatelessWidget {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Material(
-      color: isPrimary
-          ? colorScheme.primary.withAlpha(20)
-          : colorScheme.surfaceContainerHighest.withAlpha(72),
-      borderRadius: BorderRadius.circular(12),
+      color: isPrimary ? colorScheme.primary.withAlpha(10) : Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: Tooltip(
           message: tooltip,
-          child: SizedBox(height: 36, width: 36, child: Center(child: child)),
+          child: SizedBox(height: 34, width: 34, child: Center(child: child)),
         ),
       ),
     );
@@ -205,23 +203,23 @@ class ReadQuranCard extends StatelessWidget {
         final ColorScheme colorScheme = Theme.of(context).colorScheme;
         final bool isFavourite = FavouritesDB().contains(_favouriteKey);
         final double actionGap = MediaQuery.sizeOf(context).width >= 700
-            ? 8
-            : 4;
+            ? 10
+            : 6;
 
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-              _buildActionButton(
-                context: context,
-                tooltip: isPlaying ? 'Pause' : 'Play',
-                onPressed: onPlay,
-                isPrimary: true,
-                child: Icon(
-                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  size: 22,
-                  color: colorScheme.primary,
-                ),
+            _buildActionButton(
+              context: context,
+              tooltip: isPlaying ? 'Pause' : 'Play',
+              onPressed: onPlay,
+              isPrimary: true,
+              child: Icon(
+                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                size: 21,
+                color: colorScheme.primary,
               ),
+            ),
 
             if (onTafsir != null) ...<Widget>[
               SizedBox(width: actionGap),
@@ -231,8 +229,8 @@ class ReadQuranCard extends StatelessWidget {
                 onPressed: onTafsir,
                 child: Icon(
                   Icons.chrome_reader_mode_rounded,
-                  size: 19,
-                  color: colorScheme.onSurface.withAlpha(185),
+                  size: 18,
+                  color: colorScheme.onSurface.withAlpha(168),
                 ),
               ),
             ],
@@ -256,11 +254,11 @@ class ReadQuranCard extends StatelessWidget {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
 
     return Material(
-      color: colorScheme.surfaceContainerHighest.withAlpha(72),
-      borderRadius: BorderRadius.circular(12),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
       child: SizedBox(
-        height: 36,
-        width: 36,
+        height: 34,
+        width: 34,
         child: Center(
           child: PopupMenuButton<_CardOverflowAction>(
             tooltip: 'More actions',
@@ -268,8 +266,8 @@ class ReadQuranCard extends StatelessWidget {
             padding: EdgeInsets.zero,
             icon: Icon(
               Icons.more_horiz_rounded,
-              size: 21,
-              color: colorScheme.onSurface.withAlpha(185),
+              size: 19,
+              color: colorScheme.onSurface.withAlpha(168),
             ),
             onSelected: (action) {
               switch (action) {
@@ -299,19 +297,22 @@ class ReadQuranCard extends StatelessWidget {
               return <PopupMenuEntry<_CardOverflowAction>>[
                 PopupMenuItem<_CardOverflowAction>(
                   value: _CardOverflowAction.downloadOrDelete,
-                  enabled: !isDownloading &&
-                      (isDownloaded ? onDeleteDownload != null : onDownload != null),
+                  enabled:
+                      !isDownloading &&
+                      (isDownloaded
+                          ? onDeleteDownload != null
+                          : onDownload != null),
                   child: _OverflowMenuItem(
                     icon: isDownloading
                         ? Icons.downloading_rounded
                         : isDownloaded
-                            ? Icons.delete_outline_rounded
-                            : Icons.download_rounded,
+                        ? Icons.delete_outline_rounded
+                        : Icons.download_rounded,
                     label: isDownloading
                         ? 'Downloading'
                         : isDownloaded
-                            ? 'Delete downloaded ayah'
-                            : 'Download ayah',
+                        ? 'Delete downloaded ayah'
+                        : 'Download ayah',
                   ),
                 ),
                 if (showTranslation && onSwitchTranslation != null)
@@ -433,20 +434,20 @@ class ReadQuranCard extends StatelessWidget {
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-            18,
+            20,
             compactShareContent ? 14 : 16,
-            18,
-            shareImageMode ? (compactShareContent ? 14 : 16) : 18,
+            20,
+            shareImageMode ? (compactShareContent ? 14 : 16) : 20,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               _buildHeader(context),
-              SizedBox(height: compactShareContent ? 14 : 18),
+              SizedBox(height: compactShareContent ? 16 : 20),
               if (basmala != null)
                 Padding(
                   padding: EdgeInsets.only(
-                    bottom: compactShareContent ? 12 : 14,
+                    bottom: compactShareContent ? 14 : 16,
                   ),
                   child: Text(
                     basmala!,
@@ -460,15 +461,18 @@ class ReadQuranCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              Text(
-                verse,
-                textDirection: TextDirection.rtl,
-                textAlign: TextAlign.justify,
-                style: TextStyle(
-                  fontFamily: 'Hafs',
-                  height: 1.78,
-                  fontSize: fontSize,
-                  color: colorScheme.onSurface,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Text(
+                  verse,
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(
+                    fontFamily: 'Hafs',
+                    height: 1.78,
+                    fontSize: fontSize,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
               if (hasTransliteration)
