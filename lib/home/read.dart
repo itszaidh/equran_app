@@ -176,6 +176,16 @@ class _ReadPageState extends State<ReadPage> {
     AndroidAudioDisplayMode.notifyUserActivity();
   }
 
+  Future<T> _withLowFpsSuppressed<T>(Future<T> Function() action) async {
+    AndroidAudioDisplayMode.notifyUserActivity();
+    unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
+    try {
+      return await action();
+    } finally {
+      unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
+    }
+  }
+
   void _setPlayerPosition(Duration position) {
     _playerPosition = position;
     _playerPositionValue.value = position;
@@ -806,6 +816,9 @@ class _ReadPageState extends State<ReadPage> {
   }) async {
     if (_isVerseLoading) return;
 
+    AndroidAudioDisplayMode.notifyUserActivity();
+    unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
+
     final int requestId = ++_playbackRequestId;
     setState(() {
       _playerVisible = true;
@@ -850,6 +863,7 @@ class _ReadPageState extends State<ReadPage> {
           _isVerseLoading = false;
         });
       }
+      unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
     }
   }
 
@@ -2800,7 +2814,8 @@ class _ReadPageState extends State<ReadPage> {
     });
     _updateDB();
 
-    await showModalBottomSheet<void>(
+    await _withLowFpsSuppressed(() {
+      return showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (context) {
@@ -2869,6 +2884,7 @@ class _ReadPageState extends State<ReadPage> {
         );
       },
     );
+    });
     if (!mounted) return;
     setState(() {
       _selectedInlineVerse = null;
@@ -2878,7 +2894,8 @@ class _ReadPageState extends State<ReadPage> {
   Future<void> _showTranslationSheet(int verse) async {
     int selectedTranslation = _selectedTranslationIndex();
 
-    await showModalBottomSheet<void>(
+    await _withLowFpsSuppressed(() {
+      return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -2974,7 +2991,8 @@ class _ReadPageState extends State<ReadPage> {
           },
         );
       },
-    );
+      );
+    });
   }
 
   Future<int?> _showTranslationPickerDialog(int selectedTranslation) {
@@ -3031,7 +3049,8 @@ class _ReadPageState extends State<ReadPage> {
   Future<void> _showTransliterationSheet(int verse) async {
     final String transliteration = _transliterationForVerse(verse);
 
-    await showModalBottomSheet<void>(
+    await _withLowFpsSuppressed(() {
+      return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -3082,6 +3101,7 @@ class _ReadPageState extends State<ReadPage> {
         );
       },
     );
+    });
   }
 
   Future<void> _showTafsirSheet(int verse) async {
@@ -3092,7 +3112,8 @@ class _ReadPageState extends State<ReadPage> {
       ayah: verse,
     );
 
-    await showModalBottomSheet<void>(
+    await _withLowFpsSuppressed(() {
+      return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -3155,39 +3176,42 @@ class _ReadPageState extends State<ReadPage> {
         );
       },
     );
+    });
   }
 
   Future<void> _showFavouriteNotePrompt(int verse) async {
     final TextEditingController textController = TextEditingController();
     try {
-      await showDialog<void>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Favourite ayah'),
-            content: TextField(
-              maxLength: 80,
-              maxLines: null,
-              controller: textController,
-              decoration: const InputDecoration(hintText: 'Optional note...'),
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('CANCEL'),
+      await _withLowFpsSuppressed(() {
+        return showDialog<void>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Favourite ayah'),
+              content: TextField(
+                maxLength: 80,
+                maxLines: null,
+                controller: textController,
+                decoration: const InputDecoration(hintText: 'Optional note...'),
               ),
-              FilledButton(
-                onPressed: () {
-                  final String key = _favouriteKey(_currentChapter, verse);
-                  FavouritesDB().put(key, textController.text.trim());
-                  Navigator.of(context).pop();
-                },
-                child: const Text('SAVE'),
-              ),
-            ],
-          );
-        },
-      );
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('CANCEL'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final String key = _favouriteKey(_currentChapter, verse);
+                    FavouritesDB().put(key, textController.text.trim());
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('SAVE'),
+                ),
+              ],
+            );
+          },
+        );
+      });
     } finally {
       textController.dispose();
     }

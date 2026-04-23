@@ -1,6 +1,7 @@
 import 'dart:async' show unawaited;
 
 import 'package:equran/backend/favourites_db.dart';
+import 'package:equran/backend/android_audio_display_mode.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 
@@ -78,6 +79,8 @@ class ReadQuranCard extends StatelessWidget {
 
   Future<void> _showInputPrompt(BuildContext context) async {
     final TextEditingController textController = TextEditingController();
+    AndroidAudioDisplayMode.notifyUserActivity();
+    unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
     try {
       await showDialog<void>(
         context: context,
@@ -112,6 +115,7 @@ class ReadQuranCard extends StatelessWidget {
         },
       );
     } finally {
+      unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
       textController.dispose();
     }
   }

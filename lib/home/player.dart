@@ -983,6 +983,8 @@ class _PlayerPageState extends State<PlayerPage> {
         final double playButtonPadding = isDesktop
             ? (20 * desktopHeightScale).clamp(15.0, 20.0).toDouble()
             : 20.0;
+        final double playButtonSize =
+            playerControlIconSize + (playButtonPadding * 2);
         final double loadingIndicatorSize = isDesktop
             ? (30 * desktopHeightScale).clamp(24.0, 30.0).toDouble()
             : 30.0;
@@ -1221,6 +1223,24 @@ class _PlayerPageState extends State<PlayerPage> {
           );
         }
 
+        Widget buildPlayPauseButton() {
+          return SizedBox.square(
+            dimension: playButtonSize,
+            child: FilledButton(
+              onPressed: _togglePlayPause,
+              style: FilledButton.styleFrom(
+                fixedSize: Size.square(playButtonSize),
+                minimumSize: Size.square(playButtonSize),
+                maximumSize: Size.square(playButtonSize),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                shape: const CircleBorder(),
+                padding: EdgeInsets.zero,
+              ),
+              child: buildPlayPauseChild(),
+            ),
+          );
+        }
+
         Widget buildArtworkActions() {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1326,14 +1346,7 @@ class _PlayerPageState extends State<PlayerPage> {
                   icon: const Icon(Icons.skip_previous_rounded),
                   iconSize: playerControlIconSize,
                 ),
-                FilledButton(
-                  onPressed: _togglePlayPause,
-                  style: FilledButton.styleFrom(
-                    shape: const CircleBorder(),
-                    padding: EdgeInsets.all(playButtonPadding),
-                  ),
-                  child: buildPlayPauseChild(),
-                ),
+                buildPlayPauseButton(),
                 IconButton(
                   tooltip: 'Next',
                   onPressed: _playNext,
@@ -1509,14 +1522,7 @@ class _PlayerPageState extends State<PlayerPage> {
                                 iconSize: playerControlIconSize,
                               ),
                               const SizedBox(width: 6),
-                              FilledButton(
-                                onPressed: _togglePlayPause,
-                                style: FilledButton.styleFrom(
-                                  shape: const CircleBorder(),
-                                  padding: EdgeInsets.all(playButtonPadding),
-                                ),
-                                child: buildPlayPauseChild(),
-                              ),
+                              buildPlayPauseButton(),
                               const SizedBox(width: 6),
                               IconButton(
                                 tooltip: 'Next',
