@@ -1,208 +1,201 @@
-# eQuran — Your Modern Quran Companion
+# eQuran
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-alt="Get it on F-Droid"
-height="80">](https://f-droid.org/en/packages/com.app.equran/)
+> A clean, modern Quran companion for focused reading, listening, and daily reflection.
 
-Experience the Quran with clarity, focus, and ease.
+<p align="left">
+  <a href="https://github.com/ya27hw/equran_app/releases">
+    <img alt="Latest GitHub release" src="https://img.shields.io/github/v/release/ya27hw/equran_app?sort=semver&style=for-the-badge">
+  </a>
+  <img alt="App version" src="https://img.shields.io/badge/version-2.7.3%2B44-2563eb?style=for-the-badge">
+  <a href="https://github.com/ya27hw/equran_app/stargazers">
+    <img alt="GitHub stars" src="https://img.shields.io/github/stars/ya27hw/equran_app?style=for-the-badge">
+  </a>
+  <a href="https://github.com/ya27hw/equran_app/actions/workflows/deploy.yml">
+    <img alt="Build and release workflow" src="https://img.shields.io/github/actions/workflow/status/ya27hw/equran_app/deploy.yml?branch=main&label=release%20build&style=for-the-badge">
+  </a>
+  <img alt="Flutter" src="https://img.shields.io/badge/Flutter-%E2%89%A53.38.4-02569B?logo=flutter&logoColor=white&style=for-the-badge">
+  <img alt="Release targets" src="https://img.shields.io/badge/release%20targets-Android%20%7C%20Linux%20%7C%20Windows-0f766e?style=for-the-badge">
+</p>
 
-**eQuran** is designed to bring together reading, listening, and reflection in one seamless experience. With a clean Material 3 interface and thoughtfully crafted features, it helps you stay connected to the Quran—whether you're at home, on the go, or revisiting your last session.
+<p align="left">
+  <a href="https://f-droid.org/en/packages/com.app.equran/">
+    <img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="72">
+  </a>
+</p>
 
----
+eQuran brings together Quran reading, ayah and surah audio playback, offline audio downloads, tafsir, transliteration, favourites, and reading progress in a Material 3 Flutter app. The interface is intentionally quiet: useful controls stay close at hand without pulling attention away from the text.
 
-## 🆕 What’s New in Beta 3
+## Preview
 
-- 🌐 **Fully offline English transliteration** for ayahs in Card View
-- ⚙️ New **Display transliteration** toggle in Reading settings
-- 🎛️ Cleaner Card View hierarchy with improved action placement
-- ▶️ Unified media control bar behavior between reading modes
-- 🌙 Quick **theme toggle integrated in the sidebar**
-- 📱 Ongoing UI polish and interaction refinements for a smoother reading/listening flow
+Screenshots are not currently included in this repository. Add images under `metadata/en-US/images/` or a `screenshots/` directory, then replace the placeholders below.
 
----
+| Reading | Audio | Favourites |
+| --- | --- | --- |
+| _Screenshot placeholder_ | _Screenshot placeholder_ | _Screenshot placeholder_ |
 
-## ✨ Why You’ll Love eQuran
+## Features
 
-- 📖 Effortless reading with a clean, distraction-free design
-- 🎧 Smooth audio playback for both Surahs and individual ayahs
-- 🔄 Instantly resume where you left off
-- 📱 Works beautifully across phones, tablets, and desktops
-- 🌙 Built for daily recitation, memorization, and reflection
+- Read the Quran by **Surah** or **Juz**.
+- Switch between a focused card view and a full-page reading view.
+- Resume from the last-read ayah.
+- Play complete surahs or individual ayahs.
+- Download surah or ayah audio for offline listening.
+- Choose from multiple reciters.
+- Use background playback and system media controls.
+- Save favourite ayahs with optional notes.
+- View English translation, transliteration, and tafsir content where available.
+- Share ayahs as generated images.
+- Use responsive layouts across phone, tablet, desktop, and foldable-sized screens.
 
----
+## App Details
 
-## 📖 Beautiful Reading Experience
+| Item | Value |
+| --- | --- |
+| Package name | `equran` |
+| Android application ID | `com.app.equran` |
+| Current version | `2.7.3+44` |
+| Flutter SDK | `>=3.38.4` |
+| Dart SDK | `>=3.10.3 <4.0.0` |
+| Release workflow targets | Android split APKs, Linux bundle, Windows bundle |
+| License | Not specified in this repository |
 
-- Browse by **Surah or Juz**
-- Smooth, intuitive navigation between verses
-- Quick access to Surah details and verse counts
-- Optimized for both mobile and large screens
+## Tech Stack
 
----
+- **Flutter** with Material 3.
+- **Hive** for lightweight local persistence.
+- **just_audio**, **just_audio_background**, and **audioplayers** for playback flows.
+- **quran** package for Quran text and metadata.
+- Local assets for Hafs font, transliteration, daily content, and tafsir data.
 
-## 🔁 Never Lose Your Place
+## Getting Started
 
-- Automatically saves your **last read position**
-- Quickly return to recent ayahs
-- Designed for seamless continuity across sessions
+### Requirements
 
----
+- Flutter SDK on the stable channel.
+- Git.
+- Platform tooling for your target:
+  - Android: Android Studio and Android SDK.
+  - Linux: `clang`, `cmake`, `ninja-build`, `pkg-config`, `libgtk-3-dev`, plus GStreamer development packages for audio builds.
+  - Windows: Visual Studio with the Desktop development with C++ workload.
 
-## 🎧 Powerful Audio Experience
-
-- Stream high-quality recitations instantly
-- Play **individual ayahs directly from the page**
-- Download Surahs for **offline listening**
-- Automatically switches to offline audio when available
-
-**Playback controls:**
-- Play, pause, next, previous
-- Shuffle and loop modes
-- Adjustable playback speed
-
----
-
-## 🎙️ Multiple Reciters
-
-- Mishary Rashid Al Afasy
-- Abu Bakr Al Shatri
-- Nasser Al Qatami
-- Yasser Al Dosari
-- Hani Ar Rifai
-
----
-
-## 🎵 Background Playback
-
-- Listen while using other apps
-- Control playback from system media controls
-
----
-
-## ⭐ Favorites & Personalization
-
-- Save important ayahs for quick access
-- Theme-aware design
-- Modern Material 3 interface
-
----
-
-## 📱 Built for Every Device
-
-- Optimized for phones, tablets, foldables, and desktops
-- Adaptive layouts for reading and playback
-- Improved readability on larger screens
-
----
-
-## 🌿 Simple. Modern. Focused.
-
-eQuran is built for those who want a clean, reliable, and distraction-free Quran experience.
-
-Whether you're reading daily, memorizing, or listening on the go, **eQuran helps you stay consistent and focused.**
-
-## Requirements for building the app
-
-- Flutter SDK (stable channel)
-- Git
-- Platform toolchain for your target:
-  - Android: Android Studio + Android SDK
-  - Linux: `clang`, `cmake`, `ninja-build`, `pkg-config`, `libgtk-3-dev`
-  - Windows: Visual Studio with Desktop C++ workload
-
-## Clone the project
+### Clone
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd equran-app
+git clone https://github.com/ya27hw/equran_app.git
+cd equran_app
 ```
 
-## Install dependencies
+### Install Dependencies
 
 ```bash
 flutter pub get
 ```
 
-## Run the app (debug)
+### Run Locally
 
-### Android
+```bash
+flutter run
+```
+
+You can also target a specific platform:
 
 ```bash
 flutter run -d android
+flutter run -d linux
+flutter run -d windows
+flutter run -d chrome
+```
+
+## Build
+
+### Android Split APKs
+
+```bash
+flutter build apk --release --split-per-abi
+```
+
+Artifacts are written to:
+
+```text
+build/app/outputs/flutter-apk/
 ```
 
 ### Linux
 
 ```bash
 flutter config --enable-linux-desktop
-flutter run -d linux
+flutter build linux --release
+```
+
+Artifacts are written to:
+
+```text
+build/linux/x64/release/bundle/
 ```
 
 ### Windows
 
 ```bash
 flutter config --enable-windows-desktop
-flutter run -d windows
-```
-
-### Web
-
-```bash
-flutter run -d chrome
-```
-
-## Build release artifacts locally
-
-### Android split APKs
-
-```bash
-flutter build apk --release --split-per-abi
-```
-
-Output folder:
-
-`build/app/outputs/flutter-apk/`
-
-### Linux release bundle
-
-```bash
-flutter build linux --release
-```
-
-Output folder:
-
-`build/linux/x64/release/bundle/`
-
-### Windows release bundle
-
-```bash
 flutter build windows --release
 ```
 
-Output folder:
+Artifacts are written to:
 
-`build/windows/x64/runner/Release/`
+```text
+build/windows/x64/runner/Release/
+```
 
-## GitHub Actions release flow
+## Release Flow
 
-Workflow file: [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
+The release workflow lives at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
-On every push to `main`, CI will:
+On pushes to `main` or manual workflow dispatch, the workflow:
 
-1. Read app version from `pubspec.yaml` (for example `2.0.0+13`)
-2. Build:
-   - Android split APKs
-   - Linux release bundle
-   - Windows release bundle
-3. Create/update a Git tag matching the `pubspec.yaml` version
-4. Create/update the GitHub Release for that tag and upload artifacts
+1. Reads the version from `pubspec.yaml`.
+2. Builds Android split APKs, a Linux release bundle, and a Windows release bundle.
+3. Creates a tag from the semantic version, for example `v2.7.3`.
+4. Publishes a GitHub Release with generated release notes and build artifacts.
 
-## Versioning
+Existing tags are detected before release jobs run, so previously published versions are skipped.
 
-Version format in `pubspec.yaml`:
+## Project Structure
 
-`version: <semantic-version>+<build-number>`
+```text
+lib/
+  backend/      Data, downloads, playback helpers, settings, and services
+  home/         Main app screens and reading/player experiences
+  utils/        Theme, responsive, and display helpers
+  widgets/      Shared UI components
+assets/
+  fonts/        Hafs Quran font
+  tafsir/       Tafsir JSON assets
+  transliteration/
+metadata/       Store listing metadata and app icon
+```
 
-Example:
+## Contributing
 
-`version: 2.0.0+13`
+Contributions are welcome when they stay aligned with the app’s focused reading and listening experience.
+
+Before opening a pull request:
+
+1. Keep changes scoped and reviewable.
+2. Run formatting:
+
+   ```bash
+   dart format .
+   ```
+
+3. Run analysis:
+
+   ```bash
+   flutter analyze
+   ```
+
+4. Test the affected platform or feature path.
+5. Update documentation when behavior, setup, or release steps change.
+
+## License
+
+No license file is currently included in this repository. Add a `LICENSE` file before distributing or reusing the source under explicit open-source terms.

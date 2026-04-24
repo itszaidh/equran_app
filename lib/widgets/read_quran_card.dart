@@ -181,6 +181,8 @@ class ReadQuranCard extends StatelessWidget {
     bool isPrimary = false,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
+    final double actionSize = wideActions ? 38 : 34;
 
     return Material(
       color: isPrimary ? colorScheme.primary.withAlpha(10) : Colors.transparent,
@@ -190,7 +192,11 @@ class ReadQuranCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Tooltip(
           message: tooltip,
-          child: SizedBox(height: 34, width: 34, child: Center(child: child)),
+          child: SizedBox(
+            height: actionSize,
+            width: actionSize,
+            child: Center(child: child),
+          ),
         ),
       ),
     );
@@ -202,9 +208,10 @@ class ReadQuranCard extends StatelessWidget {
       builder: (context, favouritesBox, child) {
         final ColorScheme colorScheme = Theme.of(context).colorScheme;
         final bool isFavourite = FavouritesDB().contains(_favouriteKey);
-        final double actionGap = MediaQuery.sizeOf(context).width >= 700
-            ? 10
-            : 6;
+        final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
+        final double actionGap = wideActions ? 10 : 6;
+        final double playIconSize = wideActions ? 23 : 21;
+        final double actionIconSize = wideActions ? 20 : 18;
 
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -216,7 +223,7 @@ class ReadQuranCard extends StatelessWidget {
               isPrimary: true,
               child: Icon(
                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                size: 21,
+                size: playIconSize,
                 color: colorScheme.primary,
               ),
             ),
@@ -229,7 +236,7 @@ class ReadQuranCard extends StatelessWidget {
                 onPressed: onTafsir,
                 child: Icon(
                   Icons.chrome_reader_mode_rounded,
-                  size: 18,
+                  size: actionIconSize,
                   color: colorScheme.onSurface.withAlpha(168),
                 ),
               ),
@@ -252,13 +259,16 @@ class ReadQuranCard extends StatelessWidget {
     required bool showTranslation,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
+    final double actionSize = wideActions ? 38 : 34;
+    final double iconSize = wideActions ? 21 : 19;
 
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
       child: SizedBox(
-        height: 34,
-        width: 34,
+        height: actionSize,
+        width: actionSize,
         child: Center(
           child: PopupMenuButton<_CardOverflowAction>(
             tooltip: 'More actions',
@@ -266,7 +276,7 @@ class ReadQuranCard extends StatelessWidget {
             padding: EdgeInsets.zero,
             icon: Icon(
               Icons.more_horiz_rounded,
-              size: 19,
+              size: iconSize,
               color: colorScheme.onSurface.withAlpha(168),
             ),
             onSelected: (action) {
