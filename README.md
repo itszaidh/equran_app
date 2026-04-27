@@ -6,7 +6,6 @@
   <a href="https://github.com/ya27hw/equran_app/releases">
     <img alt="Latest GitHub release" src="https://img.shields.io/github/v/release/ya27hw/equran_app?sort=semver&style=for-the-badge">
   </a>
-  <img alt="App version" src="https://img.shields.io/badge/version-2.7.3%2B44-2563eb?style=for-the-badge">
   <a href="https://github.com/ya27hw/equran_app/stargazers">
     <img alt="GitHub stars" src="https://img.shields.io/github/stars/ya27hw/equran_app?style=for-the-badge">
   </a>
