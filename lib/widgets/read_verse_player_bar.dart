@@ -196,6 +196,7 @@ class ReadVersePlayerBar extends StatelessWidget {
       1.0,
     );
     final bool renderExpandedBody = collapseProgress < 0.995;
+    final bool renderMinimizedBody = collapseProgress > 0.005;
     final Widget expandedBody = !renderExpandedBody
         ? const SizedBox.shrink()
         : width < 900
@@ -278,11 +279,13 @@ class ReadVersePlayerBar extends StatelessWidget {
                             child: Transform.scale(
                               scale: lerpDouble(0.985, 1, collapseProgress)!,
                               alignment: Alignment.bottomCenter,
-                              child: _buildMinimizedBody(
-                                context,
-                                theme,
-                                colorScheme,
-                              ),
+                              child: renderMinimizedBody
+                                  ? _buildMinimizedBody(
+                                      context,
+                                      theme,
+                                      colorScheme,
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
                           ),
                         ),
