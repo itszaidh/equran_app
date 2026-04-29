@@ -171,7 +171,7 @@ class ReadVersePlayerBar extends StatelessWidget {
     )!;
     final double bottomInset = lerpDouble(
       width < 900 ? 10 : 12,
-      10,
+      13,
       collapseProgress,
     )!;
     final double verticalPadding = lerpDouble(
@@ -305,39 +305,31 @@ class ReadVersePlayerBar extends StatelessWidget {
   ) {
     final int verse = playingVerse ?? currentVerse;
 
-    return Stack(
-      children: <Widget>[
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Container(
-              width: 30,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurfaceVariant.withAlpha(132),
-                borderRadius: BorderRadius.circular(999),
-              ),
+    return Padding(
+      padding: EdgeInsets.zero,
+      child: Row(
+        children: <Widget>[
+          IconButton(
+            tooltip: isPlaying ? 'Pause' : 'Play',
+            onPressed: onTogglePlayPause,
+            icon: Icon(
+              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
             ),
+            color: colorScheme.primary,
+            iconSize: 22,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints.tightFor(width: 34, height: 34),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 10),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            onTap: onExpand,
-            child: Row(
-              children: <Widget>[
-                Icon(
-                  isPlaying
-                      ? Icons.graphic_eq_rounded
-                      : Icons.play_circle_outline_rounded,
-                  color: colorScheme.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
+          const SizedBox(width: 8),
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppRadii.large),
+              onTap: onExpand,
+              child: SizedBox(
+                height: double.infinity,
+                child: Align(
+                  alignment: Alignment.centerLeft,
                   child: Text(
                     '${quran.getSurahName(currentChapter)} • Ayah $verse',
                     maxLines: 1,
@@ -348,19 +340,19 @@ class ReadVersePlayerBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  tooltip: 'Dismiss player',
-                  onPressed: onDismiss,
-                  icon: const Icon(Icons.close_rounded),
-                  iconSize: 20,
-                  visualDensity: VisualDensity.compact,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          IconButton(
+            tooltip: 'Dismiss player',
+            onPressed: onDismiss,
+            icon: const Icon(Icons.close_rounded),
+            iconSize: 20,
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
     );
   }
 
@@ -746,7 +738,7 @@ class ReadVersePlayerBar extends StatelessWidget {
     return width >= 1500 ? 148 : 142;
   }
 
-  double get _minimizedBarHeight => 58;
+  double get _minimizedBarHeight => 45;
 
   double _durationProgress(Duration position, Duration duration) {
     if (duration.inMilliseconds <= 0) return 0;
