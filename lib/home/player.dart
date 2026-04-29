@@ -145,6 +145,8 @@ class PlayerPage extends StatefulWidget {
 }
 
 class _PlayerPageState extends State<PlayerPage> {
+  static const double _playerPageAudioFrameRate = 24.0;
+
   final ja.AudioPlayer _justAudio = ja.AudioPlayer();
   final ap.AudioPlayer _fallbackAudio = ap.AudioPlayer();
   final AudioDownloadService _downloads = AudioDownloadService();
@@ -188,6 +190,11 @@ class _PlayerPageState extends State<PlayerPage> {
   @override
   void initState() {
     super.initState();
+    unawaited(
+      AndroidAudioDisplayMode.setLimitedProgressFrameRate(
+        _playerPageAudioFrameRate,
+      ),
+    );
 
     _useAudioplayersFallback =
         !kIsWeb && (Platform.isLinux || Platform.isWindows);
@@ -967,6 +974,7 @@ class _PlayerPageState extends State<PlayerPage> {
     unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(false));
     unawaited(AndroidAudioDisplayMode.setVisualProgressActive(false));
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
+    unawaited(AndroidAudioDisplayMode.setLimitedProgressFrameRate(0));
     _progressThumbTimer?.cancel();
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();

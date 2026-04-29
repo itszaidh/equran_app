@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 
 class AndroidAudioDisplayMode {
   static const double _systemFrameRate = 0.0;
-  static const double _limitedProgressFrameRate = 30.0;
+  static const double _defaultLimitedProgressFrameRate = 30.0;
   static const Duration _defaultIdleDelay = Duration(milliseconds: 500);
   static const MethodChannel _channel = MethodChannel(
     'com.app.equran/read_page',
@@ -18,6 +18,7 @@ class AndroidAudioDisplayMode {
   static Timer? _idleTimer;
   static DateTime? _lastUserActivityAt;
   static int _lowFpsSuppressionCount = 0;
+  static double _limitedProgressFrameRate = _defaultLimitedProgressFrameRate;
   static bool _limitedFrameRateEnabled = true;
   static bool _staticMinimizedRefreshRequested = false;
 
@@ -57,6 +58,18 @@ class AndroidAudioDisplayMode {
     if (_limitedFrameRateEnabled == enabled) return;
 
     _limitedFrameRateEnabled = enabled;
+    await _reconcileFrameRatePolicy();
+  }
+
+  static Future<void> setLimitedProgressFrameRate(double frameRate) async {
+    if (!_isSupported) return;
+
+    final double nextFrameRate = frameRate <= 0
+        ? _defaultLimitedProgressFrameRate
+        : frameRate;
+    if (_limitedProgressFrameRate == nextFrameRate) return;
+
+    _limitedProgressFrameRate = nextFrameRate;
     await _reconcileFrameRatePolicy();
   }
 
