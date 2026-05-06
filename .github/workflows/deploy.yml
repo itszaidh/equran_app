@@ -110,9 +110,6 @@ jobs:
           keyAlias=$ANDROID_KEY_ALIAS
           storeFile=app/keystore.jks
           EOF
-          
-      - name: Install Flutter Dependencies
-      - run: flutter pub get
 
       - name: Build Android Split APKs
         run: flutter build apk --release --split-per-abi
