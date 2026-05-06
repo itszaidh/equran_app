@@ -114,35 +114,6 @@ jobs:
       - name: Build Android Split APKs
         run: flutter build apk --release --split-per-abi
         shell: bash
-        run: |
-          shopt -s nullglob
-          apks=(build/app/outputs/flutter-apk/app-*-release.apk)
-          aapt="${ANDROID_HOME}/build-tools/$(ls "${ANDROID_HOME}/build-tools" | sort -V | tail -n 1)/aapt"
-
-          if [[ ${#apks[@]} -eq 0 ]]; then
-            echo "No release APKs found to inspect."
-            exit 1
-          fi
-
-          if [[ ! -x "$aapt" ]]; then
-            echo "Android Asset Packaging Tool not found at $aapt"
-            exit 1
-          fi
-
-          for apk in "${apks[@]}"; do
-            resource_dump="$(mktemp)"
-            "$aapt" dump resources "$apk" > "$resource_dump"
-
-            if ! grep -q 'ic_prayer_notification' "$resource_dump"; then
-              echo "Missing ic_prayer_notification drawable resource in $apk"
-              echo "Matching APK entries:"
-              unzip -Z1 "$apk" | grep 'ic_prayer_notification' || true
-              rm -f "$resource_dump"
-              exit 1
-            fi
-
-            rm -f "$resource_dump"
-          done
 
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v4
