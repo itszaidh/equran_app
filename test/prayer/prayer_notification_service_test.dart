@@ -212,15 +212,39 @@ void main() {
         expect(platform.scheduled, isEmpty);
       },
     );
+
+    test(
+      'exact alarm denied does not fall back to inexact scheduling',
+      () async {
+        final _FakeNotificationPlatform platform = _FakeNotificationPlatform(
+          exactAlarmPermissionStatus: PrayerExactAlarmPermissionStatus.denied,
+        );
+        final PrayerNotificationService service = PrayerNotificationService(
+          platform: platform,
+          nowProvider: () => DateTime.utc(2026, 5, 3, 23, 1),
+        );
+
+        final PrayerNotificationScheduleResult result = await service
+            .reschedule(settings: enabledSettings, location: location);
+
+        expect(
+          result.status,
+          PrayerNotificationScheduleStatus.exactAlarmDenied,
+        );
+        expect(platform.scheduled, isEmpty);
+      },
+    );
   });
 }
 
 class _FakeNotificationPlatform implements PrayerLocalNotificationPlatform {
   _FakeNotificationPlatform({
     this.permissionStatus = PrayerNotificationPermissionStatus.granted,
+    this.exactAlarmPermissionStatus = PrayerExactAlarmPermissionStatus.granted,
   });
 
   PrayerNotificationPermissionStatus permissionStatus;
+  PrayerExactAlarmPermissionStatus exactAlarmPermissionStatus;
   final Map<int, _ScheduledCall> scheduled = <int, _ScheduledCall>{};
   final List<int> cancelledIds = <int>[];
   int scheduleCalls = 0;
@@ -237,7 +261,15 @@ class _FakeNotificationPlatform implements PrayerLocalNotificationPlatform {
   }
 
   @override
+  Future<PrayerExactAlarmPermissionStatus> checkExactAlarmPermission() async {
+    return exactAlarmPermissionStatus;
+  }
+
+  @override
   Future<void> initialize() async {}
+
+  @override
+  Future<void> openExactAlarmSettings() async {}
 
   @override
   Future<void> openSettings() async {}

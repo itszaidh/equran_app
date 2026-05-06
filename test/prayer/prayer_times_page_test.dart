@@ -453,7 +453,15 @@ class _NoopNotificationPlatform implements PrayerLocalNotificationPlatform {
   }
 
   @override
+  Future<PrayerExactAlarmPermissionStatus> checkExactAlarmPermission() async {
+    return PrayerExactAlarmPermissionStatus.granted;
+  }
+
+  @override
   Future<void> initialize() async {}
+
+  @override
+  Future<void> openExactAlarmSettings() async {}
 
   @override
   Future<void> openSettings() async {}

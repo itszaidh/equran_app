@@ -1,6 +1,7 @@
 package com.app.equran
 
 import android.Manifest
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -126,6 +127,12 @@ class MainActivity : AudioServiceActivity() {
                     }
                     "openNotificationSettings" -> {
                         result.success(openNotificationSettings())
+                    }
+                    "checkExactAlarmPermission" -> {
+                        result.success(exactAlarmPermissionStatus())
+                    }
+                    "openExactAlarmSettings" -> {
+                        result.success(openExactAlarmSettings())
                     }
                     else -> result.notImplemented()
                 }
@@ -323,6 +330,25 @@ class MainActivity : AudioServiceActivity() {
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.parse("package:$packageName")
             }
+        }
+        return try {
+            startActivity(intent)
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
+
+    private fun exactAlarmPermissionStatus(): String {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return "granted"
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        return if (alarmManager.canScheduleExactAlarms()) "granted" else "denied"
+    }
+
+    private fun openExactAlarmSettings(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+            data = Uri.parse("package:$packageName")
         }
         return try {
             startActivity(intent)

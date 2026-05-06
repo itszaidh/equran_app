@@ -10,10 +10,13 @@ import 'package:timezone/timezone.dart' as timezone;
 
 enum PrayerNotificationPermissionStatus { granted, denied, unsupported }
 
+enum PrayerExactAlarmPermissionStatus { granted, denied, unsupported }
+
 enum PrayerNotificationScheduleStatus {
   disabled,
   missingLocation,
   permissionDenied,
+  exactAlarmDenied,
   unsupported,
   scheduled,
   failed,
@@ -37,11 +40,15 @@ class PrayerNotificationScheduleResult {
   const PrayerNotificationScheduleResult({
     required this.status,
     this.scheduledNotifications = const <PrayerScheduledNotification>[],
+    this.notificationPermission,
+    this.exactAlarmPermission,
     this.message,
   });
 
   final PrayerNotificationScheduleStatus status;
   final List<PrayerScheduledNotification> scheduledNotifications;
+  final PrayerNotificationPermissionStatus? notificationPermission;
+  final PrayerExactAlarmPermissionStatus? exactAlarmPermission;
   final String? message;
 
   int get scheduledCount => scheduledNotifications.length;
@@ -55,6 +62,10 @@ abstract class PrayerLocalNotificationPlatform {
   Future<PrayerNotificationPermissionStatus> requestPermission();
 
   Future<void> openSettings();
+
+  Future<PrayerExactAlarmPermissionStatus> checkExactAlarmPermission();
+
+  Future<void> openExactAlarmSettings();
 
   Future<void> schedule({
     required int id,
@@ -240,6 +251,52 @@ class FlutterPrayerLocalNotificationPlatform
   }
 
   @override
+  Future<PrayerExactAlarmPermissionStatus> checkExactAlarmPermission() async {
+    if (!_isSupported) return PrayerExactAlarmPermissionStatus.unsupported;
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return PrayerExactAlarmPermissionStatus.unsupported;
+    }
+
+    final PrayerExactAlarmPermissionStatus? nativeStatus =
+        await _androidPermissions.checkExactAlarmPermission().timeout(
+          _operationTimeout,
+          onTimeout: () => null,
+        );
+    if (nativeStatus != null) return nativeStatus;
+
+    await initialize();
+    final AndroidFlutterLocalNotificationsPlugin? android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android == null) return PrayerExactAlarmPermissionStatus.unsupported;
+    final bool? granted = await android.canScheduleExactNotifications().timeout(
+      _operationTimeout,
+    );
+    return granted == true
+        ? PrayerExactAlarmPermissionStatus.granted
+        : PrayerExactAlarmPermissionStatus.denied;
+  }
+
+  @override
+  Future<void> openExactAlarmSettings() async {
+    if (!_isSupported || defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
+    final bool opened = await _androidPermissions
+        .openExactAlarmSettings()
+        .timeout(_operationTimeout, onTimeout: () => false);
+    if (opened) return;
+
+    await initialize();
+    final AndroidFlutterLocalNotificationsPlugin? android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await android?.requestExactAlarmsPermission().timeout(_operationTimeout);
+  }
+
+  @override
   Future<void> schedule({
     required int id,
     required String title,
@@ -250,12 +307,13 @@ class FlutterPrayerLocalNotificationPlatform
     if (!_isSupported) return;
     await initialize();
     await _configureTimezone();
+    final timezone.TZDateTime scheduledDate = _scheduledDateFor(scheduledAt);
     await _plugin
         .zonedSchedule(
           id: id,
           title: title,
           body: body,
-          scheduledDate: timezone.TZDateTime.from(scheduledAt, timezone.local),
+          scheduledDate: scheduledDate,
           notificationDetails: const NotificationDetails(
             android: AndroidNotificationDetails(
               'prayer_reminders',
@@ -274,7 +332,7 @@ class FlutterPrayerLocalNotificationPlatform
               presentSound: true,
             ),
           ),
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           payload: payload,
         )
         .timeout(_operationTimeout);
@@ -304,6 +362,22 @@ class FlutterPrayerLocalNotificationPlatform
     );
     _timezoneConfigured = true;
   }
+
+  timezone.TZDateTime _scheduledDateFor(DateTime scheduledAt) {
+    final timezone.TZDateTime localScheduledAt = timezone.TZDateTime.from(
+      scheduledAt,
+      timezone.local,
+    );
+    return timezone.TZDateTime(
+      timezone.local,
+      localScheduledAt.year,
+      localScheduledAt.month,
+      localScheduledAt.day,
+      localScheduledAt.hour,
+      localScheduledAt.minute,
+      localScheduledAt.second,
+    );
+  }
 }
 
 class _AndroidPrayerNotificationPermissionBridge {
@@ -321,9 +395,24 @@ class _AndroidPrayerNotificationPermissionBridge {
     return _invokePermissionStatus('requestNotificationPermission');
   }
 
+  Future<PrayerExactAlarmPermissionStatus?> checkExactAlarmPermission() {
+    return _invokeExactAlarmStatus('checkExactAlarmPermission');
+  }
+
   Future<bool> openSettings() async {
     try {
       return await _channel.invokeMethod<bool>('openNotificationSettings') ??
+          false;
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
+  Future<bool> openExactAlarmSettings() async {
+    try {
+      return await _channel.invokeMethod<bool>('openExactAlarmSettings') ??
           false;
     } on MissingPluginException {
       return false;
@@ -349,6 +438,24 @@ class _AndroidPrayerNotificationPermissionBridge {
       return null;
     }
   }
+
+  Future<PrayerExactAlarmPermissionStatus?> _invokeExactAlarmStatus(
+    String method,
+  ) async {
+    try {
+      final String? status = await _channel.invokeMethod<String>(method);
+      return switch (status) {
+        'granted' => PrayerExactAlarmPermissionStatus.granted,
+        'denied' => PrayerExactAlarmPermissionStatus.denied,
+        'unsupported' => PrayerExactAlarmPermissionStatus.unsupported,
+        _ => null,
+      };
+    } on MissingPluginException {
+      return null;
+    } on PlatformException {
+      return null;
+    }
+  }
 }
 
 class PrayerNotificationService {
@@ -363,7 +470,12 @@ class PrayerNotificationService {
 
   static const int defaultScheduleDays = 7;
   static const int _notificationBaseId = 42000;
+  static const int _datedNotificationBaseId = 52000;
+  static const int _debugNotificationId = 41999;
+  static const String _androidPrayerScheduleMode =
+      'AndroidScheduleMode.exactAllowWhileIdle';
   static const Duration _operationTimeout = Duration(seconds: 8);
+  static final DateTime _notificationIdEpoch = DateTime.utc(2020);
 
   final PrayerLocalNotificationPlatform _platform;
   final PrayerTimesService _prayerTimesService;
@@ -382,11 +494,35 @@ class PrayerNotificationService {
     return _withTimeout(_platform.requestPermission());
   }
 
+  Future<PrayerExactAlarmPermissionStatus> checkExactAlarmPermission() {
+    return _withTimeout(_platform.checkExactAlarmPermission());
+  }
+
   Future<void> openSettings() {
     return _withTimeout(_platform.openSettings());
   }
 
-  Future<void> cancelPrayerNotifications() async {
+  Future<void> openExactAlarmSettings() {
+    return _withTimeout(_platform.openExactAlarmSettings());
+  }
+
+  Future<void> cancelPrayerNotifications({DateTime? anchorDate}) async {
+    final DateTime anchor = _dateOnly(anchorDate ?? _nowProvider().toLocal());
+    await _withTimeout(_platform.cancel(_debugNotificationId));
+
+    for (int dayOffset = -2; dayOffset < scheduleDays + 3; dayOffset++) {
+      final DateTime date = DateTime(
+        anchor.year,
+        anchor.month,
+        anchor.day + dayOffset,
+      );
+      for (final PrayerTimeKind prayer in PrayerTimeKind.reminderOrder) {
+        await _withTimeout(
+          _platform.cancel(notificationIdForDate(prayer, date)),
+        );
+      }
+    }
+
     for (int dayOffset = 0; dayOffset < scheduleDays; dayOffset++) {
       for (final PrayerTimeKind prayer in PrayerTimeKind.reminderOrder) {
         await _withTimeout(
@@ -396,16 +532,110 @@ class PrayerNotificationService {
     }
   }
 
+  Future<PrayerNotificationScheduleResult>
+  scheduleDebugExactNotificationOneMinuteFromNow() async {
+    if (!kDebugMode) {
+      return const PrayerNotificationScheduleResult(
+        status: PrayerNotificationScheduleStatus.unsupported,
+        message: 'Debug prayer notification scheduling is unavailable.',
+      );
+    }
+
+    try {
+      await _prepareForScheduling();
+      final PrayerNotificationPermissionStatus permission = await _withTimeout(
+        _platform.checkPermission(),
+      );
+      if (permission != PrayerNotificationPermissionStatus.granted) {
+        return PrayerNotificationScheduleResult(
+          status: PrayerNotificationScheduleStatus.permissionDenied,
+          notificationPermission: permission,
+          message: 'Notification permission is off.',
+        );
+      }
+
+      final PrayerExactAlarmPermissionStatus exactAlarmPermission =
+          await _withTimeout(_platform.checkExactAlarmPermission());
+      if (exactAlarmPermission == PrayerExactAlarmPermissionStatus.denied) {
+        return PrayerNotificationScheduleResult(
+          status: PrayerNotificationScheduleStatus.exactAlarmDenied,
+          notificationPermission: permission,
+          exactAlarmPermission: exactAlarmPermission,
+          message:
+              'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+        );
+      }
+
+      await _withTimeout(_platform.cancel(_debugNotificationId));
+      final DateTime now = _nowProvider();
+      final DateTime scheduledAt = _zeroSubsecond(
+        now.add(const Duration(minutes: 1)),
+      );
+      await _scheduleNotification(
+        id: _debugNotificationId,
+        prayer: PrayerTimeKind.fajr,
+        title: 'Prayer reminder test ${_debugTimeLabel(scheduledAt)}',
+        body:
+            'Expected exact delivery at ${_debugTimeLabel(scheduledAt)} using $_androidPrayerScheduleMode.',
+        prayerTime: scheduledAt,
+        reminderOffsetMinutes: 0,
+        scheduledAt: scheduledAt,
+        now: now,
+        timezoneName: PrayerTimezoneService.deviceTimezoneId ?? 'local',
+        notificationPermission: permission,
+        exactAlarmPermission: exactAlarmPermission,
+        payload: 'prayer:debug:${scheduledAt.toIso8601String()}',
+      );
+
+      return PrayerNotificationScheduleResult(
+        status: PrayerNotificationScheduleStatus.scheduled,
+        notificationPermission: permission,
+        exactAlarmPermission: exactAlarmPermission,
+        scheduledNotifications: <PrayerScheduledNotification>[
+          PrayerScheduledNotification(
+            id: _debugNotificationId,
+            prayer: PrayerTimeKind.fajr,
+            scheduledAt: scheduledAt,
+            dayOffset: 0,
+          ),
+        ],
+      );
+    } on TimeoutException {
+      return const PrayerNotificationScheduleResult(
+        status: PrayerNotificationScheduleStatus.failed,
+        message:
+            'Notification setup timed out. Check notification permission and try again.',
+      );
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('Prayer debug notification scheduling failed: $error');
+      }
+      return PrayerNotificationScheduleResult(
+        status: PrayerNotificationScheduleStatus.failed,
+        message: error.toString(),
+      );
+    }
+  }
+
   Future<PrayerNotificationScheduleResult> reschedule({
     required PrayerTimeSettings settings,
     required PrayerLocation? location,
     bool requestPermission = false,
   }) async {
     try {
-      await _withTimeout(_platform.initialize());
-      await cancelPrayerNotifications();
-
       final PrayerReminderSettings reminders = settings.reminderSettings;
+      final DateTime now = _nowProvider();
+      final DateTime? today = location == null
+          ? null
+          : _prayerTimesService.calendarDateForInstant(
+              instant: now,
+              location: location,
+              settings: settings,
+            );
+
+      await _prepareForScheduling();
+      await cancelPrayerNotifications(anchorDate: today);
+
       if (!reminders.remindersEnabled || reminders.enabledPrayerKinds.isEmpty) {
         return const PrayerNotificationScheduleResult(
           status: PrayerNotificationScheduleStatus.disabled,
@@ -418,6 +648,7 @@ class PrayerNotificationService {
           message: 'Choose a location before scheduling reminders.',
         );
       }
+      final DateTime todayDate = today!;
 
       final PrayerNotificationPermissionStatus permission = requestPermission
           ? await _withTimeout(_platform.requestPermission())
@@ -425,30 +656,44 @@ class PrayerNotificationService {
       if (permission == PrayerNotificationPermissionStatus.unsupported) {
         return const PrayerNotificationScheduleResult(
           status: PrayerNotificationScheduleStatus.unsupported,
+          notificationPermission:
+              PrayerNotificationPermissionStatus.unsupported,
           message: 'Prayer reminders are not supported on this platform.',
         );
       }
       if (permission != PrayerNotificationPermissionStatus.granted) {
-        return const PrayerNotificationScheduleResult(
+        return PrayerNotificationScheduleResult(
           status: PrayerNotificationScheduleStatus.permissionDenied,
+          notificationPermission: permission,
           message: 'Notification permission is off.',
         );
       }
 
-      final DateTime now = _nowProvider();
-      final DateTime today = _prayerTimesService.calendarDateForInstant(
-        instant: now,
-        location: location,
-        settings: settings,
-      );
+      final PrayerExactAlarmPermissionStatus exactAlarmPermission =
+          await _withTimeout(_platform.checkExactAlarmPermission());
+      if (exactAlarmPermission == PrayerExactAlarmPermissionStatus.denied) {
+        if (kDebugMode) {
+          debugPrint(
+            'Prayer notifications not scheduled: exact alarm permission is disabled.',
+          );
+        }
+        return PrayerNotificationScheduleResult(
+          status: PrayerNotificationScheduleStatus.exactAlarmDenied,
+          notificationPermission: permission,
+          exactAlarmPermission: exactAlarmPermission,
+          message:
+              'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+        );
+      }
+
       final List<PrayerScheduledNotification> scheduled =
           <PrayerScheduledNotification>[];
 
       for (int dayOffset = 0; dayOffset < scheduleDays; dayOffset++) {
         final DateTime date = DateTime(
-          today.year,
-          today.month,
-          today.day + dayOffset,
+          todayDate.year,
+          todayDate.month,
+          todayDate.day + dayOffset,
         );
         final PrayerDay day = _prayerTimesService.calculateDay(
           date: date,
@@ -458,21 +703,31 @@ class PrayerNotificationService {
 
         for (final PrayerTimeKind prayer in PrayerTimeKind.reminderOrder) {
           if (!reminders.isReminderActiveFor(prayer)) continue;
-          final DateTime scheduledAt = day
-              .entryFor(prayer)
-              .time
-              .subtract(Duration(minutes: reminders.reminderOffsetMinutes));
+          final DateTime prayerTime = _floorToMinute(day.entryFor(prayer).time);
+          final DateTime scheduledAt = _floorToMinute(
+            prayerTime.subtract(
+              Duration(minutes: reminders.reminderOffsetMinutes),
+            ),
+          );
           if (!scheduledAt.isAfter(now)) continue;
 
-          final int id = notificationIdFor(prayer, dayOffset);
-          await _withTimeout(
-            _platform.schedule(
-              id: id,
-              title: prayer.label,
-              body: _notificationBody(prayer, reminders.reminderOffsetMinutes),
-              scheduledAt: scheduledAt,
-              payload: 'prayer:${prayer.id}:${scheduledAt.toIso8601String()}',
-            ),
+          final int id = notificationIdForDate(prayer, date);
+          await _scheduleNotification(
+            id: id,
+            prayer: prayer,
+            title: prayer.label,
+            body: _notificationBody(prayer, reminders.reminderOffsetMinutes),
+            prayerTime: prayerTime,
+            reminderOffsetMinutes: reminders.reminderOffsetMinutes,
+            scheduledAt: scheduledAt,
+            now: now,
+            timezoneName:
+                day.timezoneId ??
+                PrayerTimezoneService.deviceTimezoneId ??
+                'local',
+            notificationPermission: permission,
+            exactAlarmPermission: exactAlarmPermission,
+            payload: 'prayer:${prayer.id}:${scheduledAt.toIso8601String()}',
           );
           scheduled.add(
             PrayerScheduledNotification(
@@ -495,6 +750,8 @@ class PrayerNotificationService {
       return PrayerNotificationScheduleResult(
         status: PrayerNotificationScheduleStatus.scheduled,
         scheduledNotifications: scheduled,
+        notificationPermission: permission,
+        exactAlarmPermission: exactAlarmPermission,
       );
     } on TimeoutException {
       return const PrayerNotificationScheduleResult(
@@ -513,6 +770,23 @@ class PrayerNotificationService {
     }
   }
 
+  int notificationIdForDate(PrayerTimeKind prayer, DateTime date) {
+    final int prayerIndex = PrayerTimeKind.reminderOrder.indexOf(prayer);
+    if (prayerIndex < 0) {
+      throw ArgumentError('Unsupported prayer notification id: $prayer');
+    }
+    final DateTime normalizedDate = DateTime.utc(
+      date.year,
+      date.month,
+      date.day,
+    );
+    final int dayIndex = normalizedDate.difference(_notificationIdEpoch).inDays;
+    if (dayIndex < 0) {
+      throw ArgumentError('Unsupported prayer notification date: $date');
+    }
+    return _datedNotificationBaseId + (dayIndex * 10) + prayerIndex;
+  }
+
   int notificationIdFor(PrayerTimeKind prayer, int dayOffset) {
     final int prayerIndex = PrayerTimeKind.reminderOrder.indexOf(prayer);
     if (prayerIndex < 0 || dayOffset < 0) {
@@ -526,6 +800,153 @@ class PrayerNotificationService {
       return 'It is time for ${prayer.label} prayer.';
     }
     return '${prayer.label} prayer is in $offsetMinutes minutes.';
+  }
+
+  Future<void> _prepareForScheduling() async {
+    await _withTimeout(_platform.initialize());
+    PrayerTimezoneService.ensureDatabaseInitialized();
+  }
+
+  Future<void> _scheduleNotification({
+    required int id,
+    required PrayerTimeKind prayer,
+    required String title,
+    required String body,
+    required DateTime prayerTime,
+    required int reminderOffsetMinutes,
+    required DateTime scheduledAt,
+    required DateTime now,
+    required String timezoneName,
+    required PrayerNotificationPermissionStatus notificationPermission,
+    required PrayerExactAlarmPermissionStatus exactAlarmPermission,
+    required String payload,
+  }) async {
+    _logSchedule(
+      id: id,
+      prayer: prayer,
+      prayerTime: prayerTime,
+      reminderOffsetMinutes: reminderOffsetMinutes,
+      scheduledAt: scheduledAt,
+      now: now,
+      timezoneName: timezoneName,
+      notificationPermission: notificationPermission,
+      exactAlarmPermission: exactAlarmPermission,
+    );
+    await _withTimeout(
+      _platform.schedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledAt: scheduledAt,
+        payload: payload,
+      ),
+    );
+  }
+
+  void _logSchedule({
+    required int id,
+    required PrayerTimeKind prayer,
+    required DateTime prayerTime,
+    required int reminderOffsetMinutes,
+    required DateTime scheduledAt,
+    required DateTime now,
+    required String timezoneName,
+    required PrayerNotificationPermissionStatus notificationPermission,
+    required PrayerExactAlarmPermissionStatus exactAlarmPermission,
+  }) {
+    if (!kDebugMode) return;
+    debugPrint(
+      'Prayer notification schedule | '
+      'prayer=${prayer.label} | '
+      'uiPrayerClock=${_debugWallClockLabel(prayerTime)} | '
+      'uiPrayerTime=${prayerTime.toIso8601String()} | '
+      'reminderOffsetMinutes=$reminderOffsetMinutes | '
+      'scheduledNotificationClock=${_debugWallClockLabel(scheduledAt)} | '
+      'scheduledNotificationTime=${scheduledAt.toIso8601String()} | '
+      'deviceNowClock=${_debugTimeLabel(now)} | '
+      'deviceNow=${now.toLocal().toIso8601String()} | '
+      'prayerTimezone=$timezoneName | '
+      'deviceScheduleTimezone=${PrayerTimezoneService.deviceTimezoneId ?? timezone.local.name} | '
+      'notificationId=$id | '
+      'androidScheduleMode=$_androidPrayerScheduleMode | '
+      'exactAlarmPermission=$exactAlarmPermission | '
+      'exactAlarmPermissionGranted=${exactAlarmPermission == PrayerExactAlarmPermissionStatus.granted} | '
+      'notificationPermission=$notificationPermission | '
+      'notificationPermissionGranted=${notificationPermission == PrayerNotificationPermissionStatus.granted}',
+    );
+  }
+
+  DateTime _dateOnly(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  DateTime _floorToMinute(DateTime time) {
+    if (time is timezone.TZDateTime) {
+      return timezone.TZDateTime(
+        time.location,
+        time.year,
+        time.month,
+        time.day,
+        time.hour,
+        time.minute,
+      );
+    }
+    if (time.isUtc) {
+      return DateTime.utc(
+        time.year,
+        time.month,
+        time.day,
+        time.hour,
+        time.minute,
+      );
+    }
+    return DateTime(time.year, time.month, time.day, time.hour, time.minute);
+  }
+
+  DateTime _zeroSubsecond(DateTime time) {
+    if (time is timezone.TZDateTime) {
+      return timezone.TZDateTime(
+        time.location,
+        time.year,
+        time.month,
+        time.day,
+        time.hour,
+        time.minute,
+        time.second,
+      );
+    }
+    if (time.isUtc) {
+      return DateTime.utc(
+        time.year,
+        time.month,
+        time.day,
+        time.hour,
+        time.minute,
+        time.second,
+      );
+    }
+    return DateTime(
+      time.year,
+      time.month,
+      time.day,
+      time.hour,
+      time.minute,
+      time.second,
+    );
+  }
+
+  String _debugTimeLabel(DateTime time) {
+    final DateTime local = time.toLocal();
+    return _clockWithSeconds(local);
+  }
+
+  String _debugWallClockLabel(DateTime time) {
+    return _clockWithSeconds(time);
+  }
+
+  String _clockWithSeconds(DateTime time) {
+    String two(int value) => value.toString().padLeft(2, '0');
+    return '${two(time.hour)}:${two(time.minute)}:${two(time.second)}';
   }
 
   Future<T> _withTimeout<T>(Future<T> future) {

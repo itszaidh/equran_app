@@ -92,7 +92,7 @@ class PrayerTimesService {
           .map(
             (PrayerTimeKind kind) => PrayerTimeEntry(
               kind: kind,
-              time: times[kind]!,
+              time: _floorToMinute(times[kind]!),
               offsetMinutes: settings.offsets.forPrayer(kind),
             ),
           )

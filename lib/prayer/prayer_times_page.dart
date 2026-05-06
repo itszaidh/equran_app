@@ -620,6 +620,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       );
       if (!mounted) return;
       _showMessage('Notification permission is off. Reminders were disabled.');
+    } else if (result.status ==
+            PrayerNotificationScheduleStatus.exactAlarmDenied &&
+        settings.reminderSettings.remindersEnabled) {
+      if (!mounted) return;
+      _showMessage(
+        'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+      );
     }
   }
 

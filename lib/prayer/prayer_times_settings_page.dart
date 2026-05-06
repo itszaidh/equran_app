@@ -9,6 +9,7 @@ import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/widgets/app_selection_dialog.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -32,10 +33,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   bool _isLocating = false;
   bool _isUpdatingReminders = false;
   bool _isCheckingNotificationPermission = false;
+  bool _isCheckingExactAlarmPermission = false;
   bool _notificationPermissionRequestAttempted = false;
   bool _notificationPermissionHasError = false;
+  bool _exactAlarmPermissionHasError = false;
   PrayerNotificationPermissionStatus? _notificationPermission;
+  PrayerExactAlarmPermissionStatus? _exactAlarmPermission;
   String? _notificationMessage;
+  String? _exactAlarmMessage;
 
   @override
   void initState() {
@@ -44,6 +49,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     _settings = _store.getSettings();
     _location = _store.getLocation();
     _refreshNotificationPermission();
+    _refreshExactAlarmPermission();
   }
 
   @override
@@ -56,6 +62,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _refreshNotificationPermission(rescheduleIfGranted: true);
+      _refreshExactAlarmPermission();
     }
   }
 
@@ -231,6 +238,10 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     final bool permissionOff =
         permission == PrayerNotificationPermissionStatus.denied ||
         permission == PrayerNotificationPermissionStatus.unsupported;
+    final PrayerExactAlarmPermissionStatus? exactAlarmPermission =
+        _exactAlarmPermission;
+    final bool exactAlarmOff =
+        exactAlarmPermission == PrayerExactAlarmPermissionStatus.denied;
 
     return _buildSettingsGroup(
       context: context,
@@ -250,8 +261,36 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           value: remindersOn,
           onChanged: _isUpdatingReminders ? null : _toggleGlobalReminders,
         ),
+        ListTile(
+          leading: const Icon(Icons.notifications_none_rounded),
+          title: const Text('Notifications permission'),
+          subtitle: Text(_notificationPermissionSubtitle),
+          trailing: permission == PrayerNotificationPermissionStatus.denied
+              ? TextButton(
+                  onPressed: _isUpdatingReminders
+                      ? null
+                      : _requestNotificationPermission,
+                  child: const Text('Enable'),
+                )
+              : null,
+        ),
+        ListTile(
+          leading: const Icon(Icons.alarm_on_outlined),
+          title: const Text('Exact alarm / alarms & reminders permission'),
+          subtitle: Text(_exactAlarmPermissionSubtitle),
+          trailing: exactAlarmOff
+              ? TextButton(
+                  onPressed: _isUpdatingReminders
+                      ? null
+                      : _openExactAlarmSettings,
+                  child: const Text('Open'),
+                )
+              : null,
+        ),
         if (permissionOff || _notificationMessage != null)
           _buildNotificationPermissionBanner(theme),
+        if (exactAlarmOff || _exactAlarmMessage != null)
+          _buildExactAlarmPermissionBanner(theme),
         if (remindersOn && _location == null)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -286,6 +325,16 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                 enabled: !_isUpdatingReminders,
                 onTap: _isUpdatingReminders ? null : _selectReminderOffset,
               ),
+              if (kDebugMode)
+                ListTile(
+                  leading: const Icon(Icons.bug_report_outlined),
+                  title: const Text('Schedule 1-minute exact test'),
+                  subtitle: const Text('Uses the prayer reminder scheduler.'),
+                  enabled: !_isUpdatingReminders,
+                  onTap: _isUpdatingReminders
+                      ? null
+                      : _scheduleDebugPrayerNotification,
+                ),
             ],
           ),
           crossFadeState: remindersOn
@@ -368,6 +417,63 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                     ),
                   ),
                 ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExactAlarmPermissionBanner(ThemeData theme) {
+    final ColorScheme colors = theme.colorScheme;
+    final bool error = _exactAlarmPermissionHasError;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.errorContainer.withValues(alpha: 0.34),
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          border: Border.all(color: colors.error.withValues(alpha: 0.2)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 11, 12, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Icon(Icons.alarm_off_outlined, color: colors.error, size: 20),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      _exactAlarmMessage ??
+                          'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  onPressed: _isUpdatingReminders
+                      ? null
+                      : error
+                      ? _refreshExactAlarmPermission
+                      : _openExactAlarmSettings,
+                  icon: Icon(
+                    error ? Icons.refresh_rounded : Icons.settings_outlined,
+                  ),
+                  label: Text(
+                    error ? 'Retry' : 'Open alarm permission settings',
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -724,7 +830,9 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     setState(() {
       _isUpdatingReminders = true;
       _notificationMessage = null;
+      _exactAlarmMessage = null;
       _notificationPermissionHasError = false;
+      _exactAlarmPermissionHasError = false;
     });
     try {
       final PrayerNotificationPermissionStatus permission =
@@ -890,6 +998,77 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         _notificationMessage =
             'Could not open notification settings. Open Android app settings manually and enable notifications.';
       });
+    }
+  }
+
+  Future<void> _openExactAlarmSettings() async {
+    setState(() {
+      _exactAlarmPermissionHasError = false;
+      _exactAlarmMessage = null;
+    });
+    try {
+      await _notificationService.openExactAlarmSettings();
+    } on TimeoutException {
+      if (!mounted) return;
+      setState(() {
+        _exactAlarmPermissionHasError = true;
+        _exactAlarmMessage =
+            'Opening alarm permission settings timed out. Open Android alarms & reminders settings manually and enable exact alarms.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _exactAlarmPermissionHasError = true;
+        _exactAlarmMessage =
+            'Could not open alarm permission settings. Open Android alarms & reminders settings manually and enable exact alarms.';
+      });
+    }
+  }
+
+  Future<void> _scheduleDebugPrayerNotification() async {
+    setState(() {
+      _isUpdatingReminders = true;
+      _notificationMessage = null;
+      _exactAlarmMessage = null;
+      _notificationPermissionHasError = false;
+      _exactAlarmPermissionHasError = false;
+    });
+    try {
+      final PrayerNotificationScheduleResult result = await _notificationService
+          .scheduleDebugExactNotificationOneMinuteFromNow();
+      if (!mounted) return;
+      _applyPermissionStateFromScheduleResult(result);
+      switch (result.status) {
+        case PrayerNotificationScheduleStatus.scheduled:
+          final DateTime scheduledAt =
+              result.scheduledNotifications.single.scheduledAt;
+          _showMessage(
+            'Debug prayer reminder scheduled for ${_formatClockTime(scheduledAt)}.',
+          );
+          break;
+        case PrayerNotificationScheduleStatus.permissionDenied:
+          _showMessage('Notification permission is off.');
+          break;
+        case PrayerNotificationScheduleStatus.exactAlarmDenied:
+          _showMessage(
+            'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+          );
+          break;
+        case PrayerNotificationScheduleStatus.unsupported:
+        case PrayerNotificationScheduleStatus.failed:
+        case PrayerNotificationScheduleStatus.disabled:
+        case PrayerNotificationScheduleStatus.missingLocation:
+          _showMessage(
+            result.message ?? 'Debug prayer reminder could not be scheduled.',
+          );
+          break;
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdatingReminders = false;
+        });
+      }
     }
   }
 
@@ -1418,6 +1597,9 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     await _store.saveSettings(settings);
     final PrayerNotificationScheduleResult reminderResult =
         await _rescheduleReminders(settings: settings);
+    if (mounted) {
+      _applyPermissionStateFromScheduleResult(reminderResult);
+    }
     PrayerTimeSettings savedSettings = settings;
     final bool permissionBlocked =
         settings.reminderSettings.remindersEnabled &&
@@ -1460,11 +1642,25 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         _showMessage(_notificationMessage!);
       }
     } else if (reminderResult.status ==
+        PrayerNotificationScheduleStatus.exactAlarmDenied) {
+      if (mounted) {
+        setState(() {
+          _exactAlarmPermission = PrayerExactAlarmPermissionStatus.denied;
+          _exactAlarmMessage =
+              reminderResult.message ??
+              'Exact alarm permission is disabled. Prayer reminders may be delayed.';
+        });
+        _showMessage(_exactAlarmMessage!);
+      }
+    } else if (reminderResult.status ==
         PrayerNotificationScheduleStatus.scheduled) {
       if (mounted) {
         setState(() {
           _notificationPermission = PrayerNotificationPermissionStatus.granted;
+          _exactAlarmPermission =
+              reminderResult.exactAlarmPermission ?? _exactAlarmPermission;
           _notificationMessage = null;
+          _exactAlarmMessage = null;
         });
       }
     }
@@ -1483,6 +1679,37 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       settings: settings ?? _settings,
       location: locationCleared ? null : location ?? _location,
     );
+  }
+
+  void _applyPermissionStateFromScheduleResult(
+    PrayerNotificationScheduleResult result,
+  ) {
+    if (!mounted) return;
+    setState(() {
+      if (result.notificationPermission != null) {
+        _notificationPermission = result.notificationPermission;
+        _notificationPermissionHasError = false;
+        _notificationMessage = _notificationMessageForPermission(
+          result.notificationPermission!,
+        );
+      }
+      if (result.exactAlarmPermission != null) {
+        _exactAlarmPermission = result.exactAlarmPermission;
+        _exactAlarmPermissionHasError = false;
+        _exactAlarmMessage = _exactAlarmMessageForPermission(
+          result.exactAlarmPermission!,
+        );
+      }
+      if (result.status == PrayerNotificationScheduleStatus.scheduled) {
+        _notificationMessage = null;
+        _exactAlarmMessage = null;
+      }
+      if (result.status == PrayerNotificationScheduleStatus.exactAlarmDenied) {
+        _exactAlarmMessage =
+            result.message ??
+            'Exact alarm permission is disabled. Prayer reminders may be delayed.';
+      }
+    });
   }
 
   Future<void> _refreshNotificationPermission({
@@ -1513,7 +1740,11 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       if (permission == PrayerNotificationPermissionStatus.granted &&
           rescheduleIfGranted &&
           _settings.reminderSettings.remindersEnabled) {
-        await _rescheduleReminders();
+        final PrayerNotificationScheduleResult result =
+            await _rescheduleReminders();
+        if (mounted) {
+          _applyPermissionStateFromScheduleResult(result);
+        }
       }
     } on TimeoutException {
       if (!mounted) return;
@@ -1533,6 +1764,47 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       if (mounted) {
         setState(() {
           _isCheckingNotificationPermission = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _refreshExactAlarmPermission() async {
+    setState(() {
+      _isCheckingExactAlarmPermission = true;
+    });
+    try {
+      final PrayerExactAlarmPermissionStatus permission =
+          await _notificationService.checkExactAlarmPermission();
+      if (!mounted) return;
+      final bool showDeniedMessage =
+          permission == PrayerExactAlarmPermissionStatus.denied &&
+          _settings.reminderSettings.remindersEnabled;
+      setState(() {
+        _exactAlarmPermission = permission;
+        _exactAlarmPermissionHasError = false;
+        _exactAlarmMessage = showDeniedMessage
+            ? _exactAlarmMessageForPermission(permission)
+            : null;
+      });
+    } on TimeoutException {
+      if (!mounted) return;
+      setState(() {
+        _exactAlarmPermissionHasError = true;
+        _exactAlarmMessage =
+            'Exact alarm permission check timed out. Try reopening the app or enabling alarms & reminders in system settings.';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _exactAlarmPermissionHasError = true;
+        _exactAlarmMessage =
+            'Could not check exact alarm permission. Try again or enable alarms & reminders in system settings.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingExactAlarmPermission = false;
         });
       }
     }
@@ -1600,6 +1872,25 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     };
   }
 
+  String get _exactAlarmPermissionSubtitle {
+    if (_isCheckingExactAlarmPermission) {
+      return 'Checking exact alarm permission...';
+    }
+    if (_exactAlarmPermissionHasError) {
+      return 'Exact alarm status needs a retry.';
+    }
+    final PrayerExactAlarmPermissionStatus? permission = _exactAlarmPermission;
+    return switch (permission) {
+      PrayerExactAlarmPermissionStatus.granted =>
+        'Alarms & reminders permission granted.',
+      PrayerExactAlarmPermissionStatus.denied =>
+        'Exact alarm permission is disabled.',
+      PrayerExactAlarmPermissionStatus.unsupported =>
+        'Exact alarm permission is not required on this platform.',
+      null => 'Checking exact alarm permission...',
+    };
+  }
+
   String? _notificationMessageForPermission(
     PrayerNotificationPermissionStatus permission,
   ) {
@@ -1609,6 +1900,17 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         'Notification permission is off. Enable it to receive prayer reminders.',
       PrayerNotificationPermissionStatus.unsupported =>
         'Prayer reminders are not supported on this platform.',
+    };
+  }
+
+  String? _exactAlarmMessageForPermission(
+    PrayerExactAlarmPermissionStatus permission,
+  ) {
+    return switch (permission) {
+      PrayerExactAlarmPermissionStatus.granted => null,
+      PrayerExactAlarmPermissionStatus.denied =>
+        'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+      PrayerExactAlarmPermissionStatus.unsupported => null,
     };
   }
 
@@ -1640,6 +1942,10 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   String _clockLabel(int hour, int minute) {
     final TimeOfDay time = TimeOfDay(hour: hour, minute: minute);
     return time.format(context);
+  }
+
+  String _formatClockTime(DateTime time) {
+    return TimeOfDay(hour: time.hour, minute: time.minute).format(context);
   }
 
   void _showLocationError(PrayerLocationResult result) {
