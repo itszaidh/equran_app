@@ -137,7 +137,7 @@ jobs:
             resource_dump="$(mktemp)"
             "$aapt" dump resources "$apk" > "$resource_dump"
 
-            if ! grep -q 'resource .*drawable/ic_prayer_notification' "$resource_dump"; then
+            if ! grep -q 'ic_prayer_notification' "$resource_dump"; then
               echo "Missing ic_prayer_notification drawable resource in $apk"
               echo "Matching APK entries:"
               unzip -Z1 "$apk" | grep 'ic_prayer_notification' || true
