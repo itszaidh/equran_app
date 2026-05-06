@@ -23,10 +23,14 @@ class HisnAlMuslimRepository {
   List<HisnCategory> _parseCategories(Object? decoded) {
     if (decoded is Map) {
       return decoded.entries
-          .map((MapEntry<dynamic, dynamic> entry) {
+          .toList()
+          .asMap()
+          .entries
+          .map((MapEntry<int, MapEntry<dynamic, dynamic>> entry) {
             return _parseCategory(
-              _stringOrNull(entry.key) ?? '',
-              entry.value,
+              entry.key,
+              _stringOrNull(entry.value.key) ?? '',
+              entry.value.value,
             );
           })
           .whereType<HisnCategory>()
@@ -35,7 +39,11 @@ class HisnAlMuslimRepository {
 
     if (decoded is List) {
       return decoded
-          .map((Object? item) => _parseCategory(null, item))
+          .asMap()
+          .entries
+          .map((MapEntry<int, dynamic> entry) {
+            return _parseCategory(entry.key, null, entry.value);
+          })
           .whereType<HisnCategory>()
           .toList(growable: false);
     }
@@ -43,13 +51,17 @@ class HisnAlMuslimRepository {
     return const <HisnCategory>[];
   }
 
-  HisnCategory? _parseCategory(String? fallbackTitle, Object? value) {
+  HisnCategory? _parseCategory(
+    int categoryIndex,
+    String? fallbackTitle,
+    Object? value,
+  ) {
     if (value is! Map) return null;
 
     final String title =
         _firstString(value, const <String>['category', 'title', 'name']) ??
-            fallbackTitle ??
-            '';
+        fallbackTitle ??
+        '';
     if (title.trim().isEmpty) return null;
 
     final List<String> references = _stringListFrom(
@@ -57,13 +69,31 @@ class HisnAlMuslimRepository {
     );
     final Object? textValue =
         value['text'] ?? value['duas'] ?? value['items'] ?? value['data'];
-    final List<HisnDua> duas = _parseDuas(textValue, references);
+    final String categoryId = _categoryId(categoryIndex);
+    final List<HisnDua> duas = _parseDuas(
+      textValue,
+      references,
+      categoryId: categoryId,
+      categoryIndex: categoryIndex,
+      categoryTitle: title.trim(),
+    );
     if (duas.isEmpty) return null;
 
-    return HisnCategory(title: title.trim(), duas: duas);
+    return HisnCategory(
+      id: categoryId,
+      index: categoryIndex,
+      title: title.trim(),
+      duas: duas,
+    );
   }
 
-  List<HisnDua> _parseDuas(Object? value, List<String> references) {
+  List<HisnDua> _parseDuas(
+    Object? value,
+    List<String> references, {
+    required String categoryId,
+    required int categoryIndex,
+    required String categoryTitle,
+  }) {
     if (value is List) {
       return value
           .asMap()
@@ -71,8 +101,13 @@ class HisnAlMuslimRepository {
           .map((MapEntry<int, dynamic> entry) {
             return _parseDua(
               entry.value,
-              fallbackReference:
-                  entry.key < references.length ? references[entry.key] : null,
+              categoryId: categoryId,
+              categoryIndex: categoryIndex,
+              categoryTitle: categoryTitle,
+              duaIndex: entry.key,
+              fallbackReference: entry.key < references.length
+                  ? references[entry.key]
+                  : null,
             );
           })
           .whereType<HisnDua>()
@@ -81,39 +116,70 @@ class HisnAlMuslimRepository {
 
     final HisnDua? dua = _parseDua(
       value,
+      categoryId: categoryId,
+      categoryIndex: categoryIndex,
+      categoryTitle: categoryTitle,
+      duaIndex: 0,
       fallbackReference: references.isEmpty ? null : references.join('\n'),
     );
     return dua == null ? const <HisnDua>[] : <HisnDua>[dua];
   }
 
-  HisnDua? _parseDua(Object? value, {String? fallbackReference}) {
+  HisnDua? _parseDua(
+    Object? value, {
+    required String categoryId,
+    required int categoryIndex,
+    required String categoryTitle,
+    required int duaIndex,
+    String? fallbackReference,
+  }) {
     if (value is String) {
       final String text = value.trim();
       if (text.isEmpty) return null;
-      return HisnDua(text: text, reference: _cleanString(fallbackReference));
+      return HisnDua(
+        id: _duaId(categoryIndex, duaIndex),
+        categoryId: categoryId,
+        categoryTitle: categoryTitle,
+        categoryIndex: categoryIndex,
+        index: duaIndex,
+        text: text,
+        reference: _cleanString(fallbackReference),
+      );
     }
 
     if (value is! Map) return null;
 
-    final String? text = _firstString(
-      value,
-      const <String>['text', 'arabic', 'dua', 'content'],
-    );
+    final String? text = _firstString(value, const <String>[
+      'text',
+      'arabic',
+      'dua',
+      'content',
+    ]);
     if (text == null || text.trim().isEmpty) return null;
 
     return HisnDua(
+      id: _duaId(categoryIndex, duaIndex),
+      categoryId: categoryId,
+      categoryTitle: categoryTitle,
+      categoryIndex: categoryIndex,
+      index: duaIndex,
       text: text.trim(),
-      reference: _firstString(
-            value,
-            const <String>['reference', 'footnote', 'source_reference'],
-          ) ??
+      reference:
+          _firstString(value, const <String>[
+            'reference',
+            'footnote',
+            'source_reference',
+          ]) ??
           _cleanString(fallbackReference),
       count: _intOrNull(value['count'] ?? value['repeat']),
-      translation: _firstString(value, const <String>['translation', 'meaning']),
-      transliteration: _firstString(
-        value,
-        const <String>['transliteration', 'latin'],
-      ),
+      translation: _firstString(value, const <String>[
+        'translation',
+        'meaning',
+      ]),
+      transliteration: _firstString(value, const <String>[
+        'transliteration',
+        'latin',
+      ]),
       notes: _firstString(value, const <String>['notes', 'note']),
       source: _firstString(value, const <String>['source']),
     );
@@ -168,5 +234,13 @@ class HisnAlMuslimRepository {
     if (value is num) return value.toInt();
     if (value is String) return int.tryParse(value.trim());
     return null;
+  }
+
+  String _categoryId(int categoryIndex) {
+    return 'hisn-c${categoryIndex + 1}';
+  }
+
+  String _duaId(int categoryIndex, int duaIndex) {
+    return 'hisn-c${categoryIndex + 1}-d${duaIndex + 1}';
   }
 }

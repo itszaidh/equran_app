@@ -1024,9 +1024,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         }
       });
       unawaited(_updateKeepScreenOn());
-      unawaited(
-        AndroidAudioDisplayMode.setAudioPlaybackActive(state.playing),
-      );
+      unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(state.playing));
       _syncBottomPlayerProgressPolicy();
 
       if (state.processingState == ja.ProcessingState.completed) {
@@ -1455,7 +1453,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       ja.AudioSource.uri(
         sourceUri,
         tag: MediaItem(
-          id: 'ayah-$surah-$verse-'
+          id:
+              'ayah-$surah-$verse-'
               '${fromOffline ? "offline" : "stream"}-'
               '${QuranAudioService().selectedReciter.code}',
           album: 'eQuran',

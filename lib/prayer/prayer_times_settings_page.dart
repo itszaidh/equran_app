@@ -673,21 +673,21 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           selectedValue: _settings.customIshaMode,
           options: PrayerCustomIshaMode.values
               .map(
-                (PrayerCustomIshaMode mode) =>
-                    AppSelectionOption<PrayerCustomIshaMode>(
-                      value: mode,
-                      title: mode.label,
-                      subtitle: switch (mode) {
-                        PrayerCustomIshaMode.angle =>
-                          'Use the custom Isha angle.',
-                        PrayerCustomIshaMode.interval =>
-                          'Set Isha a fixed number of minutes after Maghrib.',
-                        PrayerCustomIshaMode.fixedTime =>
-                          'Use the same clock time on each selected prayer date.',
-                        PrayerCustomIshaMode.latestCap =>
-                          'Use calculated Isha unless it goes later than a cap.',
-                      },
-                    ),
+                (
+                  PrayerCustomIshaMode mode,
+                ) => AppSelectionOption<PrayerCustomIshaMode>(
+                  value: mode,
+                  title: mode.label,
+                  subtitle: switch (mode) {
+                    PrayerCustomIshaMode.angle => 'Use the custom Isha angle.',
+                    PrayerCustomIshaMode.interval =>
+                      'Set Isha a fixed number of minutes after Maghrib.',
+                    PrayerCustomIshaMode.fixedTime =>
+                      'Use the same clock time on each selected prayer date.',
+                    PrayerCustomIshaMode.latestCap =>
+                      'Use calculated Isha unless it goes later than a cap.',
+                  },
+                ),
               )
               .toList(),
         );
@@ -1000,15 +1000,15 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     required String emptyLabel,
     required ValueChanged<int?> onChanged,
   }) async {
-    final _OptionalNumberResult<int>? result =
-        await _showOptionalSteppedIntDialog(
-          title: title,
-          currentValue: currentValue,
-          min: min,
-          max: max,
-          helperText:
-              '$emptyLabel Blank saves 0. Type digits only and use - or + to adjust.',
-        );
+    final _OptionalNumberResult<int>?
+    result = await _showOptionalSteppedIntDialog(
+      title: title,
+      currentValue: currentValue,
+      min: min,
+      max: max,
+      helperText:
+          '$emptyLabel Blank saves 0. Type digits only and use - or + to adjust.',
+    );
     if (result == null) return;
     onChanged(result.value);
   }
@@ -1222,7 +1222,9 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                       );
                       return;
                     }
-                    Navigator.of(context).pop(_OptionalNumberResult<int>(value));
+                    Navigator.of(
+                      context,
+                    ).pop(_OptionalNumberResult<int>(value));
                   },
                   child: const Text('Save'),
                 ),
@@ -1460,11 +1462,13 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
               : 'Notification permission is off. Reminders were disabled.',
         );
       }
-    } else if (reminderResult.status == PrayerNotificationScheduleStatus.failed) {
+    } else if (reminderResult.status ==
+        PrayerNotificationScheduleStatus.failed) {
       if (mounted) {
         setState(() {
           _notificationMessage =
-              reminderResult.message ?? 'Prayer reminders could not be scheduled.';
+              reminderResult.message ??
+              'Prayer reminders could not be scheduled.';
         });
         _showMessage(_notificationMessage!);
       }
@@ -1599,8 +1603,8 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     return switch (permission) {
       PrayerNotificationPermissionStatus.granted =>
         _settings.reminderSettings.remindersEnabled
-        ? 'Local notifications are scheduled on this device.'
-        : 'Notification permission granted.',
+            ? 'Local notifications are scheduled on this device.'
+            : 'Notification permission granted.',
       PrayerNotificationPermissionStatus.denied =>
         'Notification permission is off.',
       PrayerNotificationPermissionStatus.unsupported =>

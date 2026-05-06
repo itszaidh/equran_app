@@ -55,10 +55,7 @@ class _QiblaPageState extends State<QiblaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: _buildBody(),
-    );
+    return Scaffold(appBar: AppBar(), body: _buildBody());
   }
 
   Widget _buildBody() {
@@ -714,7 +711,9 @@ class _QiblaDetailsCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: <Widget>[
-                _DetailPill(text: 'Lat ${location.latitude.toStringAsFixed(4)}'),
+                _DetailPill(
+                  text: 'Lat ${location.latitude.toStringAsFixed(4)}',
+                ),
                 _DetailPill(
                   text: 'Lng ${location.longitude.toStringAsFixed(4)}',
                 ),
@@ -847,9 +846,7 @@ class _QiblaEmptyState extends StatelessWidget {
                                 )
                               : const Icon(Icons.my_location_rounded),
                           label: Text(
-                            isLocating
-                                ? 'Finding location'
-                                : 'Try again',
+                            isLocating ? 'Finding location' : 'Try again',
                           ),
                         ),
                       ],

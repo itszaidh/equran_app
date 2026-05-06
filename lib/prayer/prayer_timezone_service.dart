@@ -15,8 +15,10 @@ class LatLngPrayerTimezoneResolver implements PrayerTimezoneResolver {
   String? timezoneIdForCoordinates(double latitude, double longitude) {
     PrayerTimezoneService.ensureDatabaseInitialized();
     try {
-      final String timezoneId = latLngToTimezoneString(latitude, longitude)
-          .trim();
+      final String timezoneId = latLngToTimezoneString(
+        latitude,
+        longitude,
+      ).trim();
       if (timezoneId.isEmpty || timezoneId == 'unknown') return null;
       timezone.getLocation(timezoneId);
       return timezoneId;
@@ -43,8 +45,8 @@ class PrayerTimezoneService {
   static Future<String?> configureDeviceTimezone() async {
     ensureDatabaseInitialized();
     try {
-      final TimezoneInfo localTimezone = await FlutterTimezone
-          .getLocalTimezone();
+      final TimezoneInfo localTimezone =
+          await FlutterTimezone.getLocalTimezone();
       final String timezoneId = localTimezone.identifier.trim();
       if (timezoneId.isEmpty) return null;
       timezone.setLocalLocation(timezone.getLocation(timezoneId));

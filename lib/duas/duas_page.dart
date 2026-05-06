@@ -1,15 +1,14 @@
-import 'dart:math' as math;
-
+import 'package:equran/backend/dua_favourites_db.dart';
+import 'package:equran/duas/duas_category_page.dart';
+import 'package:equran/duas/duas_favourites_page.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
 class DuasPage extends StatefulWidget {
-  const DuasPage({
-    super.key,
-    this.repository = const HisnAlMuslimRepository(),
-  });
+  const DuasPage({super.key, this.repository = const HisnAlMuslimRepository()});
 
   final HisnAlMuslimRepository repository;
 
@@ -48,35 +47,38 @@ class _DuasPageState extends State<DuasPage> {
   Widget build(BuildContext context) {
     return FutureBuilder<List<HisnCategory>>(
       future: _categoriesFuture,
-      builder: (BuildContext context, AsyncSnapshot<List<HisnCategory>> snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const _DuasLoadingState();
-        }
+      builder:
+          (BuildContext context, AsyncSnapshot<List<HisnCategory>> snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const _DuasLoadingState();
+            }
 
-        if (snapshot.hasError) {
-          return _DuasMessageState(
-            icon: Icons.error_outline_rounded,
-            title: 'Duas unavailable',
-            message:
-                'Hisn al Muslim could not be loaded from the offline asset.',
-          );
-        }
+            if (snapshot.hasError) {
+              return const _DuasMessageState(
+                icon: Icons.error_outline_rounded,
+                title: 'Duas unavailable',
+                message:
+                    'Hisn al Muslim could not be loaded from the offline asset.',
+              );
+            }
 
-        final List<HisnCategory> categories = snapshot.data ?? const <HisnCategory>[];
-        if (categories.isEmpty) {
-          return const _DuasMessageState(
-            icon: Icons.menu_book_outlined,
-            title: 'No duas found',
-            message: 'The offline Hisn al Muslim file did not contain any duas.',
-          );
-        }
+            final List<HisnCategory> categories =
+                snapshot.data ?? const <HisnCategory>[];
+            if (categories.isEmpty) {
+              return const _DuasMessageState(
+                icon: Icons.menu_book_outlined,
+                title: 'No duas found',
+                message:
+                    'The offline Hisn al Muslim file did not contain any duas.',
+              );
+            }
 
-        return _DuasContent(
-          categories: categories,
-          query: _query,
-          searchController: _searchController,
-        );
-      },
+            return _DuasContent(
+              categories: categories,
+              query: _query,
+              searchController: _searchController,
+            );
+          },
     );
   }
 }
@@ -112,9 +114,17 @@ class _DuasContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                _DuasHero(
-                  categoryCount: categories.length,
-                  duaCount: duaCount,
+                _DuasHero(categoryCount: categories.length, duaCount: duaCount),
+                const SizedBox(height: 12),
+                ValueListenableBuilder<Box<dynamic>>(
+                  valueListenable: DuaFavouritesDB().listener,
+                  builder:
+                      (BuildContext context, Box<dynamic> box, Widget? child) {
+                        return _FavouritesEntryCard(
+                          count: box.length,
+                          onTap: () => _openFavourites(context),
+                        );
+                      },
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -123,7 +133,7 @@ class _DuasContent extends StatelessWidget {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: colors.surfaceContainerLow,
-                    hintText: 'Search categories or duas',
+                    hintText: 'Search categories',
                     prefixIcon: const Icon(Icons.search_rounded),
                     suffixIcon: query.isEmpty
                         ? null
@@ -143,23 +153,29 @@ class _DuasContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
+                Text(
+                  'Categories',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 10),
                 if (visibleCategories.isEmpty)
                   const _DuasMessageState(
                     icon: Icons.search_off_rounded,
-                    title: 'No matching duas',
-                    message: 'Try searching with another Arabic word or phrase.',
+                    title: 'No matching categories',
+                    message:
+                        'Try searching with another Arabic word or phrase.',
                   )
                 else
-                  ...visibleCategories.map((HisnCategory category) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
-                      child: _DuaCategorySection(
+                  for (final HisnCategory category in visibleCategories)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _DuaCategoryCard(
                         category: category,
-                        initiallyExpanded:
-                            query.isNotEmpty || category.duas.length <= 3,
+                        onTap: () => _openCategory(context, category),
                       ),
-                    );
-                  }),
+                    ),
               ],
             ),
           ),
@@ -173,17 +189,32 @@ class _DuasContent extends StatelessWidget {
     if (normalizedQuery.isEmpty) return categories;
     return categories
         .where((HisnCategory category) => category.matches(normalizedQuery))
-        .map((HisnCategory category) => category.filtered(normalizedQuery))
-        .where((HisnCategory category) => category.duas.isNotEmpty)
         .toList(growable: false);
+  }
+
+  void _openCategory(BuildContext context, HisnCategory category) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return DuasCategoryPage(category: category);
+        },
+      ),
+    );
+  }
+
+  void _openFavourites(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return DuasFavouritesPage(categories: categories);
+        },
+      ),
+    );
   }
 }
 
 class _DuasHero extends StatelessWidget {
-  const _DuasHero({
-    required this.categoryCount,
-    required this.duaCount,
-  });
+  const _DuasHero({required this.categoryCount, required this.duaCount});
 
   final int categoryCount;
   final int duaCount;
@@ -246,7 +277,7 @@ class _DuasHero extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '$categoryCount Arabic categories • $duaCount duas offline',
+                    '$categoryCount Arabic categories - $duaCount duas offline',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colors.onSurfaceVariant,
                       height: 1.3,
@@ -262,230 +293,191 @@ class _DuasHero extends StatelessWidget {
   }
 }
 
-class _DuaCategorySection extends StatelessWidget {
-  const _DuaCategorySection({
-    required this.category,
-    required this.initiallyExpanded,
-  });
+class _FavouritesEntryCard extends StatelessWidget {
+  const _FavouritesEntryCard({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colors = theme.colorScheme;
+
+    return _TappablePanel(
+      onTap: onTap,
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: colors.primaryContainer.withAlpha(190),
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: Icon(
+              count > 0
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              color: colors.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Favourite duas',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  count == 0
+                      ? 'Save duas here for quick access'
+                      : '$count saved ${count == 1 ? 'dua' : 'duas'}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
+        ],
+      ),
+    );
+  }
+}
+
+class _DuaCategoryCard extends StatelessWidget {
+  const _DuaCategoryCard({required this.category, required this.onTap});
 
   final HisnCategory category;
-  final bool initiallyExpanded;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final int visualIndex = category.index % _categoryIcons.length;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: colors.outlineVariant),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        child: Theme(
-          data: theme.copyWith(dividerColor: Colors.transparent),
-          child: ExpansionTile(
-            initiallyExpanded: initiallyExpanded,
-            tilePadding: const EdgeInsetsDirectional.fromSTEB(16, 8, 12, 8),
-            childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            title: Directionality(
-              textDirection: TextDirection.rtl,
-              child: Text(
-                category.title,
-                textAlign: TextAlign.right,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  height: 1.45,
-                  color: colors.onSurface,
-                ),
+    return _TappablePanel(
+      onTap: onTap,
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Color.alphaBlend(
+                _categoryAccentColors[visualIndex].withAlpha(34),
+                colors.surfaceContainerHighest,
+              ),
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              border: Border.all(
+                color: _categoryAccentColors[visualIndex].withAlpha(70),
               ),
             ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                '${category.duas.length} ${category.duas.length == 1 ? "dua" : "duas"}',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: colors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+            child: Icon(
+              _categoryIcons[visualIndex],
+              color: _categoryAccentColors[visualIndex],
             ),
-            children: <Widget>[
-              for (int index = 0; index < category.duas.length; index++)
-                _DuaCard(
-                  dua: category.duas[index],
-                  number: index + 1,
-                ),
-            ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DuaCard extends StatelessWidget {
-  const _DuaCard({
-    required this.dua,
-    required this.number,
-  });
-
-  final HisnDua dua;
-  final int number;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final List<String> metadata = <String>[
-      if (dua.count != null && dua.count! > 1) 'Repeat ${dua.count}x',
-      if (dua.reference != null) dua.reference!,
-      if (dua.source != null) dua.source!,
-      if (dua.notes != null) dua.notes!,
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.surfaceContainerHighest.withValues(alpha: 0.48),
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-          border: Border.all(
-            color: colors.outlineVariant.withValues(alpha: 0.78),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  _DuaNumberBadge(number: number),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Directionality(
-                      textDirection: TextDirection.rtl,
-                      child: Text(
-                        dua.text,
-                        textAlign: TextAlign.right,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontFamily: 'Hafs',
-                          height: 1.95,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0,
-                          color: colors.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (dua.transliteration != null) ...<Widget>[
-                const SizedBox(height: 12),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
                 Text(
-                  dua.transliteration!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    height: 1.45,
-                    fontStyle: FontStyle.italic,
+                  category.title,
+                  textDirection: TextDirection.rtl,
+                  textAlign: TextAlign.right,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    height: 1.4,
+                    letterSpacing: 0,
                   ),
                 ),
-              ],
-              if (dua.translation != null) ...<Widget>[
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 Text(
-                  dua.translation!,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    height: 1.45,
+                  '${category.duas.length} ${category.duas.length == 1 ? 'dua' : 'duas'}',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
-              if (metadata.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: metadata.map((String item) {
-                    return _DuaMetadataPill(text: item);
-                  }).toList(growable: false),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DuaNumberBadge extends StatelessWidget {
-  const _DuaNumberBadge({required this.number});
-
-  final int number;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    final int cappedNumber = math.max(1, number);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.primaryContainer.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(AppRadii.small),
-      ),
-      child: SizedBox(
-        width: 34,
-        height: 34,
-        child: Center(
-          child: Text(
-            '$cappedNumber',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colors.onPrimaryContainer,
-              fontWeight: FontWeight.w900,
             ),
           ),
-        ),
+          const SizedBox(width: 10),
+          Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
+        ],
       ),
     );
   }
 }
 
-class _DuaMetadataPill extends StatelessWidget {
-  const _DuaMetadataPill({required this.text});
+class _TappablePanel extends StatelessWidget {
+  const _TappablePanel({required this.child, required this.onTap});
 
-  final String text;
+  final Widget child;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final bool isLight = theme.brightness == Brightness.light;
+    final Color resolvedCardColor =
+        theme.cardTheme.color ?? colors.surfaceContainerLow;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadii.small),
-        border: Border.all(color: colors.outlineVariant),
+    return Card(
+      elevation: isLight ? 2 : 0,
+      color: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      clipBehavior: Clip.antiAlias,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        side: BorderSide(
+          color: isLight
+              ? colors.primary.withAlpha(22)
+              : colors.outlineVariant.withAlpha(82),
+        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-        child: Text(
-          text,
-          textDirection: _looksArabic(text) ? TextDirection.rtl : TextDirection.ltr,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: colors.onSurfaceVariant,
-            height: 1.25,
+      child: InkWell(
+        onTap: onTap,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: resolvedCardColor,
+            borderRadius: BorderRadius.circular(AppRadii.medium),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: <Color>[
+                Color.alphaBlend(
+                  colors.primary.withAlpha(isLight ? 8 : 14),
+                  resolvedCardColor,
+                ),
+                Color.alphaBlend(
+                  colors.tertiary.withAlpha(isLight ? 6 : 10),
+                  resolvedCardColor,
+                ),
+              ],
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+            child: child,
           ),
         ),
       ),
     );
-  }
-
-  bool _looksArabic(String value) {
-    return RegExp(r'[\u0600-\u06FF]').hasMatch(value);
   }
 }
 
@@ -562,3 +554,21 @@ class _DuasMessageState extends StatelessWidget {
     );
   }
 }
+
+const List<IconData> _categoryIcons = <IconData>[
+  Icons.wb_sunny_outlined,
+  Icons.nights_stay_outlined,
+  Icons.home_outlined,
+  Icons.local_florist_outlined,
+  Icons.shield_outlined,
+  Icons.volunteer_activism_outlined,
+];
+
+const List<Color> _categoryAccentColors = <Color>[
+  Color(0xFF00A6A6),
+  Color(0xFF7C6ADE),
+  Color(0xFFD08700),
+  Color(0xFF2E8B57),
+  Color(0xFF4A8FE7),
+  Color(0xFFC6538C),
+];

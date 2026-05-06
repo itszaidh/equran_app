@@ -1,9 +1,13 @@
 class HisnCategory {
   const HisnCategory({
+    required this.id,
+    required this.index,
     required this.title,
     required this.duas,
   });
 
+  final String id;
+  final int index;
   final String title;
   final List<HisnDua> duas;
 
@@ -16,11 +20,14 @@ class HisnCategory {
 
   HisnCategory filtered(String query) {
     final String normalizedQuery = query.trim().toLowerCase();
-    if (normalizedQuery.isEmpty || title.toLowerCase().contains(normalizedQuery)) {
+    if (normalizedQuery.isEmpty ||
+        title.toLowerCase().contains(normalizedQuery)) {
       return this;
     }
 
     return HisnCategory(
+      id: id,
+      index: index,
       title: title,
       duas: duas
           .where((HisnDua dua) => dua.matches(normalizedQuery))
@@ -31,6 +38,11 @@ class HisnCategory {
 
 class HisnDua {
   const HisnDua({
+    required this.id,
+    required this.categoryId,
+    required this.categoryTitle,
+    required this.categoryIndex,
+    required this.index,
     required this.text,
     this.reference,
     this.count,
@@ -40,6 +52,11 @@ class HisnDua {
     this.source,
   });
 
+  final String id;
+  final String categoryId;
+  final String categoryTitle;
+  final int categoryIndex;
+  final int index;
   final String text;
   final String? reference;
   final int? count;
@@ -55,5 +72,17 @@ class HisnDua {
         (transliteration?.toLowerCase().contains(normalizedQuery) ?? false) ||
         (notes?.toLowerCase().contains(normalizedQuery) ?? false) ||
         (source?.toLowerCase().contains(normalizedQuery) ?? false);
+  }
+
+  String get shareText {
+    return <String>[
+      text,
+      ?translation,
+      ?transliteration,
+      ?reference,
+      ?source,
+      ?notes,
+      'Hisn al Muslim - $categoryTitle',
+    ].join('\n\n');
   }
 }
