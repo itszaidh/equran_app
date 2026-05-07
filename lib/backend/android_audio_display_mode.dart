@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 class AndroidAudioDisplayMode {
   // TODO: Re-enable only after the minimized-player low-refresh policy is
   // redesigned so the display mode cannot leak into app-wide navigation UI.
-  static const bool _enableStaticMinimizedLowRefresh = false;
+  static const bool kEnableMinimizedPlayerLowRefreshLock = false;
   static const double _systemFrameRate = 0.0;
   static const double _defaultLimitedProgressFrameRate = 30.0;
   static const Duration _defaultIdleDelay = Duration(milliseconds: 500);
@@ -131,7 +131,7 @@ class AndroidAudioDisplayMode {
   }) async {
     if (!_isSupported) return;
     _staticMinimizedRefreshWanted = true;
-    if (!_enableStaticMinimizedLowRefresh) {
+    if (!kEnableMinimizedPlayerLowRefreshLock) {
       _debugLog(
         'skipped static minimized refresh request; temporary flag disabled',
       );
@@ -197,9 +197,9 @@ class AndroidAudioDisplayMode {
   }
 
   static bool get _shouldUseLimitedFrameRate {
-    // Active progress UI should stay at the system refresh rate. The only
-    // low-refresh path that remains eligible is the explicit static minimized
-    // player request, which is guarded separately by blockers.
+    // Active progress UI is throttled in Dart with capped timers instead of
+    // Android display-rate hints. Keep the platform refresh uncapped here so
+    // drawers, route transitions, and modal animations remain smooth.
     return false;
   }
 
@@ -310,7 +310,7 @@ class AndroidAudioDisplayMode {
     String reason,
   ) async {
     if (!_staticMinimizedRefreshWanted ||
-        !_enableStaticMinimizedLowRefresh ||
+        !kEnableMinimizedPlayerLowRefreshLock ||
         _staticMinimizedRefreshRequested ||
         _lowRefreshBlockers.isNotEmpty ||
         _lowFpsSuppressionCount > 0) {

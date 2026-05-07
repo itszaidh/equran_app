@@ -22,7 +22,7 @@ import 'package:equran/utils/reciter.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/widgets/app_selection_dialog.dart';
 import 'package:equran/widgets/read_quran_card.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart' as ja;
@@ -157,6 +157,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   static const MethodChannel _playerPageChannel = MethodChannel(
     'com.app.equran/read_page',
   );
+  static const Duration _expandedProgressTickInterval = Duration(
+    milliseconds: 33,
+  );
 
   final ja.AudioPlayer _justAudio = ja.AudioPlayer();
   final ap.AudioPlayer _fallbackAudio = ap.AudioPlayer();
@@ -190,6 +193,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   bool _loopEnabled = false;
   bool _showAyahText = false;
   bool _isCompletingTrack = false;
+  bool _isPlayerPageForeground = true;
   bool _showProgressThumb = false;
   bool _isScrubbing = false;
   int _progressVisualBlockCount = 0;
@@ -209,6 +213,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Duration _displayedPosition = Duration.zero;
   Duration _duration = Duration.zero;
   Timer? _progressThumbTimer;
+  Timer? _progressVisualTicker;
+  DateTime? _positionSampledAt;
 
   @override
   void initState() {
@@ -231,11 +237,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      _isPlayerPageForeground = true;
       unawaited(_updateKeepScreenOn());
       _syncProgressVisualPolicy(syncPosition: true);
       return;
     }
 
+    _isPlayerPageForeground = false;
+    _syncProgressVisualPolicy();
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
@@ -258,6 +267,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _safeSetState(() {
           _duration = duration;
         });
+        _syncProgressVisualPolicy(syncPosition: true);
       });
 
       _fallbackStateSubscription = _fallbackAudio.onPlayerStateChanged.listen((
@@ -279,7 +289,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             state == ap.PlayerState.playing,
           ),
         );
-        _syncProgressVisualPolicy();
+        _syncProgressVisualPolicy(syncPosition: true);
       });
 
       _fallbackCompleteSubscription = _fallbackAudio.onPlayerComplete.listen((
@@ -299,6 +309,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _safeSetState(() {
         _duration = duration ?? Duration.zero;
       });
+      _syncProgressVisualPolicy(syncPosition: true);
     });
 
     _stateSubscription = _justAudio.playerStateStream.listen((state) async {
@@ -317,7 +328,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         await _handleTrackComplete();
       }
       unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(state.playing));
-      _syncProgressVisualPolicy();
+      _syncProgressVisualPolicy(syncPosition: true);
     });
   }
 
@@ -329,11 +340,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _safeSetState(() {
         _position = Duration.zero;
         _displayedPosition = Duration.zero;
+        _positionSampledAt = DateTime.now();
         _activeAyah = null;
         _isPlaying = false;
         _isPaused = false;
       });
-      _syncProgressVisualPolicy();
+      _syncProgressVisualPolicy(syncPosition: true);
 
       if (_loopEnabled) {
         await _playSurah(_selectedSurah, forceRestart: true);
@@ -354,14 +366,34 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   bool get _shouldRenderProgressVisuals {
-    return mounted && !_isScrubbing && _progressVisualBlockCount == 0;
+    if (!mounted) return false;
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    return _isPlayerPageForeground &&
+        (route?.isCurrent ?? true) &&
+        !_isScrubbing &&
+        _progressVisualBlockCount == 0;
+  }
+
+  bool get _shouldRunProgressVisualTicker {
+    return _shouldRenderProgressVisuals &&
+        _isPlaying &&
+        _duration > Duration.zero;
   }
 
   bool get _shouldAnimateProgressVisuals {
     // The full player is an active route with drawer, sheets, and route
-    // transitions. Keep Android's global refresh rate uncapped here; only the
-    // settled minimized reading player may request low refresh.
+    // transitions. Keep Android's global refresh rate uncapped here; the
+    // visible progress motion is capped by _progressVisualTicker instead.
     return false;
+  }
+
+  String get _progressVisualMode {
+    if (!_isPlayerPageForeground) return 'hidden';
+    if (!mounted) return 'disposed';
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    if (!(route?.isCurrent ?? true)) return 'covered';
+    if (_isScrubbing) return 'dragging';
+    return 'full player';
   }
 
   void _syncProgressVisualPolicy({bool syncPosition = false}) {
@@ -373,17 +405,73 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       ),
     );
 
+    if (_shouldRunProgressVisualTicker) {
+      _startProgressVisualTicker();
+    } else {
+      _stopProgressVisualTicker('policy stopped');
+    }
+
     if (syncPosition && _shouldRenderProgressVisuals) {
       _syncDisplayedPosition();
     }
   }
 
   void _setAudioPosition(Duration position) {
+    if (!mounted) return;
     _position = position;
+    _positionSampledAt = DateTime.now();
     final int? nextAyah = _activeAyahForPosition(position);
     final bool ayahChanged = nextAyah != _activeAyah;
-    final bool progressChanged =
-        _shouldRenderProgressVisuals && _displayedPosition != position;
+    if (!ayahChanged) return;
+
+    setState(() {
+      _activeAyah = nextAyah;
+    });
+  }
+
+  void _syncDisplayedPosition() {
+    if (!mounted) return;
+    final Duration position = _estimatedAudioPosition();
+    if (_displayedPosition == position) return;
+
+    setState(() {
+      _displayedPosition = position;
+    });
+  }
+
+  void _startProgressVisualTicker() {
+    if (_progressVisualTicker != null) return;
+    _logProgressTicker(
+      'started full player progress ticker '
+      'interval=${_expandedProgressTickInterval.inMilliseconds}ms '
+      'mode=$_progressVisualMode',
+    );
+    _progressVisualTicker = Timer.periodic(_expandedProgressTickInterval, (_) {
+      _tickProgressVisual();
+    });
+  }
+
+  void _stopProgressVisualTicker(String reason) {
+    final Timer? ticker = _progressVisualTicker;
+    if (ticker == null) return;
+    ticker.cancel();
+    _progressVisualTicker = null;
+    _logProgressTicker(
+      'stopped full player progress ticker ($reason) '
+      'mode=$_progressVisualMode',
+    );
+  }
+
+  void _tickProgressVisual() {
+    if (!_shouldRunProgressVisualTicker) {
+      _stopProgressVisualTicker('tick found inactive');
+      return;
+    }
+
+    final Duration position = _estimatedAudioPosition();
+    final int? nextAyah = _activeAyahForPosition(position);
+    final bool progressChanged = _displayedPosition != position;
+    final bool ayahChanged = nextAyah != _activeAyah;
     if (!progressChanged && !ayahChanged) return;
 
     setState(() {
@@ -396,19 +484,29 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     });
   }
 
-  void _syncDisplayedPosition() {
-    if (!mounted) return;
-    if (_displayedPosition == _position) return;
+  Duration _estimatedAudioPosition() {
+    final DateTime? sampledAt = _positionSampledAt;
+    Duration position = _position;
+    if (_isPlaying && !_isScrubbing && sampledAt != null) {
+      final Duration elapsed = DateTime.now().difference(sampledAt);
+      final int elapsedMicros = (elapsed.inMicroseconds * _playbackRate)
+          .round();
+      position += Duration(microseconds: elapsedMicros);
+    }
+    if (_duration > Duration.zero && position > _duration) return _duration;
+    if (position < Duration.zero) return Duration.zero;
+    return position;
+  }
 
-    setState(() {
-      _displayedPosition = _position;
-    });
+  void _logProgressTicker(String message) {
+    if (!kDebugMode) return;
+    debugPrint('PlayerPage: $message');
   }
 
   Future<T> _withProgressVisualsPaused<T>(Future<T> Function() action) async {
     AndroidAudioDisplayMode.notifyUserActivity();
     _progressVisualBlockCount++;
-    _syncProgressVisualPolicy();
+    _syncProgressVisualPolicy(syncPosition: true);
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
     try {
       return await action();
@@ -574,6 +672,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Future<void> _setPlaybackRate(double value) async {
     final double rate = _useAudioplayersFallback ? 1.0 : value.clamp(0.5, 2.0);
     _safeSetState(() {
+      final Duration currentPosition = _estimatedAudioPosition();
+      _position = currentPosition;
+      _displayedPosition = currentPosition;
+      _positionSampledAt = DateTime.now();
       _playbackRate = rate;
     });
     await SettingsDB().put("playbackRate", rate);
@@ -604,6 +706,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _safeSetState(() {
       _position = Duration.zero;
       _displayedPosition = Duration.zero;
+      _positionSampledAt = DateTime.now();
       _duration = Duration.zero;
       _playingFromOffline = false;
     });
@@ -621,6 +724,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _safeSetState(() {
         _position = Duration.zero;
         _displayedPosition = Duration.zero;
+        _positionSampledAt = DateTime.now();
         _duration = Duration.zero;
         _activeAyah = null;
       });
@@ -648,6 +752,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _safeSetState(() {
       _position = Duration.zero;
       _displayedPosition = Duration.zero;
+      _positionSampledAt = DateTime.now();
       _duration = Duration.zero;
       _activeAyah = null;
     });
@@ -689,7 +794,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _isPaused = true;
     });
     await AndroidAudioDisplayMode.setAudioPlaybackActive(false);
-    _syncProgressVisualPolicy();
+    _syncProgressVisualPolicy(syncPosition: true);
   }
 
   Future<void> _stopCurrentTrack() async {
@@ -851,12 +956,13 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             _safeSetState(() {
               _position = Duration(milliseconds: pendingMs);
               _displayedPosition = Duration(milliseconds: pendingMs);
+              _positionSampledAt = DateTime.now();
               _isScrubbing = false;
               _pendingSeekProgress = null;
               _scrubPreviewPosition = null;
             });
             _updateActiveAyah(Duration(milliseconds: pendingMs));
-            _syncProgressVisualPolicy();
+            _syncProgressVisualPolicy(syncPosition: true);
             unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
           }
         },
@@ -1403,6 +1509,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _safeSetState(() {
           _position = Duration.zero;
           _displayedPosition = Duration.zero;
+          _positionSampledAt = DateTime.now();
           _duration = Duration.zero;
           _activeAyah = null;
           _isPlaying = false;
@@ -1465,6 +1572,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     unawaited(AndroidAudioDisplayMode.setVisualProgressActive(false));
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
     _progressThumbTimer?.cancel();
+    _stopProgressVisualTicker('dispose');
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _stateSubscription?.cancel();
