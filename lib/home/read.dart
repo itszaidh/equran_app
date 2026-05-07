@@ -159,6 +159,15 @@ enum RepeatChoice {
   }
 }
 
+enum _ReadingOptionsAction {
+  goToAyah,
+  downloadSurahAyahs,
+  downloadCurrentAyah,
+  deleteCurrentAyah,
+  shareCurrentAyah,
+  translationLanguage,
+}
+
 int? _readInt(dynamic value) {
   if (value is int) return value;
   if (value is double) return value.round();
@@ -1246,31 +1255,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     splashRadius: 20,
                   ),
                 IconButton(
-                  tooltip: _hasDownloadedSurahAyahs
-                      ? 'All ayahs downloaded'
-                      : 'Download surah ayahs',
-                  onPressed: _isDownloadingSurahAyahs
-                      ? null
-                      : _confirmDownloadCurrentSurahAyahs,
-                  icon: _isDownloadingSurahAyahs
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(
-                          _hasDownloadedSurahAyahs
-                              ? Icons.offline_pin_rounded
-                              : Icons.download_for_offline_rounded,
-                          size: 22,
-                        ),
-                  visualDensity: VisualDensity.compact,
-                  splashRadius: 20,
-                ),
-                IconButton(
-                  tooltip: 'Go to ayah',
-                  onPressed: () => _showJumpToVerseDialog(context),
-                  icon: const Icon(Icons.double_arrow_outlined, size: 22),
+                  tooltip: 'More options',
+                  onPressed: _showReadingOptionsSheet,
+                  icon: const Icon(Icons.more_horiz_rounded, size: 24),
                   visualDensity: VisualDensity.compact,
                   splashRadius: 20,
                 ),
@@ -1284,6 +1271,196 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  Future<void> _showReadingOptionsSheet() async {
+    AndroidAudioDisplayMode.notifyUserActivity();
+    final String surahName = quran.getSurahName(_currentChapter);
+    final bool currentAyahDownloading = _downloadingAyahKeys.contains(
+      '$_currentChapter-$_currentVerse',
+    );
+
+    final _ReadingOptionsAction? action = await _withLowFpsSuppressed(() {
+      return showModalBottomSheet<_ReadingOptionsAction>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        useSafeArea: true,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadii.large),
+          ),
+        ),
+        builder: (sheetContext) {
+          final ThemeData theme = Theme.of(sheetContext);
+          final ColorScheme colorScheme = theme.colorScheme;
+          final double maxHeight =
+              MediaQuery.sizeOf(sheetContext).height * 0.82;
+
+          return SafeArea(
+            top: false,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxHeight),
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withAlpha(18),
+                          borderRadius: BorderRadius.circular(AppRadii.medium),
+                        ),
+                        child: Icon(
+                          Icons.tune_rounded,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Reading options',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$surahName • Ayah $_currentVerse',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  _ReadingOptionsSection(
+                    title: 'Navigation',
+                    children: <Widget>[
+                      _ReadingOptionTile(
+                        icon: Icons.double_arrow_outlined,
+                        title: 'Go to ayah',
+                        subtitle: 'Jump to an ayah in $surahName',
+                        onTap: () => Navigator.of(
+                          sheetContext,
+                        ).pop(_ReadingOptionsAction.goToAyah),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _ReadingOptionsSection(
+                    title: 'Audio',
+                    children: <Widget>[
+                      _ReadingOptionTile(
+                        icon: _hasDownloadedSurahAyahs
+                            ? Icons.offline_pin_rounded
+                            : _isDownloadingSurahAyahs
+                            ? Icons.downloading_rounded
+                            : Icons.download_for_offline_rounded,
+                        title: _hasDownloadedSurahAyahs
+                            ? 'Surah audio downloaded'
+                            : 'Download surah audio',
+                        subtitle: _hasDownloadedSurahAyahs
+                            ? 'All ayahs are available offline'
+                            : 'Download all ayahs for offline playback',
+                        enabled:
+                            !_isDownloadingSurahAyahs &&
+                            !_hasDownloadedSurahAyahs,
+                        onTap: () => Navigator.of(
+                          sheetContext,
+                        ).pop(_ReadingOptionsAction.downloadSurahAyahs),
+                      ),
+                      _ReadingOptionTile(
+                        icon: currentAyahDownloading
+                            ? Icons.downloading_rounded
+                            : _hasDownloadedCurrentAyah
+                            ? Icons.delete_outline_rounded
+                            : Icons.download_rounded,
+                        title: currentAyahDownloading
+                            ? 'Downloading current ayah'
+                            : _hasDownloadedCurrentAyah
+                            ? 'Delete current ayah audio'
+                            : 'Download current ayah',
+                        subtitle: 'Ayah $_currentChapter:$_currentVerse',
+                        enabled: !currentAyahDownloading,
+                        onTap: () => Navigator.of(sheetContext).pop(
+                          _hasDownloadedCurrentAyah
+                              ? _ReadingOptionsAction.deleteCurrentAyah
+                              : _ReadingOptionsAction.downloadCurrentAyah,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _ReadingOptionsSection(
+                    title: 'Display and sharing',
+                    children: <Widget>[
+                      if (SettingsDB().get(
+                            "enableTranslation",
+                            defaultValue: true,
+                          ) ==
+                          true)
+                        _ReadingOptionTile(
+                          icon: Icons.language_rounded,
+                          title: 'Translation language',
+                          subtitle: 'Choose the translation shown on cards',
+                          onTap: () => Navigator.of(
+                            sheetContext,
+                          ).pop(_ReadingOptionsAction.translationLanguage),
+                        ),
+                      _ReadingOptionTile(
+                        icon: Icons.ios_share_outlined,
+                        title: 'Share current ayah',
+                        subtitle: 'Create an image for this ayah',
+                        onTap: () => Navigator.of(
+                          sheetContext,
+                        ).pop(_ReadingOptionsAction.shareCurrentAyah),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    });
+
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case _ReadingOptionsAction.goToAyah:
+        await _showJumpToVerseDialog(context);
+        break;
+      case _ReadingOptionsAction.downloadSurahAyahs:
+        await _confirmDownloadCurrentSurahAyahs();
+        break;
+      case _ReadingOptionsAction.downloadCurrentAyah:
+        await _downloadCurrentAyah();
+        break;
+      case _ReadingOptionsAction.deleteCurrentAyah:
+        await _confirmDeleteCurrentAyahDownload();
+        break;
+      case _ReadingOptionsAction.shareCurrentAyah:
+        await _shareCurrentAyahImage();
+        break;
+      case _ReadingOptionsAction.translationLanguage:
+        await _openCardTranslationLanguagePicker();
+        break;
+    }
   }
 
   void _bindVersePlayer() {
@@ -4277,11 +4454,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               defaultValue: 12.0,
                             ),
                             onPlay: _togglePageViewPlayback,
-                            onDownload: _downloadCurrentAyah,
-                            onDeleteDownload: _confirmDeleteCurrentAyahDownload,
-                            onShare: _shareCurrentAyahImage,
-                            onSwitchTranslation:
-                                _showCardTranslationLanguagePicker,
                             onVisualOverlayChanged:
                                 _handleCardVisualOverlayChanged,
                             onTafsir: () => _showTafsirSheet(_currentVerse),
@@ -4895,10 +5067,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  void _showCardTranslationLanguagePicker() {
-    unawaited(_openCardTranslationLanguagePicker());
-  }
-
   Future<void> _openCardTranslationLanguagePicker() async {
     final int? value = await _withLowFpsSuppressed(
       () => _showTranslationPickerDialog(_selectedTranslationIndex()),
@@ -5051,6 +5219,98 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       return;
     }
     FavouritesDB().put(key, '');
+  }
+}
+
+class _ReadingOptionsSection extends StatelessWidget {
+  const _ReadingOptionsSection({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReadingOptionTile extends StatelessWidget {
+  const _ReadingOptionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.enabled = true,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final Color iconColor = enabled
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant.withAlpha(130);
+    final Color textColor = enabled
+        ? colorScheme.onSurface
+        : colorScheme.onSurfaceVariant.withAlpha(150);
+
+    return ListTile(
+      enabled: enabled,
+      leading: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: iconColor.withAlpha(enabled ? 18 : 10),
+          borderRadius: BorderRadius.circular(AppRadii.small),
+        ),
+        child: Icon(icon, color: iconColor, size: 21),
+      ),
+      title: Text(
+        title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: textColor, fontWeight: FontWeight.w700),
+      ),
+      subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+      trailing: enabled
+          ? Icon(
+              Icons.chevron_right_rounded,
+              color: colorScheme.onSurfaceVariant,
+            )
+          : null,
+      onTap: enabled ? onTap : null,
+    );
   }
 }
 

@@ -5,15 +5,9 @@ import 'package:equran/backend/android_audio_display_mode.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:flutter/material.dart';
+import 'package:like_button/like_button.dart';
 
 const int _favouriteNoteMaxLength = 80;
-
-enum _CardOverflowAction {
-  downloadOrDelete,
-  favourite,
-  share,
-  switchTranslation,
-}
 
 class ReadQuranCard extends StatelessWidget {
   final int currentChapter;
@@ -80,8 +74,9 @@ class ReadQuranCard extends StatelessWidget {
     return favouriteAyahKey(currentChapter, currentVerse);
   }
 
-  Future<void> _showInputPrompt(BuildContext context) async {
+  Future<bool> _showInputPrompt(BuildContext context) async {
     final TextEditingController textController = TextEditingController();
+    bool saved = false;
     AndroidAudioDisplayMode.notifyUserActivity();
     onVisualOverlayChanged?.call(true);
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
@@ -103,9 +98,18 @@ class ReadQuranCard extends StatelessWidget {
                 child: const Text('Cancel'),
               ),
               FilledButton(
-                onPressed: () {
-                  FavouritesDB().put(_favouriteKey, textController.text.trim());
-                  Navigator.of(context).pop();
+                onPressed: () async {
+                  final NavigatorState navigator = Navigator.of(context);
+                  try {
+                    await FavouritesDB().put(
+                      _favouriteKey,
+                      textController.text.trim(),
+                    );
+                    saved = true;
+                  } catch (_) {
+                    saved = false;
+                  }
+                  navigator.pop();
                 },
                 style: FilledButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -124,6 +128,7 @@ class ReadQuranCard extends StatelessWidget {
       await WidgetsBinding.instance.endOfFrame;
       textController.dispose();
     }
+    return saved;
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -233,7 +238,6 @@ class ReadQuranCard extends StatelessWidget {
                 color: colorScheme.primary,
               ),
             ),
-
             if (onTafsir != null) ...<Widget>[
               SizedBox(width: actionGap),
               _buildActionButton(
@@ -248,133 +252,59 @@ class ReadQuranCard extends StatelessWidget {
               ),
             ],
             SizedBox(width: actionGap),
-            _buildOverflowMenu(
-              context: context,
-              isFavourite: isFavourite,
-              showTranslation: showTranslation,
-            ),
+            _buildFavouriteButton(context, isFavourite: isFavourite),
           ],
         );
       },
     );
   }
 
-  Widget _buildOverflowMenu({
-    required BuildContext context,
+  Widget _buildFavouriteButton(
+    BuildContext context, {
     required bool isFavourite,
-    required bool showTranslation,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
-    final double actionSize = wideActions ? 38 : 34;
-    final double iconSize = wideActions ? 21 : 19;
+    final double buttonSize = wideActions ? 38 : 34;
+    final double iconSize = wideActions ? 22 : 20;
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
+    return Tooltip(
+      message: isFavourite ? 'Remove favourite' : 'Favourite',
       child: SizedBox(
-        height: actionSize,
-        width: actionSize,
+        height: buttonSize,
+        width: buttonSize,
         child: Center(
-          child: PopupMenuButton<_CardOverflowAction>(
-            tooltip: 'More actions',
-            position: PopupMenuPosition.under,
-            padding: EdgeInsets.zero,
-            borderRadius: BorderRadius.circular(10),
-            onOpened: () {
-              AndroidAudioDisplayMode.notifyUserActivity();
-              onVisualOverlayChanged?.call(true);
-              unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
-            },
-            onCanceled: () {
-              onVisualOverlayChanged?.call(false);
-              unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
-            },
-            child: SizedBox(
-              height: actionSize,
-              width: actionSize,
-              child: Center(
-                child: Icon(
-                  Icons.more_horiz_rounded,
-                  size: iconSize,
-                  color: colorScheme.onSurface.withAlpha(168),
-                ),
-              ),
+          child: LikeButton(
+            size: iconSize,
+            isLiked: isFavourite,
+            circleColor: CircleColor(
+              start: colorScheme.primary.withAlpha(180),
+              end: colorScheme.primary,
             ),
-            onSelected: (action) {
-              onVisualOverlayChanged?.call(false);
-              unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
-              switch (action) {
-                case _CardOverflowAction.downloadOrDelete:
-                  if (isDownloaded) {
-                    onDeleteDownload?.call();
-                  } else {
-                    onDownload?.call();
-                  }
-                  break;
-                case _CardOverflowAction.favourite:
-                  if (isFavourite) {
-                    FavouritesDB().delete(_favouriteKey);
-                  } else {
-                    unawaited(_showInputPrompt(context));
-                  }
-                  break;
-                case _CardOverflowAction.share:
-                  onShare?.call();
-                  break;
-                case _CardOverflowAction.switchTranslation:
-                  onSwitchTranslation?.call();
-                  break;
-              }
+            bubblesColor: BubblesColor(
+              dotPrimaryColor: colorScheme.primary,
+              dotSecondaryColor: colorScheme.secondary,
+            ),
+            likeBuilder: (bool liked) {
+              return Icon(
+                liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                color: liked
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withAlpha(168),
+                size: iconSize,
+              );
             },
-            itemBuilder: (context) {
-              return <PopupMenuEntry<_CardOverflowAction>>[
-                PopupMenuItem<_CardOverflowAction>(
-                  value: _CardOverflowAction.downloadOrDelete,
-                  enabled:
-                      !isDownloading &&
-                      (isDownloaded
-                          ? onDeleteDownload != null
-                          : onDownload != null),
-                  child: _OverflowMenuItem(
-                    icon: isDownloading
-                        ? Icons.downloading_rounded
-                        : isDownloaded
-                        ? Icons.delete_outline_rounded
-                        : Icons.download_rounded,
-                    label: isDownloading
-                        ? 'Downloading'
-                        : isDownloaded
-                        ? 'Delete downloaded ayah'
-                        : 'Download ayah',
-                  ),
-                ),
-                if (showTranslation && onSwitchTranslation != null)
-                  PopupMenuItem<_CardOverflowAction>(
-                    value: _CardOverflowAction.switchTranslation,
-                    child: const _OverflowMenuItem(
-                      icon: Icons.language_rounded,
-                      label: 'Translation language',
-                    ),
-                  ),
-                PopupMenuItem<_CardOverflowAction>(
-                  value: _CardOverflowAction.favourite,
-                  child: _OverflowMenuItem(
-                    icon: isFavourite
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    label: isFavourite ? 'Remove favourite' : 'Favourite',
-                  ),
-                ),
-                if (onShare != null)
-                  const PopupMenuItem<_CardOverflowAction>(
-                    value: _CardOverflowAction.share,
-                    child: _OverflowMenuItem(
-                      icon: Icons.ios_share_outlined,
-                      label: 'Share image',
-                    ),
-                  ),
-              ];
+            onTap: (bool liked) async {
+              AndroidAudioDisplayMode.notifyUserActivity();
+              try {
+                if (liked) {
+                  await FavouritesDB().delete(_favouriteKey);
+                  return false;
+                }
+                return _showInputPrompt(context);
+              } catch (_) {
+                return liked;
+              }
             },
           ),
         ),
@@ -583,26 +513,6 @@ class ReadQuranCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _OverflowMenuItem extends StatelessWidget {
-  const _OverflowMenuItem({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      children: <Widget>[
-        Icon(icon, size: 19, color: colorScheme.onSurface.withAlpha(190)),
-        const SizedBox(width: 12),
-        Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-      ],
     );
   }
 }
