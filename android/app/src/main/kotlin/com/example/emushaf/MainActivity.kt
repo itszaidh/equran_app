@@ -11,7 +11,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import android.view.Display
 import android.view.WindowManager
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -23,26 +22,16 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : AudioServiceActivity() {
     private val channelName = "com.app.equran/read_page"
+    private val frameRateHintChannelName = "equran/frame_rate_hints"
     private val notificationPermissionChannelName = "com.app.equran/notification_permissions"
     private val downloadChannelId = "com.app.equran.downloads"
     private val downloadChannelName = "Audio Downloads"
     private val refreshRateLogTag = "EquranRefreshRate"
+    private val android15Api = 35
     private val prayerNotificationPermissionRequestCode = 4201
     private var pendingPrayerNotificationPermissionResult: MethodChannel.Result? = null
-
-    private data class RefreshRateChoice(
-        val modeId: Int,
-        val refreshRate: Float,
-        val width: Int,
-        val height: Int
-    ) {
-        fun toResultMap(): Map<String, Any> = mapOf(
-            "modeId" to modeId,
-            "refreshRate" to refreshRate,
-            "width" to width,
-            "height" to height
-        )
-    }
+    private var lastRequestedPreferredRefreshRate = 0f
+    private var powerSavingsBalancedRequested = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -61,30 +50,6 @@ class MainActivity : AudioServiceActivity() {
                             }
                         }
                         result.success(null)
-                    }
-                    "setPreferredFrameRate" -> {
-                        val frameRate = call.argument<Number>("frameRate")?.toFloat() ?: 0f
-                        runOnUiThread {
-                            applyPreferredFrameRate(frameRate)
-                        }
-                        result.success(null)
-                    }
-                    "requestLowestRefreshRate" -> {
-                        runOnUiThread {
-                            result.success(requestLowestRefreshRate()?.toResultMap())
-                        }
-                    }
-                    "requestRefreshRate" -> {
-                        val frameRate = call.argument<Number>("frameRate")?.toFloat() ?: 0f
-                        runOnUiThread {
-                            result.success(requestRefreshRate(frameRate)?.toResultMap())
-                        }
-                    }
-                    "clearRefreshRatePreference" -> {
-                        runOnUiThread {
-                            clearRefreshRatePreference()
-                            result.success(null)
-                        }
                     }
                     "showDownloadProgress" -> {
                         val id = call.argument<Int>("id") ?: 1001
@@ -116,6 +81,39 @@ class MainActivity : AudioServiceActivity() {
                 }
             }
 
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, frameRateHintChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "setPreferredRefreshRate" -> {
+                        val preferredRefreshRate =
+                            call.argument<Number>("preferredRefreshRate")?.toFloat() ?: 0f
+                        runOnUiThread {
+                            applyPreferredRefreshRateHint(preferredRefreshRate)
+                            result.success(null)
+                        }
+                    }
+                    "clearPreferredRefreshRate" -> {
+                        runOnUiThread {
+                            clearPreferredRefreshRateHint()
+                            result.success(null)
+                        }
+                    }
+                    "setPowerSavingsBalanced" -> {
+                        runOnUiThread {
+                            result.success(setPowerSavingsBalancedIfAvailable())
+                        }
+                    }
+                    "debugDiagnostics" -> {
+                        val requested =
+                            call.argument<Number>("requestedPreferredRefreshRate")?.toFloat()
+                        runOnUiThread {
+                            result.success(frameRateDiagnostics(requested))
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, notificationPermissionChannelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -139,117 +137,74 @@ class MainActivity : AudioServiceActivity() {
             }
     }
 
-    private fun applyPreferredFrameRate(frameRate: Float) {
-        if (frameRate <= 0f) {
-            clearRefreshRatePreference()
-            return
-        }
-
-        val mode = findClosestRefreshMode(frameRate)
-        if (mode != null) {
-            applyPreferredRefreshMode(mode, "requested ${frameRate}Hz")
-            return
-        }
-
+    private fun applyPreferredRefreshRateHint(preferredRefreshRate: Float) {
         val layoutParams = window.attributes
-        layoutParams.preferredRefreshRate = frameRate
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            layoutParams.preferredDisplayModeId = 0
-        }
+        layoutParams.preferredRefreshRate = preferredRefreshRate.coerceAtLeast(0f)
         window.attributes = layoutParams
-        Log.d(refreshRateLogTag, "Preferred refresh rate hint set to ${frameRate}Hz")
-    }
-
-    private fun requestLowestRefreshRate(): RefreshRateChoice? {
-        val mode = findLowestRefreshMode()
-        if (mode == null) {
-            Log.d(
-                refreshRateLogTag,
-                "Static minimized player requested low refresh, but display modes are unavailable"
-            )
-            return null
-        }
-
-        // This asks Android to prefer the lowest advertised mode for a static Flutter surface.
-        // True LTPO 1Hz idle behavior remains OS/panel controlled and is not forceable here.
-        applyPreferredRefreshMode(mode, "static minimized audio UI")
-        return mode
-    }
-
-    private fun requestRefreshRate(frameRate: Float): RefreshRateChoice? {
-        if (frameRate <= 0f) {
-            clearRefreshRatePreference()
-            return null
-        }
-
-        val mode = findClosestRefreshMode(frameRate)
-        if (mode == null) {
-            applyPreferredFrameRate(frameRate)
-            return null
-        }
-
-        applyPreferredRefreshMode(mode, "requested ${frameRate}Hz")
-        return mode
-    }
-
-    private fun clearRefreshRatePreference() {
-        val layoutParams = window.attributes
-        layoutParams.preferredRefreshRate = 0f
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            layoutParams.preferredDisplayModeId = 0
-        }
-        window.attributes = layoutParams
-        Log.d(refreshRateLogTag, "Refresh-rate preference cleared")
-    }
-
-    private fun applyPreferredRefreshMode(choice: RefreshRateChoice, reason: String) {
-        val layoutParams = window.attributes
-        layoutParams.preferredRefreshRate = choice.refreshRate
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            layoutParams.preferredDisplayModeId = choice.modeId
-        }
-        window.attributes = layoutParams
+        lastRequestedPreferredRefreshRate = preferredRefreshRate.coerceAtLeast(0f)
         Log.d(
             refreshRateLogTag,
-            "Preferred display mode ${choice.modeId} @ ${choice.refreshRate}Hz " +
-                "(${choice.width}x${choice.height}) for $reason"
+            "Window preferredRefreshRate hint set to ${lastRequestedPreferredRefreshRate}Hz"
         )
     }
 
-    private fun findLowestRefreshMode(): RefreshRateChoice? {
-        return supportedModesAtCurrentResolution()
-            .filter { it.refreshRate > 0f }
-            .minByOrNull { it.refreshRate }
-            ?.toRefreshRateChoice()
+    private fun clearPreferredRefreshRateHint() {
+        val layoutParams = window.attributes
+        layoutParams.preferredRefreshRate = 0f
+        window.attributes = layoutParams
+        lastRequestedPreferredRefreshRate = 0f
+        Log.d(refreshRateLogTag, "Window preferredRefreshRate hint cleared")
     }
 
-    private fun findClosestRefreshMode(frameRate: Float): RefreshRateChoice? {
-        return supportedModesAtCurrentResolution()
-            .filter { it.refreshRate > 0f }
-            .minByOrNull { kotlin.math.abs(it.refreshRate - frameRate) }
-            ?.toRefreshRateChoice()
-    }
+    private fun setPowerSavingsBalancedIfAvailable(): Boolean {
+        if (Build.VERSION.SDK_INT < android15Api) return false
 
-    private fun supportedModesAtCurrentResolution(): List<Display.Mode> {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return emptyList()
-
-        val display = windowManager.defaultDisplay
-        val currentMode = display.mode
-        val modes = display.supportedModes.toList()
-        val sameResolutionModes = modes.filter {
-            it.physicalWidth == currentMode.physicalWidth &&
-                it.physicalHeight == currentMode.physicalHeight
+        setTouchBoostEnabledIfAvailable()
+        return try {
+            window.javaClass
+                .getMethod(
+                    "setFrameRatePowerSavingsBalanced",
+                    Boolean::class.javaPrimitiveType ?: Boolean::class.java
+                )
+                .invoke(window, true)
+            powerSavingsBalancedRequested = true
+            Log.d(refreshRateLogTag, "Frame-rate power savings balanced enabled")
+            true
+        } catch (error: Throwable) {
+            Log.d(
+                refreshRateLogTag,
+                "Frame-rate power savings balanced unavailable: ${error.javaClass.simpleName}"
+            )
+            false
         }
-
-        return sameResolutionModes.ifEmpty { modes }
     }
 
-    private fun Display.Mode.toRefreshRateChoice(): RefreshRateChoice {
-        return RefreshRateChoice(
-            modeId = modeId,
-            refreshRate = refreshRate,
-            width = physicalWidth,
-            height = physicalHeight
+    private fun setTouchBoostEnabledIfAvailable() {
+        if (Build.VERSION.SDK_INT < android15Api) return
+
+        try {
+            window.javaClass
+                .getMethod(
+                    "setFrameRateBoostOnTouchEnabled",
+                    Boolean::class.javaPrimitiveType ?: Boolean::class.java
+                )
+                .invoke(window, true)
+            Log.d(refreshRateLogTag, "Frame-rate touch boost left enabled")
+        } catch (error: Throwable) {
+            Log.d(
+                refreshRateLogTag,
+                "Frame-rate touch boost API unavailable: ${error.javaClass.simpleName}"
+            )
+        }
+    }
+
+    private fun frameRateDiagnostics(requestedPreferredRefreshRate: Float?): Map<String, Any?> {
+        return mapOf(
+            "sdkInt" to Build.VERSION.SDK_INT,
+            "requestedPreferredRefreshRate" to requestedPreferredRefreshRate,
+            "windowPreferredRefreshRate" to window.attributes.preferredRefreshRate,
+            "lastRequestedPreferredRefreshRate" to lastRequestedPreferredRefreshRate,
+            "powerSavingsBalancedRequested" to powerSavingsBalancedRequested
         )
     }
 

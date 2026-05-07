@@ -4,6 +4,7 @@ import 'package:equran/backend/library.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
 import 'package:equran/utils/responsive_nav.dart';
+import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/widgets/library.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -178,6 +179,10 @@ class _MainPageState extends State<MainPage>
 
   void _openDrawer(BuildContext context) {
     AndroidAudioDisplayMode.notifyUserActivity();
+    FrameRatePolicyManager.instance.setDrawerOpen(
+      true,
+      reason: 'main_drawer_opening',
+    );
     unawaited(
       AndroidAudioDisplayMode.addLowRefreshBlocker(
         'home.drawerOpenOrAnimating',

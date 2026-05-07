@@ -20,6 +20,7 @@ import 'package:equran/utils/number_formatting.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/utils/reciter.dart';
 import 'package:equran/utils/responsive_nav.dart';
+import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/widgets/app_selection_dialog.dart';
 import 'package:equran/widgets/read_quran_card.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode, kIsWeb;
@@ -157,6 +158,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   static const MethodChannel _playerPageChannel = MethodChannel(
     'com.app.equran/read_page',
   );
+  static const String _frameRatePolicySource = 'full_player_page';
+  static const String _playerPagePointerSource = 'full_player_page_pointer';
+  static const String _playerPageSeekSource = 'full_player_page_seek';
   static const Duration _expandedProgressTickInterval = Duration(
     milliseconds: 33,
   );
@@ -238,12 +242,20 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _isPlayerPageForeground = true;
+      FrameRatePolicyManager.instance.setAppLifecyclePaused(
+        false,
+        reason: 'full_player_resumed',
+      );
       unawaited(_updateKeepScreenOn());
       _syncProgressVisualPolicy(syncPosition: true);
       return;
     }
 
     _isPlayerPageForeground = false;
+    FrameRatePolicyManager.instance.setAppLifecyclePaused(
+      true,
+      reason: 'full_player_lifecycle_paused',
+    );
     _syncProgressVisualPolicy();
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
@@ -365,6 +377,31 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     setState(fn);
   }
 
+  void _syncFrameRatePolicy(String reason) {
+    if (!mounted) {
+      FrameRatePolicyManager.instance.resetSource(
+        _frameRatePolicySource,
+        reason: 'full_player_unmounted',
+      );
+      return;
+    }
+
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    final bool routeCurrent = route?.isCurrent ?? true;
+    final bool expandedPlayerVisible =
+        _isPlayerPageForeground &&
+        routeCurrent &&
+        _progressVisualBlockCount == 0;
+
+    FrameRatePolicyManager.instance.updatePlaybackSurface(
+      source: _frameRatePolicySource,
+      audioPlaying: _isPlaying,
+      expandedPlayerVisible: expandedPlayerVisible,
+      miniPlayerVisible: false,
+      reason: reason,
+    );
+  }
+
   bool get _shouldRenderProgressVisuals {
     if (!mounted) return false;
     final ModalRoute<dynamic>? route = ModalRoute.of(context);
@@ -381,9 +418,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   bool get _shouldAnimateProgressVisuals {
-    // The full player is an active route with drawer, sheets, and route
-    // transitions. Keep Android's global refresh rate uncapped here; the
-    // visible progress motion is capped by _progressVisualTicker instead.
+    // Android refresh hints are owned by FrameRatePolicyManager. This flag
+    // keeps the legacy display-mode compatibility path inactive.
     return false;
   }
 
@@ -404,6 +440,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _shouldAnimateProgressVisuals,
       ),
     );
+    _syncFrameRatePolicy('full_player_progress_policy');
 
     if (_shouldRunProgressVisualTicker) {
       _startProgressVisualTicker();
@@ -445,6 +482,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       'started full player progress ticker '
       'interval=${_expandedProgressTickInterval.inMilliseconds}ms '
       'mode=$_progressVisualMode',
+    );
+    FrameRatePolicyManager.debugLogExpandedProgressTicker(
+      owner: 'full_player_page',
+      interval: _expandedProgressTickInterval,
     );
     _progressVisualTicker = Timer.periodic(_expandedProgressTickInterval, (_) {
       _tickProgressVisual();
@@ -506,6 +547,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Future<T> _withProgressVisualsPaused<T>(Future<T> Function() action) async {
     AndroidAudioDisplayMode.notifyUserActivity();
     _progressVisualBlockCount++;
+    FrameRatePolicyManager.instance.setModalOpen(
+      true,
+      reason: 'full_player_modal_open',
+    );
     _syncProgressVisualPolicy(syncPosition: true);
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
     try {
@@ -513,6 +558,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     } finally {
       if (_progressVisualBlockCount > 0) {
         _progressVisualBlockCount--;
+      }
+      if (_progressVisualBlockCount == 0) {
+        FrameRatePolicyManager.instance.setModalOpen(
+          false,
+          reason: 'full_player_modal_closed',
+        );
       }
       _syncProgressVisualPolicy(syncPosition: true);
       unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
@@ -929,6 +980,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         value: (_pendingSeekProgress ?? progress).clamp(0.0, 1.0),
         onChangeStart: (value) {
           AndroidAudioDisplayMode.notifyUserActivity();
+          FrameRatePolicyManager.instance.setUserDragging(
+            true,
+            source: _playerPageSeekSource,
+            reason: 'full_player_seek_start',
+          );
           unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
           _revealProgressThumb();
           _safeSetState(() {
@@ -963,6 +1019,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             });
             _updateActiveAyah(Duration(milliseconds: pendingMs));
             _syncProgressVisualPolicy(syncPosition: true);
+            FrameRatePolicyManager.instance.setUserDragging(
+              false,
+              source: _playerPageSeekSource,
+              reason: 'full_player_seek_end',
+            );
             unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
           }
         },
@@ -1159,9 +1220,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         useSafeArea: true,
         showDragHandle: true,
         backgroundColor: colorScheme.surfaceContainer,
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width,
-        ),
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppRadii.large),
@@ -1568,6 +1627,28 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_setKeepScreenOn(false));
+    FrameRatePolicyManager.instance.setPlayerDisposed(
+      true,
+      reason: 'full_player_disposed',
+    );
+    FrameRatePolicyManager.instance.resetSource(
+      _frameRatePolicySource,
+      reason: 'full_player_disposed',
+    );
+    FrameRatePolicyManager.instance.setPointerActive(
+      false,
+      source: _playerPagePointerSource,
+      reason: 'full_player_disposed',
+    );
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _playerPageSeekSource,
+      reason: 'full_player_disposed',
+    );
+    FrameRatePolicyManager.instance.setPlayerDisposed(
+      false,
+      reason: 'full_player_dispose_complete',
+    );
     unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(false));
     unawaited(AndroidAudioDisplayMode.setVisualProgressActive(false));
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
@@ -1592,6 +1673,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   void _openDrawer(BuildContext context) {
     AndroidAudioDisplayMode.notifyUserActivity();
+    FrameRatePolicyManager.instance.setDrawerOpen(
+      true,
+      reason: 'player_drawer_opening',
+    );
     unawaited(
       AndroidAudioDisplayMode.addLowRefreshBlocker(
         'home.drawerOpenOrAnimating',
@@ -1604,8 +1689,31 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Widget _buildAudioInteractionBoundary({required Widget child}) {
     return Listener(
       behavior: HitTestBehavior.translucent,
-      onPointerDown: (_) => _notifyAudioUserActivity(),
+      onPointerDown: (_) {
+        FrameRatePolicyManager.instance.setPointerActive(
+          true,
+          source: _playerPagePointerSource,
+          reason: 'full_player_pointer_down',
+        );
+        _notifyAudioUserActivity();
+      },
       onPointerMove: (_) => _notifyAudioUserActivity(),
+      onPointerUp: (_) {
+        FrameRatePolicyManager.instance.setPointerActive(
+          false,
+          source: _playerPagePointerSource,
+          reason: 'full_player_pointer_up',
+        );
+        _notifyAudioUserActivity();
+      },
+      onPointerCancel: (_) {
+        FrameRatePolicyManager.instance.setPointerActive(
+          false,
+          source: _playerPagePointerSource,
+          reason: 'full_player_pointer_cancel',
+        );
+        _notifyAudioUserActivity();
+      },
       onPointerSignal: (_) => _notifyAudioUserActivity(),
       child: NotificationListener<ScrollNotification>(
         onNotification: (_) {
@@ -2180,9 +2288,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 buildSecondaryControl(
-                  tooltip: _showAyahText
-                      ? 'Hide ayah text'
-                      : 'Show ayah text',
+                  tooltip: _showAyahText ? 'Hide ayah text' : 'Show ayah text',
                   onPressed: _toggleAyahText,
                   icon: Icons.menu_book_rounded,
                   selected: _showAyahText,
@@ -2215,10 +2321,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         }
 
         final Widget nowPlayingHero = _showAyahText
-            ? _buildActiveAyahCard(
-                theme: theme,
-                colorScheme: colorScheme,
-              )
+            ? _buildActiveAyahCard(theme: theme, colorScheme: colorScheme)
             : _buildNowPlayingHero(
                 theme: theme,
                 colorScheme: colorScheme,

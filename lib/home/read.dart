@@ -21,6 +21,7 @@ import 'package:equran/utils/quran_text.dart';
 import 'package:equran/utils/reciter.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/utils/translation_display.dart';
+import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/widgets/library.dart'
     show
         AppSelectionDialog,
@@ -185,6 +186,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const MethodChannel _readPageChannel = MethodChannel(
     'com.app.equran/read_page',
   );
+  static const String _frameRatePolicySource = 'read_page_player';
+  static const String _readPagePointerSource = 'read_page_pointer';
+  static const String _readPlayerDragSource = 'read_page_player_drag';
+  static const String _readPlayerSeekSource = 'read_page_player_seek';
+  static const String _readProgressScrubSource = 'read_page_progress_scrub';
   static const Size _shareImageSize = Size(1080, 1350);
   static const double _cardSwipeEdgeInset = 40;
   static const double _cardSwipeMinVelocity = 300;
@@ -331,6 +337,38 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _lowRefreshIdleTimer?.cancel();
     _playerSettleTimer?.cancel();
     _stopBottomPlayerProgressTicker('dispose');
+    FrameRatePolicyManager.instance.setPlayerDisposed(
+      true,
+      reason: 'read_player_disposed',
+    );
+    FrameRatePolicyManager.instance.resetSource(
+      _frameRatePolicySource,
+      reason: 'read_player_disposed',
+    );
+    FrameRatePolicyManager.instance.setPointerActive(
+      false,
+      source: _readPagePointerSource,
+      reason: 'read_page_disposed',
+    );
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readPlayerDragSource,
+      reason: 'read_player_disposed',
+    );
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readPlayerSeekSource,
+      reason: 'read_player_disposed',
+    );
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readProgressScrubSource,
+      reason: 'read_player_disposed',
+    );
+    FrameRatePolicyManager.instance.setPlayerDisposed(
+      false,
+      reason: 'read_player_dispose_complete',
+    );
     unawaited(
       AndroidAudioDisplayMode.clearStaticMinimizedAudioRefreshRate(force: true),
     );
@@ -360,15 +398,24 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _isReadPageForeground = true;
+      FrameRatePolicyManager.instance.setAppLifecyclePaused(
+        false,
+        reason: 'read_page_resumed',
+      );
       unawaited(_syncReadingAudioStateFromPlayer());
       _syncReadingPlayerRefreshMode(
         'read page resumed',
         scheduleLowRefresh: true,
       );
+      _syncFrameRatePolicy('read_page_resumed');
       return;
     }
 
     _isReadPageForeground = false;
+    FrameRatePolicyManager.instance.setAppLifecyclePaused(
+      true,
+      reason: 'read_page_lifecycle_paused',
+    );
     _pageScrollProgressTimer?.cancel();
     _inlineVerseHighlightTimer?.cancel();
     _playerSettleTimer?.cancel();
@@ -377,6 +424,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _isPlayerSettleAnimating = false;
     _isDraggingPlayerBar = false;
     _syncBottomPlayerProgressPolicy();
+    _syncFrameRatePolicy('read_page_lifecycle_paused');
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
     unawaited(AndroidAudioDisplayMode.setVisualProgressActive(false));
   }
@@ -384,6 +432,41 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void _notifyAudioUserActivity() {
     AndroidAudioDisplayMode.notifyUserActivity();
     _syncReadingPlayerRefreshMode('user activity', scheduleLowRefresh: true);
+  }
+
+  void _syncFrameRatePolicy(String reason) {
+    if (!mounted) {
+      FrameRatePolicyManager.instance.resetSource(
+        _frameRatePolicySource,
+        reason: 'read page unmounted',
+      );
+      return;
+    }
+
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    final bool routeCurrent = route?.isCurrent ?? true;
+    final bool pageVisible = _isReadPageForeground && routeCurrent;
+    final bool expandedPlayerVisible =
+        pageVisible &&
+        _playerMounted &&
+        _playerVisible &&
+        !_playerMinimized &&
+        !_playerMinimizedSettled &&
+        _progressVisualBlockCount == 0;
+    final bool miniPlayerVisible =
+        pageVisible &&
+        _playerMounted &&
+        _playerVisible &&
+        _playerMinimized &&
+        _playerMinimizedSettled;
+
+    FrameRatePolicyManager.instance.updatePlaybackSurface(
+      source: _frameRatePolicySource,
+      audioPlaying: _isVersePlaying,
+      expandedPlayerVisible: expandedPlayerVisible,
+      miniPlayerVisible: miniPlayerVisible,
+      reason: reason,
+    );
   }
 
   void _syncReadingPlayerRefreshMode(
@@ -406,6 +489,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   void _handleReadPagePointerDown(PointerDownEvent event) {
     _activePointerCount++;
+    FrameRatePolicyManager.instance.setPointerActive(
+      true,
+      source: _readPagePointerSource,
+      reason: 'read_page_pointer_down',
+    );
     _syncReadingPlayerRefreshMode('page pointer down', forceLowRefresh: true);
     AndroidAudioDisplayMode.notifyUserActivity();
   }
@@ -419,6 +507,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     if (_activePointerCount > 0) {
       _activePointerCount--;
     }
+    FrameRatePolicyManager.instance.setPointerActive(
+      _activePointerCount > 0,
+      source: _readPagePointerSource,
+      reason: 'read_page_pointer_up',
+    );
     AndroidAudioDisplayMode.notifyUserActivity();
     _syncReadingPlayerRefreshMode('page pointer up', scheduleLowRefresh: true);
   }
@@ -427,6 +520,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     if (_activePointerCount > 0) {
       _activePointerCount--;
     }
+    FrameRatePolicyManager.instance.setPointerActive(
+      _activePointerCount > 0,
+      source: _readPagePointerSource,
+      reason: 'read_page_pointer_cancel',
+    );
     AndroidAudioDisplayMode.notifyUserActivity();
     _syncReadingPlayerRefreshMode(
       'page pointer cancel',
@@ -474,29 +572,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     if (_lowRefreshRequested && !force) return;
     _lowRefreshRequested = true;
-    if (!AndroidAudioDisplayMode.kEnableMinimizedPlayerLowRefreshLock) {
-      if (kDebugMode) {
-        debugPrint(
-          'ReadPage: skipped static minimized low refresh; temporary flag disabled',
-        );
-      }
-      unawaited(
-        AndroidAudioDisplayMode.clearStaticMinimizedAudioRefreshRate(
-          force: true,
-        ),
-      );
-      return;
-    }
-
-    if (kDebugMode) {
-      debugPrint(
-        'ReadPage: requesting low refresh for static minimized player',
-      );
-    }
-    unawaited(
-      AndroidAudioDisplayMode.requestStaticMinimizedAudioRefreshRate(
-        force: force,
-      ),
+    FrameRatePolicyManager.debugLogMiniPlayerStatic(owner: 'read_page');
+    _syncFrameRatePolicy(
+      force
+          ? 'static_minimized_player_force_evaluated'
+          : 'static_minimized_player_idle',
     );
   }
 
@@ -544,6 +624,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _playerSettleTimer = null;
     _isPlayerGestureActive = true;
     _isPlayerSettleAnimating = false;
+    FrameRatePolicyManager.instance.setUserDragging(
+      true,
+      source: _readPlayerDragSource,
+      reason: reason,
+    );
     AndroidAudioDisplayMode.notifyUserActivity();
     _syncReadingPlayerRefreshMode(reason, forceLowRefresh: true);
   }
@@ -551,6 +636,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void _endPlayerInteraction(String reason) {
     if (!_isPlayerGestureActive) return;
     _isPlayerGestureActive = false;
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readPlayerDragSource,
+      reason: reason,
+    );
     _syncReadingPlayerRefreshMode(reason, scheduleLowRefresh: true);
   }
 
@@ -558,6 +648,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _playerSettleTimer?.cancel();
     _isPlayerGestureActive = false;
     _isPlayerSettleAnimating = true;
+    FrameRatePolicyManager.instance.setUserDragging(
+      true,
+      source: _readPlayerDragSource,
+      reason: reason,
+    );
     _syncReadingPlayerRefreshMode(reason, forceLowRefresh: true);
     _playerSettleTimer = Timer(_playerSettleAnimationDelay, () {
       if (!mounted) return;
@@ -570,6 +665,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _playerSettleTimer = null;
     _isPlayerGestureActive = false;
     _isPlayerSettleAnimating = false;
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readPlayerDragSource,
+      reason: reason,
+    );
     if (mounted &&
         _playerMinimized &&
         _playerCollapseProgress >= 1 &&
@@ -614,12 +714,22 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       forceLowRefresh: true,
     );
     _progressVisualBlockCount++;
+    FrameRatePolicyManager.instance.setModalOpen(
+      true,
+      reason: 'read_modal_open',
+    );
     _syncBottomPlayerProgressPolicy();
   }
 
   void _popProgressVisualBlock() {
     if (_progressVisualBlockCount > 0) {
       _progressVisualBlockCount--;
+    }
+    if (_progressVisualBlockCount == 0) {
+      FrameRatePolicyManager.instance.setModalOpen(
+        false,
+        reason: 'read_modal_closed',
+      );
     }
     _syncBottomPlayerProgressPolicy(syncPosition: true);
     _syncReadingPlayerRefreshMode(
@@ -674,9 +784,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void _syncBottomPlayerProgressPolicy({bool syncPosition = false}) {
     if (!mounted) return;
 
-    // Progress drawing is capped with _bottomPlayerProgressTicker. Avoid
-    // asking Android to change the app-wide display refresh rate for it.
+    // Progress drawing is capped with _bottomPlayerProgressTicker. Android
+    // refresh hints are evaluated separately by FrameRatePolicyManager.
     unawaited(AndroidAudioDisplayMode.setVisualProgressActive(false));
+    _syncFrameRatePolicy('read_player_progress_policy');
 
     if (_shouldRunBottomPlayerProgressTicker) {
       _startBottomPlayerProgressTicker();
@@ -728,6 +839,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       'started expanded reading progress ticker '
       'interval=${_expandedPlayerProgressTickInterval.inMilliseconds}ms '
       'mode=$_bottomPlayerProgressMode',
+    );
+    FrameRatePolicyManager.debugLogExpandedProgressTicker(
+      owner: 'read_page',
+      interval: _expandedPlayerProgressTickInterval,
     );
     _bottomPlayerProgressTicker = Timer.periodic(
       _expandedPlayerProgressTickInterval,
@@ -2748,6 +2863,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void _handleBottomPlayerSeekStart(double value) {
     _notifyAudioUserActivity();
     _isBottomPlayerSeeking = true;
+    FrameRatePolicyManager.instance.setUserDragging(
+      true,
+      source: _readPlayerSeekSource,
+      reason: 'read_player_seek_start',
+    );
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
     _syncBottomPlayerProgressPolicy();
     unawaited(_seekBottomPlayer(value));
@@ -2756,6 +2876,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void _handleBottomPlayerSeekEnd(double value) {
     unawaited(_seekBottomPlayer(value));
     _isBottomPlayerSeeking = false;
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readPlayerSeekSource,
+      reason: 'read_player_seek_end',
+    );
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
     _syncBottomPlayerProgressPolicy();
   }
@@ -3052,6 +3177,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   void _handleProgressScrubStart(LongPressStartDetails details, double width) {
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
+    FrameRatePolicyManager.instance.setUserDragging(
+      true,
+      source: _readProgressScrubSource,
+      reason: 'read_progress_scrub_start',
+    );
     setState(() {
       _isScrubbingProgress = true;
       _scrubStartVerse = _currentVerse;
@@ -3080,6 +3210,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   void _resetProgressScrub() {
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readProgressScrubSource,
+      reason: 'read_progress_scrub_end',
+    );
     setState(() {
       _isScrubbingProgress = false;
       _scrubStartVerse = null;
@@ -3138,6 +3273,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _playerBarDragDistance = 0;
     _isDraggingPlayerBar = false;
     _isPlayerGestureActive = false;
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readPlayerDragSource,
+      reason: 'player drag cancel',
+    );
     if (_playerMinimized) {
       setState(() {
         _playerCollapseProgress = 1;
@@ -3159,6 +3299,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _playerBarDragDistance = 0;
     _isDraggingPlayerBar = false;
     _isPlayerGestureActive = false;
+    FrameRatePolicyManager.instance.setUserDragging(
+      false,
+      source: _readPlayerDragSource,
+      reason: 'player drag end',
+    );
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
 
     if (_playerMinimized) {
