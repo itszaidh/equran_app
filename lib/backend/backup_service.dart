@@ -7,7 +7,7 @@ import 'package:equran/backend/reading_model.dart';
 import 'package:equran/backend/settings_db.dart';
 import 'package:equran/utils/reciter.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:quran/quran.dart' show Translation;
+import 'package:quran/quran.dart' as quran show Translation, getVerseCount;
 
 class AppBackupException implements Exception {
   AppBackupException(this.message);
@@ -51,6 +51,10 @@ class BackupService {
     'fontSize',
     'fontSizeTranslation',
     'playbackRate',
+    'ayahDelaySeconds',
+    'intervalRepeatCount',
+    'repeatAyahCount',
+    'playbackInterval',
     'prayerTimeSettings',
     'prayerLocation',
   };
@@ -235,7 +239,7 @@ class BackupService {
           entry.key,
           entry.value,
           min: 0,
-          max: Translation.values.length - 1,
+          max: quran.Translation.values.length - 1,
         ),
         'color' => _requireIntInRange(
           entry.key,
@@ -261,6 +265,17 @@ class BackupService {
           entry.key,
           entry.value,
           const <double>[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0],
+        ),
+        'ayahDelaySeconds' => _requireIntInRange(
+          entry.key,
+          entry.value,
+          min: 0,
+          max: 10,
+        ),
+        'intervalRepeatCount' ||
+        'repeatAyahCount' => _requireRepeatCount(entry.key, entry.value),
+        'playbackInterval' => _sanitizePlaybackIntervalMap(
+          _requireJsonMap(entry.key, entry.value),
         ),
         'prayerTimeSettings' => _sanitizePrayerTimeSettingsMap(
           _requireJsonMap(entry.key, entry.value),
@@ -377,6 +392,58 @@ class BackupService {
     return normalizedCode;
   }
 
+  static int _requireRepeatCount(String key, dynamic value) {
+    if (value is! int || !<int>{0, 1, 3, 5, 11, 19}.contains(value)) {
+      throw AppBackupException('Invalid value for "$key".');
+    }
+    return value;
+  }
+
+  static Map<String, dynamic> _sanitizePlaybackIntervalMap(
+    Map<String, dynamic> value,
+  ) {
+    final Map<String, dynamic> start = _requireJsonMap(
+      'playbackInterval.start',
+      value['start'],
+    );
+    final Map<String, dynamic> end = _requireJsonMap(
+      'playbackInterval.end',
+      value['end'],
+    );
+    final int startSurah = _requireIntInRange(
+      'playbackInterval.start.surah',
+      start['surah'],
+      min: 1,
+      max: 114,
+    );
+    final int startAyah = _requireIntInRange(
+      'playbackInterval.start.ayah',
+      start['ayah'],
+      min: 1,
+      max: quran.getVerseCount(startSurah),
+    );
+    final int endSurah = _requireIntInRange(
+      'playbackInterval.end.surah',
+      end['surah'],
+      min: 1,
+      max: 114,
+    );
+    final int endAyah = _requireIntInRange(
+      'playbackInterval.end.ayah',
+      end['ayah'],
+      min: 1,
+      max: quran.getVerseCount(endSurah),
+    );
+    if (endSurah < startSurah ||
+        (endSurah == startSurah && endAyah < startAyah)) {
+      throw AppBackupException('Invalid value for "playbackInterval".');
+    }
+    return <String, dynamic>{
+      'start': <String, int>{'surah': startSurah, 'ayah': startAyah},
+      'end': <String, int>{'surah': endSurah, 'ayah': endAyah},
+    };
+  }
+
   static Map<String, dynamic> _requireJsonMap(String key, dynamic value) {
     if (value is! Map) {
       throw AppBackupException('Invalid value for "$key".');
@@ -395,6 +462,14 @@ class BackupService {
   static dynamic _settingValueForBackup(String key, dynamic value) {
     if (key == 'prayerTimeSettings' && value is Map) {
       return _sanitizePrayerTimeSettingsMap(
+        value.map<String, dynamic>(
+          (dynamic mapKey, dynamic mapValue) =>
+              MapEntry(mapKey.toString(), mapValue),
+        ),
+      );
+    }
+    if (key == 'playbackInterval' && value is Map) {
+      return _sanitizePlaybackIntervalMap(
         value.map<String, dynamic>(
           (dynamic mapKey, dynamic mapValue) =>
               MapEntry(mapKey.toString(), mapValue),

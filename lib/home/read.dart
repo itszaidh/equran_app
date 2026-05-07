@@ -18,6 +18,7 @@ import 'package:equran/backend/library.dart'
         TafsirSource;
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_text.dart';
+import 'package:equran/utils/reciter.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/utils/translation_display.dart';
 import 'package:equran/widgets/library.dart'
@@ -49,7 +50,6 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart' as ja;
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:numberpicker/numberpicker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:share_plus/share_plus.dart';
@@ -61,6 +61,108 @@ class _OfflineAudioPlaybackException implements Exception {
 
 class _CancelledAudioPlaybackException implements Exception {
   const _CancelledAudioPlaybackException();
+}
+
+class QuranPosition {
+  const QuranPosition({required this.surah, required this.ayah});
+
+  factory QuranPosition.current(int surah, int ayah) {
+    return QuranPosition(
+      surah: surah.clamp(1, 114).toInt(),
+      ayah: ayah
+          .clamp(1, quran.getVerseCount(surah.clamp(1, 114).toInt()))
+          .toInt(),
+    );
+  }
+
+  final int surah;
+  final int ayah;
+
+  int compareTo(QuranPosition other) {
+    final int surahCompare = surah.compareTo(other.surah);
+    if (surahCompare != 0) return surahCompare;
+    return ayah.compareTo(other.ayah);
+  }
+
+  bool isBefore(QuranPosition other) => compareTo(other) < 0;
+
+  bool isAfter(QuranPosition other) => compareTo(other) > 0;
+
+  Map<String, int> toJson() => <String, int>{'surah': surah, 'ayah': ayah};
+
+  static QuranPosition? fromJson(dynamic value) {
+    if (value is! Map) return null;
+    final int? surah = _readInt(value['surah']);
+    final int? ayah = _readInt(value['ayah']);
+    if (surah == null || ayah == null) return null;
+    if (surah < 1 || surah > 114) return null;
+    final int verseCount = quran.getVerseCount(surah);
+    if (ayah < 1 || ayah > verseCount) return null;
+    return QuranPosition(surah: surah, ayah: ayah);
+  }
+}
+
+class PlaybackInterval {
+  const PlaybackInterval({required this.start, required this.end});
+
+  final QuranPosition start;
+  final QuranPosition end;
+
+  bool get isValid => !end.isBefore(start);
+
+  bool contains(QuranPosition position) {
+    return !position.isBefore(start) && !position.isAfter(end);
+  }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{'start': start.toJson(), 'end': end.toJson()};
+  }
+
+  static PlaybackInterval? fromJson(dynamic value) {
+    if (value is! Map) return null;
+    final QuranPosition? start = QuranPosition.fromJson(value['start']);
+    final QuranPosition? end = QuranPosition.fromJson(value['end']);
+    if (start == null || end == null) return null;
+    final PlaybackInterval interval = PlaybackInterval(start: start, end: end);
+    return interval.isValid ? interval : null;
+  }
+}
+
+enum RepeatChoice {
+  one(1, 'Once'),
+  three(3, '3 times'),
+  five(5, '5 times'),
+  eleven(11, '11 times'),
+  nineteen(19, '19 times'),
+  infinite(null, 'Infinite');
+
+  const RepeatChoice(this.count, this.label);
+
+  final int? count;
+  final String label;
+
+  bool get isInfinite => count == null;
+
+  int get storageValue => count ?? 0;
+
+  static RepeatChoice fromStorage(
+    dynamic value, {
+    required RepeatChoice fallback,
+  }) {
+    final int? count = _readInt(value);
+    if (count == null) return fallback;
+    return RepeatChoice.values.firstWhere(
+      (RepeatChoice choice) => choice.storageValue == count,
+      orElse: () => fallback,
+    );
+  }
+}
+
+int? _readInt(dynamic value) {
+  if (value is int) return value;
+  if (value is double) return value.round();
+  if (value is String) return int.tryParse(value);
+  return null;
 }
 
 class ReadPage extends StatefulWidget {
@@ -94,6 +196,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const double _playerBarDismissDistance = 52;
   static const double _playerBarMinVelocity = 220;
   static const double _ayahDetailsArabicFontSize = 31.0;
+  static const String _ayahDelaySettingsKey = 'ayahDelaySeconds';
+  static const String _intervalRepeatSettingsKey = 'intervalRepeatCount';
+  static const String _repeatAyahSettingsKey = 'repeatAyahCount';
+  static const String _playbackIntervalSettingsKey = 'playbackInterval';
   static const Duration _lowRefreshIdleDelay = Duration(milliseconds: 900);
   static const Duration _playerSettleAnimationDelay = Duration(
     milliseconds: 280,
@@ -122,12 +228,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   bool _hasDownloadedCurrentAyah = false;
   bool _continuousPlayback = false;
   bool _repeatIntervalEnabled = false;
+  PlaybackInterval? _playbackInterval;
+  RepeatChoice _intervalRepeatChoice = RepeatChoice.infinite;
+  RepeatChoice _repeatAyahChoice = RepeatChoice.one;
+  int _ayahDelaySeconds = 0;
+  int _intervalCyclesCompleted = 0;
+  int _currentAyahPlayCount = 1;
   final Set<String> _preloadingAyahKeys = <String>{};
   int _playbackRequestId = 0;
   bool _isHandlingVerseCompletion = false;
   int? _playingVerse;
-  int _repeatStartVerse = 1;
-  int _repeatEndVerse = 1;
   Duration _playerPosition = Duration.zero;
   Duration _playerDuration = Duration.zero;
   final ValueNotifier<Duration> _playerPositionValue = ValueNotifier<Duration>(
@@ -188,6 +298,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _scrollController = ScrollController();
     _currentChapter = widget.chapter;
     _currentVerse = widget.startVerse is int ? widget.startVerse! : 1;
+    _loadPlaybackOptions();
     _isDownloadingSurahAyahs = AudioDownloadService()
         .isSurahAyahsDownloadInProgress(_currentChapter);
     unawaited(_refreshSurahAyahDownloadState());
@@ -195,8 +306,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _pageFocusNode = FocusNode(debugLabel: 'Read Page Keyboard Focus');
     _getTotalVerses();
     unawaited(_loadChapterTransliterations());
-    _repeatStartVerse = _currentVerse;
-    _repeatEndVerse = _currentVerse;
     _bindVersePlayer();
     if (!_viewMode && _currentVerse > 1) {
       unawaited(
@@ -1251,10 +1360,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     bool smoothScroll = false,
     bool preservePlayerPresentationState = false,
     bool preserveRefreshState = false,
+    bool resetPlaybackCounters = true,
   }) async {
     if (_isVerseLoading) return;
 
     final int requestId = ++_playbackRequestId;
+    final bool chapterChanged = surah != _currentChapter;
+    final int safeSurah = surah.clamp(1, 114).toInt();
+    final int safeVerse = verse
+        .clamp(1, quran.getVerseCount(safeSurah))
+        .toInt();
     final bool shouldPreservePresentation =
         preservePlayerPresentationState && _playerMounted && _playerVisible;
     final bool nextPlayerMinimized = shouldPreservePresentation
@@ -1285,6 +1400,18 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     }
 
     setState(() {
+      if (resetPlaybackCounters) {
+        _resetPlaybackCounters();
+      }
+      if (chapterChanged) {
+        _clearVerseTextMetrics();
+        _currentChapter = safeSurah;
+        _totalVerses = quran.getVerseCount(_currentChapter);
+        _isDownloadingSurahAyahs = AudioDownloadService()
+            .isSurahAyahsDownloadInProgress(_currentChapter);
+        _hasDownloadedSurahAyahs = false;
+        _hasDownloadedCurrentAyah = false;
+      }
       _playerVisible = true;
       _playerMounted = true;
       _playerMinimized = nextPlayerMinimized;
@@ -1293,15 +1420,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _isDraggingPlayerBar = false;
       _isVerseLoading = true;
       _continuousPlayback = continuous;
-      if (!_repeatIntervalEnabled) {
-        _repeatStartVerse = verse;
-        _repeatEndVerse = verse;
-      }
-      _playingVerse = verse;
-      _currentVerse = verse;
+      _playingVerse = safeVerse;
+      _currentVerse = safeVerse;
       _setPlayerPosition(Duration.zero);
       _setPlayerDuration(Duration.zero);
     });
+    if (chapterChanged) {
+      unawaited(_refreshSurahAyahDownloadState());
+      unawaited(_loadChapterTransliterations());
+    }
     _syncBottomPlayerProgressPolicy();
     _syncReadingPlayerRefreshMode(
       'play verse presentation updated',
@@ -1309,13 +1436,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
     _updateDB();
     final Future<void> visualTransition = _isReadPageForeground
-        ? _scrollToVerseIfNeeded(verse, smooth: smoothScroll)
+        ? _scrollToVerseIfNeeded(safeVerse, smooth: smoothScroll)
         : Future<void>.value();
 
     try {
-      await _playVerseWithRetry(surah, verse, requestId);
+      await _playVerseWithRetry(safeSurah, safeVerse, requestId);
       if (continuous && mounted && requestId == _playbackRequestId) {
-        unawaited(_preloadNextContinuousAyahs(surah, verse));
+        unawaited(_preloadNextContinuousAyahs(safeSurah, safeVerse));
       }
     } on _CancelledAudioPlaybackException {
       return;
@@ -1517,22 +1644,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Future<void> _preloadNextContinuousAyahs(int surah, int verse) async {
     final AudioDownloadService downloads = AudioDownloadService();
-    final int totalVerses = quran.getVerseCount(surah);
-    for (
-      int nextVerse = verse + 1;
-      nextVerse <= min(verse + 2, totalVerses);
-      nextVerse++
-    ) {
-      final String key = '$surah-$nextVerse';
+    QuranPosition? nextPosition = _nextQuranPosition(
+      QuranPosition(surah: surah, ayah: verse),
+    );
+    for (int i = 0; i < 2 && nextPosition != null; i++) {
+      final String key = '${nextPosition.surah}-${nextPosition.ayah}';
       if (_preloadingAyahKeys.contains(key)) continue;
       _preloadingAyahKeys.add(key);
       try {
-        await downloads.cacheAyah(surah, nextVerse);
+        await downloads.cacheAyah(nextPosition.surah, nextPosition.ayah);
       } catch (_) {
         // Best-effort preload; foreground playback should never wait on this.
       } finally {
         _preloadingAyahKeys.remove(key);
       }
+      nextPosition = _nextQuranPosition(nextPosition);
     }
   }
 
@@ -1564,6 +1690,136 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       return value.toDouble().clamp(0.5, 2.0);
     }
     return 1.0;
+  }
+
+  void _loadPlaybackOptions() {
+    final int delaySeconds =
+        _readInt(SettingsDB().get(_ayahDelaySettingsKey, defaultValue: 0)) ?? 0;
+    _ayahDelaySeconds = delaySeconds.clamp(0, 10).toInt();
+    _intervalRepeatChoice = RepeatChoice.fromStorage(
+      SettingsDB().get(
+        _intervalRepeatSettingsKey,
+        defaultValue: RepeatChoice.infinite.storageValue,
+      ),
+      fallback: RepeatChoice.infinite,
+    );
+    _repeatAyahChoice = RepeatChoice.fromStorage(
+      SettingsDB().get(
+        _repeatAyahSettingsKey,
+        defaultValue: RepeatChoice.one.storageValue,
+      ),
+      fallback: RepeatChoice.one,
+    );
+    _playbackInterval = PlaybackInterval.fromJson(
+      SettingsDB().get(_playbackIntervalSettingsKey),
+    );
+  }
+
+  Future<void> _persistPlaybackOptions() async {
+    final SettingsDB settings = SettingsDB();
+    await settings.put(_ayahDelaySettingsKey, _ayahDelaySeconds);
+    await settings.put(
+      _intervalRepeatSettingsKey,
+      _intervalRepeatChoice.storageValue,
+    );
+    await settings.put(_repeatAyahSettingsKey, _repeatAyahChoice.storageValue);
+    final PlaybackInterval? interval = _playbackInterval;
+    if (interval == null) {
+      await settings.delete(_playbackIntervalSettingsKey);
+    } else {
+      await settings.put(_playbackIntervalSettingsKey, interval.toJson());
+    }
+  }
+
+  Future<void> _setPlaybackRate(double rate) async {
+    final double normalizedRate = _normalizePlaybackRate(rate);
+    await SettingsDB().put("playbackRate", normalizedRate);
+    if (_playerMounted || _isVersePlaying || _isVerseLoading) {
+      await _setCurrentVersePlaybackRate(normalizedRate);
+    }
+  }
+
+  double _normalizePlaybackRate(double rate) {
+    return (rate * 4).round().clamp(2, 8) / 4;
+  }
+
+  QuranPosition get _currentPosition {
+    return QuranPosition(surah: _currentChapter, ayah: _currentVerse);
+  }
+
+  QuranPosition get _playingPosition {
+    return QuranPosition(
+      surah: _currentChapter,
+      ayah: _playingVerse ?? _currentVerse,
+    );
+  }
+
+  PlaybackInterval get _effectiveInterval {
+    return _playbackInterval ??
+        PlaybackInterval(start: _currentPosition, end: _currentPosition);
+  }
+
+  QuranPosition? _nextQuranPosition(QuranPosition position) {
+    final int verseCount = quran.getVerseCount(position.surah);
+    if (position.ayah < verseCount) {
+      return QuranPosition(surah: position.surah, ayah: position.ayah + 1);
+    }
+    if (position.surah >= 114) return null;
+    return QuranPosition(surah: position.surah + 1, ayah: 1);
+  }
+
+  QuranPosition? _previousQuranPosition(QuranPosition position) {
+    if (position.ayah > 1) {
+      return QuranPosition(surah: position.surah, ayah: position.ayah - 1);
+    }
+    if (position.surah <= 1) return null;
+    final int previousSurah = position.surah - 1;
+    return QuranPosition(
+      surah: previousSurah,
+      ayah: quran.getVerseCount(previousSurah),
+    );
+  }
+
+  bool get _canPlayPreviousAyah {
+    final QuranPosition position = _playingPosition;
+    if (_repeatIntervalEnabled) {
+      return position.isAfter(_effectiveInterval.start);
+    }
+    return _previousQuranPosition(position) != null;
+  }
+
+  bool get _canPlayNextAyah {
+    final QuranPosition position = _playingPosition;
+    if (_repeatIntervalEnabled) {
+      return position.isBefore(_effectiveInterval.end) ||
+          _intervalRepeatChoice.isInfinite;
+    }
+    return _nextQuranPosition(position) != null;
+  }
+
+  String _formatPosition(QuranPosition position, {bool useNames = false}) {
+    if (!useNames) return '${position.surah}:${position.ayah}';
+    return '${quran.getSurahName(position.surah)} ${position.ayah}';
+  }
+
+  String _formatIntervalSummary(PlaybackInterval? interval) {
+    if (interval == null) return 'Current ayah only';
+    if (interval.start.surah == interval.end.surah) {
+      return '${quran.getSurahName(interval.start.surah)} '
+          '${interval.start.ayah} → ${interval.end.ayah}';
+    }
+    return '${_formatPosition(interval.start)} → ${_formatPosition(interval.end)}';
+  }
+
+  void _resetPlaybackCounters() {
+    _intervalCyclesCompleted = 0;
+    _currentAyahPlayCount = 1;
+  }
+
+  Future<void> _delayBeforeNextPlayback(int requestId) async {
+    if (_ayahDelaySeconds <= 0) return;
+    await Future<void>.delayed(Duration(seconds: _ayahDelaySeconds));
+    _throwIfPlaybackRequestCancelled(requestId);
   }
 
   Future<void> _handleVerseCompleteFromPlayer() async {
@@ -1616,29 +1872,75 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<void> _handleVerseComplete() async {
-    final int completedVerse = _playingVerse ?? _currentVerse;
-    if (_repeatIntervalEnabled) {
-      final int nextVerse = completedVerse >= _repeatEndVerse
-          ? _repeatStartVerse
-          : completedVerse + 1;
+    final int requestId = _playbackRequestId;
+    final QuranPosition completedPosition = _playingPosition;
+    final int? repeatAyahCount = _repeatAyahChoice.count;
+    if (_repeatAyahChoice.isInfinite ||
+        (repeatAyahCount != null && _currentAyahPlayCount < repeatAyahCount)) {
+      if (!_repeatAyahChoice.isInfinite) {
+        _currentAyahPlayCount++;
+      }
+      await _delayBeforeNextPlayback(requestId);
       await _playVerse(
-        _currentChapter,
-        nextVerse,
-        smoothScroll: true,
+        completedPosition.surah,
+        completedPosition.ayah,
+        continuous: _continuousPlayback,
+        smoothScroll: false,
         preservePlayerPresentationState: true,
         preserveRefreshState: true,
+        resetPlaybackCounters: false,
       );
       return;
     }
 
-    if (_continuousPlayback && completedVerse < _totalVerses) {
+    _currentAyahPlayCount = 1;
+
+    if (_repeatIntervalEnabled) {
+      final PlaybackInterval interval = _effectiveInterval;
+      QuranPosition? nextPosition;
+      if (completedPosition.isBefore(interval.end)) {
+        nextPosition = _nextQuranPosition(completedPosition);
+      } else {
+        final int? intervalRepeatCount = _intervalRepeatChoice.count;
+        if (_intervalRepeatChoice.isInfinite ||
+            (intervalRepeatCount != null &&
+                _intervalCyclesCompleted + 1 < intervalRepeatCount)) {
+          _intervalCyclesCompleted++;
+          nextPosition = interval.start;
+        }
+      }
+
+      if (nextPosition == null || !interval.contains(nextPosition)) {
+        if (!mounted) return;
+        await _stopBottomPlayer();
+        return;
+      }
+
+      await _delayBeforeNextPlayback(requestId);
       await _playVerse(
-        _currentChapter,
-        completedVerse + 1,
+        nextPosition.surah,
+        nextPosition.ayah,
+        smoothScroll: true,
+        preservePlayerPresentationState: true,
+        preserveRefreshState: true,
+        resetPlaybackCounters: false,
+      );
+      return;
+    }
+
+    final QuranPosition? nextContinuousPosition = _nextQuranPosition(
+      completedPosition,
+    );
+    if (_continuousPlayback && nextContinuousPosition != null) {
+      await _delayBeforeNextPlayback(requestId);
+      await _playVerse(
+        nextContinuousPosition.surah,
+        nextContinuousPosition.ayah,
         continuous: true,
         smoothScroll: true,
         preservePlayerPresentationState: true,
         preserveRefreshState: true,
+        resetPlaybackCounters: false,
       );
       return;
     }
@@ -1669,13 +1971,27 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Future<void> _playAdjacentPageViewAyah(int direction) async {
     if (_isVerseLoading) return;
 
-    final int currentVerse = _playingVerse ?? _currentVerse;
-    final int targetVerse = currentVerse + direction;
-    if (targetVerse < 1 || targetVerse > _totalVerses) return;
+    final QuranPosition currentPosition = _playingPosition;
+    QuranPosition? targetPosition = direction < 0
+        ? _previousQuranPosition(currentPosition)
+        : _nextQuranPosition(currentPosition);
+    if (_repeatIntervalEnabled && targetPosition != null) {
+      final PlaybackInterval interval = _effectiveInterval;
+      if (targetPosition.isBefore(interval.start)) return;
+      if (targetPosition.isAfter(interval.end)) {
+        if (direction > 0 && _intervalRepeatChoice.isInfinite) {
+          targetPosition = interval.start;
+        } else {
+          return;
+        }
+      }
+    }
+    if (targetPosition == null) return;
+    _resetPlaybackCounters();
 
     await _playVerse(
-      _currentChapter,
-      targetVerse,
+      targetPosition.surah,
+      targetPosition.ayah,
       continuous: _continuousPlayback,
       smoothScroll: true,
     );
@@ -1926,6 +2242,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _isPlayerSettleAnimating = false;
     _syncReadingPlayerRefreshMode('player stopped', forceLowRefresh: true);
     setState(() {
+      _resetPlaybackCounters();
       _playerVisible = false;
       _playerMinimized = false;
       _playerMinimizedSettled = false;
@@ -1951,6 +2268,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void _toggleContinuousPlayback(bool value) {
     _beginPlayerSettleAnimation('continuous toggle expands player');
     setState(() {
+      _resetPlaybackCounters();
       _continuousPlayback = value;
       if (value) {
         _repeatIntervalEnabled = false;
@@ -1962,104 +2280,200 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _playerCollapseProgress = 0;
       _isDraggingPlayerBar = false;
       _playingVerse ??= _currentVerse;
-      if (value) {
-        _repeatStartVerse = _currentVerse;
-        _repeatEndVerse = _currentVerse;
-      }
     });
     _syncBottomPlayerProgressPolicy();
     _syncReadingPlayerRefreshMode('continuous toggle complete');
     unawaited(_updateKeepScreenOn());
   }
 
-  Future<void> _showRepeatIntervalSheet() async {
+  Future<void> _showIntervalSelectionSheet({
+    bool enableIntervalAfterSelection = false,
+  }) async {
     _notifyAudioUserActivity();
-    int start = _repeatIntervalEnabled ? _repeatStartVerse : _currentVerse;
-    int end = _repeatIntervalEnabled ? _repeatEndVerse : _currentVerse;
+    final PlaybackInterval initialInterval =
+        _playbackInterval ??
+        PlaybackInterval(start: _currentPosition, end: _currentPosition);
+    int startSurah = initialInterval.start.surah;
+    int startAyah = initialInterval.start.ayah;
+    int endSurah = initialInterval.end.surah;
+    int endAyah = initialInterval.end.ayah;
+    String? errorText;
 
-    final bool? enabled = await _withLowFpsSuppressed(() {
-      return showModalBottomSheet<bool>(
+    final PlaybackInterval? selected = await _withLowFpsSuppressed(() {
+      return showModalBottomSheet<PlaybackInterval>(
         context: context,
         showDragHandle: true,
+        isScrollControlled: true,
+        useSafeArea: true,
         builder: (context) {
           return StatefulBuilder(
             builder: (context, setSheetState) {
+              void clampAyahs() {
+                startAyah = startAyah
+                    .clamp(1, quran.getVerseCount(startSurah))
+                    .toInt();
+                endAyah = endAyah
+                    .clamp(1, quran.getVerseCount(endSurah))
+                    .toInt();
+              }
+
+              PlaybackInterval currentSelection() {
+                clampAyahs();
+                return PlaybackInterval(
+                  start: QuranPosition(surah: startSurah, ayah: startAyah),
+                  end: QuranPosition(surah: endSurah, ayah: endAyah),
+                );
+              }
+
+              void applySelection() {
+                final PlaybackInterval interval = currentSelection();
+                if (!interval.isValid) {
+                  setSheetState(() {
+                    errorText =
+                        'Choose an end ayah that is the same as or after the start ayah.';
+                  });
+                  return;
+                }
+                Navigator.of(context).pop(interval);
+              }
+
               return Listener(
                 behavior: HitTestBehavior.translucent,
                 onPointerDown: (_) => _notifyAudioUserActivity(),
                 onPointerMove: (_) => _notifyAudioUserActivity(),
                 onPointerSignal: (_) => _notifyAudioUserActivity(),
                 child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      8,
+                      20,
+                      MediaQuery.viewInsetsOf(context).bottom + 24,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        Text(
-                          'Repeat Ayah Interval',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 12),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: <Widget>[
-                            Column(
-                              children: <Widget>[
-                                const Text('From'),
-                                NumberPicker(
-                                  minValue: 1,
-                                  maxValue: _totalVerses,
-                                  value: start,
-                                  onChanged: (value) {
-                                    _notifyAudioUserActivity();
-                                    setSheetState(() {
-                                      start = value;
-                                      if (end < start) end = start;
-                                    });
-                                  },
-                                ),
-                              ],
+                            Expanded(
+                              child: Text(
+                                'Interval range',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w800),
+                              ),
                             ),
-                            Column(
-                              children: <Widget>[
-                                const Text('To'),
-                                NumberPicker(
-                                  minValue: 1,
-                                  maxValue: _totalVerses,
-                                  value: end,
-                                  onChanged: (value) {
-                                    _notifyAudioUserActivity();
-                                    setSheetState(() {
-                                      end = value;
-                                      if (start > end) start = end;
-                                    });
-                                  },
-                                ),
-                              ],
+                            IconButton(
+                              tooltip: 'Close',
+                              onPressed: () => Navigator.of(context).pop(),
+                              icon: const Icon(Icons.close_rounded),
                             ),
                           ],
                         ),
+                        Text(
+                          'Select a start and end ayah. Ranges can cross surahs.',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                        const SizedBox(height: 14),
+                        _buildIntervalPickerRow(
+                          context: context,
+                          label: 'Start',
+                          surah: startSurah,
+                          ayah: startAyah,
+                          onSurahChanged: (value) {
+                            _notifyAudioUserActivity();
+                            setSheetState(() {
+                              startSurah = value;
+                              startAyah = startAyah
+                                  .clamp(1, quran.getVerseCount(startSurah))
+                                  .toInt();
+                              errorText = null;
+                            });
+                          },
+                          onAyahChanged: (value) {
+                            _notifyAudioUserActivity();
+                            setSheetState(() {
+                              startAyah = value;
+                              errorText = null;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        _buildIntervalPickerRow(
+                          context: context,
+                          label: 'End',
+                          surah: endSurah,
+                          ayah: endAyah,
+                          onSurahChanged: (value) {
+                            _notifyAudioUserActivity();
+                            setSheetState(() {
+                              endSurah = value;
+                              endAyah = endAyah
+                                  .clamp(1, quran.getVerseCount(endSurah))
+                                  .toInt();
+                              errorText = null;
+                            });
+                          },
+                          onAyahChanged: (value) {
+                            _notifyAudioUserActivity();
+                            setSheetState(() {
+                              endAyah = value;
+                              errorText = null;
+                            });
+                          },
+                        ),
                         const SizedBox(height: 12),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 160),
+                          child: errorText == null
+                              ? Align(
+                                  alignment: AlignmentDirectional.centerStart,
+                                  child: Text(
+                                    _formatIntervalSummary(currentSelection()),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                )
+                              : Align(
+                                  alignment: AlignmentDirectional.centerStart,
+                                  child: Text(
+                                    errorText!,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.error,
+                                          height: 1.35,
+                                        ),
+                                  ),
+                                ),
+                        ),
+                        const SizedBox(height: 16),
                         Row(
                           children: <Widget>[
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: () {
-                                  _notifyAudioUserActivity();
-                                  Navigator.of(context).pop(false);
-                                },
-                                child: const Text('Disable'),
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Cancel'),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: FilledButton(
-                                onPressed: () {
-                                  _notifyAudioUserActivity();
-                                  Navigator.of(context).pop(true);
-                                },
-                                child: const Text('Repeat Interval'),
+                                onPressed: applySelection,
+                                child: const Text('Apply'),
                               ),
                             ),
                           ],
@@ -2075,39 +2489,49 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       );
     });
 
-    if (enabled == null) return;
+    if (selected == null) return;
     if (!mounted) return;
-    if (!enabled) {
+    if (!enableIntervalAfterSelection && !_repeatIntervalEnabled) {
       setState(() {
-        _repeatIntervalEnabled = false;
+        _resetPlaybackCounters();
+        _playbackInterval = selected;
       });
-      unawaited(_updateKeepScreenOn());
+      unawaited(_persistPlaybackOptions());
       return;
     }
 
-    final int currentPlayingVerse = _playingVerse ?? _currentVerse;
+    final QuranPosition start = selected.start;
+    final QuranPosition currentPlayingPosition = _playingPosition;
+    final bool shouldStartPlayback =
+        enableIntervalAfterSelection || _isVersePlaying || _isVerseLoading;
     final bool shouldKeepCurrentPlayback =
-        _isVersePlaying && currentPlayingVerse == start;
+        _isVersePlaying && selected.contains(currentPlayingPosition);
 
     _beginPlayerSettleAnimation('repeat interval expands player');
     setState(() {
-      _repeatIntervalEnabled = true;
-      _continuousPlayback = false;
+      _resetPlaybackCounters();
+      _playbackInterval = selected;
+      _repeatIntervalEnabled =
+          enableIntervalAfterSelection || _repeatIntervalEnabled;
+      if (_repeatIntervalEnabled) {
+        _continuousPlayback = false;
+      }
       _playerVisible = true;
       _playerMounted = true;
       _playerMinimized = false;
       _playerMinimizedSettled = false;
       _playerCollapseProgress = 0;
-      _repeatStartVerse = start;
-      _repeatEndVerse = end;
-      _playingVerse = shouldKeepCurrentPlayback ? currentPlayingVerse : start;
+      _playingVerse = shouldKeepCurrentPlayback
+          ? currentPlayingPosition.ayah
+          : start.ayah;
     });
+    unawaited(_persistPlaybackOptions());
     _syncReadingPlayerRefreshMode('repeat interval configured');
     unawaited(_updateKeepScreenOn());
-    if (shouldKeepCurrentPlayback) {
+    if (shouldKeepCurrentPlayback || !shouldStartPlayback) {
       return;
     }
-    await _playVerse(_currentChapter, start);
+    await _playVerse(start.surah, start.ayah);
   }
 
   Future<void> _seekBottomPlayer(double value) async {
@@ -2116,6 +2540,97 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final Duration position = Duration(milliseconds: milliseconds);
     _setPlayerPosition(position, render: true);
     await _seekCurrentVerseAudio(position);
+  }
+
+  Widget _buildIntervalPickerRow({
+    required BuildContext context,
+    required String label,
+    required int surah,
+    required int ayah,
+    required ValueChanged<int> onSurahChanged,
+    required ValueChanged<int> onAyahChanged,
+  }) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final int maxAyah = quran.getVerseCount(surah);
+
+    Future<void> pickSurah() async {
+      _notifyAudioUserActivity();
+      final int? selected = await _showNumberChoiceDialog(
+        title: '$label surah',
+        icon: Icons.menu_book_rounded,
+        selectedValue: surah,
+        min: 1,
+        max: 114,
+        titleBuilder: (value) => '$value. ${quran.getSurahName(value)}',
+      );
+      if (selected == null || !mounted) return;
+      onSurahChanged(selected);
+    }
+
+    Future<void> pickAyah() async {
+      _notifyAudioUserActivity();
+      final int? selected = await _showNumberChoiceDialog(
+        title: '$label ayah',
+        icon: Icons.format_list_numbered_rounded,
+        selectedValue: ayah.clamp(1, maxAyah).toInt(),
+        min: 1,
+        max: maxAyah,
+        titleBuilder: (value) => 'Ayah $value',
+      );
+      if (selected == null || !mounted) return;
+      onAyahChanged(selected);
+    }
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              label,
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: _NumberStepperTile(
+                    label: 'Surah',
+                    value: surah,
+                    min: 1,
+                    max: 114,
+                    helper: quran.getSurahName(surah),
+                    onTap: pickSurah,
+                    onChanged: onSurahChanged,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _NumberStepperTile(
+                    label: 'Ayah',
+                    value: ayah.clamp(1, maxAyah).toInt(),
+                    min: 1,
+                    max: maxAyah,
+                    helper: '1-$maxAyah',
+                    onTap: pickAyah,
+                    onChanged: onAyahChanged,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _handleBottomPlayerSeekStart(double value) {
@@ -2251,8 +2766,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _currentChapter = _currentChapter == 114 ? 1 : _currentChapter + 1;
       _currentVerse = 1;
       _totalVerses = quran.getVerseCount(_currentChapter);
-      _repeatStartVerse = 1;
-      _repeatEndVerse = 1;
       _isDownloadingSurahAyahs = AudioDownloadService()
           .isSurahAyahsDownloadInProgress(_currentChapter);
       _hasDownloadedSurahAyahs = false;
@@ -2273,8 +2786,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _currentChapter = previousChapter;
       _totalVerses = quran.getVerseCount(_currentChapter);
       _currentVerse = _totalVerses;
-      _repeatStartVerse = _currentVerse;
-      _repeatEndVerse = _currentVerse;
       _isDownloadingSurahAyahs = AudioDownloadService()
           .isSurahAyahsDownloadInProgress(_currentChapter);
       _hasDownloadedSurahAyahs = false;
@@ -2689,8 +3200,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         onTogglePlayPause: () => unawaited(_toggleBottomPlayer()),
         onContinuousPlaybackChanged: _toggleContinuousPlayback,
         onRepeatIntervalPressed: _handleRepeatIntervalPressed,
+        onAdvancedOptionsPressed: _showAdvancedPlaybackOptions,
         onPlayPrevious: () => unawaited(_playAdjacentPageViewAyah(-1)),
         onPlayNext: () => unawaited(_playAdjacentPageViewAyah(1)),
+        canPlayPrevious: _canPlayPreviousAyah,
+        canPlayNext: _canPlayNextAyah,
       ),
     );
   }
@@ -2838,7 +3352,247 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       return;
     }
 
-    unawaited(_showRepeatIntervalSheet());
+    unawaited(_showIntervalSelectionSheet(enableIntervalAfterSelection: true));
+  }
+
+  Future<void> _showAdvancedPlaybackOptions() async {
+    _notifyAudioUserActivity();
+    await _withLowFpsSuppressed(() {
+      return showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
+        builder: (sheetContext) {
+          return StatefulBuilder(
+            builder: (sheetContext, setSheetState) {
+              final ThemeData theme = Theme.of(sheetContext);
+              final ColorScheme colorScheme = theme.colorScheme;
+              final double rate = _playbackRate();
+
+              Future<void> selectReciter() async {
+                final AppReciter? selected = await _showReciterPickerDialog();
+                if (selected == null || !mounted) return;
+                await SettingsDB().put("reciter", selected.code);
+                if (_playerMounted || _isVersePlaying || _isVerseLoading) {
+                  _playbackRequestId++;
+                  final QuranPosition position = _playingPosition;
+                  await _playVerse(
+                    position.surah,
+                    position.ayah,
+                    continuous: _continuousPlayback,
+                    smoothScroll: false,
+                    preservePlayerPresentationState: true,
+                    preserveRefreshState: true,
+                    resetPlaybackCounters: false,
+                  );
+                }
+                if (!sheetContext.mounted) return;
+                setSheetState(() {});
+              }
+
+              Future<void> selectIntervalRepeat() async {
+                final RepeatChoice? selected = await _showRepeatChoiceDialog(
+                  title: 'Interval repeat',
+                  icon: Icons.repeat_rounded,
+                  selectedValue: _intervalRepeatChoice,
+                );
+                if (selected == null) return;
+                setState(() {
+                  _intervalRepeatChoice = selected;
+                  _intervalCyclesCompleted = 0;
+                });
+                unawaited(_persistPlaybackOptions());
+                if (sheetContext.mounted) setSheetState(() {});
+              }
+
+              Future<void> selectRepeatAyah() async {
+                final RepeatChoice? selected = await _showRepeatChoiceDialog(
+                  title: 'Repeat each ayah',
+                  icon: Icons.repeat_one_rounded,
+                  selectedValue: _repeatAyahChoice,
+                );
+                if (selected == null) return;
+                setState(() {
+                  _repeatAyahChoice = selected;
+                  _currentAyahPlayCount = 1;
+                });
+                unawaited(_persistPlaybackOptions());
+                if (sheetContext.mounted) setSheetState(() {});
+              }
+
+              Future<void> resetOptions() async {
+                setState(() {
+                  _ayahDelaySeconds = 0;
+                  _playbackInterval = null;
+                  _repeatIntervalEnabled = false;
+                  _intervalRepeatChoice = RepeatChoice.infinite;
+                  _repeatAyahChoice = RepeatChoice.one;
+                  _resetPlaybackCounters();
+                });
+                await _setPlaybackRate(1.0);
+                await _persistPlaybackOptions();
+                if (sheetContext.mounted) setSheetState(() {});
+                unawaited(_updateKeepScreenOn());
+              }
+
+              return DraggableScrollableSheet(
+                expand: false,
+                initialChildSize: 0.78,
+                minChildSize: 0.42,
+                maxChildSize: 0.92,
+                builder: (context, scrollController) {
+                  return ListView(
+                    controller: scrollController,
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary.withAlpha(18),
+                              borderRadius: BorderRadius.circular(
+                                AppRadii.medium,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.tune_rounded,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  'Playback options',
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                Text(
+                                  'Customize recitation behavior',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      _buildPlaybackOptionsSection(
+                        context: context,
+                        title: 'Recitation',
+                        children: <Widget>[
+                          ListTile(
+                            leading: const Icon(
+                              Icons.record_voice_over_rounded,
+                            ),
+                            title: const Text('Reciter'),
+                            subtitle: Text(
+                              QuranAudioService().selectedReciter.englishName,
+                            ),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: selectReciter,
+                          ),
+                          _buildSliderOption(
+                            context: context,
+                            title: 'Playback speed',
+                            subtitle: '${rate.toStringAsFixed(2)}x',
+                            value: rate,
+                            min: 0.5,
+                            max: 2.0,
+                            divisions: 6,
+                            label: '${rate.toStringAsFixed(2)}x',
+                            onChanged: (value) async {
+                              final double normalized = _normalizePlaybackRate(
+                                value,
+                              );
+                              await _setPlaybackRate(normalized);
+                              if (mounted) setState(() {});
+                              if (sheetContext.mounted) setSheetState(() {});
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildPlaybackOptionsSection(
+                        context: context,
+                        title: 'Timing',
+                        children: <Widget>[
+                          _buildSliderOption(
+                            context: context,
+                            title: 'Ayah delay',
+                            subtitle: _delayLabel(_ayahDelaySeconds),
+                            value: _ayahDelaySeconds.toDouble(),
+                            min: 0,
+                            max: 10,
+                            divisions: 10,
+                            label: _delayLabel(_ayahDelaySeconds),
+                            onChanged: (value) {
+                              setState(() {
+                                _ayahDelaySeconds = value.round().clamp(0, 10);
+                              });
+                              setSheetState(() {});
+                              unawaited(_persistPlaybackOptions());
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildPlaybackOptionsSection(
+                        context: context,
+                        title: 'Interval',
+                        children: <Widget>[
+                          ListTile(
+                            leading: const Icon(Icons.segment_rounded),
+                            title: const Text('Interval'),
+                            subtitle: Text(
+                              _formatIntervalSummary(_playbackInterval),
+                            ),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: () async {
+                              await _showIntervalSelectionSheet();
+                              if (sheetContext.mounted) setSheetState(() {});
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.repeat_rounded),
+                            title: const Text('Interval repeat'),
+                            subtitle: Text(_intervalRepeatChoice.label),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: selectIntervalRepeat,
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.repeat_one_rounded),
+                            title: const Text('Repeat each ayah'),
+                            subtitle: Text(_repeatAyahChoice.label),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: selectRepeatAyah,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      OutlinedButton.icon(
+                        onPressed: resetOptions,
+                        icon: const Icon(Icons.restart_alt_rounded),
+                        label: const Text('Reset playback options'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
+    });
   }
 
   double _readCardHorizontalInset(double width) {
@@ -2998,6 +3752,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     _playbackRequestId++;
     setState(() {
+      _resetPlaybackCounters();
       _isVersePlaying = false;
       _isVerseLoading = false;
       _continuousPlayback = false;
@@ -3613,6 +4368,149 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     });
   }
 
+  Widget _buildPlaybackOptionsSection({
+    required BuildContext context,
+    required String title,
+    required List<Widget> children,
+  }) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            ...children,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSliderOption({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required double value,
+    required double min,
+    required double max,
+    required int divisions,
+    required String label,
+    required ValueChanged<double> onChanged,
+  }) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(subtitle),
+          Slider(
+            min: min,
+            max: max,
+            divisions: divisions,
+            value: value.clamp(min, max).toDouble(),
+            label: label,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<AppReciter?> _showReciterPickerDialog() {
+    final List<AppReciter> reciters = AppReciter.values.toList()
+      ..sort(
+        (a, b) =>
+            a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase()),
+      );
+    return showDialog<AppReciter>(
+      context: context,
+      builder: (context) => AppSelectionDialog<AppReciter>(
+        title: 'Reciter',
+        icon: Icons.record_voice_over_rounded,
+        selectedValue: QuranAudioService().selectedReciter,
+        options: reciters
+            .map(
+              (reciter) => AppSelectionOption<AppReciter>(
+                value: reciter,
+                title: reciter.englishName,
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Future<RepeatChoice?> _showRepeatChoiceDialog({
+    required String title,
+    required IconData icon,
+    required RepeatChoice selectedValue,
+  }) {
+    return showDialog<RepeatChoice>(
+      context: context,
+      builder: (context) => AppSelectionDialog<RepeatChoice>(
+        title: title,
+        icon: icon,
+        selectedValue: selectedValue,
+        options: RepeatChoice.values
+            .map(
+              (choice) => AppSelectionOption<RepeatChoice>(
+                value: choice,
+                title: choice.label,
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Future<int?> _showNumberChoiceDialog({
+    required String title,
+    required IconData icon,
+    required int selectedValue,
+    required int min,
+    required int max,
+    required String Function(int value) titleBuilder,
+  }) {
+    return showDialog<int>(
+      context: context,
+      builder: (context) => AppSelectionDialog<int>(
+        title: title,
+        icon: icon,
+        selectedValue: selectedValue,
+        maxHeight: 560,
+        options: List<AppSelectionOption<int>>.generate(max - min + 1, (index) {
+          final int value = min + index;
+          return AppSelectionOption<int>(
+            value: value,
+            title: titleBuilder(value),
+          );
+        }),
+      ),
+    );
+  }
+
+  String _delayLabel(int seconds) {
+    if (seconds <= 0) return 'No delay';
+    if (seconds == 1) return '1 second';
+    return '$seconds seconds';
+  }
+
   Future<void> _showAyahDetailsSheet(int verse) async {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
@@ -3896,5 +4794,91 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       return;
     }
     FavouritesDB().put(key, '');
+  }
+}
+
+class _NumberStepperTile extends StatelessWidget {
+  const _NumberStepperTile({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.helper,
+    required this.onTap,
+    required this.onChanged,
+  });
+
+  final String label;
+  final int value;
+  final int min;
+  final int max;
+  final String helper;
+  final VoidCallback onTap;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final bool canDecrease = value > min;
+    final bool canIncrease = value < max;
+    return Material(
+      color: colorScheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(AppRadii.small),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
+          child: Column(
+            children: <Widget>[
+              Text(
+                label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  IconButton(
+                    tooltip: 'Decrease $label',
+                    onPressed: canDecrease ? () => onChanged(value - 1) : null,
+                    icon: const Icon(Icons.remove_rounded),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 38),
+                    child: Text(
+                      '$value',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Increase $label',
+                    onPressed: canIncrease ? () => onChanged(value + 1) : null,
+                    icon: const Icon(Icons.add_rounded),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ],
+              ),
+              Text(
+                helper,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

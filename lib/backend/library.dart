@@ -8,6 +8,7 @@ export 'reading_model.dart';
 export 'settings_db.dart';
 export 'surah_db.dart';
 export 'surah_model.dart';
+export 'surah_timing_repository.dart';
 export 'transliteration_service.dart';
 export 'quran_stream_url.dart';
 export 'daily_guidance_service.dart';

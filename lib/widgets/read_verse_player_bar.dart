@@ -42,8 +42,11 @@ class ReadVersePlayerBar extends StatelessWidget {
     required this.onTogglePlayPause,
     required this.onContinuousPlaybackChanged,
     required this.onRepeatIntervalPressed,
+    required this.onAdvancedOptionsPressed,
     required this.onPlayPrevious,
     required this.onPlayNext,
+    this.canPlayPrevious = true,
+    this.canPlayNext = true,
   });
 
   final bool viewMode;
@@ -77,8 +80,11 @@ class ReadVersePlayerBar extends StatelessWidget {
   final VoidCallback onTogglePlayPause;
   final ValueChanged<bool> onContinuousPlaybackChanged;
   final VoidCallback onRepeatIntervalPressed;
+  final VoidCallback onAdvancedOptionsPressed;
   final VoidCallback onPlayPrevious;
   final VoidCallback onPlayNext;
+  final bool canPlayPrevious;
+  final bool canPlayNext;
 
   @override
   Widget build(BuildContext context) {
@@ -412,15 +418,29 @@ class ReadVersePlayerBar extends StatelessWidget {
           top: 0,
           left: 0,
           right: 0,
-          child: Center(
-            child: Container(
-              width: 34,
-              height: 5,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurfaceVariant.withAlpha(140),
-                borderRadius: BorderRadius.circular(999),
+          child: Row(
+            children: <Widget>[
+              const SizedBox(width: 40),
+              Expanded(
+                child: Center(
+                  child: Container(
+                    width: 34,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurfaceVariant.withAlpha(140),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              IconButton(
+                tooltip: 'Playback options',
+                onPressed: onAdvancedOptionsPressed,
+                icon: const Icon(Icons.more_horiz_rounded),
+                iconSize: 22,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
           ),
         ),
       ],
@@ -456,11 +476,22 @@ class ReadVersePlayerBar extends StatelessWidget {
               Expanded(
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: IconButton(
-                    tooltip: 'Dismiss player',
-                    onPressed: onDismiss,
-                    icon: const Icon(Icons.close_rounded, size: 28),
-                    color: colorScheme.onSurfaceVariant,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      IconButton(
+                        tooltip: 'Playback options',
+                        onPressed: onAdvancedOptionsPressed,
+                        icon: const Icon(Icons.more_horiz_rounded, size: 28),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      IconButton(
+                        tooltip: 'Dismiss player',
+                        onPressed: onDismiss,
+                        icon: const Icon(Icons.close_rounded, size: 28),
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -534,8 +565,6 @@ class ReadVersePlayerBar extends StatelessWidget {
     ColorScheme colorScheme, {
     required double spacing,
   }) {
-    final int activeVerse = playingVerse ?? currentVerse;
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -545,7 +574,7 @@ class ReadVersePlayerBar extends StatelessWidget {
         _buildAyahNavButton(
           icon: Icons.skip_previous_rounded,
           tooltip: 'Previous ayah',
-          onPressed: activeVerse <= 1 ? null : onPlayPrevious,
+          onPressed: canPlayPrevious ? onPlayPrevious : null,
         ),
         SizedBox(width: spacing),
         FilledButton.tonal(
@@ -572,7 +601,7 @@ class ReadVersePlayerBar extends StatelessWidget {
         _buildAyahNavButton(
           icon: Icons.skip_next_rounded,
           tooltip: 'Next ayah',
-          onPressed: activeVerse >= totalVerses ? null : onPlayNext,
+          onPressed: canPlayNext ? onPlayNext : null,
         ),
         SizedBox(width: spacing),
         _buildRepeatIntervalButton(context, colorScheme),
