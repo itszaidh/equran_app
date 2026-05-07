@@ -200,6 +200,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const String _intervalRepeatSettingsKey = 'intervalRepeatCount';
   static const String _repeatAyahSettingsKey = 'repeatAyahCount';
   static const String _playbackIntervalSettingsKey = 'playbackInterval';
+  static const Duration _expandedPlayerProgressTickInterval = Duration(
+    milliseconds: 33,
+  );
   static const Duration _lowRefreshIdleDelay = Duration(milliseconds: 900);
   static const Duration _playerSettleAnimationDelay = Duration(
     milliseconds: 280,
@@ -240,6 +243,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   int? _playingVerse;
   Duration _playerPosition = Duration.zero;
   Duration _playerDuration = Duration.zero;
+  double _currentVersePlaybackRate = 1.0;
   final ValueNotifier<Duration> _playerPositionValue = ValueNotifier<Duration>(
     Duration.zero,
   );
@@ -257,6 +261,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Timer? _inlineVerseHighlightTimer;
   Timer? _lowRefreshIdleTimer;
   Timer? _playerSettleTimer;
+  Timer? _bottomPlayerProgressTicker;
+  DateTime? _playerPositionSampledAt;
   final GlobalKey _pageViewViewportKey = GlobalKey();
   final GlobalKey _inlineSurahTextKey = GlobalKey();
   List<int>? _verseTextCumulativeLengths;
@@ -324,6 +330,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     unawaited(_setKeepScreenOn(false));
     _lowRefreshIdleTimer?.cancel();
     _playerSettleTimer?.cancel();
+    _stopBottomPlayerProgressTicker('dispose');
     unawaited(
       AndroidAudioDisplayMode.clearStaticMinimizedAudioRefreshRate(force: true),
     );
@@ -467,7 +474,25 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     if (_lowRefreshRequested && !force) return;
     _lowRefreshRequested = true;
-    debugPrint('ReadPage: requesting low refresh for static minimized player');
+    if (!AndroidAudioDisplayMode.kEnableMinimizedPlayerLowRefreshLock) {
+      if (kDebugMode) {
+        debugPrint(
+          'ReadPage: skipped static minimized low refresh; temporary flag disabled',
+        );
+      }
+      unawaited(
+        AndroidAudioDisplayMode.clearStaticMinimizedAudioRefreshRate(
+          force: true,
+        ),
+      );
+      return;
+    }
+
+    if (kDebugMode) {
+      debugPrint(
+        'ReadPage: requesting low refresh for static minimized player',
+      );
+    }
     unawaited(
       AndroidAudioDisplayMode.requestStaticMinimizedAudioRefreshRate(
         force: force,
@@ -614,8 +639,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   bool get _shouldRenderLivePlayerProgress {
     // This is the single gate for audio-position driven UI. Minimized/static
     // mode still receives audio ticks, but they only update _playerPosition.
-    return mounted &&
-        _isReadPageForeground &&
+    if (!mounted) return false;
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    return _isReadPageForeground &&
+        (route?.isCurrent ?? true) &&
         _playerMounted &&
         _playerVisible &&
         !_playerMinimized &&
@@ -629,14 +656,33 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         !_isBottomPlayerSeeking;
   }
 
+  bool get _shouldRunBottomPlayerProgressTicker {
+    return _shouldAnimateBottomPlayerProgress &&
+        _playerDuration > Duration.zero;
+  }
+
+  String get _bottomPlayerProgressMode {
+    if (!_isReadPageForeground) return 'hidden';
+    if (!mounted) return 'disposed';
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    if (!(route?.isCurrent ?? true)) return 'covered';
+    if (_isBottomPlayerSeeking || _isScrubbingProgress) return 'dragging';
+    if (_playerMinimized || _playerMinimizedSettled) return 'minimized';
+    return 'expanded';
+  }
+
   void _syncBottomPlayerProgressPolicy({bool syncPosition = false}) {
     if (!mounted) return;
 
-    unawaited(
-      AndroidAudioDisplayMode.setVisualProgressActive(
-        _shouldAnimateBottomPlayerProgress,
-      ),
-    );
+    // Progress drawing is capped with _bottomPlayerProgressTicker. Avoid
+    // asking Android to change the app-wide display refresh rate for it.
+    unawaited(AndroidAudioDisplayMode.setVisualProgressActive(false));
+
+    if (_shouldRunBottomPlayerProgressTicker) {
+      _startBottomPlayerProgressTicker();
+    } else {
+      _stopBottomPlayerProgressTicker('policy stopped');
+    }
 
     if (syncPosition && _shouldRenderLivePlayerProgress) {
       _syncBottomPlayerProgressValue();
@@ -646,8 +692,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   void _syncBottomPlayerProgressValue() {
     if (!mounted || !_shouldRenderLivePlayerProgress) return;
-    if (_playerPositionValue.value != _playerPosition) {
-      _playerPositionValue.value = _playerPosition;
+    final Duration position = _estimatedBottomPlayerPosition();
+    if (_playerPositionValue.value != position) {
+      _playerPositionValue.value = position;
     }
   }
 
@@ -660,7 +707,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   void _setPlayerPosition(Duration position, {bool render = false}) {
     _playerPosition = position;
-    if (render || _shouldRenderLivePlayerProgress) {
+    _playerPositionSampledAt = DateTime.now();
+    if (render ||
+        (_shouldRenderLivePlayerProgress &&
+            !_shouldRunBottomPlayerProgressTicker)) {
       _playerPositionValue.value = position;
     }
   }
@@ -670,6 +720,61 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     if (_shouldRenderLivePlayerProgress) {
       _playerDurationValue.value = duration;
     }
+  }
+
+  void _startBottomPlayerProgressTicker() {
+    if (_bottomPlayerProgressTicker != null) return;
+    _logBottomPlayerProgressTicker(
+      'started expanded reading progress ticker '
+      'interval=${_expandedPlayerProgressTickInterval.inMilliseconds}ms '
+      'mode=$_bottomPlayerProgressMode',
+    );
+    _bottomPlayerProgressTicker = Timer.periodic(
+      _expandedPlayerProgressTickInterval,
+      (_) => _tickBottomPlayerProgress(),
+    );
+  }
+
+  void _stopBottomPlayerProgressTicker(String reason) {
+    final Timer? ticker = _bottomPlayerProgressTicker;
+    if (ticker == null) return;
+    ticker.cancel();
+    _bottomPlayerProgressTicker = null;
+    _logBottomPlayerProgressTicker(
+      'stopped expanded reading progress ticker ($reason) '
+      'mode=$_bottomPlayerProgressMode',
+    );
+  }
+
+  void _tickBottomPlayerProgress() {
+    if (!_shouldRunBottomPlayerProgressTicker) {
+      _stopBottomPlayerProgressTicker('tick found inactive');
+      return;
+    }
+
+    _syncBottomPlayerProgressValue();
+    _syncBottomPlayerDurationValue();
+  }
+
+  Duration _estimatedBottomPlayerPosition() {
+    final DateTime? sampledAt = _playerPositionSampledAt;
+    Duration position = _playerPosition;
+    if (_isVersePlaying && !_isBottomPlayerSeeking && sampledAt != null) {
+      final Duration elapsed = DateTime.now().difference(sampledAt);
+      final int elapsedMicros =
+          (elapsed.inMicroseconds * _currentVersePlaybackRate).round();
+      position += Duration(microseconds: elapsedMicros);
+    }
+    if (_playerDuration > Duration.zero && position > _playerDuration) {
+      return _playerDuration;
+    }
+    if (position < Duration.zero) return Duration.zero;
+    return position;
+  }
+
+  void _logBottomPlayerProgressTicker(String message) {
+    if (!kDebugMode) return;
+    debugPrint('ReadPage: $message');
   }
 
   void _syncPageProgressFromScroll() {
@@ -1078,6 +1183,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           .listen((duration) {
             if (!mounted) return;
             _setPlayerDuration(duration);
+            _syncBottomPlayerProgressPolicy(syncPosition: true);
           });
 
       _fallbackStateSubscription = _fallbackVersePlayer.onPlayerStateChanged
@@ -1094,7 +1200,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             unawaited(
               AndroidAudioDisplayMode.setAudioPlaybackActive(_isVersePlaying),
             );
-            _syncBottomPlayerProgressPolicy();
+            _syncBottomPlayerProgressPolicy(syncPosition: true);
           });
 
       _fallbackCompleteSubscription = _fallbackVersePlayer.onPlayerComplete
@@ -1116,6 +1222,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     ) {
       if (!mounted) return;
       _setPlayerDuration(duration ?? Duration.zero);
+      _syncBottomPlayerProgressPolicy(syncPosition: true);
     });
 
     _playerStateSubscription = _versePlayer.playerStateStream.listen((
@@ -1134,7 +1241,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       });
       unawaited(_updateKeepScreenOn());
       unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(state.playing));
-      _syncBottomPlayerProgressPolicy();
+      _syncBottomPlayerProgressPolicy(syncPosition: true);
 
       if (state.processingState == ja.ProcessingState.completed) {
         await _handleVerseCompleteFromPlayer();
@@ -1595,6 +1702,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<void> _setCurrentVersePlaybackRate(double rate) async {
+    final Duration currentPosition = _estimatedBottomPlayerPosition();
+    _playerPosition = currentPosition;
+    _playerPositionSampledAt = DateTime.now();
+    _currentVersePlaybackRate = rate;
+    _syncBottomPlayerProgressPolicy(syncPosition: true);
     if (_useAudioplayersFallback) {
       await _fallbackVersePlayer.setPlaybackRate(rate);
       return;
