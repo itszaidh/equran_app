@@ -948,13 +948,13 @@ const List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
   ),
   _ThemeSchemeOption(
     id: AppTheme.fancyBlueScheme,
-    title: 'Fancy Blue',
+    title: 'Ocean Blue',
     subtitle: 'Deep navy with sapphire and muted cyan accents.',
     colors: <Color>[Color(0xFF06101C), Color(0xFF3B8DD6)],
   ),
   _ThemeSchemeOption(
     id: AppTheme.fancyPurpleScheme,
-    title: 'Fancy Purple',
+    title: 'Royal Purple',
     subtitle: 'Midnight purple with royal violet highlights.',
     colors: <Color>[Color(0xFF100A19), Color(0xFF9368D0)],
   ),

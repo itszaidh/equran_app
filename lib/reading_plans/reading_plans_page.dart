@@ -405,7 +405,7 @@ class _TodayTaskCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => _openContinue(context, range),
                   icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Continue'),
+                  label: const Text('Resume'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -413,7 +413,7 @@ class _TodayTaskCard extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: done ? null : () => _markDone(context, range),
                   icon: const Icon(Icons.check_circle_outline_rounded),
-                  label: const Text('Mark done'),
+                  label: const Text('Complete'),
                 ),
               ),
             ],

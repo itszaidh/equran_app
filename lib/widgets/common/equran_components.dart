@@ -43,7 +43,16 @@ class EquranSurfaceCard extends StatelessWidget {
               ),
             ],
           ),
-          child: Padding(padding: padding, child: child),
+          child: IconButtonTheme(
+            data: IconButtonThemeData(
+              style: IconButton.styleFrom(
+                minimumSize: const Size(42, 42),
+                padding: const EdgeInsets.all(10),
+                iconSize: 26,
+              ),
+            ),
+            child: Padding(padding: padding, child: child),
+          ),
         ),
       ),
     );

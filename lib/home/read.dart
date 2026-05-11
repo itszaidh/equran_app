@@ -1204,6 +1204,17 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     return inlineQuranVerseSegment(_currentChapter, verse);
   }
 
+  String _cardVerseText(int chapter, int verse) {
+    if (chapter == 1 && verse == 1) return '';
+    return quranVerseText(chapter, verse);
+  }
+
+  double _readQuranCardHorizontalMarginForWidth(double width) {
+    if (width > 1200) return 120.0;
+    if (width > 700) return 40.0;
+    return 6.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
@@ -3451,7 +3462,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final int globalAyah = _globalAyahIndex(surah, verse);
     for (final ReadingPlanEntry plan
         in ReadingPlansDB().box.values.whereType<ReadingPlanEntry>()) {
-      if (!plan.active || globalAyah <= plan.lastCompletedGlobalAyah) {
+      final _ActiveRoutineDayRange todayRange = _activeRoutineDayRange(plan);
+      if (!plan.active ||
+          globalAyah <= plan.lastCompletedGlobalAyah ||
+          globalAyah < todayRange.startGlobalAyah ||
+          globalAyah > todayRange.endGlobalAyah) {
         continue;
       }
       unawaited(
@@ -3465,16 +3480,45 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             finishBy: plan.finishBy,
             startGlobalAyah: plan.startGlobalAyah,
             targetGlobalAyah: plan.targetGlobalAyah,
-            lastCompletedGlobalAyah: globalAyah.clamp(
-              plan.startGlobalAyah,
-              plan.targetGlobalAyah,
-            ),
+            lastCompletedGlobalAyah: globalAyah
+                .clamp(todayRange.startGlobalAyah, todayRange.endGlobalAyah)
+                .toInt(),
             active: plan.active,
             schemaVersion: plan.schemaVersion,
           ),
         ),
       );
     }
+  }
+
+  _ActiveRoutineDayRange _activeRoutineDayRange(ReadingPlanEntry plan) {
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime start = DateTime(
+      plan.startedAt.year,
+      plan.startedAt.month,
+      plan.startedAt.day,
+    );
+    final int totalAyahs = max(
+      1,
+      plan.targetGlobalAyah - plan.startGlobalAyah + 1,
+    );
+    final int totalDays = max(1, plan.finishBy.difference(start).inDays + 1);
+    final int elapsedDays = today
+        .difference(start)
+        .inDays
+        .clamp(0, totalDays - 1)
+        .toInt();
+    final int perDay = (totalAyahs / totalDays).ceil();
+    final int startAyah = min(
+      plan.targetGlobalAyah,
+      plan.startGlobalAyah + (elapsedDays * perDay),
+    );
+    final int endAyah = min(plan.targetGlobalAyah, startAyah + perDay - 1);
+    return _ActiveRoutineDayRange(
+      startGlobalAyah: startAyah,
+      endGlobalAyah: endAyah,
+    );
   }
 
   void _updateVerseFromProgress({
@@ -4667,8 +4711,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final String englishName = quran.getSurahNameEnglish(_currentChapter);
     final int verseCount = quran.getVerseCount(_currentChapter);
     final String revelation = _revelationLabel(_currentChapter);
+    final bool showBasmala = _currentChapter != 9;
 
     return Container(
+      width: double.infinity,
       margin: EdgeInsets.fromLTRB(marginValue, 8, marginValue, 10),
       decoration: BoxDecoration(
         color: colors.surface,
@@ -4686,53 +4732,98 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          EquranSpacing.pagePadding,
-          16,
-          EquranSpacing.pagePadding,
-          16,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              surahName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                color: colors.textPrimary,
-                fontWeight: FontWeight.w900,
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool compact = constraints.maxWidth < 360;
+          final double surahNameSize = compact ? 34 : 42;
+          final double basmalaSize = (constraints.maxWidth * 0.115)
+              .clamp(34.0, 48.0)
+              .toDouble();
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+              compact ? 16 : EquranSpacing.pagePadding,
+              compact ? 18 : 20,
+              compact ? 16 : EquranSpacing.pagePadding,
+              compact ? 18 : 20,
             ),
-            const SizedBox(height: 5),
-            Text(
-              englishName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.textSecondary,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  surahName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    color: colors.textPrimary,
+                    fontFamily: 'SurahName',
+                    fontSize: surahNameSize,
+                    fontWeight: FontWeight.w400,
+                    height: 1.05,
+                    letterSpacing: 0,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  englishName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: compact ? 10 : 12),
+                  child: SizedBox(
+                    width: compact ? 74 : 92,
+                    child: Divider(height: 1, color: colors.divider),
+                  ),
+                ),
+                Text(
+                  '$revelation • $verseCount VERSES',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0,
+                  ),
+                ),
+                if (showBasmala) ...<Widget>[
+                  SizedBox(height: compact ? 14 : 18),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      quranBasmalaText,
+                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: colors.primarySoft,
+                        fontFamily: 'SurahName',
+                        fontSize: basmalaSize,
+                        fontWeight: FontWeight.w400,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              '$revelation • $verseCount VERSES',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: colors.primary,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
   Widget cardView({required double marginValue}) {
     final bool compactPlayerLayout = MediaQuery.sizeOf(context).width < 700;
+    final double quranCardMargin = _readQuranCardHorizontalMarginForWidth(
+      MediaQuery.sizeOf(context).width,
+    );
     final double expandedSpacer = compactPlayerLayout ? 392 : 304;
     final double bottomSpacer = _playerMounted
         ? lerpDouble(expandedSpacer, 132, _playerCollapseProgress)!
@@ -4759,7 +4850,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   children: [
                     _buildProgressBar(marginValue),
                     if (_currentVerse == 1)
-                      _buildSurahIntroCard(marginValue: marginValue),
+                      _buildSurahIntroCard(marginValue: quranCardMargin),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: RepaintBoundary(
@@ -4773,13 +4864,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               _currentChapter,
                               _currentVerse,
                             ),
-                            basmala:
-                                _currentChapter != 1 &&
-                                    _currentVerse == 1 &&
-                                    _currentChapter != 9
-                                ? quran.basmala
-                                : null,
-                            verse: quranVerseText(
+                            basmala: null,
+                            verse: _cardVerseText(
                               _currentChapter,
                               _currentVerse,
                             ),
@@ -4939,22 +5025,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  if (_currentChapter != 1 && _currentChapter != 9)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        quran.basmala,
-                        textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          height: 2,
-                          fontFamily: 'Hafs',
-                          fontSize: fontSize,
-                          color: context.equranColors.primary,
-                        ),
-                      ),
-                    ),
                   const SizedBox(height: 16),
                   _buildInlineSurahText(fontSize),
                 ],
@@ -5982,6 +6052,16 @@ int _globalAyahIndex(int surah, int verse) {
     index += quran.getVerseCount(currentSurah);
   }
   return index.clamp(1, quran.totalVerseCount).toInt();
+}
+
+class _ActiveRoutineDayRange {
+  const _ActiveRoutineDayRange({
+    required this.startGlobalAyah,
+    required this.endGlobalAyah,
+  });
+
+  final int startGlobalAyah;
+  final int endGlobalAyah;
 }
 
 String _revelationLabel(int surah) {

@@ -55,7 +55,6 @@ class _TasbihPageState extends State<TasbihPage> {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
-    final ThemeData theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -88,22 +87,6 @@ class _TasbihPageState extends State<TasbihPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      Text(
-                        'Tasbih',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          color: colors.textPrimary,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Remember Allah with ease',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
                       _PresetSelector(
                         selectedIndex: _selectedPresetIndex,
                         onSelected: _selectPreset,

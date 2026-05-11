@@ -335,6 +335,7 @@ class ReadQuranCard extends StatelessWidget {
         showTransliteration && trimmedTransliteration.isNotEmpty;
     final bool hasTranslation =
         showTranslation && translation.trim().isNotEmpty;
+    final bool hasVerse = verse.trim().isNotEmpty;
     final bool compactShareContent =
         shareImageMode && verse.runes.length <= 140;
 
@@ -369,10 +370,7 @@ class ReadQuranCard extends StatelessWidget {
               ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: <Color>[
-                    colors.paleGreen,
-                    colors.surface,
-                  ],
+                  colors: <Color>[colors.paleGreen, colors.surface],
                 )
               : LinearGradient(
                   begin: Alignment.topLeft,
@@ -426,20 +424,21 @@ class ReadQuranCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Text(
-                  verse,
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(
-                    fontFamily: 'Hafs',
-                    height: 1.78,
-                    fontSize: fontSize,
-                    color: colorScheme.onSurface,
+              if (hasVerse)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(
+                    verse,
+                    textDirection: TextDirection.rtl,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      fontFamily: 'Hafs',
+                      height: 1.78,
+                      fontSize: fontSize,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ),
-              ),
               if (hasTransliteration)
                 Padding(
                   padding: EdgeInsets.only(top: compactShareContent ? 12 : 14),

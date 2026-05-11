@@ -13,8 +13,6 @@ import 'package:quran/quran.dart' as quran;
 
 enum QuranSearchMode { surahs, quranText }
 
-const String _quranCardAsset = 'assets/images/app_assets/quran.png';
-
 class QuranSearchRequest {
   const QuranSearchRequest({required this.mode, required this.nonce});
 
@@ -632,30 +630,7 @@ class _QuranLastReadSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final EquranColors colors = context.equranColors;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
-          child: Row(
-            children: <Widget>[
-              Icon(Icons.history_rounded, size: 18, color: colors.primary),
-              const SizedBox(width: 7),
-              Text(
-                'Last Read',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: colors.textPrimary,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ),
-        LastReadCard(entries: entries),
-      ],
-    );
+    return LastReadCard(entries: entries);
   }
 }
 
@@ -664,73 +639,16 @@ class _QuranLastReadEmptySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final EquranColors colors = context.equranColors;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
-          child: Text(
-            'Last Read',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
+    return EquranResumeImageCard(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) => const ReadPage(chapter: 1, startVerse: 1),
         ),
-        EquranSurfaceCard(
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (context) => const ReadPage(chapter: 1, startVerse: 1),
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(18, 16, 14, 14),
-          backgroundColor: colors.surfaceAlt,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      'Begin with the Quran',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Start reading and your place will appear here.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colors.textSecondary,
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Start reading ->',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Image.asset(
-                _quranCardAsset,
-                width: 104,
-                height: 96,
-                fit: BoxFit.contain,
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
+      primary: 'Begin with the Quran',
+      subtitle: 'Start reading and your place will appear here.',
+      actionText: 'Start reading ->',
+      trailingAssetPath: equranResumeQuranAsset,
     );
   }
 }

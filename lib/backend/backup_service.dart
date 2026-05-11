@@ -53,6 +53,8 @@ class BackupService {
     'fontSizeTranslation',
     'playbackRate',
     'dailyQuranGoalAyahs',
+    'dailyAyahDate',
+    'dailyAyahGlobalAyah',
     'ayahDelaySeconds',
     'intervalRepeatCount',
     'repeatAyahCount',
@@ -275,6 +277,13 @@ class BackupService {
           min: 1,
           max: 1000,
         ),
+        'dailyAyahDate' => _requireDateKey(entry.key, entry.value),
+        'dailyAyahGlobalAyah' => _requireIntInRange(
+          entry.key,
+          entry.value,
+          min: 1,
+          max: 6236,
+        ),
         'ayahDelaySeconds' => _requireIntInRange(
           entry.key,
           entry.value,
@@ -342,6 +351,13 @@ class BackupService {
     required int max,
   }) {
     if (value is! int || value < min || value > max) {
+      throw AppBackupException('Invalid value for "$key".');
+    }
+    return value;
+  }
+
+  static String _requireDateKey(String key, dynamic value) {
+    if (value is! String || !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
       throw AppBackupException('Invalid value for "$key".');
     }
     return value;
