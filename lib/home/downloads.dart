@@ -138,6 +138,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
             children: <Widget>[
               _buildSummaryCard(theme, summary),
               const SizedBox(height: 16),
+              _buildCleanupPreviewCard(theme, summary),
+              const SizedBox(height: 16),
               if (reciterGroups.isEmpty)
                 _buildEmptyDownloadsCard()
               else
@@ -208,6 +210,75 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 ),
                 icon: const Icon(Icons.delete_sweep_rounded),
                 label: const Text('Clear All'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCleanupPreviewCard(
+    ThemeData theme,
+    AudioDownloadsSummary summary,
+  ) {
+    final EquranColors colors = context.equranColors;
+    final bool hasDownloads = summary.allDownloads.isNotEmpty;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        border: Border.all(color: colors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.cleaning_services_outlined, color: colors.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Cleanup preview',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _CleanupPreviewRow(
+              label: 'Downloaded surahs',
+              value: '${summary.surahCount}',
+            ),
+            _CleanupPreviewRow(
+              label: 'Downloaded ayahs',
+              value: '${summary.ayahCount}',
+            ),
+            _CleanupPreviewRow(
+              label: 'Potential space to free',
+              value: AudioDownloadService.formatBytes(summary.totalSizeBytes),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Cleanup never removes favourites, notes, reading plans, Quran text, or settings.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.textSecondary,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton.icon(
+                onPressed: hasDownloads ? () => _clearAll(summary) : null,
+                icon: const Icon(Icons.delete_sweep_outlined),
+                label: const Text('Review deletion'),
               ),
             ),
           ],
@@ -378,6 +449,40 @@ class _DownloadsPageState extends State<DownloadsPage> {
         tooltip: 'Delete download',
         onPressed: () => _deleteEntry(entry),
         icon: const Icon(Icons.delete_outline_rounded),
+      ),
+    );
+  }
+}
+
+class _CleanupPreviewRow extends StatelessWidget {
+  const _CleanupPreviewRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
       ),
     );
   }

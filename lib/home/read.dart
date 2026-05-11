@@ -61,6 +61,10 @@ import 'package:quran/quran.dart' as quran;
 import 'package:share_plus/share_plus.dart';
 import 'package:vibration/vibration.dart';
 
+// TODO: Download and bundle this as a local decorative asset.
+const String _mushafDecorationImageUrl =
+    'https://static.vecteezy.com/system/resources/previews/024/554/569/non_2x/holy-quran-book-on-stand-islamic-ramadan-illustration-free-png.png';
+
 class _OfflineAudioPlaybackException implements Exception {
   const _OfflineAudioPlaybackException();
 }
@@ -173,6 +177,17 @@ enum _ReadingOptionsAction {
   translationLanguage,
 }
 
+enum _ShareImageMode {
+  story('Story 9:16', Size(1080, 1920)),
+  square('Square 1:1', Size(1080, 1080)),
+  classic('Classic', Size(1080, 1350));
+
+  const _ShareImageMode(this.label, this.size);
+
+  final String label;
+  final Size size;
+}
+
 int? _readInt(dynamic value) {
   if (value is int) return value;
   if (value is double) return value.round();
@@ -205,7 +220,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const String _readPlayerDragSource = 'read_page_player_drag';
   static const String _readPlayerSeekSource = 'read_page_player_seek';
   static const String _readProgressScrubSource = 'read_page_progress_scrub';
-  static const Size _shareImageSize = Size(1080, 1350);
   static const double _cardSwipeEdgeInset = 40;
   static const double _cardSwipeMinVelocity = 300;
   static const double _cardSwipeMinDistance = 82;
@@ -292,6 +306,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   bool _isProgrammaticPageScroll = false;
   bool _isScrubbingProgress = false;
   bool _isPreparingShareImage = false;
+  _ShareImageMode _shareImageMode = _ShareImageMode.story;
   bool _isBottomPlayerSeeking = false;
   int _progressVisualBlockCount = 0;
   int? _scrubStartVerse;
@@ -4131,6 +4146,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Future<void> _shareCurrentAyahImage() async {
     if (_isPreparingShareImage) return;
 
+    final _ShareImageMode? mode = await _chooseShareImageMode();
+    if (mode == null) return;
+    _shareImageMode = mode;
+
     final RenderObject? pageRenderObject = context.findRenderObject();
     final Rect? shareOrigin = pageRenderObject is RenderBox
         ? pageRenderObject.localToGlobal(Offset.zero) & pageRenderObject.size
@@ -4149,7 +4168,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       shareStep = 'writing';
       final Directory tempDirectory = await getTemporaryDirectory();
       final File shareFile = File(
-        '${tempDirectory.path}/equran_${_currentChapter}_${_currentVerse}_${DateTime.now().millisecondsSinceEpoch}.png',
+        '${tempDirectory.path}/equran_${mode.name}_${_currentChapter}_${_currentVerse}_${DateTime.now().millisecondsSinceEpoch}.png',
       );
       await shareFile.writeAsBytes(pngBytes, flush: true);
 
@@ -4190,6 +4209,69 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     }
   }
 
+  Future<_ShareImageMode?> _chooseShareImageMode() {
+    return showModalBottomSheet<_ShareImageMode>(
+      context: context,
+      showDragHandle: true,
+      builder: (BuildContext context) {
+        final ThemeData theme = Theme.of(context);
+        final EquranColors colors = context.equranColors;
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Text(
+                  'Share image format',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                for (final _ShareImageMode mode in _ShareImageMode.values)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.medium),
+                        side: BorderSide(color: colors.border),
+                      ),
+                      tileColor: mode == _shareImageMode
+                          ? colors.mint
+                          : colors.surface,
+                      leading: Icon(
+                        mode == _ShareImageMode.story
+                            ? Icons.stay_current_portrait_rounded
+                            : mode == _ShareImageMode.square
+                            ? Icons.crop_square_rounded
+                            : Icons.image_outlined,
+                        color: colors.primary,
+                      ),
+                      title: Text(
+                        mode.label,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '${mode.size.width.toInt()} x ${mode.size.height.toInt()}',
+                      ),
+                      onTap: () => Navigator.of(context).pop(mode),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _pauseReadingAudioForShare() async {
     if (!_playerMounted && !_isVerseLoading) return;
 
@@ -4207,14 +4289,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<Uint8List> _renderShareImagePng() async {
+    final Size shareImageSize = _shareImageMode.size;
     final RenderRepaintBoundary repaintBoundary = RenderRepaintBoundary();
     final PipelineOwner pipelineOwner = PipelineOwner();
     final BuildOwner buildOwner = BuildOwner(focusManager: FocusManager());
     final RenderView renderView = RenderView(
       view: View.of(context),
       configuration: ViewConfiguration(
-        logicalConstraints: BoxConstraints.tight(_shareImageSize),
-        physicalConstraints: BoxConstraints.tight(_shareImageSize),
+        logicalConstraints: BoxConstraints.tight(shareImageSize),
+        physicalConstraints: BoxConstraints.tight(shareImageSize),
         devicePixelRatio: 1,
       ),
       child: repaintBoundary,
@@ -4292,25 +4375,40 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Widget _buildShareImageWidget() {
     final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final Size shareImageSize = _shareImageMode.size;
     final bool showTransliteration =
         SettingsDB().get("showTransliteration", defaultValue: false) == true;
     final bool showTranslation =
         SettingsDB().get("enableTranslation", defaultValue: true) == true;
     final Color backgroundColor = theme.scaffoldBackgroundColor;
+    final String verseText = quranVerseText(_currentChapter, _currentVerse);
+    final String translation = quran.getVerseTranslation(
+      _currentChapter,
+      _currentVerse,
+      translation:
+          quran.Translation.values[SettingsDB().get("translation", defaultValue: 0)],
+    );
+    final double sidePadding = _shareImageMode == _ShareImageMode.square
+        ? 72
+        : 86;
+    final double contentWidth = shareImageSize.width - (sidePadding * 2);
+    final double contentMaxHeight = shareImageSize.height -
+        (_shareImageMode == _ShareImageMode.square ? 220 : 300);
 
     return Directionality(
       textDirection: TextDirection.ltr,
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(
-          size: _shareImageSize,
+          size: shareImageSize,
           devicePixelRatio: 1,
           textScaler: TextScaler.noScaling,
         ),
         child: Theme(
           data: theme,
           child: SizedBox(
-            width: _shareImageSize.width,
-            height: _shareImageSize.height,
+            width: shareImageSize.width,
+            height: shareImageSize.height,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: backgroundColor,
@@ -4330,47 +4428,47 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: _shareImageSize.width,
-                    minWidth: _shareImageSize.width,
-                  ),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: ReadQuranCard(
-                      currentChapter: _currentChapter,
-                      currentVerse: _currentVerse,
-                      totalVerses: _totalVerses,
-                      juzNumber: quran.getJuzNumber(
-                        _currentChapter,
-                        _currentVerse,
-                      ),
-                      basmala:
-                          _currentChapter != 1 &&
-                              _currentVerse == 1 &&
-                              _currentChapter != 9
-                          ? quran.basmala
-                          : null,
-                      verse: quranVerseText(_currentChapter, _currentVerse),
-                      translation: quran.getVerseTranslation(
-                        _currentChapter,
-                        _currentVerse,
-                        translation:
-                            quran.Translation.values[SettingsDB().get(
-                              "translation",
-                              defaultValue: 0,
-                            )],
-                      ),
-                      transliteration: _transliterationForVerse(_currentVerse),
-                      showActions: false,
-                      showTransliteration: showTransliteration,
-                      showTranslation: showTranslation,
-                      shareImageMode: true,
-                      fontSize: _shareArabicFontSize(),
-                      fontSizeTranslation: _shareTranslationFontSize(),
+              child: Padding(
+                padding: EdgeInsets.all(sidePadding),
+                child: Column(
+                  children: <Widget>[
+                    _ShareImageHeader(
+                      chapter: _currentChapter,
+                      verse: _currentVerse,
+                      mode: _shareImageMode,
                     ),
-                  ),
+                    const Spacer(),
+                    SizedBox(
+                      width: contentWidth,
+                      height: contentMaxHeight,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: contentWidth,
+                          child: _ShareImageAyahContent(
+                            verseText: verseText,
+                            translation: translation,
+                            transliteration: _transliterationForVerse(
+                              _currentVerse,
+                            ),
+                            showTranslation: showTranslation,
+                            showTransliteration: showTransliteration,
+                            arabicFontSize: _shareArabicFontSize(),
+                            translationFontSize: _shareTranslationFontSize(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'eQuran',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -4380,18 +4478,19 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildReadSurahHeaderCard({required double marginValue}) {
+  Widget _buildSurahIntroCard({required double marginValue}) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final String surahName = quran.getSurahName(_currentChapter);
     final String englishName = quran.getSurahNameEnglish(_currentChapter);
     final int verseCount = quran.getVerseCount(_currentChapter);
+    final String revelation = _revelationLabel(_currentChapter);
 
     return Container(
-      margin: EdgeInsets.fromLTRB(marginValue, 10, marginValue, 8),
+      margin: EdgeInsets.fromLTRB(marginValue, 12, marginValue, 10),
       decoration: BoxDecoration(
         gradient: colors.heroGradient,
-        borderRadius: BorderRadius.circular(AppRadii.large),
+        borderRadius: BorderRadius.circular(AppRadii.xl),
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: colors.primaryStrong.withAlpha(
@@ -4404,15 +4503,24 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       ),
       clipBehavior: Clip.antiAlias,
       child: SizedBox(
-        height: 178,
+        height: 220,
         child: Stack(
           children: <Widget>[
-            const Positioned(
-              right: -24,
-              bottom: -12,
-              width: 220,
-              height: 132,
-              child: EquranOpenBookMark(opacity: 0.34),
+            Positioned(
+              right: -18,
+              bottom: -18,
+              width: 190,
+              height: 140,
+              child: Opacity(
+                opacity: 0.36,
+                child: Image.network(
+                  _mushafDecorationImageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const EquranOpenBookMark(opacity: 0.34);
+                  },
+                ),
+              ),
             ),
             const Positioned(
               left: -42,
@@ -4452,34 +4560,41 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colors.onPrimary.withAlpha(24),
-                      borderRadius: BorderRadius.circular(AppRadii.pill),
-                      border: Border.all(color: colors.onPrimary.withAlpha(42)),
-                    ),
-                    child: Text(
-                      'Surah $_currentChapter • $verseCount verses',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: colors.onPrimary,
-                        fontWeight: FontWeight.w800,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: SizedBox(
+                      width: 130,
+                      child: Divider(
+                        height: 1,
+                        color: colors.onPrimary.withAlpha(58),
                       ),
                     ),
                   ),
-                  const Spacer(),
                   Text(
-                    quran.basmala,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textDirection: TextDirection.rtl,
-                    style: EquranTextStyles.arabicSmall(
-                      context,
-                      color: colors.onPrimary,
+                    '$revelation • $verseCount VERSES',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.onPrimaryMuted,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        quran.basmala,
+                        maxLines: 1,
+                        textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colors.onPrimary,
+                          fontFamily: 'Hafs',
+                          fontSize: 34,
+                          fontWeight: FontWeight.w700,
+                          height: 1.5,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -4517,7 +4632,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   children: [
-                    _buildReadSurahHeaderCard(marginValue: marginValue),
+                    if (_currentVerse == 1)
+                      _buildSurahIntroCard(marginValue: marginValue),
                     _buildProgressBar(marginValue),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -4680,7 +4796,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     return Column(
       children: <Widget>[
-        _buildReadSurahHeaderCard(marginValue: pageMargin),
+        _buildSurahIntroCard(marginValue: pageMargin),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: pageMargin, vertical: 10),
           child: DecoratedBox(
@@ -5536,4 +5652,180 @@ class _NumberStepperTile extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ShareImageHeader extends StatelessWidget {
+  const _ShareImageHeader({
+    required this.chapter,
+    required this.verse,
+    required this.mode,
+  });
+
+  final int chapter;
+  final int verse;
+  final _ShareImageMode mode;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+      decoration: BoxDecoration(
+        gradient: colors.heroGradient,
+        borderRadius: BorderRadius.circular(AppRadii.xl),
+      ),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  quran.getSurahName(chapter),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: colors.onPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Ayah $verse - ${mode.label}',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colors.onPrimaryMuted,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Text(
+            quran.getSurahNameArabic(chapter),
+            textDirection: TextDirection.rtl,
+            style: EquranTextStyles.arabicSmall(
+              context,
+              color: colors.onPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShareImageAyahContent extends StatelessWidget {
+  const _ShareImageAyahContent({
+    required this.verseText,
+    required this.translation,
+    required this.transliteration,
+    required this.showTranslation,
+    required this.showTransliteration,
+    required this.arabicFontSize,
+    required this.translationFontSize,
+  });
+
+  final String verseText;
+  final String translation;
+  final String transliteration;
+  final bool showTranslation;
+  final bool showTransliteration;
+  final double arabicFontSize;
+  final double translationFontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.xl),
+        border: Border.all(color: colors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(38, 38, 38, 34),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text(
+              verseText,
+              textDirection: TextDirection.rtl,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.textPrimary,
+                fontFamily: 'Hafs',
+                fontSize: arabicFontSize,
+                height: 2.05,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (showTransliteration && transliteration.isNotEmpty) ...<Widget>[
+              const SizedBox(height: 26),
+              Text(
+                transliteration,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.primary,
+                  height: 1.45,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+            if (showTranslation) ...<Widget>[
+              const SizedBox(height: 24),
+              Text(
+                translation,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colors.textSecondary,
+                  fontSize: translationFontSize,
+                  height: 1.55,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _revelationLabel(int surah) {
+  const Set<int> medinanSurahs = <int>{
+    2,
+    3,
+    4,
+    5,
+    8,
+    9,
+    13,
+    22,
+    24,
+    33,
+    47,
+    48,
+    49,
+    55,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    76,
+    98,
+    99,
+    110,
+  };
+  return medinanSurahs.contains(surah) ? 'MEDINAN' : 'MECCAN';
 }

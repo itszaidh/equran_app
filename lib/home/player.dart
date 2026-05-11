@@ -155,6 +155,20 @@ class PlayerPage extends StatefulWidget {
   State<PlayerPage> createState() => _PlayerPageState();
 }
 
+class _SleepTimerChoice {
+  const _SleepTimerChoice(this.label, this.duration);
+
+  final String label;
+  final Duration duration;
+
+  static const List<_SleepTimerChoice> durationChoices = <_SleepTimerChoice>[
+    _SleepTimerChoice('10 min', Duration(minutes: 10)),
+    _SleepTimerChoice('15 min', Duration(minutes: 15)),
+    _SleepTimerChoice('30 min', Duration(minutes: 30)),
+    _SleepTimerChoice('60 min', Duration(minutes: 60)),
+  ];
+}
+
 class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   static const MethodChannel _playerPageChannel = MethodChannel(
     'com.app.equran/read_page',
@@ -219,6 +233,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Duration _duration = Duration.zero;
   Timer? _progressThumbTimer;
   Timer? _progressVisualTicker;
+  Timer? _sleepTimer;
+  DateTime? _sleepTimerEndsAt;
+  String? _sleepTimerLabel;
   DateTime? _positionSampledAt;
 
   @override
@@ -866,6 +883,42 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _syncProgressVisualPolicy();
   }
 
+  void _setSleepTimer(Duration duration, String label) {
+    _sleepTimer?.cancel();
+    final DateTime endsAt = DateTime.now().add(duration);
+    _sleepTimer = Timer(duration, () async {
+      await _stopCurrentTrack();
+      _safeSetState(() {
+        _sleepTimer = null;
+        _sleepTimerEndsAt = null;
+        _sleepTimerLabel = null;
+      });
+    });
+    _safeSetState(() {
+      _sleepTimerEndsAt = endsAt;
+      _sleepTimerLabel = label;
+    });
+  }
+
+  void _cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    _safeSetState(() {
+      _sleepTimer = null;
+      _sleepTimerEndsAt = null;
+      _sleepTimerLabel = null;
+    });
+  }
+
+  String _sleepTimerSummary() {
+    final DateTime? endsAt = _sleepTimerEndsAt;
+    final String? label = _sleepTimerLabel;
+    if (endsAt == null || label == null) return 'Off';
+    final Duration remaining = endsAt.difference(DateTime.now());
+    if (remaining.isNegative) return label;
+    final int minutes = remaining.inMinutes + (remaining.inSeconds % 60 == 0 ? 0 : 1);
+    return '$label active - about $minutes min left';
+  }
+
   Future<void> _seekCurrentTrack(Duration position) async {
     if (_useAudioplayersFallback) {
       await _fallbackAudio.seek(position);
@@ -1375,6 +1428,43 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                         context: context,
                         title: 'Playback',
                         children: <Widget>[
+                          ListTile(
+                            leading: const Icon(Icons.bedtime_outlined),
+                            title: const Text('Sleep timer'),
+                            subtitle: Text(_sleepTimerSummary()),
+                            trailing: _sleepTimerEndsAt == null
+                                ? null
+                                : TextButton(
+                                    onPressed: () {
+                                      _cancelSleepTimer();
+                                      setSheetState(() {});
+                                    },
+                                    child: const Text('Cancel'),
+                                  ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: <Widget>[
+                                for (final _SleepTimerChoice choice
+                                    in _SleepTimerChoice.durationChoices)
+                                  ChoiceChip(
+                                    selected:
+                                        _sleepTimerLabel == choice.label,
+                                    label: Text(choice.label),
+                                    onSelected: (_) {
+                                      _setSleepTimer(
+                                        choice.duration,
+                                        choice.label,
+                                      );
+                                      setSheetState(() {});
+                                    },
+                                  ),
+                              ],
+                            ),
+                          ),
                           SwitchListTile(
                             secondary: const Icon(Icons.shuffle_rounded),
                             title: const Text('Shuffle'),
@@ -1654,6 +1744,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     unawaited(AndroidAudioDisplayMode.setVisualProgressActive(false));
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
     _progressThumbTimer?.cancel();
+    _sleepTimer?.cancel();
     _stopProgressVisualTicker('dispose');
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
@@ -1670,21 +1761,6 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   void _notifyAudioUserActivity() {
     AndroidAudioDisplayMode.notifyUserActivity();
-  }
-
-  void _openDrawer(BuildContext context) {
-    AndroidAudioDisplayMode.notifyUserActivity();
-    FrameRatePolicyManager.instance.setDrawerOpen(
-      true,
-      reason: 'player_drawer_opening',
-    );
-    unawaited(
-      AndroidAudioDisplayMode.addLowRefreshBlocker(
-        'home.drawerOpenOrAnimating',
-        reason: 'player drawer opening',
-      ),
-    );
-    Scaffold.of(context).openDrawer();
   }
 
   Widget _buildAudioInteractionBoundary({required Widget child}) {
@@ -2158,14 +2234,16 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           padding: EdgeInsets.only(bottom: isDesktop ? 14 : 8),
           child: Row(
             children: <Widget>[
-              Builder(
-                builder: (context) => IconButton(
-                  onPressed: () => _openDrawer(context),
-                  style: ResponsiveNav.iconButtonStyle(context),
-                  icon: Icon(
-                    Icons.menu_rounded,
-                    size: ResponsiveNav.iconSize(context),
-                  ),
+              IconButton(
+                onPressed: Navigator.of(context).canPop()
+                    ? () => Navigator.of(context).pop()
+                    : null,
+                style: ResponsiveNav.iconButtonStyle(context),
+                icon: Icon(
+                  Navigator.of(context).canPop()
+                      ? Icons.arrow_back_rounded
+                      : Icons.library_music_outlined,
+                  size: ResponsiveNav.iconSize(context),
                 ),
               ),
               const SizedBox(width: 8),

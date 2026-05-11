@@ -7,6 +7,7 @@ import 'package:equran/duas/duas_page.dart';
 import 'package:equran/duas/tasbih_page.dart';
 import 'package:equran/home/downloads.dart';
 import 'package:equran/home/main_page.dart';
+import 'package:equran/home/more_page.dart';
 import 'package:equran/home/player.dart';
 import 'package:equran/home/settings.dart';
 import 'package:equran/home_dashboard/home_dashboard_page.dart';
@@ -18,29 +19,19 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:flutter/material.dart';
 
-const EdgeInsets _drawerTilePadding = EdgeInsets.symmetric(horizontal: 12);
 const int _homeDestinationIndex = 0;
 const int _quranDestinationIndex = 1;
-const int _playerDestinationIndex = 2;
+const int _prayerDestinationIndex = 2;
 const int _duasDestinationIndex = 3;
-const int _downloadsDestinationIndex = 4;
-const int _prayerDestinationIndex = 5;
-const int _settingsDestinationIndex = 6;
+const int _moreDestinationIndex = 4;
 const List<int> _bottomDestinationIndices = <int>[
   _homeDestinationIndex,
   _quranDestinationIndex,
   _prayerDestinationIndex,
   _duasDestinationIndex,
-];
-const List<int> _drawerDestinationIndices = <int>[
-  _homeDestinationIndex,
-  _quranDestinationIndex,
-  _playerDestinationIndex,
-  _duasDestinationIndex,
-  _prayerDestinationIndex,
+  _moreDestinationIndex,
 ];
 const String _homePointerRefreshBlocker = 'home.userPointerActive';
-const String _drawerRefreshBlocker = 'home.drawerOpenOrAnimating';
 const String _routeTransitionRefreshBlocker = 'home.routeTransitionActive';
 const String _secondaryRouteRefreshBlocker = 'home.settingsOrDownloadsActive';
 const String _homePointerPolicySource = 'home_pointer';
@@ -68,8 +59,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  int _previousPageIndex = 0;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ValueNotifier<QuranSearchRequest?> _quranSearchRequest =
       ValueNotifier<QuranSearchRequest?>(null);
 
@@ -84,15 +73,15 @@ class _HomePageState extends State<HomePage> {
         const Icon(Icons.home_outlined),
         const Icon(Icons.home_rounded),
         HomeDashboardPage(
-          onMenuPressed: _openDrawerFromDashboard,
+          onOpenMore: () => _onItemTapped(_moreDestinationIndex),
           onOpenQuran: () => _onItemTapped(_quranDestinationIndex),
-          onOpenPlayer: () => _onItemTapped(_playerDestinationIndex),
+          onOpenPlayer: _openPlayerPage,
           onOpenPrayerTimes: () => _onItemTapped(_prayerDestinationIndex),
           onOpenQibla: _openQiblaPage,
           onOpenDuas: () => _onItemTapped(_duasDestinationIndex),
           onOpenTasbih: _openTasbihPage,
           onOpenReadingPlans: _openReadingPlansPage,
-          onOpenDownloads: () => _onItemTapped(_downloadsDestinationIndex),
+          onOpenDownloads: _openDownloadsPage,
           onOpenSearch: _openQuranTextSearch,
         ),
       ),
@@ -103,10 +92,10 @@ class _HomePageState extends State<HomePage> {
         MainPage(searchRequestListenable: _quranSearchRequest),
       ),
       Destinations(
-        'Player',
-        const Icon(Icons.library_music_outlined),
-        const Icon(Icons.library_music),
-        const PlayerPage(),
+        'Prayer',
+        const Icon(Icons.access_time_outlined),
+        const Icon(Icons.schedule_rounded),
+        const PrayerTimesPage(),
       ),
       Destinations(
         'Duas',
@@ -115,22 +104,19 @@ class _HomePageState extends State<HomePage> {
         DuasPage(),
       ),
       Destinations(
-        'Downloads',
-        const Icon(Icons.download_outlined),
-        const Icon(Icons.download_rounded),
-        const DownloadsPage(),
-      ),
-      Destinations(
-        'Prayer Times',
-        const Icon(Icons.access_time_outlined),
-        const Icon(Icons.schedule_rounded),
-        const PrayerTimesPage(),
-      ),
-      Destinations(
-        'Settings',
-        const Icon(Icons.settings_outlined),
-        const Icon(Icons.settings),
-        const SettingsPage(),
+        'More',
+        const Icon(Icons.grid_view_outlined),
+        const Icon(Icons.grid_view_rounded),
+        MorePage(
+          onOpenPlayer: _openPlayerPage,
+          onOpenQibla: _openQiblaPage,
+          onOpenDownloads: _openDownloadsPage,
+          onOpenSearch: _openQuranTextSearch,
+          onOpenReadingPlans: _openReadingPlansPage,
+          onOpenTasbih: _openTasbihPage,
+          onOpenSettings: _openSettingsPage,
+          onToggleTheme: () => unawaited(_toggleQuickTheme()),
+        ),
       ),
     ];
   }
@@ -160,12 +146,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool tabletLayout = ResponsiveNav.isTablet(context);
     final double navIconSize = ResponsiveNav.iconSize(context);
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors equranColors = context.equranColors;
-    final bool showSecondaryBackButton = _isSecondaryPage(_selectedIndex);
 
     return Listener(
       behavior: HitTestBehavior.translucent,
@@ -174,104 +156,12 @@ class _HomePageState extends State<HomePage> {
       onPointerCancel: (_) => _handleGlobalPointerReleased(),
       onPointerSignal: (_) => AndroidAudioDisplayMode.notifyUserActivity(),
       child: Scaffold(
-        key: _scaffoldKey,
-        onDrawerChanged: _handleDrawerChanged,
-        drawer: showSecondaryBackButton
-            ? null
-            : NavigationDrawerTheme(
-                data: NavigationDrawerTheme.of(context).copyWith(
-                  labelTextStyle: WidgetStatePropertyAll(
-                    ResponsiveNav.drawerLabelStyle(context),
-                  ),
-                  tileHeight: ResponsiveNav.drawerTileHeight(context),
-                  indicatorColor: colorScheme.secondaryContainer.withValues(
-                    alpha: 0.45,
-                  ),
-                  indicatorShape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: NavigationDrawer(
-                  onDestinationSelected: (index) {
-                    _onDrawerDestinationSelected(index);
-                  },
-                  selectedIndex: _selectedDrawerIndex,
-                  tilePadding: _drawerTilePadding,
-                  children: <Widget>[
-                    SizedBox(height: tabletLayout ? 76 : 64),
-                    ..._drawerDestinationIndices.map((int destinationIndex) {
-                      final Destinations destination =
-                          _pageDestinations[destinationIndex];
-                      return NavigationDrawerDestination(
-                        label: Text(destination.label),
-                        icon: IconTheme(
-                          data: IconThemeData(
-                            color: colorScheme.onSurfaceVariant,
-                            size: navIconSize,
-                          ),
-                          child: destination.icon,
-                        ),
-                        selectedIcon: IconTheme(
-                          data: IconThemeData(
-                            color: colorScheme.onSecondaryContainer,
-                            size: navIconSize,
-                          ),
-                          child: destination.selectedIcon,
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 8),
-                    const Divider(indent: 18, endIndent: 18),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 6, 18, 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          IconButton(
-                            tooltip: 'Settings',
-                            iconSize: navIconSize,
-                            color: _selectedIndex == _settingsDestinationIndex
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
-                            onPressed: _openSettingsFromDrawer,
-                            icon: const Icon(Icons.settings_outlined),
-                          ),
-                          IconButton(
-                            tooltip: 'Downloads',
-                            iconSize: navIconSize,
-                            color: _selectedIndex == _downloadsDestinationIndex
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
-                            onPressed: _openDownloadsFromDrawer,
-                            icon: const Icon(Icons.download_outlined),
-                          ),
-                          IconButton(
-                            tooltip: 'Toggle theme',
-                            iconSize: navIconSize,
-                            color: colorScheme.onSurfaceVariant,
-                            onPressed: _toggleQuickTheme,
-                            icon: Icon(
-                              theme.brightness == Brightness.dark
-                                  ? Icons.light_mode_rounded
-                                  : Icons.dark_mode_rounded,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-        appBar: _selectedIndex >= _duasDestinationIndex
+        appBar:
+            (_selectedIndex == _prayerDestinationIndex ||
+                _selectedIndex == _duasDestinationIndex ||
+                _selectedIndex == _moreDestinationIndex)
             ? AppBar(
                 toolbarHeight: ResponsiveNav.toolbarHeight(context),
-                leading: showSecondaryBackButton
-                    ? IconButton(
-                        tooltip: 'Back',
-                        onPressed: _returnToPreviousPage,
-                        icon: const Icon(Icons.arrow_back_rounded),
-                      )
-                    : null,
                 title: Text(_pageDestinations[_selectedIndex].label),
                 centerTitle: true,
                 backgroundColor: equranColors.primary,
@@ -296,7 +186,7 @@ class _HomePageState extends State<HomePage> {
               )
             : null,
         body: _pageDestinations[_selectedIndex].destination,
-        bottomNavigationBar: tabletLayout ? null : _buildBottomNavigation(),
+        bottomNavigationBar: _buildBottomNavigation(),
       ),
     );
   }
@@ -320,10 +210,6 @@ class _HomePageState extends State<HomePage> {
           selectedIndex: navIndex,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           onDestinationSelected: (int index) {
-            if (index == 4) {
-              _openDrawerFromDashboard();
-              return;
-            }
             _onItemTapped(_bottomDestinationIndices[index]);
           },
           destinations: const <NavigationDestination>[
@@ -358,11 +244,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  int? get _selectedDrawerIndex {
-    final int drawerIndex = _drawerDestinationIndices.indexOf(_selectedIndex);
-    return drawerIndex < 0 ? null : drawerIndex;
-  }
-
   void _handleGlobalPointerDown() {
     FrameRatePolicyManager.instance.setPointerActive(
       true,
@@ -395,46 +276,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _handleDrawerChanged(bool isOpened) {
-    FrameRatePolicyManager.instance.setDrawerOpen(
-      isOpened,
-      reason: isOpened ? 'drawer_open' : 'drawer_closed',
-    );
-    if (isOpened) {
-      unawaited(
-        AndroidAudioDisplayMode.addLowRefreshBlocker(
-          _drawerRefreshBlocker,
-          reason: 'drawer opened',
-        ),
-      );
-      return;
-    }
-
-    unawaited(
-      Future<void>.delayed(const Duration(milliseconds: 350), () {
-        return AndroidAudioDisplayMode.removeLowRefreshBlocker(
-          _drawerRefreshBlocker,
-          reason: 'drawer closed',
-        );
-      }),
-    );
-  }
-
-  void _openDrawerFromDashboard() {
-    AndroidAudioDisplayMode.notifyUserActivity();
-    FrameRatePolicyManager.instance.setDrawerOpen(
-      true,
-      reason: 'dashboard_drawer_opening',
-    );
-    unawaited(
-      AndroidAudioDisplayMode.addLowRefreshBlocker(
-        _drawerRefreshBlocker,
-        reason: 'dashboard drawer opening',
-      ),
-    );
-    _scaffoldKey.currentState?.openDrawer();
-  }
-
   void _openQuranTextSearch() {
     _onItemTapped(_quranDestinationIndex);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -445,63 +286,41 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _onDrawerDestinationSelected(int index) {
-    final int destinationIndex = _drawerDestinationIndices[index];
-    _onItemTapped(destinationIndex);
-    _scaffoldKey.currentState?.closeDrawer();
-  }
-
-  void _openSettingsFromDrawer() {
-    FrameRatePolicyManager.instance.setSettingsOrDownloadsVisible(
-      true,
-      reason: 'settings_route',
-    );
-    _scaffoldKey.currentState?.closeDrawer();
-    _pushDrawerPage(_settingsDestinationIndex);
-  }
-
-  void _openDownloadsFromDrawer() {
-    FrameRatePolicyManager.instance.setSettingsOrDownloadsVisible(
-      true,
-      reason: 'downloads_route',
-    );
-    _scaffoldKey.currentState?.closeDrawer();
-    _pushDrawerPage(_downloadsDestinationIndex);
-  }
-
-  void _pushDrawerPage(int index) {
-    final Destinations destination = _pageDestinations[index];
+  void _pushSecondaryPage({
+    required String label,
+    required Widget page,
+    required String reason,
+    bool showAppBar = true,
+  }) {
     FrameRatePolicyManager.instance.setRouteTransitionActive(
       true,
-      reason: 'opening_${destination.label.toLowerCase()}',
+      reason: '${reason}_opening',
     );
-    if (_isSecondaryPage(index)) {
-      FrameRatePolicyManager.instance.setSettingsOrDownloadsVisible(
-        true,
-        reason: '${destination.label.toLowerCase()}_route',
-      );
-    }
+    FrameRatePolicyManager.instance.setSettingsOrDownloadsVisible(
+      true,
+      reason: '${reason}_route',
+    );
     unawaited(
       AndroidAudioDisplayMode.addLowRefreshBlocker(
         _routeTransitionRefreshBlocker,
-        reason: 'opening ${destination.label}',
+        reason: 'opening $label',
       ),
     );
     unawaited(
       AndroidAudioDisplayMode.addLowRefreshBlocker(
         _secondaryRouteRefreshBlocker,
-        reason: '${destination.label} route active',
+        reason: '$label route active',
       ),
     );
     unawaited(
       Future<void>.delayed(const Duration(milliseconds: 450), () {
         FrameRatePolicyManager.instance.setRouteTransitionActive(
           false,
-          reason: '${destination.label.toLowerCase()}_push_settled',
+          reason: '${reason}_push_settled',
         );
         return AndroidAudioDisplayMode.removeLowRefreshBlocker(
           _routeTransitionRefreshBlocker,
-          reason: '${destination.label} push transition settled',
+          reason: '$label push transition settled',
         );
       }),
     );
@@ -511,15 +330,17 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute<void>(
             builder: (BuildContext context) {
               return Scaffold(
-                appBar: AppBar(
-                  toolbarHeight: ResponsiveNav.toolbarHeight(context),
-                  title: Text(destination.label),
-                  centerTitle: true,
-                  iconTheme: IconThemeData(
-                    size: ResponsiveNav.iconSize(context),
-                  ),
-                ),
-                body: destination.destination,
+                appBar: showAppBar
+                    ? AppBar(
+                        toolbarHeight: ResponsiveNav.toolbarHeight(context),
+                        title: Text(label),
+                        centerTitle: true,
+                        iconTheme: IconThemeData(
+                          size: ResponsiveNav.iconSize(context),
+                        ),
+                      )
+                    : null,
+                body: page,
               );
             },
           ),
@@ -527,31 +348,31 @@ class _HomePageState extends State<HomePage> {
         .whenComplete(() {
           FrameRatePolicyManager.instance.setRouteTransitionActive(
             true,
-            reason: '${destination.label.toLowerCase()}_pop_transition',
+            reason: '${reason}_pop_transition',
           );
           unawaited(
             AndroidAudioDisplayMode.addLowRefreshBlocker(
               _routeTransitionRefreshBlocker,
-              reason: '${destination.label} pop transition',
+              reason: '$label pop transition',
             ),
           );
           unawaited(
             Future<void>.delayed(const Duration(milliseconds: 450), () async {
               FrameRatePolicyManager.instance.setSettingsOrDownloadsVisible(
                 false,
-                reason: '${destination.label.toLowerCase()}_route_closed',
+                reason: '${reason}_route_closed',
               );
               FrameRatePolicyManager.instance.setRouteTransitionActive(
                 false,
-                reason: '${destination.label.toLowerCase()}_pop_settled',
+                reason: '${reason}_pop_settled',
               );
               await AndroidAudioDisplayMode.removeLowRefreshBlocker(
                 _secondaryRouteRefreshBlocker,
-                reason: '${destination.label} route closed',
+                reason: '$label route closed',
               );
               await AndroidAudioDisplayMode.removeLowRefreshBlocker(
                 _routeTransitionRefreshBlocker,
-                reason: '${destination.label} pop transition settled',
+                reason: '$label pop transition settled',
               );
             }),
           );
@@ -560,34 +381,37 @@ class _HomePageState extends State<HomePage> {
 
   void _onItemTapped(int index) {
     FrameRatePolicyManager.instance.setSettingsOrDownloadsVisible(
-      _isSecondaryPage(index),
-      reason: _isSecondaryPage(index)
-          ? '${_pageDestinations[index].label.toLowerCase()}_tab_visible'
-          : 'primary_tab_visible',
+      false,
+      reason: 'primary_tab_visible',
     );
     setState(() {
-      if (_isSecondaryPage(index) && !_isSecondaryPage(_selectedIndex)) {
-        _previousPageIndex = _selectedIndex;
-      }
       _selectedIndex = index;
     });
   }
 
-  bool _isSecondaryPage(int index) {
-    return index == _downloadsDestinationIndex ||
-        index == _settingsDestinationIndex;
+  void _openPlayerPage() {
+    _pushSecondaryPage(
+      label: 'Player',
+      page: const PlayerPage(),
+      reason: 'player_route',
+      showAppBar: false,
+    );
   }
 
-  void _returnToPreviousPage() {
-    FrameRatePolicyManager.instance.setSettingsOrDownloadsVisible(
-      false,
-      reason: 'secondary_tab_closed',
+  void _openDownloadsPage() {
+    _pushSecondaryPage(
+      label: 'Downloads',
+      page: const DownloadsPage(),
+      reason: 'downloads_route',
     );
-    setState(() {
-      _selectedIndex = _isSecondaryPage(_previousPageIndex)
-          ? _homeDestinationIndex
-          : _previousPageIndex;
-    });
+  }
+
+  void _openSettingsPage() {
+    _pushSecondaryPage(
+      label: 'Settings',
+      page: const SettingsPage(),
+      reason: 'settings_route',
+    );
   }
 
   void _openReadingPlansPage() {

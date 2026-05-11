@@ -16,10 +16,14 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
 
+// TODO: Download and bundle this as a local decorative asset.
+const String _mosqueDecorationImageUrl =
+    'https://static.vecteezy.com/system/resources/previews/011/421/501/non_2x/mosque-3d-render-islamic-illustration-free-png.png';
+
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({
     super.key,
-    required this.onMenuPressed,
+    required this.onOpenMore,
     required this.onOpenQuran,
     required this.onOpenPlayer,
     required this.onOpenPrayerTimes,
@@ -31,7 +35,7 @@ class HomeDashboardPage extends StatefulWidget {
     required this.onOpenSearch,
   });
 
-  final VoidCallback onMenuPressed;
+  final VoidCallback onOpenMore;
   final VoidCallback onOpenQuran;
   final VoidCallback onOpenPlayer;
   final VoidCallback onOpenPrayerTimes;
@@ -133,14 +137,19 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              IconButton.filledTonal(
-                tooltip: 'Menu',
-                onPressed: widget.onMenuPressed,
-                style: IconButton.styleFrom(
-                  backgroundColor: colors.mint,
-                  foregroundColor: colors.primary,
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: colors.mint,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.border),
                 ),
-                icon: const Icon(Icons.menu_rounded),
+                child: Icon(
+                  Icons.nights_stay_rounded,
+                  color: colors.primary,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -181,12 +190,6 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                 onPressed: widget.onOpenSearch,
                 color: colors.primary,
                 icon: const Icon(Icons.search_rounded),
-              ),
-              IconButton(
-                tooltip: 'More',
-                onPressed: widget.onMenuPressed,
-                color: colors.primary,
-                icon: const Icon(Icons.tune_rounded),
               ),
             ],
           ),
@@ -591,48 +594,52 @@ class _HomePrayerHeroCard extends StatelessWidget {
     if (day == null || nextPrayer == null) {
       return EquranGradientCard(
         onTap: onOpenPrayerTimes,
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 22),
         child: SizedBox(
-          height: 148,
+          height: 190,
           child: Stack(
             children: <Widget>[
               const Positioned(
-                right: -18,
-                bottom: -10,
-                width: 190,
-                height: 128,
-                child: EquranMosqueSilhouette(opacity: 0.28),
+                right: -30,
+                bottom: -24,
+                width: 210,
+                height: 150,
+                child: _PrayerHeroDecoration(),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'Prayer Times',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: colors.onPrimary,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: 210,
-                    child: Text(
-                      'Choose a location to show your next prayer here.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colors.onPrimaryMuted,
-                        height: 1.4,
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      'Prayer Times',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: colors.onPrimary,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Set up location',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.onPrimary,
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: 260,
+                      child: Text(
+                        'Choose a location to show the next prayer time here.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.onPrimaryMuted,
+                          height: 1.4,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 18),
+                    Text(
+                      'Set up location',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colors.onPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -654,71 +661,75 @@ class _HomePrayerHeroCard extends StatelessWidget {
       children: <Widget>[
         EquranGradientCard(
           onTap: onOpenPrayerTimes,
-          padding: const EdgeInsets.fromLTRB(22, 20, 18, 18),
-          child: SizedBox(
-            height: 164,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: <Widget>[
-                const Positioned(
-                  right: -24,
-                  bottom: -14,
-                  width: 210,
-                  height: 142,
-                  child: EquranMosqueSilhouette(opacity: 0.48),
-                ),
-                Positioned.fill(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: <Widget>[
+              const Positioned(
+                right: -34,
+                bottom: -28,
+                width: 220,
+                height: 158,
+                child: _PrayerHeroDecoration(),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Text(
+                    '${nextPrayer.entry.kind.label} Prayer Time',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: colors.onPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    prayerTime,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    style: theme.textTheme.displayLarge?.copyWith(
+                      color: colors.onPrimary,
+                      fontSize: 48,
+                      fontWeight: FontWeight.w900,
+                      height: 0.98,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Divider(
+                      height: 1,
+                      color: colors.onPrimary.withAlpha(52),
+                    ),
+                  ),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 8,
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Text(
-                              'Next Prayer Time',
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: colors.onPrimaryMuted,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            color: colors.onPrimary,
-                          ),
-                        ],
+                      _PrayerMetaChip(
+                        icon: Icons.timer_outlined,
+                        label: '${nextPrayer.entry.kind.label} in $countdown',
                       ),
-                      const Spacer(),
-                      Text(
-                        prayerTime,
-                        maxLines: 1,
-                        style: theme.textTheme.displayLarge?.copyWith(
-                          color: colors.onPrimary,
-                          fontWeight: FontWeight.w900,
-                          height: 0.98,
-                        ),
+                      _PrayerMetaChip(
+                        icon: Icons.location_on_outlined,
+                        label: day.location.displayLabel,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${nextPrayer.entry.kind.label} Prayer Time',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: colors.onPrimary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        '${nextPrayer.entry.kind.label} in $countdown',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onPrimaryMuted,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      _PrayerMetaChip(
+                        icon: Icons.tune_rounded,
+                        label: day.effectiveMethod.shortLabel,
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(height: 16),
+                  _PrayerTimesChipRow(
+                    day: day,
+                    use24HourFormat: settings.use24HourFormat,
+                    activeKind: nextPrayer.entry.kind,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
         if (exactAlarmDenied) ...<Widget>[
@@ -752,6 +763,156 @@ class _HomePrayerHeroCard extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+class _PrayerHeroDecoration extends StatelessWidget {
+  const _PrayerHeroDecoration();
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: 0.42,
+      child: Image.network(
+        _mosqueDecorationImageUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return const EquranMosqueSilhouette(opacity: 0.34);
+        },
+      ),
+    );
+  }
+}
+
+class _PrayerMetaChip extends StatelessWidget {
+  const _PrayerMetaChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: colors.onPrimary.withAlpha(24),
+        borderRadius: BorderRadius.circular(EquranRadii.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 15, color: colors.onPrimaryMuted),
+          const SizedBox(width: 5),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 180),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: colors.onPrimaryMuted,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrayerTimesChipRow extends StatelessWidget {
+  const _PrayerTimesChipRow({
+    required this.day,
+    required this.use24HourFormat,
+    required this.activeKind,
+  });
+
+  final PrayerDay day;
+  final bool use24HourFormat;
+  final PrayerTimeKind activeKind;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    final List<PrayerTimeEntry> entries = day.entries
+        .where((PrayerTimeEntry entry) => entry.kind != PrayerTimeKind.sunrise)
+        .toList(growable: false);
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          for (int i = 0; i < entries.length; i++) ...<Widget>[
+            _PrayerTimeChip(
+              entry: entries[i],
+              use24HourFormat: use24HourFormat,
+              isActive: entries[i].kind == activeKind,
+            ),
+            if (i != entries.length - 1)
+              Container(
+                width: 1,
+                height: 24,
+                margin: const EdgeInsets.symmetric(horizontal: 7),
+                color: colors.onPrimary.withAlpha(32),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _PrayerTimeChip extends StatelessWidget {
+  const _PrayerTimeChip({
+    required this.entry,
+    required this.use24HourFormat,
+    required this.isActive,
+  });
+
+  final PrayerTimeEntry entry;
+  final bool use24HourFormat;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
+      decoration: BoxDecoration(
+        color: isActive
+            ? colors.onPrimary.withAlpha(34)
+            : colors.onPrimary.withAlpha(14),
+        borderRadius: BorderRadius.circular(EquranRadii.medium),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            entry.kind.label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colors.onPrimaryMuted,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            _formatTime(entry.time, use24HourFormat),
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: colors.onPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -872,7 +1033,7 @@ class _MuslimDailyQuickActions extends StatelessWidget {
           ),
           Divider(height: 20, color: colors.divider),
           InkWell(
-            onTap: actions.onMenuPressed,
+            onTap: actions.onOpenMore,
             borderRadius: BorderRadius.circular(EquranRadii.medium),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 4, 8, 6),

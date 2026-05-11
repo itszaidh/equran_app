@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:equran/backend/library.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
@@ -7,7 +5,6 @@ import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/search/quran_text_search_results.dart';
-import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/widgets/library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -123,15 +120,12 @@ class _MainPageState extends State<MainPage>
     final EquranColors colors = context.equranColors;
     return Row(
       children: <Widget>[
-        Builder(
-          builder: (context) => IconButton(
-            onPressed: () => _openDrawer(context),
-            style: ResponsiveNav.iconButtonStyle(context),
-            icon: Icon(
-              Icons.menu_rounded,
-              color: colors.onPrimary,
-              size: ResponsiveNav.iconSize(context),
-            ),
+        SizedBox(
+          width: 48,
+          child: Icon(
+            Icons.menu_book_outlined,
+            color: colors.onPrimary,
+            size: ResponsiveNav.iconSize(context),
           ),
         ),
         Expanded(
@@ -223,21 +217,6 @@ class _MainPageState extends State<MainPage>
         ),
       ],
     );
-  }
-
-  void _openDrawer(BuildContext context) {
-    AndroidAudioDisplayMode.notifyUserActivity();
-    FrameRatePolicyManager.instance.setDrawerOpen(
-      true,
-      reason: 'main_drawer_opening',
-    );
-    unawaited(
-      AndroidAudioDisplayMode.addLowRefreshBlocker(
-        'home.drawerOpenOrAnimating',
-        reason: 'main drawer opening',
-      ),
-    );
-    Scaffold.of(context).openDrawer();
   }
 
   BoxDecoration _topBarDecoration() {
@@ -456,7 +435,7 @@ class _MainPageState extends State<MainPage>
         );
 
         if (entries.isNotEmpty) {
-          currentChild = LastReadCard(
+          currentChild = _QuranLastReadSection(
             key: const ValueKey<String>('last-read-card'),
             entries: entries,
           );
@@ -488,6 +467,44 @@ class _MainPageState extends State<MainPage>
       0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
+    );
+  }
+}
+
+class _QuranLastReadSection extends StatelessWidget {
+  const _QuranLastReadSection({super.key, required this.entries});
+
+  final List<ReadingEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
+          child: Row(
+            children: <Widget>[
+              Icon(
+                Icons.history_rounded,
+                size: 18,
+                color: colors.primary,
+              ),
+              const SizedBox(width: 7),
+              Text(
+                'Last read',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ),
+        LastReadCard(entries: entries),
+      ],
     );
   }
 }

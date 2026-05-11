@@ -43,7 +43,7 @@ class LastReadCard extends StatefulWidget {
 }
 
 class _LastReadCardState extends State<LastReadCard> {
-  static const double _estimatedCarouselPageSize = 164;
+  static const double _estimatedCarouselPageSize = 220;
 
   int _currentPage = 0;
 
@@ -261,49 +261,39 @@ class _LastReadEntryCard extends StatelessWidget {
                   edgeColor: colors.goldSoft.withAlpha(160),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            'Last Read',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: colors.onPrimaryMuted,
-                              fontWeight: FontWeight.w700,
-                            ),
+              Positioned(
+                top: 6,
+                right: 8,
+                child: PopupMenuButton<String>(
+                  tooltip: 'More options',
+                  icon: Icon(
+                    Icons.more_horiz_rounded,
+                    color: colors.onPrimary,
+                  ),
+                  onSelected: (value) => onMenuAction(value, entry),
+                  itemBuilder: (BuildContext context) =>
+                      const <PopupMenuEntry<String>>[
+                        PopupMenuItem<String>(
+                          value: 'delete',
+                          child: ListTile(
+                            leading: Icon(Icons.delete_outline_rounded),
+                            title: Text('Delete'),
+                            contentPadding: EdgeInsets.zero,
                           ),
-                        ),
-                        const SizedBox(width: 30),
-                        PopupMenuButton<String>(
-                          tooltip: 'More options',
-                          icon: Icon(
-                            Icons.more_vert_rounded,
-                            color: colors.onPrimary,
-                          ),
-                          onSelected: (value) => onMenuAction(value, entry),
-                          itemBuilder: (BuildContext context) =>
-                              const <PopupMenuEntry<String>>[
-                                PopupMenuItem<String>(
-                                  value: 'delete',
-                                  child: ListTile(
-                                    leading: Icon(Icons.delete_outline_rounded),
-                                    title: Text('Delete'),
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                ),
-                              ],
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
                     Text(
                       getSurahNameArabic(keySurah),
                       textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.center,
                       style: EquranTextStyles.arabicBody(
                         context,
                         color: colors.onPrimary,
@@ -311,30 +301,66 @@ class _LastReadEntryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Verse $verse',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.onPrimaryMuted,
-                        fontWeight: FontWeight.w700,
+                      getSurahName(keySurah),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.onPrimary,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
-                          'Continue to read',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colors.onPrimary,
-                            fontWeight: FontWeight.w800,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Ayah $verse',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colors.onPrimaryMuted,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 13,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.onPrimary.withAlpha(28),
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(
+                            'Resume',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: colors.onPrimary,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 16,
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 16,
+                            color: colors.onPrimary,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: 160,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
+                        child: LinearProgressIndicator(
+                          minHeight: 4,
+                          value: (verse / getVerseCount(keySurah))
+                              .clamp(0.0, 1.0)
+                              .toDouble(),
                           color: colors.onPrimary,
+                          backgroundColor: colors.onPrimary.withAlpha(36),
                         ),
-                      ],
+                      ),
                     ),
                     if (showIndicatorSpace) const SizedBox(height: 16),
                   ],

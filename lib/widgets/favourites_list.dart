@@ -1,5 +1,6 @@
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/library.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/saved_ayah.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,8 @@ import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
 
 const int _favouriteNoteMaxLength = 90;
+
+enum _SavedAyahFilter { all, notes }
 
 class FavouritesList extends StatefulWidget {
   const FavouritesList({super.key, required this.searchQuery});
@@ -20,6 +23,7 @@ class FavouritesList extends StatefulWidget {
 class _FavouritesListState extends State<FavouritesList> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _fallbackScrollController = ScrollController();
+  _SavedAyahFilter _filter = _SavedAyahFilter.all;
 
   @override
   void dispose() {
@@ -36,6 +40,10 @@ class _FavouritesListState extends State<FavouritesList> {
     return ValueListenableBuilder(
       valueListenable: FavouritesDB().listener,
       builder: (BuildContext context, Box<dynamic> box, child) {
+        final List<SavedAyah> allItems = _savedAyahs(
+          widget.searchQuery,
+          applyFilter: false,
+        );
         final List<SavedAyah> items = _savedAyahs(widget.searchQuery);
         final List<_FavouriteSurahGroup> groups = _groupBySurah(items);
 
@@ -50,9 +58,23 @@ class _FavouritesListState extends State<FavouritesList> {
           child: ListView.builder(
             controller: scrollController,
             physics: const BouncingScrollPhysics(),
-            itemCount: groups.length,
+            itemCount: groups.length + 1,
             itemBuilder: (context, index) {
-              final _FavouriteSurahGroup group = groups[index];
+              if (index == 0) {
+                return _SavedAyahFilterBar(
+                  selected: _filter,
+                  totalCount: allItems.length,
+                  noteCount: allItems
+                      .where((SavedAyah ayah) => ayah.note.trim().isNotEmpty)
+                      .length,
+                  onSelected: (filter) {
+                    setState(() {
+                      _filter = filter;
+                    });
+                  },
+                );
+              }
+              final _FavouriteSurahGroup group = groups[index - 1];
               return _FavouriteSurahSection(
                 key: ValueKey<int>(group.surah),
                 group: group,
@@ -109,12 +131,22 @@ class _FavouritesListState extends State<FavouritesList> {
     );
   }
 
-  List<SavedAyah> _savedAyahs(String searchQuery) {
-    return savedAyahsFromKeys(
+  List<SavedAyah> _savedAyahs(
+    String searchQuery, {
+    bool applyFilter = true,
+  }) {
+    final List<SavedAyah> ayahs = savedAyahsFromKeys(
       keys: FavouritesDB().getKeys(),
       noteForKey: (key) => FavouritesDB().get(key, defaultValue: ''),
       searchQuery: searchQuery,
     );
+    if (!applyFilter) return ayahs;
+    return ayahs.where((SavedAyah ayah) {
+      return switch (_filter) {
+        _SavedAyahFilter.all => true,
+        _SavedAyahFilter.notes => ayah.note.trim().isNotEmpty,
+      };
+    }).toList(growable: false);
   }
 
   List<_FavouriteSurahGroup> _groupBySurah(List<SavedAyah> ayahs) {
@@ -127,6 +159,52 @@ class _FavouritesListState extends State<FavouritesList> {
     return bySurah.entries.map((entry) {
       return _FavouriteSurahGroup(surah: entry.key, ayahs: entry.value);
     }).toList();
+  }
+}
+
+class _SavedAyahFilterBar extends StatelessWidget {
+  const _SavedAyahFilterBar({
+    required this.selected,
+    required this.totalCount,
+    required this.noteCount,
+    required this.onSelected,
+  });
+
+  final _SavedAyahFilter selected;
+  final int totalCount;
+  final int noteCount;
+  final ValueChanged<_SavedAyahFilter> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: <Widget>[
+          ChoiceChip(
+            selected: selected == _SavedAyahFilter.all,
+            label: Text('All $totalCount'),
+            onSelected: (_) => onSelected(_SavedAyahFilter.all),
+          ),
+          ChoiceChip(
+            selected: selected == _SavedAyahFilter.notes,
+            avatar: Icon(
+              Icons.notes_rounded,
+              size: 18,
+              color: selected == _SavedAyahFilter.notes
+                  ? colors.onPrimary
+                  : colors.primary,
+            ),
+            label: Text('Notes $noteCount'),
+            onSelected: (_) => onSelected(_SavedAyahFilter.notes),
+          ),
+        ],
+      ),
+    );
   }
 }
 
