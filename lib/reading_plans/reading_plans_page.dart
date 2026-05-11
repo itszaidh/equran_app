@@ -1,0 +1,753 @@
+import 'dart:math' as math;
+
+import 'package:equran/backend/library.dart';
+import 'package:equran/home/read.dart';
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/widgets/common/equran_components.dart';
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:quran/quran.dart' as quran;
+
+class ReadingPlansPage extends StatelessWidget {
+  const ReadingPlansPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+
+    return Scaffold(
+      backgroundColor: colors.background,
+      appBar: AppBar(
+        title: const Text('Reading Routine'),
+        centerTitle: true,
+        backgroundColor: colors.primary,
+        foregroundColor: colors.onPrimary,
+      ),
+      body: ValueListenableBuilder<Box<dynamic>>(
+        valueListenable: ReadingPlansDB().listener,
+        builder: (BuildContext context, Box<dynamic> box, Widget? child) {
+          final List<ReadingPlanEntry> plans =
+              box.values.whereType<ReadingPlanEntry>().toList(growable: false)
+                ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+          final ReadingPlanEntry? activePlan = _activePlan(plans);
+
+          return ListView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(
+              EquranSpacing.pagePadding,
+              16,
+              EquranSpacing.pagePadding,
+              32,
+            ),
+            children: <Widget>[
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      _RoutineHero(plan: activePlan),
+                      const SizedBox(height: 18),
+                      _DaySelector(now: DateTime.now()),
+                      const SizedBox(height: 18),
+                      _ActivitySummary(plan: activePlan),
+                      const SizedBox(height: 14),
+                      if (activePlan == null)
+                        _EmptyRoutineCard(onCreate: _createThirtyDayPlan)
+                      else
+                        _TodayTaskCard(plan: activePlan),
+                      const SizedBox(height: 22),
+                      _PlanPresetGrid(
+                        onCreatePlan: (BuildContext context, _PlanPreset plan) {
+                          _createPresetPlan(context, plan);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _createThirtyDayPlan(BuildContext context) {
+    _createPresetPlan(context, _PlanPreset.thirtyDays);
+  }
+
+  static Future<void> _createPresetPlan(
+    BuildContext context,
+    _PlanPreset preset,
+  ) async {
+    final DateTime now = DateTime.now();
+    final List<ReadingPlanEntry> existingPlans = ReadingPlansDB()
+        .box
+        .values
+        .whereType<ReadingPlanEntry>()
+        .toList(growable: false);
+    for (final ReadingPlanEntry plan in existingPlans) {
+      if (!plan.active) continue;
+      await ReadingPlansDB().put(
+        plan.id,
+        ReadingPlanEntry(
+          id: plan.id,
+          type: plan.type,
+          title: plan.title,
+          startedAt: plan.startedAt,
+          finishBy: plan.finishBy,
+          startGlobalAyah: plan.startGlobalAyah,
+          targetGlobalAyah: plan.targetGlobalAyah,
+          lastCompletedGlobalAyah: plan.lastCompletedGlobalAyah,
+          active: false,
+          schemaVersion: plan.schemaVersion,
+        ),
+      );
+    }
+
+    final ReadingPlanEntry newPlan = ReadingPlanEntry(
+      id: 'plan:${preset.type}:${now.microsecondsSinceEpoch}',
+      type: preset.type,
+      title: preset.title,
+      startedAt: DateTime(now.year, now.month, now.day),
+      finishBy: DateTime(now.year, now.month, now.day + preset.days - 1),
+      startGlobalAyah: 1,
+      targetGlobalAyah: quran.totalVerseCount,
+      lastCompletedGlobalAyah: 0,
+    );
+    await ReadingPlansDB().put(newPlan.id, newPlan);
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${preset.title} started')),
+    );
+  }
+}
+
+ReadingPlanEntry? _activePlan(List<ReadingPlanEntry> plans) {
+  for (final ReadingPlanEntry plan in plans) {
+    if (plan.active) return plan;
+  }
+  return null;
+}
+
+class _RoutineHero extends StatelessWidget {
+  const _RoutineHero({required this.plan});
+
+  final ReadingPlanEntry? plan;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final _PlanProgress? progress = plan == null ? null : _planProgress(plan!);
+
+    return EquranGradientCard(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      child: Stack(
+        children: <Widget>[
+          const Positioned(
+            right: -12,
+            bottom: -16,
+            width: 150,
+            height: 120,
+            child: EquranOpenBookMark(opacity: 0.24),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  EquranIconBadge(
+                    icon: Icons.calendar_month_rounded,
+                    backgroundColor: colors.onPrimary.withAlpha(26),
+                    foregroundColor: colors.onPrimary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      plan?.title ?? 'Build a Quran routine',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: colors.onPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                plan == null
+                    ? 'Choose a gentle plan and let today have a clear portion.'
+                    : '${progress!.completedAyahs} of ${progress.totalAyahs} ayahs completed',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onPrimaryMuted,
+                  height: 1.35,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 18),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(EquranRadii.pill),
+                child: LinearProgressIndicator(
+                  minHeight: 8,
+                  value: progress?.fraction ?? 0,
+                  color: colors.onPrimary,
+                  backgroundColor: colors.onPrimary.withAlpha(40),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                plan == null
+                    ? 'Ramadan style, 7-day, 30-day, and 60-day plans are ready.'
+                    : 'Finish target: ${_shortDate(plan!.finishBy)}',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colors.onPrimaryMuted,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DaySelector extends StatelessWidget {
+  const _DaySelector({required this.now});
+
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+
+    return SizedBox(
+      height: 74,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: 7,
+        separatorBuilder: (BuildContext context, int index) {
+          return const SizedBox(width: 10);
+        },
+        itemBuilder: (BuildContext context, int index) {
+          final DateTime date = DateTime(now.year, now.month, now.day + index);
+          final bool selected = index == 0;
+          return Container(
+            width: 58,
+            decoration: BoxDecoration(
+              color: selected ? colors.primary : colors.surface,
+              borderRadius: BorderRadius.circular(EquranRadii.medium),
+              border: Border.all(
+                color: selected ? colors.primary : colors.border,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  _weekdayLabel(date.weekday),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: selected ? colors.onPrimaryMuted : colors.textMuted,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Text(
+                  '${date.day}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: selected ? colors.onPrimary : colors.primary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ActivitySummary extends StatelessWidget {
+  const _ActivitySummary({required this.plan});
+
+  final ReadingPlanEntry? plan;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool done = plan != null && _todayRange(plan!).isDone;
+    final List<_SummaryPillData> items = <_SummaryPillData>[
+      _SummaryPillData('All', plan == null ? 0 : 1),
+      _SummaryPillData('Done', done ? 1 : 0),
+      _SummaryPillData('Ongoing', plan != null && !done ? 1 : 0),
+      const _SummaryPillData('Skipped', 0),
+    ];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: items.map((item) => _SummaryPill(item: item)).toList(),
+    );
+  }
+}
+
+class _SummaryPillData {
+  const _SummaryPillData(this.label, this.count);
+
+  final String label;
+  final int count;
+}
+
+class _SummaryPill extends StatelessWidget {
+  const _SummaryPill({required this.item});
+
+  final _SummaryPillData item;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: item.count > 0 ? colors.mint : colors.surface,
+        borderRadius: BorderRadius.circular(EquranRadii.pill),
+        border: Border.all(color: colors.border),
+      ),
+      child: Text(
+        '${item.label} ${item.count}',
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: item.count > 0 ? colors.primary : colors.textSecondary,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyRoutineCard extends StatelessWidget {
+  const _EmptyRoutineCard({required this.onCreate});
+
+  final void Function(BuildContext context) onCreate;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return EquranSurfaceCard(
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'No active routine',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start with a balanced 30-day plan, then adjust when custom finish dates are expanded.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colors.textSecondary,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: () => onCreate(context),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Start 30-day plan'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TodayTaskCard extends StatelessWidget {
+  const _TodayTaskCard({required this.plan});
+
+  final ReadingPlanEntry plan;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final _TodayRange range = _todayRange(plan);
+    final _AyahRef start = _ayahRefFromGlobalIndex(range.startGlobalAyah);
+    final _AyahRef end = _ayahRefFromGlobalIndex(range.endGlobalAyah);
+    final bool done = range.isDone;
+
+    return EquranSurfaceCard(
+      backgroundColor: done ? null : colors.surface,
+      borderColor: done ? colors.primary.withAlpha(90) : colors.border,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              EquranIconBadge(
+                icon: done ? Icons.check_rounded : Icons.menu_book_outlined,
+                backgroundColor: done ? colors.primary : colors.mint,
+                foregroundColor: done ? colors.onPrimary : colors.primary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      done ? 'Today completed' : 'Today\'s reading',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${range.totalAyahs} ayahs - ${_refLabel(start)} to ${_refLabel(end)}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _openStart(context, start),
+                  icon: const Icon(Icons.play_arrow_rounded),
+                  label: const Text('Continue'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: done ? null : () => _markDone(context, range),
+                  icon: const Icon(Icons.check_circle_outline_rounded),
+                  label: const Text('Mark done'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openStart(BuildContext context, _AyahRef start) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return ReadPage(chapter: start.surah, startVerse: start.verse);
+        },
+      ),
+    );
+  }
+
+  Future<void> _markDone(BuildContext context, _TodayRange range) async {
+    final ReadingPlanEntry updated = ReadingPlanEntry(
+      id: plan.id,
+      type: plan.type,
+      title: plan.title,
+      startedAt: plan.startedAt,
+      finishBy: plan.finishBy,
+      startGlobalAyah: plan.startGlobalAyah,
+      targetGlobalAyah: plan.targetGlobalAyah,
+      lastCompletedGlobalAyah: math.max(
+        plan.lastCompletedGlobalAyah,
+        range.endGlobalAyah,
+      ),
+      active: plan.active,
+      schemaVersion: plan.schemaVersion,
+    );
+    await ReadingPlansDB().put(updated.id, updated);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Today\'s reading marked complete')),
+    );
+  }
+}
+
+class _PlanPresetGrid extends StatelessWidget {
+  const _PlanPresetGrid({required this.onCreatePlan});
+
+  final void Function(BuildContext context, _PlanPreset plan) onCreatePlan;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<_PlanPreset> presets = <_PlanPreset>[
+      _PlanPreset.sevenDays,
+      _PlanPreset.thirtyDays,
+      _PlanPreset.sixtyDays,
+      _PlanPreset.ramadan,
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Choose a plan',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 10),
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final bool twoColumn = constraints.maxWidth >= 620;
+            return GridView.builder(
+              itemCount: presets.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: twoColumn ? 2 : 1,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: twoColumn ? 3.2 : 3.8,
+              ),
+              itemBuilder: (BuildContext context, int index) {
+                return _PlanPresetCard(
+                  preset: presets[index],
+                  onTap: () => onCreatePlan(context, presets[index]),
+                );
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _PlanPresetCard extends StatelessWidget {
+  const _PlanPresetCard({required this.preset, required this.onTap});
+
+  final _PlanPreset preset;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return EquranSurfaceCard(
+      onTap: onTap,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Row(
+        children: <Widget>[
+          EquranIconBadge(icon: preset.icon),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  preset.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  preset.subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: colors.textMuted),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlanPreset {
+  const _PlanPreset({
+    required this.type,
+    required this.title,
+    required this.subtitle,
+    required this.days,
+    required this.icon,
+  });
+
+  final String type;
+  final String title;
+  final String subtitle;
+  final int days;
+  final IconData icon;
+
+  static const _PlanPreset sevenDays = _PlanPreset(
+    type: 'complete_7_days',
+    title: 'Complete Quran in 7 days',
+    subtitle: 'A focused weekly routine',
+    days: 7,
+    icon: Icons.bolt_outlined,
+  );
+
+  static const _PlanPreset thirtyDays = _PlanPreset(
+    type: 'complete_30_days',
+    title: 'Complete Quran in 30 days',
+    subtitle: 'Balanced daily portions',
+    days: 30,
+    icon: Icons.calendar_month_outlined,
+  );
+
+  static const _PlanPreset sixtyDays = _PlanPreset(
+    type: 'complete_60_days',
+    title: 'Complete Quran in 60 days',
+    subtitle: 'Gentle long-form reading',
+    days: 60,
+    icon: Icons.spa_outlined,
+  );
+
+  static const _PlanPreset ramadan = _PlanPreset(
+    type: 'ramadan_30_days',
+    title: 'Ramadan-style routine',
+    subtitle: 'A 30-day month plan',
+    days: 30,
+    icon: Icons.nights_stay_outlined,
+  );
+}
+
+class _PlanProgress {
+  const _PlanProgress({
+    required this.completedAyahs,
+    required this.totalAyahs,
+  });
+
+  final int completedAyahs;
+  final int totalAyahs;
+
+  double get fraction {
+    if (totalAyahs <= 0) return 0;
+    return (completedAyahs / totalAyahs).clamp(0.0, 1.0).toDouble();
+  }
+}
+
+class _TodayRange {
+  const _TodayRange({
+    required this.startGlobalAyah,
+    required this.endGlobalAyah,
+    required this.isDone,
+  });
+
+  final int startGlobalAyah;
+  final int endGlobalAyah;
+  final bool isDone;
+
+  int get totalAyahs => math.max(1, endGlobalAyah - startGlobalAyah + 1);
+}
+
+class _AyahRef {
+  const _AyahRef({required this.surah, required this.verse});
+
+  final int surah;
+  final int verse;
+}
+
+_PlanProgress _planProgress(ReadingPlanEntry plan) {
+  final int total = math.max(
+    1,
+    plan.targetGlobalAyah - plan.startGlobalAyah + 1,
+  );
+  final int completed = math.max(
+    0,
+    plan.lastCompletedGlobalAyah - plan.startGlobalAyah + 1,
+  ).clamp(0, total).toInt();
+  return _PlanProgress(completedAyahs: completed, totalAyahs: total);
+}
+
+_TodayRange _todayRange(ReadingPlanEntry plan) {
+  final DateTime now = DateTime.now();
+  final DateTime today = DateTime(now.year, now.month, now.day);
+  final DateTime start = DateTime(
+    plan.startedAt.year,
+    plan.startedAt.month,
+    plan.startedAt.day,
+  );
+  final int totalAyahs = math.max(
+    1,
+    plan.targetGlobalAyah - plan.startGlobalAyah + 1,
+  );
+  final int totalDays = math.max(1, plan.finishBy.difference(start).inDays + 1);
+  final int elapsedDays = today
+      .difference(start)
+      .inDays
+      .clamp(0, totalDays - 1)
+      .toInt();
+  final int perDay = (totalAyahs / totalDays).ceil();
+  final int startAyah = math.min(
+    plan.targetGlobalAyah,
+    plan.startGlobalAyah + (elapsedDays * perDay),
+  );
+  final int endAyah = math.min(plan.targetGlobalAyah, startAyah + perDay - 1);
+  return _TodayRange(
+    startGlobalAyah: startAyah,
+    endGlobalAyah: endAyah,
+    isDone: plan.lastCompletedGlobalAyah >= endAyah,
+  );
+}
+
+_AyahRef _ayahRefFromGlobalIndex(int globalAyah) {
+  int remaining = globalAyah.clamp(1, quran.totalVerseCount).toInt();
+  for (int surah = 1; surah <= 114; surah++) {
+    final int verseCount = quran.getVerseCount(surah);
+    if (remaining <= verseCount) {
+      return _AyahRef(surah: surah, verse: remaining);
+    }
+    remaining -= verseCount;
+  }
+  return const _AyahRef(surah: 114, verse: 6);
+}
+
+String _refLabel(_AyahRef ref) {
+  return '${quran.getSurahName(ref.surah)} ${ref.verse}';
+}
+
+String _weekdayLabel(int weekday) {
+  const List<String> labels = <String>[
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+  return labels[(weekday - 1).clamp(0, labels.length - 1).toInt()];
+}
+
+String _shortDate(DateTime date) {
+  const List<String> months = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  return '${months[(date.month - 1).clamp(0, 11).toInt()]} ${date.day}, ${date.year}';
+}

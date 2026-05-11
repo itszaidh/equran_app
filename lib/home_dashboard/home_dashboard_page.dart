@@ -25,6 +25,8 @@ class HomeDashboardPage extends StatefulWidget {
     required this.onOpenPrayerTimes,
     required this.onOpenQibla,
     required this.onOpenDuas,
+    required this.onOpenTasbih,
+    required this.onOpenReadingPlans,
     required this.onOpenDownloads,
     required this.onOpenSearch,
   });
@@ -35,6 +37,8 @@ class HomeDashboardPage extends StatefulWidget {
   final VoidCallback onOpenPrayerTimes;
   final VoidCallback onOpenQibla;
   final VoidCallback onOpenDuas;
+  final VoidCallback onOpenTasbih;
+  final VoidCallback onOpenReadingPlans;
   final VoidCallback onOpenDownloads;
   final VoidCallback onOpenSearch;
 
@@ -354,7 +358,7 @@ class _DashboardContent extends StatelessWidget {
             const SizedBox(height: 14),
             _RoutinePlanCta(
               plan: summary.activePlan,
-              onTap: actions.onOpenQuran,
+              onTap: actions.onOpenReadingPlans,
             ),
             const SizedBox(height: 14),
             _MuslimDailyQuickActions(
@@ -374,7 +378,7 @@ class _DashboardContent extends StatelessWidget {
                   stats: summary.stats,
                   activity: summary.todayActivity,
                   plan: summary.activePlan,
-                  onOpenQuran: actions.onOpenQuran,
+                  onOpenRoutine: actions.onOpenReadingPlans,
                 ),
                 _ContinueListeningCard(
                   entry: summary.latestListening,
@@ -831,7 +835,7 @@ class _MuslimDailyQuickActions extends StatelessWidget {
         'Player',
         actions.onOpenPlayer,
       ),
-      _QuickAction(Icons.auto_awesome_outlined, 'Tasbih', actions.onOpenDuas),
+      _QuickAction(Icons.auto_awesome_outlined, 'Tasbih', actions.onOpenTasbih),
       _QuickAction(Icons.auto_stories_outlined, 'Dua', actions.onOpenDuas),
       _QuickAction(
         Icons.download_outlined,
@@ -987,13 +991,13 @@ class _JourneyPreviewCard extends StatelessWidget {
     required this.stats,
     required this.activity,
     required this.plan,
-    required this.onOpenQuran,
+    required this.onOpenRoutine,
   });
 
   final QuranStatsSnapshot? stats;
   final QuranActivityDay? activity;
   final ReadingPlanEntry? plan;
-  final VoidCallback onOpenQuran;
+  final VoidCallback onOpenRoutine;
 
   @override
   Widget build(BuildContext context) {
@@ -1003,10 +1007,10 @@ class _JourneyPreviewCard extends StatelessWidget {
         stats ?? QuranStatsSnapshot(id: 'summary', updatedAt: DateTime.now());
     final int ayahsRead = activity?.ayahsRead ?? 0;
     const int dailyGoal = 20;
-    final double progress = (ayahsRead / dailyGoal).clamp(0.0, 1.0);
+    final double progress = (ayahsRead / dailyGoal).clamp(0.0, 1.0).toDouble();
 
     return EquranSurfaceCard(
-      onTap: onOpenQuran,
+      onTap: onOpenRoutine,
       backgroundColor: colors.paleGreen,
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
       child: Column(
@@ -1102,7 +1106,7 @@ class _WeeklyBars extends StatelessWidget {
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: FractionallySizedBox(
-                  heightFactor: bars[i].clamp(0.16, 1.0),
+                  heightFactor: bars[i].clamp(0.16, 1.0).toDouble(),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: i == 4 ? colors.primary : colors.mint,
@@ -1537,7 +1541,7 @@ class _DailyGoalCard extends StatelessWidget {
     final ColorScheme colors = theme.colorScheme;
     final int ayahsRead = activity?.ayahsRead ?? 0;
     const int dailyGoal = 20;
-    final double progress = (ayahsRead / dailyGoal).clamp(0.0, 1.0);
+    final double progress = (ayahsRead / dailyGoal).clamp(0.0, 1.0).toDouble();
 
     return _DashboardCard(
       child: Column(

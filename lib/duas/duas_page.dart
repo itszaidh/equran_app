@@ -3,6 +3,7 @@ import 'package:equran/duas/duas_category_page.dart';
 import 'package:equran/duas/duas_favourites_page.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
+import 'package:equran/duas/tasbih_page.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
@@ -161,6 +162,8 @@ class _DuasContent extends StatelessWidget {
                       },
                 ),
                 const SizedBox(height: 12),
+                _TasbihEntryCard(onTap: () => _openTasbih(context)),
+                const SizedBox(height: 12),
                 TextField(
                   controller: searchController,
                   textInputAction: TextInputAction.search,
@@ -247,6 +250,16 @@ class _DuasContent extends StatelessWidget {
             categoryIndex: categoryIndex,
             repository: repository,
           );
+        },
+      ),
+    );
+  }
+
+  void _openTasbih(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return const TasbihPage();
         },
       ),
     );
@@ -376,6 +389,61 @@ class _FavouritesEntryCard extends StatelessWidget {
             ),
           ),
           Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
+        ],
+      ),
+    );
+  }
+}
+
+class _TasbihEntryCard extends StatelessWidget {
+  const _TasbihEntryCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return _TappablePanel(
+      onTap: onTap,
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: colors.mint,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: Icon(
+              Icons.auto_awesome_outlined,
+              color: colors.primary,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Tasbih and dhikr',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'A calm counter with daily presets',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: colors.textMuted),
         ],
       ),
     );

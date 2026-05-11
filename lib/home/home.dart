@@ -4,6 +4,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart'
     show AndroidAudioDisplayMode, SettingsDB;
 import 'package:equran/duas/duas_page.dart';
+import 'package:equran/duas/tasbih_page.dart';
 import 'package:equran/home/downloads.dart';
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/player.dart';
@@ -11,6 +12,7 @@ import 'package:equran/home/settings.dart';
 import 'package:equran/home_dashboard/home_dashboard_page.dart';
 import 'package:equran/prayer/prayer_times_page.dart';
 import 'package:equran/prayer/qibla_page.dart';
+import 'package:equran/reading_plans/reading_plans_page.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/responsive_nav.dart';
@@ -88,6 +90,8 @@ class _HomePageState extends State<HomePage> {
           onOpenPrayerTimes: () => _onItemTapped(_prayerDestinationIndex),
           onOpenQibla: _openQiblaPage,
           onOpenDuas: () => _onItemTapped(_duasDestinationIndex),
+          onOpenTasbih: _openTasbihPage,
+          onOpenReadingPlans: _openReadingPlansPage,
           onOpenDownloads: () => _onItemTapped(_downloadsDestinationIndex),
           onOpenSearch: _openQuranTextSearch,
         ),
@@ -584,6 +588,44 @@ class _HomePageState extends State<HomePage> {
           ? _homeDestinationIndex
           : _previousPageIndex;
     });
+  }
+
+  void _openReadingPlansPage() {
+    FrameRatePolicyManager.instance.setRouteTransitionActive(
+      true,
+      reason: 'reading_plans_route_opening',
+    );
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => const ReadingPlansPage(),
+          ),
+        )
+        .whenComplete(() {
+          FrameRatePolicyManager.instance.setRouteTransitionActive(
+            false,
+            reason: 'reading_plans_route_closed',
+          );
+        });
+  }
+
+  void _openTasbihPage() {
+    FrameRatePolicyManager.instance.setRouteTransitionActive(
+      true,
+      reason: 'tasbih_route_opening',
+    );
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => const TasbihPage(),
+          ),
+        )
+        .whenComplete(() {
+          FrameRatePolicyManager.instance.setRouteTransitionActive(
+            false,
+            reason: 'tasbih_route_closed',
+          );
+        });
   }
 
   void _openQiblaPage() {
