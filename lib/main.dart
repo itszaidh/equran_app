@@ -86,10 +86,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final AdaptiveThemeMode? savedThemeMode = _getSavedThemeMode();
     final MaterialColor seedColor = _getPrimaryColor();
+    final String themeScheme = _getThemeScheme();
 
     return AdaptiveTheme(
-      light: AppTheme.buildLightTheme(seedColor),
-      dark: AppTheme.buildDarkTheme(seedColor),
+      light: AppTheme.buildLightTheme(seedColor, schemeId: themeScheme),
+      dark: AppTheme.buildDarkTheme(seedColor, schemeId: themeScheme),
       initial: savedThemeMode ?? AdaptiveThemeMode.dark,
       overrideMode: savedThemeMode,
       builder: (theme, darkTheme) => MaterialApp(
@@ -144,6 +145,15 @@ class MyApp extends StatelessWidget {
       "dark" => AdaptiveThemeMode.dark,
       "auto" => AdaptiveThemeMode.system,
       _ => null,
+    };
+  }
+
+  static String _getThemeScheme() {
+    final dynamic scheme = SettingsDB().get("themeScheme");
+    return switch (scheme) {
+      AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
+      AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
+      _ => AppTheme.defaultScheme,
     };
   }
 }

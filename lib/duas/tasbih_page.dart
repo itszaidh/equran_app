@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 
-const String _tasbihAsset = 'assets/images/app_assets/tasbih.png';
 const String _tasbihDesignAsset = 'assets/images/app_assets/design.png';
 
 class TasbihPage extends StatefulWidget {
@@ -28,6 +27,8 @@ class _TasbihPageState extends State<TasbihPage> {
   int _count = 0;
   bool _hapticsEnabled = true;
   DateTime _sessionStartedAt = DateTime.now();
+  DateTime? _postPrayerSequenceStartedAt;
+  final List<int> _postPrayerSequenceCounts = <int>[0, 0, 0];
   String? _completionMessage;
 
   _DhikrPreset get _selectedPreset =>
@@ -156,12 +157,17 @@ class _TasbihPageState extends State<TasbihPage> {
     if (_hapticsEnabled) {
       unawaited(HapticFeedback.heavyImpact());
     }
-    await _saveSession(manual: false, completedCount: completedCount);
+    final bool groupedCompletion = await _recordCompletedPreset(
+      preset,
+      completedCount,
+    );
     if (!mounted) return;
 
     final int nextIndex = _nextPresetIndex(_selectedPresetIndex);
     setState(() {
-      _completionMessage = '${preset.label} complete';
+      _completionMessage = groupedCompletion
+          ? 'Post-prayer dhikr complete'
+          : '${preset.label} complete';
       _selectedPresetIndex = nextIndex;
       _count = 0;
       _sessionStartedAt = DateTime.now();
@@ -188,6 +194,7 @@ class _TasbihPageState extends State<TasbihPage> {
     setState(() {
       _count = 0;
       _sessionStartedAt = DateTime.now();
+      _resetPostPrayerSequence();
       _completionMessage = null;
     });
     _persistCurrentState();
@@ -198,6 +205,9 @@ class _TasbihPageState extends State<TasbihPage> {
       _selectedPresetIndex = index;
       _count = 0;
       _sessionStartedAt = DateTime.now();
+      if (index < 0 || index > 2) {
+        _resetPostPrayerSequence();
+      }
       _completionMessage = null;
     });
     _persistCurrentState();
@@ -236,6 +246,51 @@ class _TasbihPageState extends State<TasbihPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('Dhikr session saved')));
+  }
+
+  Future<bool> _recordCompletedPreset(
+    _DhikrPreset preset,
+    int completedCount,
+  ) async {
+    final int sequenceIndex = _selectedPresetIndex;
+    if (sequenceIndex < 0 || sequenceIndex > 2) {
+      await _saveSession(manual: false, completedCount: completedCount);
+      return false;
+    }
+
+    _postPrayerSequenceStartedAt ??= _sessionStartedAt;
+    _postPrayerSequenceCounts[sequenceIndex] = completedCount
+        .clamp(0, preset.target)
+        .toInt();
+
+    final bool sequenceComplete =
+        _postPrayerSequenceCounts[0] >= 33 &&
+        _postPrayerSequenceCounts[1] >= 33 &&
+        _postPrayerSequenceCounts[2] >= 34;
+    if (!sequenceComplete) return false;
+
+    final DateTime now = DateTime.now();
+    final DhikrSessionEntry session = DhikrSessionEntry(
+      id: 'dhikr:post-prayer:${now.microsecondsSinceEpoch}',
+      label: 'Post-prayer dhikr',
+      targetCount: 100,
+      count: 100,
+      startedAt: _postPrayerSequenceStartedAt ?? _sessionStartedAt,
+      completedAt: now,
+    );
+    await DhikrSessionsDB().put(session.id, session);
+    _resetPostPrayerSequence();
+    if (_hapticsEnabled) {
+      unawaited(HapticFeedback.heavyImpact());
+    }
+    return true;
+  }
+
+  void _resetPostPrayerSequence() {
+    _postPrayerSequenceStartedAt = null;
+    for (int i = 0; i < _postPrayerSequenceCounts.length; i++) {
+      _postPrayerSequenceCounts[i] = 0;
+    }
   }
 
   void _persistCurrentState() {
@@ -337,13 +392,6 @@ class _CircularCounter extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Image.asset(
-                            _tasbihAsset,
-                            width: 38,
-                            height: 38,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(height: 10),
                           Text(
                             '$count',
                             style: theme.textTheme.displayLarge?.copyWith(
@@ -540,7 +588,9 @@ class _RecentDhikrSessions extends StatelessWidget {
                 ),
                 title: Text(session.label),
                 subtitle: Text(
-                  '${session.count} of ${session.targetCount} counted',
+                  session.label == 'Post-prayer dhikr'
+                      ? 'SubhanAllah 33 • Alhamdulillah 33 • Allahu Akbar 34\n${_sessionTimeLabel(session)}'
+                      : '${session.count} of ${session.targetCount} counted • ${_sessionTimeLabel(session)}',
                 ),
                 trailing: Text(
                   session.completedAt == null ? 'Saved' : 'Done',
@@ -692,4 +742,11 @@ String _dateKey(DateTime date) {
   return '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
       '${date.day.toString().padLeft(2, '0')}';
+}
+
+String _sessionTimeLabel(DhikrSessionEntry session) {
+  final DateTime time = session.completedAt ?? session.startedAt;
+  final int hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+  final String period = time.hour >= 12 ? 'PM' : 'AM';
+  return '${time.month}/${time.day} $hour:${time.minute.toString().padLeft(2, '0')} $period';
 }

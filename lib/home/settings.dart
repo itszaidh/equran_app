@@ -105,6 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   defaultValue: true,
                 ),
               if (cardViewEnabled) _buildTransliterationToggle(),
+              _buildDailyQuranGoalTile(context),
               _buildTranslationTile(context),
               FontSlider(showTranslationControls: showTranslationControls),
             ],
@@ -299,18 +300,18 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildThemeColorTile(BuildContext context) {
     return ListTile(
       onTap: () async {
-        final int? selectedColor = await _showColorPickerDialog(context);
-        if (selectedColor == null) return;
-        SettingsDB().put("color", selectedColor);
+        final String? selectedScheme = await _showThemeSchemeDialog(context);
+        if (selectedScheme == null) return;
+        await SettingsDB().put("themeScheme", selectedScheme);
         if (mounted) {
           setState(() {});
         }
 
-        final MaterialColor color = Colors.primaries[selectedColor];
+        final MaterialColor color = _savedMaterialColor();
         if (context.mounted) {
           AdaptiveTheme.of(context).setTheme(
-            light: AppTheme.buildLightTheme(color),
-            dark: AppTheme.buildDarkTheme(color),
+            light: AppTheme.buildLightTheme(color, schemeId: selectedScheme),
+            dark: AppTheme.buildDarkTheme(color, schemeId: selectedScheme),
           );
         }
       },
@@ -319,16 +320,10 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Future<int?> _showColorPickerDialog(BuildContext context) {
-    final dynamic savedColor = SettingsDB().get("color");
-    final int selectedColor =
-        savedColor is int &&
-            savedColor >= 0 &&
-            savedColor < Colors.primaries.length
-        ? savedColor
-        : 7;
+  Future<String?> _showThemeSchemeDialog(BuildContext context) {
+    final String selectedScheme = _selectedThemeScheme();
 
-    return showDialog<int>(
+    return showDialog<String>(
       context: context,
       builder: (context) {
         final ThemeData theme = Theme.of(context);
@@ -374,38 +369,35 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Wrap(
-                      runSpacing: 12,
-                      spacing: 12,
-                      children: List.generate(Colors.primaries.length, (index) {
-                        final MaterialColor color = Colors.primaries[index];
-                        final bool isSelected = index == selectedColor;
-                        return InkWell(
-                          borderRadius: BorderRadius.circular(24),
-                          onTap: () => Navigator.of(context).pop(index),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: color,
-                              border: Border.all(
-                                color: isSelected
-                                    ? colorScheme.onSurface
-                                    : colorScheme.outlineVariant,
-                                width: isSelected ? 3 : 1,
-                              ),
+                    for (final _ThemeSchemeOption option in _themeSchemeOptions)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: ListTile(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppRadii.medium,
                             ),
-                            child: isSelected
-                                ? const Icon(
-                                    Icons.check_rounded,
-                                    color: Colors.white,
-                                  )
-                                : null,
+                            side: BorderSide(
+                              color: option.id == selectedScheme
+                                  ? colorScheme.primary
+                                  : colorScheme.outlineVariant,
+                            ),
                           ),
-                        );
-                      }),
-                    ),
+                          tileColor: option.id == selectedScheme
+                              ? colorScheme.primaryContainer.withAlpha(90)
+                              : colorScheme.surfaceContainerLow,
+                          leading: _ThemeSchemeSwatch(option: option),
+                          title: Text(option.title),
+                          subtitle: Text(option.subtitle),
+                          trailing: option.id == selectedScheme
+                              ? Icon(
+                                  Icons.check_circle_rounded,
+                                  color: colorScheme.primary,
+                                )
+                              : null,
+                          onTap: () => Navigator.of(context).pop(option.id),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -414,6 +406,79 @@ class _SettingsPageState extends State<SettingsPage> {
         );
       },
     );
+  }
+
+  Widget _buildDailyQuranGoalTile(BuildContext context) {
+    final int goal = _dailyQuranGoalAyahs();
+    return ListTile(
+      leading: const Icon(Icons.flag_outlined),
+      title: const Text("Daily Quran goal"),
+      subtitle: Text("$goal ayahs per day"),
+      onTap: () async {
+        final int? value = await _showDailyGoalDialog(context, goal);
+        if (value == null) return;
+        await SettingsDB().put("dailyQuranGoalAyahs", value);
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  Future<int?> _showDailyGoalDialog(BuildContext context, int initialGoal) {
+    final TextEditingController controller = TextEditingController(
+      text: initialGoal.toString(),
+    );
+    String? errorText;
+
+    return showDialog<int>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Daily Quran goal'),
+              content: TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Ayahs per day',
+                  hintText: '20',
+                  errorText: errorText,
+                ),
+                onChanged: (_) {
+                  if (errorText != null) {
+                    setDialogState(() {
+                      errorText = null;
+                    });
+                  }
+                },
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final int? value = int.tryParse(controller.text.trim());
+                    if (value == null || value < 1 || value > 1000) {
+                      setDialogState(() {
+                        errorText = 'Enter a goal from 1 to 1000 ayahs';
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(value);
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).whenComplete(controller.dispose);
   }
 
   Widget _buildClearReadingHistoryTile(BuildContext context) {
@@ -559,14 +624,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _applyRestoredTheme(BuildContext context) async {
-    final dynamic savedColorIndex = SettingsDB().get("color");
-    final int colorIndex =
-        savedColorIndex is int &&
-            savedColorIndex >= 0 &&
-            savedColorIndex < Colors.primaries.length
-        ? savedColorIndex
-        : 7;
-    final MaterialColor color = Colors.primaries[colorIndex];
+    final MaterialColor color = _savedMaterialColor();
+    final String themeScheme = _selectedThemeScheme();
     final dynamic themeModeValue = SettingsDB().get("themeMode");
     final AdaptiveThemeMode themeMode = switch (themeModeValue) {
       "light" => AdaptiveThemeMode.light,
@@ -576,8 +635,8 @@ class _SettingsPageState extends State<SettingsPage> {
     };
 
     AdaptiveTheme.of(context).setTheme(
-      light: AppTheme.buildLightTheme(color),
-      dark: AppTheme.buildDarkTheme(color),
+      light: AppTheme.buildLightTheme(color, schemeId: themeScheme),
+      dark: AppTheme.buildDarkTheme(color, schemeId: themeScheme),
     );
     AdaptiveTheme.of(context).setThemeMode(themeMode);
   }
@@ -681,13 +740,41 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   String _selectedThemeName() {
-    final dynamic savedColor = SettingsDB().get("color");
-    if (savedColor is int &&
-        savedColor >= 0 &&
-        savedColor < _themeColorNames.length) {
-      return _themeColorNames[savedColor];
+    return _themeSchemeOptions
+        .firstWhere(
+          (option) => option.id == _selectedThemeScheme(),
+          orElse: () => _themeSchemeOptions.first,
+        )
+        .title;
+  }
+
+  String _selectedThemeScheme() {
+    final dynamic savedScheme = SettingsDB().get("themeScheme");
+    return switch (savedScheme) {
+      AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
+      AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
+      _ => AppTheme.defaultScheme,
+    };
+  }
+
+  MaterialColor _savedMaterialColor() {
+    final dynamic savedColorIndex = SettingsDB().get("color");
+    final int colorIndex =
+        savedColorIndex is int &&
+            savedColorIndex >= 0 &&
+            savedColorIndex < Colors.primaries.length
+        ? savedColorIndex
+        : 7;
+    return Colors.primaries[colorIndex];
+  }
+
+  int _dailyQuranGoalAyahs() {
+    final dynamic saved = SettingsDB().get("dailyQuranGoalAyahs");
+    if (saved is int) return saved.clamp(1, 1000).toInt();
+    if (saved is String) {
+      return (int.tryParse(saved) ?? 20).clamp(1, 1000).toInt();
     }
-    return "Cyan";
+    return 20;
   }
 
   String _selectedTranslationName() {
@@ -817,23 +904,58 @@ class _FeedbackContactPage extends StatelessWidget {
   }
 }
 
-const List<String> _themeColorNames = <String>[
-  "Red",
-  "Pink",
-  "Purple",
-  "Deep purple",
-  "Indigo",
-  "Blue",
-  "Light blue",
-  "Cyan",
-  "Teal",
-  "Green",
-  "Light green",
-  "Lime",
-  "Yellow",
-  "Amber",
-  "Orange",
-  "Deep orange",
-  "Brown",
-  "Blue grey",
+class _ThemeSchemeOption {
+  const _ThemeSchemeOption({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.colors,
+  });
+
+  final String id;
+  final String title;
+  final String subtitle;
+  final List<Color> colors;
+}
+
+class _ThemeSchemeSwatch extends StatelessWidget {
+  const _ThemeSchemeSwatch({required this.option});
+
+  final _ThemeSchemeOption option;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 46,
+      height: 46,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(colors: option.colors),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
+        ),
+      ),
+    );
+  }
+}
+
+const List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
+  _ThemeSchemeOption(
+    id: AppTheme.defaultScheme,
+    title: 'Classic Green',
+    subtitle: 'The original calm eQuran palette.',
+    colors: <Color>[Color(0xFF07110E), Color(0xFF1E7A61)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.fancyBlueScheme,
+    title: 'Fancy Blue',
+    subtitle: 'Deep navy with sapphire and muted cyan accents.',
+    colors: <Color>[Color(0xFF06101C), Color(0xFF3B8DD6)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.fancyPurpleScheme,
+    title: 'Fancy Purple',
+    subtitle: 'Midnight purple with royal violet highlights.',
+    colors: <Color>[Color(0xFF100A19), Color(0xFF9368D0)],
+  ),
 ];

@@ -48,9 +48,11 @@ class BackupService {
     'reciter',
     'color',
     'themeMode',
+    'themeScheme',
     'fontSize',
     'fontSizeTranslation',
     'playbackRate',
+    'dailyQuranGoalAyahs',
     'ayahDelaySeconds',
     'intervalRepeatCount',
     'repeatAyahCount',
@@ -248,6 +250,7 @@ class BackupService {
           max: _themeColorCount - 1,
         ),
         'themeMode' => _requireThemeMode(entry.value),
+        'themeScheme' => _requireThemeScheme(entry.value),
         'reciter' => _requireReciterCode(entry.value),
         'fontSize' => _requireDoubleInRange(
           entry.key,
@@ -265,6 +268,12 @@ class BackupService {
           entry.key,
           entry.value,
           const <double>[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0],
+        ),
+        'dailyQuranGoalAyahs' => _requireIntInRange(
+          entry.key,
+          entry.value,
+          min: 1,
+          max: 1000,
         ),
         'ayahDelaySeconds' => _requireIntInRange(
           entry.key,
@@ -374,6 +383,16 @@ class BackupService {
     if (value is! String ||
         (value != 'light' && value != 'dark' && value != 'auto')) {
       throw AppBackupException('Invalid value for "themeMode".');
+    }
+    return value;
+  }
+
+  static String _requireThemeScheme(dynamic value) {
+    if (value is! String ||
+        (value != 'default' &&
+            value != 'fancyBlue' &&
+            value != 'fancyPurple')) {
+      throw AppBackupException('Invalid value for "themeScheme".');
     }
     return value;
   }

@@ -5,7 +5,6 @@ import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
 import 'package:equran/utils/responsive_nav.dart';
-import 'package:equran/search/quran_text_search_results.dart';
 import 'package:equran/widgets/library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +36,6 @@ class _MainPageState extends State<MainPage>
   final Debouncer _debouncer = Debouncer(milliseconds: 400);
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _surahScrollController = ScrollController();
-  final ScrollController _quranTextScrollController = ScrollController();
   final ScrollController _juzScrollController = ScrollController();
   final ScrollController _pageScrollController = ScrollController();
   final ScrollController _favouritesScrollController = ScrollController();
@@ -51,7 +49,7 @@ class _MainPageState extends State<MainPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_handleTabChanged);
     widget.searchRequestListenable?.addListener(_handleExternalSearchRequest);
   }
@@ -76,7 +74,6 @@ class _MainPageState extends State<MainPage>
     _tabController.removeListener(_handleTabChanged);
     _tabController.dispose();
     _surahScrollController.dispose();
-    _quranTextScrollController.dispose();
     _juzScrollController.dispose();
     _pageScrollController.dispose();
     _favouritesScrollController.dispose();
@@ -210,9 +207,9 @@ class _MainPageState extends State<MainPage>
               _showSearch
                   ? const SizedBox.shrink()
                   : IconButton(
-                      tooltip: 'Search Quran text',
+                      tooltip: 'Search Surahs',
                       onPressed: () {
-                        _tabController.animateTo(3);
+                        _tabController.animateTo(0);
                         _openSearch();
                       },
                       color: colors.onPrimary,
@@ -272,11 +269,10 @@ class _MainPageState extends State<MainPage>
             overlayColor: WidgetStatePropertyAll(colors.primary.withAlpha(14)),
             splashBorderRadius: BorderRadius.circular(AppRadii.pill),
             tabs: <Widget>[
-              _buildTabLabel(Icons.menu_book_outlined, 'Sura'),
+              _buildTabLabel(Icons.menu_book_outlined, 'Surah'),
               _buildTabLabel(Icons.layers_outlined, 'Juz'),
               _buildTabLabel(Icons.article_outlined, 'Page'),
-              _buildTabLabel(Icons.travel_explore_rounded, 'Quran Text'),
-              _buildTabLabel(Icons.favorite_border_rounded, 'Bookmark'),
+              _buildTabLabel(Icons.favorite_border_rounded, 'Saved'),
             ],
           ),
         ),
@@ -336,16 +332,6 @@ class _MainPageState extends State<MainPage>
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: PrimaryScrollController(
-            controller: _quranTextScrollController,
-            child: QuranTextSearchResults(
-              searchQuery: _searchQuery,
-              onSearchSelected: _useSearchQuery,
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: ValueListenableBuilder(
             key: const ValueKey<String>('page-list'),
             valueListenable: FavouritesDB().listener,
@@ -380,16 +366,6 @@ class _MainPageState extends State<MainPage>
     });
   }
 
-  void _useSearchQuery(String value) {
-    _debouncer.cancel();
-    _searchController.text = value;
-    _searchController.selection = TextSelection.collapsed(offset: value.length);
-    setState(() {
-      _showSearch = true;
-      _searchQuery = value;
-    });
-  }
-
   void _closeSearch() {
     _debouncer.cancel();
     setState(() {
@@ -414,7 +390,7 @@ class _MainPageState extends State<MainPage>
     _lastHandledSearchRequestNonce = request.nonce;
     final int targetIndex = switch (request.mode) {
       QuranSearchMode.surahs => 0,
-      QuranSearchMode.quranText => 3,
+      QuranSearchMode.quranText => 0,
     };
 
     if (_tabController.index != targetIndex) {
@@ -431,8 +407,7 @@ class _MainPageState extends State<MainPage>
   String get _searchHint => switch (_selectedSegment) {
     1 => "Juz number or surah name...",
     2 => "Page number, surah, or juz...",
-    3 => "Arabic word or translation...",
-    4 => "Saved ayah, surah, note, or number...",
+    3 => "Saved ayah, surah, note, or number...",
     _ => "Surah name or number...",
   };
 
@@ -472,7 +447,6 @@ class _MainPageState extends State<MainPage>
       0 => _surahScrollController,
       1 => _juzScrollController,
       2 => _pageScrollController,
-      3 => _quranTextScrollController,
       _ => _favouritesScrollController,
     };
     if (!scrollController.hasClients) return;

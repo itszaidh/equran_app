@@ -11,6 +11,7 @@ import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 
 class PrayerTimesPage extends StatefulWidget {
@@ -114,6 +115,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   location: location,
                   settings: settings,
                 );
+          final PrayerDay nextSelectedDay = _service.calculateDay(
+            date: DateTime(
+              selectedDate.year,
+              selectedDate.month,
+              selectedDate.day + 1,
+            ),
+            location: location,
+            settings: settings,
+          );
           final _PrayerHeroTiming heroTiming;
           final PrayerTimeKind? highlightedPrayer;
           if (isViewingToday) {
@@ -152,6 +162,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                         context,
                         selectedDay,
                         heroTiming,
+                        settings,
+                        location,
+                        isViewingToday,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildPrayerSummaryCard(
+                        context,
+                        selectedDay,
+                        nextSelectedDay,
                         settings,
                         location,
                         isViewingToday,
@@ -405,6 +424,122 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPrayerSummaryCard(
+    BuildContext context,
+    PrayerDay day,
+    PrayerDay nextDay,
+    PrayerTimeSettings settings,
+    PrayerLocation location,
+    bool isViewingToday,
+  ) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final PrayerCalculationMethod effectiveMethod = day.effectiveMethod;
+    final PrayerHighLatitudeRule highLatitudeRule = _service
+        .effectiveHighLatitudeRuleFor(
+          location: location,
+          settings: settings,
+          effectiveMethod: effectiveMethod,
+        );
+    final _NightTimes nightTimes = _nightTimesFor(day, nextDay);
+
+    return EquranSurfaceCard(
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              EquranIconBadge(
+                icon: Icons.tune_rounded,
+                size: 38,
+                backgroundColor: colors.mint,
+                foregroundColor: colors.primary,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Prayer settings summary',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => _selectPrayerDate(day.date),
+                icon: const Icon(Icons.calendar_month_rounded, size: 18),
+                label: Text(isViewingToday ? 'Today' : _formatDate(day.date)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: <Widget>[
+              _SummaryChip(
+                icon: Icons.calculate_outlined,
+                label:
+                    'Method: ${prayerMethodDisplayLabel(settings: settings, effectiveMethod: effectiveMethod)}',
+              ),
+              _SummaryChip(
+                icon: Icons.wb_sunny_outlined,
+                label: 'Asr: ${settings.asrMethod.label}',
+              ),
+              _SummaryChip(
+                icon: Icons.public_rounded,
+                label: 'High latitude: ${highLatitudeRule.label}',
+              ),
+              _SummaryChip(
+                icon: Icons.event_rounded,
+                label: _formatDate(day.date),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.paleGreen,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              border: Border.all(color: colors.border),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: _NightTimeValue(
+                      icon: Icons.nights_stay_outlined,
+                      label: 'Middle of night',
+                      value: _formatTime(
+                        nightTimes.middle,
+                        settings.use24HourFormat,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _NightTimeValue(
+                      icon: Icons.dark_mode_outlined,
+                      label: 'Last third starts',
+                      value: _formatTime(
+                        nightTimes.lastThirdStart,
+                        settings.use24HourFormat,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -728,6 +863,28 @@ _PrayerHeroTiming _selectedDateHeroTiming(PrayerDay day) {
     entry: day.entryFor(PrayerTimeKind.fajr),
     countdown: Duration.zero,
     isNow: false,
+  );
+}
+
+class _NightTimes {
+  const _NightTimes({required this.middle, required this.lastThirdStart});
+
+  final DateTime middle;
+  final DateTime lastThirdStart;
+}
+
+_NightTimes _nightTimesFor(PrayerDay day, PrayerDay nextDay) {
+  final DateTime maghrib = day.entryFor(PrayerTimeKind.maghrib).time;
+  DateTime nextFajr = nextDay.entryFor(PrayerTimeKind.fajr).time;
+  if (!nextFajr.isAfter(maghrib)) {
+    nextFajr = nextFajr.add(const Duration(days: 1));
+  }
+  final Duration night = nextFajr.difference(maghrib);
+  return _NightTimes(
+    middle: maghrib.add(Duration(microseconds: night.inMicroseconds ~/ 2)),
+    lastThirdStart: maghrib.add(
+      Duration(microseconds: (night.inMicroseconds * 2) ~/ 3),
+    ),
   );
 }
 
@@ -1238,6 +1395,98 @@ class _LocationSummaryRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SummaryChip extends StatelessWidget {
+  const _SummaryChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppRadii.small),
+        border: Border.all(color: colors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 16, color: colors.primary),
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 250),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: colors.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NightTimeValue extends StatelessWidget {
+  const _NightTimeValue({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Row(
+      children: <Widget>[
+        Icon(icon, color: colors.primary, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colors.textMuted,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

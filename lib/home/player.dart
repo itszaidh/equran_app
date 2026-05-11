@@ -13,7 +13,6 @@ import 'package:equran/backend/library.dart'
         QuranTransliterationService,
         ResumeStateDB,
         ResumeStateEntry,
-        AyahTiming,
         SurahTiming,
         SurahTimingRepository,
         SettingsDB;
@@ -181,6 +180,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   static const String _frameRatePolicySource = 'full_player_page';
   static const String _playerPagePointerSource = 'full_player_page_pointer';
   static const String _playerPageSeekSource = 'full_player_page_seek';
+  static const String _sleepTimerDurationMode = 'duration';
+  static const String _sleepTimerEndSurahMode = 'endSurah';
   static const Duration _expandedProgressTickInterval = Duration(
     milliseconds: 33,
   );
@@ -243,6 +244,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Timer? _sleepTimer;
   DateTime? _sleepTimerEndsAt;
   String? _sleepTimerLabel;
+  String? _sleepTimerMode;
   DateTime? _positionSampledAt;
 
   @override
@@ -306,6 +308,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _safeSetState(() {
           _duration = duration;
         });
+        _rescheduleEndOfSurahSleepTimer();
         _syncProgressVisualPolicy(syncPosition: true);
       });
 
@@ -349,6 +352,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _safeSetState(() {
         _duration = duration ?? Duration.zero;
       });
+      _rescheduleEndOfSurahSleepTimer();
       _syncProgressVisualPolicy(syncPosition: true);
     });
 
@@ -975,7 +979,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _persistListeningResume(force: true);
   }
 
-  Future<void> _setSleepTimer(Duration duration, String label) async {
+  Future<void> _setSleepTimer(
+    Duration duration,
+    String label, {
+    String mode = _sleepTimerDurationMode,
+    bool startPlayback = true,
+  }) async {
     if (duration <= Duration.zero) return;
     _sleepTimer?.cancel();
     final DateTime endsAt = DateTime.now().add(duration);
@@ -985,19 +994,33 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _sleepTimer = null;
         _sleepTimerEndsAt = null;
         _sleepTimerLabel = null;
+        _sleepTimerMode = null;
       });
     });
     _safeSetState(() {
       _sleepTimerEndsAt = endsAt;
       _sleepTimerLabel = label;
+      _sleepTimerMode = mode;
     });
-    await _startOrContinuePlaybackForSleepTimer();
+    if (startPlayback) {
+      await _startOrContinuePlaybackForSleepTimer();
+    }
   }
 
-  Future<void> _setSleepTimerUntil(Duration target, String label) async {
+  Future<void> _setSleepTimerUntil(
+    Duration target,
+    String label, {
+    required String mode,
+    bool startPlayback = true,
+  }) async {
     final Duration currentPosition = _estimatedAudioPosition();
     final Duration remaining = target - currentPosition;
-    await _setSleepTimer(remaining, label);
+    await _setSleepTimer(
+      remaining,
+      label,
+      mode: mode,
+      startPlayback: startPlayback,
+    );
   }
 
   Future<void> _startOrContinuePlaybackForSleepTimer() async {
@@ -1015,28 +1038,85 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _sleepTimer = null;
       _sleepTimerEndsAt = null;
       _sleepTimerLabel = null;
+      _sleepTimerMode = null;
     });
   }
 
   String _sleepTimerSummary() {
     final DateTime? endsAt = _sleepTimerEndsAt;
-    final String? label = _sleepTimerLabel;
-    if (endsAt == null || label == null) return 'Off';
+    if (endsAt == null) return 'Off';
     final Duration remaining = endsAt.difference(DateTime.now());
-    if (remaining.isNegative) return label;
+    if (remaining.isNegative) return 'sleeping soon';
     final int minutes =
         remaining.inMinutes + (remaining.inSeconds % 60 == 0 ? 0 : 1);
-    return '$label active - about $minutes min left';
+    return 'sleeping in $minutes ${minutes == 1 ? 'minute' : 'minutes'}';
   }
 
-  Duration? _currentAyahEndPosition() {
-    final SurahTiming? timing = _surahTiming;
-    if (timing == null) return null;
-    final Duration position = _estimatedAudioPosition();
-    final AyahTiming? ayahTiming = timing.timingForPosition(position);
-    final Duration? end = ayahTiming?.end;
-    if (end == null || end.inDays >= 1) return _duration;
-    return end;
+  String _sleepTimerOptionsSubtitle() {
+    if (_sleepTimerEndsAt != null) return _sleepTimerSummary();
+    if (_sleepTimerMode == _sleepTimerEndSurahMode) {
+      return '${_sleepTimerLabel ?? 'End of surah'} pending';
+    }
+    return 'Off';
+  }
+
+  void _clearScheduledSleepTimer({bool keepMode = false}) {
+    _sleepTimer?.cancel();
+    _safeSetState(() {
+      _sleepTimer = null;
+      _sleepTimerEndsAt = null;
+      if (!keepMode) {
+        _sleepTimerLabel = null;
+        _sleepTimerMode = null;
+      }
+    });
+  }
+
+  void _rescheduleEndOfSurahSleepTimer() {
+    if (_sleepTimerMode != _sleepTimerEndSurahMode) return;
+    if (_duration <= Duration.zero) return;
+    final Duration remaining = _duration - _estimatedAudioPosition();
+    if (remaining <= Duration.zero) {
+      _cancelSleepTimer();
+      return;
+    }
+    unawaited(
+      _setSleepTimer(
+        remaining,
+        'End of surah',
+        mode: _sleepTimerEndSurahMode,
+        startPlayback: false,
+      ),
+    );
+  }
+
+  Future<void> _applySleepTimerSelection(String value) async {
+    if (value.startsWith('duration:')) {
+      final int? minutes = int.tryParse(value.substring('duration:'.length));
+      if (minutes == null) return;
+      await _setSleepTimer(
+        Duration(minutes: minutes),
+        '$minutes minutes',
+        mode: _sleepTimerDurationMode,
+      );
+      return;
+    }
+
+    if (value == _sleepTimerEndSurahMode) {
+      _safeSetState(() {
+        _sleepTimerLabel = 'End of surah';
+        _sleepTimerMode = _sleepTimerEndSurahMode;
+      });
+      if (_duration > Duration.zero) {
+        await _setSleepTimerUntil(
+          _duration,
+          'End of surah',
+          mode: _sleepTimerEndSurahMode,
+        );
+      } else {
+        await _startOrContinuePlaybackForSleepTimer();
+      }
+    }
   }
 
   Future<void> _seekCurrentTrack(Duration position) async {
@@ -1052,12 +1132,18 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     if (forceRestart) {
       _pendingInitialResumePosition = null;
     }
+    final int previousSurah = _selectedSurah;
     final String reciterCode = _selectedReciterCode();
     unawaited(_loadTimingForSelection(surah: surah, reciterCode: reciterCode));
     _safeSetState(() {
       _selectedSurah = surah;
       _isLoading = true;
     });
+    if (_sleepTimerMode == _sleepTimerEndSurahMode &&
+        (previousSurah != surah || forceRestart)) {
+      _sleepTimerLabel = 'End of surah';
+      _clearScheduledSleepTimer(keepMode: true);
+    }
 
     try {
       final bool shouldPlayOffline = await _hasOfflineFile(surah);
@@ -1556,77 +1642,43 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                           ListTile(
                             leading: const Icon(Icons.bedtime_outlined),
                             title: const Text('Sleep timer'),
-                            subtitle: Text(_sleepTimerSummary()),
-                            trailing: _sleepTimerEndsAt == null
-                                ? null
-                                : TextButton(
+                            subtitle: Text(_sleepTimerOptionsSubtitle()),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                if (_sleepTimerEndsAt != null)
+                                  TextButton(
                                     onPressed: () {
                                       _cancelSleepTimer();
                                       setSheetState(() {});
                                     },
                                     child: const Text('Cancel'),
                                   ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: <Widget>[
-                                for (final _SleepTimerChoice choice
-                                    in _SleepTimerChoice.durationChoices)
-                                  ChoiceChip(
-                                    selected: _sleepTimerLabel == choice.label,
-                                    label: Text(choice.label),
-                                    onSelected: (_) async {
-                                      await _setSleepTimer(
-                                        choice.duration,
-                                        choice.label,
-                                      );
-                                      if (sheetContext.mounted) {
-                                        setSheetState(() {});
-                                      }
-                                    },
-                                  ),
-                                ChoiceChip(
-                                  selected:
-                                      _sleepTimerLabel == 'End of current ayah',
-                                  label: const Text('End of current ayah'),
-                                  onSelected: (_) async {
-                                    final Duration? end =
-                                        _currentAyahEndPosition();
-                                    if (end != null) {
-                                      await _setSleepTimerUntil(
-                                        end,
-                                        'End of current ayah',
-                                      );
-                                    }
+                                PopupMenuButton<String>(
+                                  tooltip: 'Sleep timer options',
+                                  icon: const Icon(Icons.more_time_rounded),
+                                  onSelected: (value) async {
+                                    await _applySleepTimerSelection(value);
                                     if (sheetContext.mounted) {
                                       setSheetState(() {});
                                     }
                                   },
-                                ),
-                                ChoiceChip(
-                                  selected:
-                                      _sleepTimerLabel ==
-                                      'End of current Surah',
-                                  label: const Text('End of current Surah'),
-                                  onSelected: (_) async {
-                                    if (_duration > Duration.zero) {
-                                      await _setSleepTimerUntil(
-                                        _duration,
-                                        'End of current Surah',
-                                      );
-                                    }
-                                    if (sheetContext.mounted) {
-                                      setSheetState(() {});
-                                    }
+                                  itemBuilder: (context) {
+                                    return <PopupMenuEntry<String>>[
+                                      for (final _SleepTimerChoice choice
+                                          in _SleepTimerChoice.durationChoices)
+                                        PopupMenuItem<String>(
+                                          value:
+                                              'duration:${choice.duration.inMinutes}',
+                                          child: Text(choice.label),
+                                        ),
+                                      const PopupMenuDivider(),
+                                      const PopupMenuItem<String>(
+                                        value: _sleepTimerEndSurahMode,
+                                        child: Text('End of surah'),
+                                      ),
+                                    ];
                                   },
-                                ),
-                                ActionChip(
-                                  avatar: const Icon(Icons.lock_clock_rounded),
-                                  label: const Text('End of current interval'),
-                                  onPressed: null,
                                 ),
                               ],
                             ),

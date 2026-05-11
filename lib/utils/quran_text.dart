@@ -41,6 +41,48 @@ String quranVerseText(
   return '$verseText ${arabicVerseNumber(verse)}';
 }
 
+String removeArabicDiacritics(String text) {
+  return String.fromCharCodes(
+    text.runes.where((int rune) {
+      return rune != 0x0640 && !_isArabicDiacriticRune(rune);
+    }),
+  );
+}
+
+int countArabicLetters(String text) {
+  int count = 0;
+  for (final int rune in removeArabicDiacritics(text).runes) {
+    if (_isArabicLetterRune(rune)) {
+      count++;
+    }
+  }
+  return count;
+}
+
+int quranVerseArabicLetterCount(int chapter, int verse) {
+  return countArabicLetters(quranVerseText(chapter, verse));
+}
+
+bool _isArabicDiacriticRune(int rune) {
+  return (rune >= 0x064B && rune <= 0x065F) ||
+      rune == 0x0670 ||
+      (rune >= 0x06D6 && rune <= 0x06ED) ||
+      (rune >= 0x08D3 && rune <= 0x08FF);
+}
+
+bool _isArabicLetterRune(int rune) {
+  return (rune >= 0x0621 && rune <= 0x063A) ||
+      (rune >= 0x0641 && rune <= 0x064A) ||
+      (rune >= 0x066E && rune <= 0x066F) ||
+      (rune >= 0x0671 && rune <= 0x06D3) ||
+      rune == 0x06D5 ||
+      (rune >= 0x06EE && rune <= 0x06EF) ||
+      (rune >= 0x06FA && rune <= 0x06FC) ||
+      rune == 0x06FF ||
+      (rune >= 0x0750 && rune <= 0x077F) ||
+      (rune >= 0x08A0 && rune <= 0x08C7);
+}
+
 String inlineQuranVerseSegment(int chapter, int verse) {
   return '\u2067${quranVerseText(chapter, verse, includeVerseNumber: true)}\u2069  ';
 }

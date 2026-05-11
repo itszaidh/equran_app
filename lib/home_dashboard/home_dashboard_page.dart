@@ -694,86 +694,111 @@ class _HomePrayerHeroCard extends StatelessWidget {
         exactAlarmPermission == PrayerExactAlarmPermissionStatus.denied;
     final String title = featuredPrayer.kind == PrayerTimeKind.sunrise
         ? 'Sunrise Time'
-        : '${featuredPrayer.kind.label} Prayer Time';
+        : '${featuredPrayer.kind.label} Time';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        EquranGradientCard(
-          onTap: onOpenPrayerTimes,
-          padding: const EdgeInsets.fromLTRB(20, 20, 16, 20),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: <Widget>[
-              Positioned(
-                right: -18,
-                top: 8,
-                bottom: 8,
-                width: 204,
-                child: _PrayerHeroDecoration(kind: featuredPrayer.kind),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final bool compact = constraints.maxWidth < 360;
+            final double artWidth = compact ? 156 : 204;
+            final double trailingSpace = compact ? 82 : 118;
+            final double timeSize = (constraints.maxWidth * 0.13)
+                .clamp(compact ? 34.0 : 40.0, 48.0)
+                .toDouble();
+            final double titleSize = (constraints.maxWidth * 0.052)
+                .clamp(18.0, 22.0)
+                .toDouble();
+
+            return EquranGradientCard(
+              onTap: onOpenPrayerTimes,
+              padding: EdgeInsets.fromLTRB(
+                compact ? 16 : 20,
+                compact ? 18 : 20,
+                compact ? 12 : 16,
+                compact ? 18 : 20,
               ),
-              Row(
+              child: Stack(
+                clipBehavior: Clip.none,
                 children: <Widget>[
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 158),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              prayerTime,
-                              maxLines: 1,
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: colors.onPrimary,
-                                fontSize: 48,
-                                fontWeight: FontWeight.w900,
-                                height: 0.98,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              color: colors.onPrimary,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: SizedBox(
-                              width: 104,
-                              child: Divider(
-                                height: 1,
-                                color: colors.onPrimary.withAlpha(58),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${nextPrayer.entry.kind.label} begins in $countdown',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              color: colors.onPrimaryMuted,
-                              fontWeight: FontWeight.w800,
-                              height: 1.25,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  Positioned(
+                    right: -18,
+                    top: 8,
+                    bottom: 8,
+                    width: artWidth,
+                    child: _PrayerHeroDecoration(kind: featuredPrayer.kind),
                   ),
-                  const SizedBox(width: 118),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: compact ? 142 : 158,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  prayerTime,
+                                  maxLines: 1,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    color: colors.onPrimary,
+                                    fontSize: timeSize,
+                                    fontWeight: FontWeight.w900,
+                                    height: 0.98,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: compact ? 6 : 8),
+                              Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  color: colors.onPrimary,
+                                  fontSize: titleSize,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: compact ? 12 : 16,
+                                ),
+                                child: SizedBox(
+                                  width: compact ? 88 : 104,
+                                  child: Divider(
+                                    height: 1,
+                                    color: colors.onPrimary.withAlpha(58),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${nextPrayer.entry.kind.label} begins in $countdown',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: colors.onPrimaryMuted,
+                                  fontSize: compact ? 13 : null,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.25,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: trailingSpace),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
         if (exactAlarmDenied) ...<Widget>[
           const SizedBox(height: 10),
@@ -942,8 +967,8 @@ class _PrayerThumbCard extends StatelessWidget {
                       child: Image.asset(
                         _prayerThumbAsset(entry.kind),
                         fit: BoxFit.contain,
-                        width: 70,
-                        height: 52,
+                        width: 82,
+                        height: 60,
                       ),
                     ),
                   ),
@@ -1151,7 +1176,7 @@ class _RoutinePlanCta extends StatelessWidget {
   }
 }
 
-class _MuslimDailyQuickActions extends StatelessWidget {
+class _MuslimDailyQuickActions extends StatefulWidget {
   const _MuslimDailyQuickActions({
     required this.latestReading,
     required this.actions,
@@ -1159,6 +1184,21 @@ class _MuslimDailyQuickActions extends StatelessWidget {
 
   final ResumeStateEntry? latestReading;
   final HomeDashboardPage actions;
+
+  @override
+  State<_MuslimDailyQuickActions> createState() =>
+      _MuslimDailyQuickActionsState();
+}
+
+class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
+  final PageController _pageController = PageController();
+  int _page = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1173,77 +1213,97 @@ class _MuslimDailyQuickActions extends StatelessWidget {
       _QuickAction(
         Icons.menu_book_outlined,
         'Quran',
-        actions.onOpenQuran,
+        widget.actions.onOpenQuran,
         assetPath: _quranReadAsset,
       ),
       _QuickAction(
         Icons.schedule_outlined,
         'Prayer',
-        actions.onOpenPrayerTimes,
+        widget.actions.onOpenPrayerTimes,
         assetPath: _prayerTimeAsset,
       ),
       _QuickAction(
         Icons.explore_outlined,
         'Qibla',
-        actions.onOpenQibla,
+        widget.actions.onOpenQibla,
         assetPath: _qiblaAsset,
       ),
       _QuickAction(
         Icons.graphic_eq_rounded,
         'Player',
-        actions.onOpenPlayer,
+        widget.actions.onOpenPlayer,
         assetPath: _playerAsset,
       ),
       _QuickAction(
         Icons.auto_awesome_outlined,
         'Tasbih',
-        actions.onOpenTasbih,
+        widget.actions.onOpenTasbih,
         assetPath: _tasbihAsset,
       ),
       _QuickAction(
         Icons.auto_stories_outlined,
         'Dua',
-        actions.onOpenDuas,
+        widget.actions.onOpenDuas,
         assetPath: _duaAsset,
       ),
       _QuickAction(
         Icons.download_outlined,
         'Downloads',
-        actions.onOpenDownloads,
+        widget.actions.onOpenDownloads,
         assetPath: _downloadAsset,
       ),
+    ];
+    final List<List<_QuickAction>> pages = <List<_QuickAction>>[
+      items.take(4).toList(growable: false),
+      items.skip(4).take(4).toList(growable: false),
     ];
 
     return EquranSurfaceCard(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
       child: Column(
         children: <Widget>[
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final int columns = constraints.maxWidth >= 620 ? 8 : 4;
-              return GridView.builder(
-                itemCount: items.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: columns,
-                  childAspectRatio: columns == 4 ? 1.05 : 0.95,
-                ),
-                itemBuilder: (context, index) {
-                  final _QuickAction item = items[index];
-                  return EquranShortcutTile(
-                    icon: item.icon,
-                    label: item.label,
-                    onTap: item.onTap,
-                    assetPath: item.assetPath,
-                  );
-                },
-              );
-            },
+          SizedBox(
+            height: 174,
+            child: PageView.builder(
+              controller: _pageController,
+              physics: const BouncingScrollPhysics(),
+              itemCount: pages.length,
+              onPageChanged: (int value) {
+                setState(() {
+                  _page = value;
+                });
+              },
+              itemBuilder: (context, pageIndex) {
+                final List<_QuickAction> pageItems = pages[pageIndex];
+                return GridView.builder(
+                  itemCount: pageItems.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisExtent: 82,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                  ),
+                  itemBuilder: (context, index) {
+                    final _QuickAction item = pageItems[index];
+                    return EquranShortcutTile(
+                      icon: item.icon,
+                      label: item.label,
+                      onTap: item.onTap,
+                      assetPath: item.assetPath,
+                    );
+                  },
+                );
+              },
+            ),
           ),
+          const SizedBox(height: 6),
+          _QuickActionPageDots(itemCount: pages.length, activeIndex: _page),
           Divider(height: 20, color: colors.divider),
           InkWell(
-            onTap: actions.onOpenMore,
+            onTap: widget.actions.onOpenMore,
             borderRadius: BorderRadius.circular(EquranRadii.medium),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 4, 8, 6),
@@ -1273,17 +1333,48 @@ class _MuslimDailyQuickActions extends StatelessWidget {
   }
 
   void _openLatestReading(BuildContext context) {
-    final ResumeStateEntry? current = latestReading;
+    final ResumeStateEntry? current = widget.latestReading;
     final int? surah = current?.surah;
     final int? ayah = current?.ayah;
     if (surah == null || ayah == null) {
-      actions.onOpenQuran();
+      widget.actions.onOpenQuran();
       return;
     }
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => ReadPage(chapter: surah, startVerse: ayah),
       ),
+    );
+  }
+}
+
+class _QuickActionPageDots extends StatelessWidget {
+  const _QuickActionPageDots({
+    required this.itemCount,
+    required this.activeIndex,
+  });
+
+  final int itemCount;
+  final int activeIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List<Widget>.generate(itemCount, (index) {
+        final bool active = index == activeIndex;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          width: active ? 14 : 5,
+          height: 5,
+          decoration: BoxDecoration(
+            color: active ? colors.primary : colors.border,
+            borderRadius: BorderRadius.circular(EquranRadii.pill),
+          ),
+        );
+      }),
     );
   }
 }
@@ -1492,7 +1583,7 @@ class _JourneyPreviewCard extends StatelessWidget {
     final QuranStatsSnapshot snapshot =
         stats ?? QuranStatsSnapshot(id: 'summary', updatedAt: DateTime.now());
     final int ayahsRead = activity?.ayahsRead ?? 0;
-    const int dailyGoal = 20;
+    final int dailyGoal = _dailyQuranGoalAyahs();
     final double progress = (ayahsRead / dailyGoal).clamp(0.0, 1.0).toDouble();
 
     return EquranSurfaceCard(
@@ -1583,6 +1674,15 @@ class _JourneyPreviewCard extends StatelessWidget {
       ),
     );
   }
+}
+
+int _dailyQuranGoalAyahs() {
+  final dynamic saved = SettingsDB().get('dailyQuranGoalAyahs');
+  if (saved is int) return saved.clamp(1, 1000).toInt();
+  if (saved is String) {
+    return (int.tryParse(saved) ?? 20).clamp(1, 1000).toInt();
+  }
+  return 20;
 }
 
 class _WeeklyBars extends StatelessWidget {

@@ -10,6 +10,18 @@ class EquranTheme {
 
   static ThemeData dark() => _build(EquranColors.dark, Brightness.dark);
 
+  static ThemeData fancyBlueLight() =>
+      _build(EquranColors.fancyBlueLight, Brightness.light);
+
+  static ThemeData fancyBlueDark() =>
+      _build(EquranColors.fancyBlueDark, Brightness.dark);
+
+  static ThemeData fancyPurpleLight() =>
+      _build(EquranColors.fancyPurpleLight, Brightness.light);
+
+  static ThemeData fancyPurpleDark() =>
+      _build(EquranColors.fancyPurpleDark, Brightness.dark);
+
   static ThemeData _build(EquranColors tokens, Brightness brightness) {
     final bool isDark = brightness == Brightness.dark;
     final ColorScheme colorScheme = ColorScheme(

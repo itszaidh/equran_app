@@ -37,7 +37,7 @@ class LastReadCard extends StatefulWidget {
 }
 
 class _LastReadCardState extends State<LastReadCard> {
-  static const double _estimatedCarouselPageSize = 246;
+  static const double _estimatedCarouselPageSize = 198;
 
   int _currentPage = 0;
 
@@ -137,7 +137,7 @@ class _LastReadCardState extends State<LastReadCard> {
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 22),
+                      padding: const EdgeInsets.only(bottom: 34),
                       child: _CarouselPillsIndicator(
                         itemCount: entries.length,
                         activeIndex: activeIndex,
@@ -216,7 +216,7 @@ class _LastReadEntryCard extends StatelessWidget {
     final EquranColors colors = context.equranColors;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 4, 6, 24),
+      padding: const EdgeInsets.fromLTRB(6, 4, 6, 20),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadii.large),
@@ -240,7 +240,7 @@ class _LastReadEntryCard extends StatelessWidget {
                   right: -20,
                   top: -6,
                   bottom: -10,
-                  width: 176,
+                  width: 158,
                   child: Opacity(
                     opacity: 0.84,
                     child: Image.asset(
@@ -253,8 +253,8 @@ class _LastReadEntryCard extends StatelessWidget {
                   padding: EdgeInsets.fromLTRB(
                     20,
                     20,
-                    154,
-                    showIndicatorSpace ? 42 : 24,
+                    136,
+                    showIndicatorSpace ? 38 : 20,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

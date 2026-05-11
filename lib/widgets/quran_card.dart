@@ -69,7 +69,9 @@ class QuranCard extends StatelessWidget {
         ),
         child: Container(
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: colors.divider)),
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(AppRadii.medium),
+            border: Border.all(color: colors.border),
           ),
           padding: EdgeInsets.symmetric(
             horizontal: compact ? 8 : 10,
@@ -77,7 +79,7 @@ class QuranCard extends StatelessWidget {
           ),
           child: Row(
             children: <Widget>[
-              NumberBadge(label: surah.id.toString(), size: compact ? 34 : 38),
+              NumberBadge(label: surah.id.toString(), size: compact ? 38 : 42),
               const SizedBox(width: EquranSpacing.l),
               Expanded(
                 child: Column(

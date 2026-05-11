@@ -37,8 +37,6 @@ import 'package:equran/widgets/library.dart'
     show
         AppSelectionDialog,
         AppSelectionOption,
-        EquranMosqueSilhouette,
-        EquranOpenBookMark,
         ReadProgressBar,
         ReadQuranCard,
         ReadVersePlayerBar;
@@ -68,8 +66,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:share_plus/share_plus.dart';
 import 'package:vibration/vibration.dart';
-
-const String _mushafDecorationAsset = 'assets/images/app_assets/quran.png';
 
 class _OfflineAudioPlaybackException implements Exception {
   const _OfflineAudioPlaybackException();
@@ -1325,144 +1321,212 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         builder: (sheetContext) {
           final ThemeData theme = Theme.of(sheetContext);
           final ColorScheme colorScheme = theme.colorScheme;
-          final double maxHeight =
-              MediaQuery.sizeOf(sheetContext).height * 0.82;
 
           return SafeArea(
             top: false,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: maxHeight),
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary.withAlpha(18),
-                          borderRadius: BorderRadius.circular(AppRadii.medium),
-                        ),
-                        child: Icon(
-                          Icons.tune_rounded,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+            child: DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: 0.72,
+              minChildSize: 0.38,
+              maxChildSize: 0.88,
+              builder: (context, scrollController) {
+                return StatefulBuilder(
+                  builder: (context, setSheetState) {
+                    final bool translationEnabled =
+                        SettingsDB().get(
+                          "enableTranslation",
+                          defaultValue: true,
+                        ) ==
+                        true;
+                    final bool transliterationEnabled =
+                        SettingsDB().get(
+                          "showTransliteration",
+                          defaultValue: false,
+                        ) ==
+                        true;
+                    final bool cardViewEnabled =
+                        SettingsDB().get("viewMode", defaultValue: true) ==
+                        true;
+
+                    return ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                      children: <Widget>[
+                        Row(
                           children: <Widget>[
-                            Text(
-                              'Reading options',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w800,
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary.withAlpha(18),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.medium,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.tune_rounded,
+                                color: colorScheme.primary,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '$surahName • Ayah $_currentVerse',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    'Reading options',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '$surahName • Ayah $_currentVerse',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  _ReadingOptionsSection(
-                    title: 'Navigation',
-                    children: <Widget>[
-                      _ReadingOptionTile(
-                        icon: Icons.double_arrow_outlined,
-                        title: 'Go to ayah',
-                        subtitle: 'Jump to an ayah in $surahName',
-                        onTap: () => Navigator.of(
-                          sheetContext,
-                        ).pop(_ReadingOptionsAction.goToAyah),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _ReadingOptionsSection(
-                    title: 'Audio',
-                    children: <Widget>[
-                      _ReadingOptionTile(
-                        icon: _hasDownloadedSurahAyahs
-                            ? Icons.offline_pin_rounded
-                            : _isDownloadingSurahAyahs
-                            ? Icons.downloading_rounded
-                            : Icons.download_for_offline_rounded,
-                        title: _hasDownloadedSurahAyahs
-                            ? 'Surah audio downloaded'
-                            : 'Download surah audio',
-                        subtitle: _hasDownloadedSurahAyahs
-                            ? 'All ayahs are available offline'
-                            : 'Download all ayahs for offline playback',
-                        enabled:
-                            !_isDownloadingSurahAyahs &&
-                            !_hasDownloadedSurahAyahs,
-                        onTap: () => Navigator.of(
-                          sheetContext,
-                        ).pop(_ReadingOptionsAction.downloadSurahAyahs),
-                      ),
-                      _ReadingOptionTile(
-                        icon: currentAyahDownloading
-                            ? Icons.downloading_rounded
-                            : _hasDownloadedCurrentAyah
-                            ? Icons.delete_outline_rounded
-                            : Icons.download_rounded,
-                        title: currentAyahDownloading
-                            ? 'Downloading current ayah'
-                            : _hasDownloadedCurrentAyah
-                            ? 'Delete current ayah audio'
-                            : 'Download current ayah',
-                        subtitle: 'Ayah $_currentChapter:$_currentVerse',
-                        enabled: !currentAyahDownloading,
-                        onTap: () => Navigator.of(sheetContext).pop(
-                          _hasDownloadedCurrentAyah
-                              ? _ReadingOptionsAction.deleteCurrentAyah
-                              : _ReadingOptionsAction.downloadCurrentAyah,
+                        const SizedBox(height: 18),
+                        _ReadingOptionsSection(
+                          title: 'Navigation',
+                          children: <Widget>[
+                            _ReadingOptionTile(
+                              icon: Icons.double_arrow_outlined,
+                              title: 'Go to ayah',
+                              subtitle: 'Jump to an ayah in $surahName',
+                              onTap: () => Navigator.of(
+                                sheetContext,
+                              ).pop(_ReadingOptionsAction.goToAyah),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _ReadingOptionsSection(
-                    title: 'Display and sharing',
-                    children: <Widget>[
-                      if (SettingsDB().get(
-                            "enableTranslation",
-                            defaultValue: true,
-                          ) ==
-                          true)
-                        _ReadingOptionTile(
-                          icon: Icons.language_rounded,
-                          title: 'Translation language',
-                          subtitle: 'Choose the translation shown on cards',
-                          onTap: () => Navigator.of(
-                            sheetContext,
-                          ).pop(_ReadingOptionsAction.translationLanguage),
+                        const SizedBox(height: 12),
+                        _ReadingOptionsSection(
+                          title: 'Audio',
+                          children: <Widget>[
+                            _ReadingOptionTile(
+                              icon: _hasDownloadedSurahAyahs
+                                  ? Icons.offline_pin_rounded
+                                  : _isDownloadingSurahAyahs
+                                  ? Icons.downloading_rounded
+                                  : Icons.download_for_offline_rounded,
+                              title: _hasDownloadedSurahAyahs
+                                  ? 'Surah audio downloaded'
+                                  : 'Download surah audio',
+                              subtitle: _hasDownloadedSurahAyahs
+                                  ? 'All ayahs are available offline'
+                                  : 'Download all ayahs for offline playback',
+                              enabled:
+                                  !_isDownloadingSurahAyahs &&
+                                  !_hasDownloadedSurahAyahs,
+                              onTap: () => Navigator.of(
+                                sheetContext,
+                              ).pop(_ReadingOptionsAction.downloadSurahAyahs),
+                            ),
+                            _ReadingOptionTile(
+                              icon: currentAyahDownloading
+                                  ? Icons.downloading_rounded
+                                  : _hasDownloadedCurrentAyah
+                                  ? Icons.delete_outline_rounded
+                                  : Icons.download_rounded,
+                              title: currentAyahDownloading
+                                  ? 'Downloading current ayah'
+                                  : _hasDownloadedCurrentAyah
+                                  ? 'Delete current ayah audio'
+                                  : 'Download current ayah',
+                              subtitle: 'Ayah $_currentChapter:$_currentVerse',
+                              enabled: !currentAyahDownloading,
+                              onTap: () => Navigator.of(sheetContext).pop(
+                                _hasDownloadedCurrentAyah
+                                    ? _ReadingOptionsAction.deleteCurrentAyah
+                                    : _ReadingOptionsAction.downloadCurrentAyah,
+                              ),
+                            ),
+                          ],
                         ),
-                      _ReadingOptionTile(
-                        icon: Icons.ios_share_outlined,
-                        title: 'Share current ayah',
-                        subtitle: 'Create an image for this ayah',
-                        onTap: () => Navigator.of(
-                          sheetContext,
-                        ).pop(_ReadingOptionsAction.shareCurrentAyah),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                        const SizedBox(height: 12),
+                        _ReadingOptionsSection(
+                          title: 'Display and sharing',
+                          children: <Widget>[
+                            SwitchListTile(
+                              secondary: const Icon(Icons.translate_rounded),
+                              title: const Text('Translation'),
+                              subtitle: const Text('Show ayah translation'),
+                              value: translationEnabled,
+                              onChanged: (value) async {
+                                await SettingsDB().put(
+                                  "enableTranslation",
+                                  value,
+                                );
+                                if (!mounted) return;
+                                setState(() {});
+                                setSheetState(() {});
+                              },
+                            ),
+                            SwitchListTile(
+                              secondary: const Icon(Icons.text_fields_rounded),
+                              title: const Text('Transliteration'),
+                              subtitle: const Text(
+                                'Show Latin transliteration',
+                              ),
+                              value: transliterationEnabled,
+                              onChanged: (value) async {
+                                await SettingsDB().put(
+                                  "showTransliteration",
+                                  value,
+                                );
+                                if (!mounted) return;
+                                setState(() {});
+                                setSheetState(() {});
+                              },
+                            ),
+                            SwitchListTile(
+                              secondary: const Icon(Icons.view_agenda_outlined),
+                              title: const Text('Card View'),
+                              subtitle: const Text('Read one ayah per card'),
+                              value: cardViewEnabled,
+                              onChanged: (value) async {
+                                await SettingsDB().put("viewMode", value);
+                                if (!mounted) return;
+                                setState(() {
+                                  _viewMode = value;
+                                });
+                                setSheetState(() {});
+                              },
+                            ),
+                            if (translationEnabled)
+                              _ReadingOptionTile(
+                                icon: Icons.language_rounded,
+                                title: 'Translation language',
+                                subtitle:
+                                    'Choose the translation shown on cards',
+                                onTap: () => Navigator.of(sheetContext).pop(
+                                  _ReadingOptionsAction.translationLanguage,
+                                ),
+                              ),
+                            _ReadingOptionTile(
+                              icon: Icons.ios_share_outlined,
+                              title: 'Share current ayah',
+                              subtitle: 'Create an image for this ayah',
+                              onTap: () => Navigator.of(
+                                sheetContext,
+                              ).pop(_ReadingOptionsAction.shareCurrentAyah),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
             ),
           );
         },
@@ -4191,9 +4255,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
-                  horizontal: 12,
+                  horizontal: 16,
                 ),
-                minimumSize: const Size(0, 44),
+                minimumSize: const Size(58, 44),
                 foregroundColor: colorScheme.onSurfaceVariant,
               ),
               child: const Padding(
@@ -4206,9 +4270,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
-                  horizontal: 12,
+                  horizontal: 16,
                 ),
-                minimumSize: const Size(0, 44),
+                minimumSize: const Size(58, 44),
                 foregroundColor: colorScheme.onSurfaceVariant,
               ),
               child: const Padding(
@@ -4494,9 +4558,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           .Translation
           .values[SettingsDB().get("translation", defaultValue: 0)],
     );
-    final double sidePadding = _shareImageMode == _ShareImageMode.square
-        ? 58
-        : 72;
+    final double sidePadding = switch (_shareImageMode) {
+      _ShareImageMode.square => 48,
+      _ShareImageMode.classic => 58,
+      _ShareImageMode.story => 52,
+    };
     final double contentWidth = shareImageSize.width - (sidePadding * 2);
 
     return Directionality(
@@ -4547,8 +4613,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                     SizedBox(
                       height: _shareImageMode == _ShareImageMode.square
-                          ? 22
-                          : 32,
+                          ? 18
+                          : 26,
                     ),
                     Expanded(
                       child: SizedBox(
@@ -4562,7 +4628,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           showTranslation: showTranslation,
                           showTransliteration: showTransliteration,
                           arabicFontSize: _shareArabicFontSize(),
-                          translationFontSize: _shareTranslationFontSize(),
+                          translationFontSize: min(
+                            _shareTranslationFontSize(),
+                            shareTranslationFontSizeForText(translation),
+                          ),
                         ),
                       ),
                     ),
@@ -4600,117 +4669,60 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final String revelation = _revelationLabel(_currentChapter);
 
     return Container(
-      margin: EdgeInsets.fromLTRB(marginValue, 12, marginValue, 10),
+      margin: EdgeInsets.fromLTRB(marginValue, 8, marginValue, 10),
       decoration: BoxDecoration(
-        gradient: colors.heroGradient,
-        borderRadius: BorderRadius.circular(AppRadii.xl),
+        color: colors.surface,
+        gradient: colors.softSurfaceGradient,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        border: Border.all(color: colors.border),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: colors.primaryStrong.withAlpha(
-              theme.brightness == Brightness.light ? 42 : 68,
+            color: colors.shadow.withAlpha(
+              theme.brightness == Brightness.light ? 12 : 28,
             ),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: SizedBox(
-        height: 220,
-        child: Stack(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          EquranSpacing.pagePadding,
+          16,
+          EquranSpacing.pagePadding,
+          16,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Positioned(
-              right: -18,
-              bottom: -18,
-              width: 190,
-              height: 140,
-              child: Opacity(
-                opacity: 0.36,
-                child: Image.asset(
-                  _mushafDecorationAsset,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const EquranOpenBookMark(opacity: 0.34);
-                  },
-                ),
+            Text(
+              surahName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w900,
               ),
             ),
-            const Positioned(
-              left: -42,
-              bottom: -34,
-              width: 190,
-              height: 118,
-              child: EquranMosqueSilhouette(opacity: 0.15),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                EquranSpacing.pagePadding,
-                20,
-                EquranSpacing.pagePadding,
-                18,
+            const SizedBox(height: 5),
+            Text(
+              englishName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.textSecondary,
+                fontWeight: FontWeight.w700,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    surahName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: colors.onPrimary,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    englishName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onPrimaryMuted,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: SizedBox(
-                      width: 130,
-                      child: Divider(
-                        height: 1,
-                        color: colors.onPrimary.withAlpha(58),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '$revelation • $verseCount VERSES',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.onPrimaryMuted,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        quran.basmala,
-                        maxLines: 1,
-                        textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: colors.onPrimary,
-                          fontFamily: 'Hafs',
-                          fontSize: 34,
-                          fontWeight: FontWeight.w700,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '$revelation • $verseCount VERSES',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colors.primary,
+                fontWeight: FontWeight.w900,
               ),
             ),
           ],
@@ -4745,9 +4757,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   children: [
+                    _buildProgressBar(marginValue),
                     if (_currentVerse == 1)
                       _buildSurahIntroCard(marginValue: marginValue),
-                    _buildProgressBar(marginValue),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: RepaintBoundary(
@@ -5802,13 +5814,14 @@ class _ShareImageHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     color: colors.onPrimary,
+                    fontSize: mode == _ShareImageMode.square ? 33 : 36,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Ayah $verse - ${mode.label}',
-                  style: theme.textTheme.titleSmall?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     color: colors.onPrimaryMuted,
                     fontWeight: FontWeight.w800,
                   ),
@@ -5874,83 +5887,60 @@ class _ShareImageAyahContent extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double textWidth = constraints.maxWidth;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Expanded(
-                  flex: showTranslation ? 6 : 10,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: textWidth,
-                        child: Text(
-                          verseText,
-                          textDirection: TextDirection.rtl,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: colors.textPrimary,
-                            fontFamily: 'Hafs',
-                            fontSize: arabicFontSize,
-                            height: 1.95,
-                            fontWeight: FontWeight.w500,
-                          ),
+            return Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: textWidth,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Text(
+                        verseText,
+                        textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontFamily: 'Hafs',
+                          fontSize: arabicFontSize,
+                          height: 1.82,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                    ),
-                  ),
-                ),
-                if (showTransliteration &&
-                    transliteration.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: 22),
-                  Flexible(
-                    flex: 2,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: textWidth,
-                        child: Text(
+                      if (showTransliteration &&
+                          transliteration.isNotEmpty) ...<Widget>[
+                        const SizedBox(height: 22),
+                        Text(
                           transliteration,
                           textAlign: TextAlign.center,
                           style: theme.textTheme.titleLarge?.copyWith(
                             color: colors.primary,
                             height: 1.42,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-                if (showTranslation) ...<Widget>[
-                  const SizedBox(height: 24),
-                  Divider(height: 1, color: colors.divider),
-                  const SizedBox(height: 22),
-                  Expanded(
-                    flex: 4,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.topCenter,
-                      child: SizedBox(
-                        width: textWidth,
-                        child: Text(
+                      ],
+                      if (showTranslation) ...<Widget>[
+                        const SizedBox(height: 24),
+                        Divider(height: 1, color: colors.divider),
+                        const SizedBox(height: 22),
+                        Text(
                           translation,
                           textAlign: TextAlign.justify,
                           style: theme.textTheme.bodyLarge?.copyWith(
                             color: colors.textSecondary,
                             fontSize: translationFontSize,
-                            height: 1.55,
+                            height: 1.52,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                      ),
-                    ),
+                      ],
+                    ],
                   ),
-                ],
-              ],
+                ),
+              ),
             );
           },
         ),
@@ -5966,11 +5956,7 @@ String _readingDateKey(DateTime date) {
 }
 
 int _estimatedArabicLetters(int surah, int verse) {
-  final String text = quranVerseText(surah, verse);
-  return text.runes.where((int rune) {
-    final String char = String.fromCharCode(rune);
-    return char.trim().isNotEmpty && !RegExp(r'[0-9٠-٩\s]').hasMatch(char);
-  }).length;
+  return quranVerseArabicLetterCount(surah, verse);
 }
 
 int _readingStreakIncluding(String todayKey) {

@@ -4,10 +4,13 @@ import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/utils/quran_text.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
+
+const String _routineDesignAsset = 'assets/images/app_assets/design.png';
 
 class ReadingPlansPage extends StatelessWidget {
   const ReadingPlansPage({super.key});
@@ -49,14 +52,17 @@ class ReadingPlansPage extends StatelessWidget {
                     children: <Widget>[
                       _RoutineHero(plan: activePlan),
                       const SizedBox(height: 18),
-                      _DaySelector(now: DateTime.now()),
-                      const SizedBox(height: 18),
                       _ActivitySummary(plan: activePlan),
                       const SizedBox(height: 14),
                       if (activePlan == null)
                         _EmptyRoutineCard(onCreate: _createThirtyDayPlan)
                       else
                         _TodayTaskCard(plan: activePlan),
+                      const SizedBox(height: 14),
+                      _RoutineHistorySection(
+                        plans: plans,
+                        activePlan: activePlan,
+                      ),
                       const SizedBox(height: 22),
                       _PlanPresetGrid(
                         onCreatePlan: (BuildContext context, _PlanPreset plan) {
@@ -146,12 +152,15 @@ class _RoutineHero extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
       child: Stack(
         children: <Widget>[
-          const Positioned(
+          Positioned(
             right: -12,
             bottom: -16,
             width: 150,
             height: 120,
-            child: EquranOpenBookMark(opacity: 0.24),
+            child: Opacity(
+              opacity: 0.20,
+              child: Image.asset(_routineDesignAsset, fit: BoxFit.cover),
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,7 +208,7 @@ class _RoutineHero extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 plan == null
-                    ? 'Ramadan style, 7-day, 30-day, and 60-day plans are ready.'
+                    ? '7-day, 30-day, and 60-day plans are ready.'
                     : 'Finish target: ${_shortDate(plan!.finishBy)}',
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: colors.onPrimaryMuted,
@@ -208,63 +217,6 @@ class _RoutineHero extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DaySelector extends StatelessWidget {
-  const _DaySelector({required this.now});
-
-  final DateTime now;
-
-  @override
-  Widget build(BuildContext context) {
-    final EquranColors colors = context.equranColors;
-
-    return SizedBox(
-      height: 74,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: 7,
-        separatorBuilder: (BuildContext context, int index) {
-          return const SizedBox(width: 10);
-        },
-        itemBuilder: (BuildContext context, int index) {
-          final DateTime date = DateTime(now.year, now.month, now.day + index);
-          final bool selected = index == 0;
-          return Container(
-            width: 58,
-            decoration: BoxDecoration(
-              color: selected ? colors.primary : colors.surface,
-              borderRadius: BorderRadius.circular(EquranRadii.medium),
-              border: Border.all(
-                color: selected ? colors.primary : colors.border,
-              ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  _weekdayLabel(date.weekday),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: selected ? colors.onPrimaryMuted : colors.textMuted,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  '${date.day}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: selected ? colors.onPrimary : colors.primary,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
       ),
     );
   }
@@ -348,7 +300,7 @@ class _EmptyRoutineCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Start with a balanced 30-day plan, then adjust when custom finish dates are expanded.',
+            'Start with a balanced 30-day plan, or choose a faster or gentler routine below.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: colors.textSecondary,
               height: 1.35,
@@ -379,6 +331,15 @@ class _TodayTaskCard extends StatelessWidget {
     final _AyahRef start = _ayahRefFromGlobalIndex(range.startGlobalAyah);
     final _AyahRef end = _ayahRefFromGlobalIndex(range.endGlobalAyah);
     final bool done = range.isDone;
+    final int completedToday =
+        (plan.lastCompletedGlobalAyah - range.startGlobalAyah + 1)
+            .clamp(0, range.totalAyahs)
+            .toInt();
+    final double dailyFraction = range.totalAyahs <= 0
+        ? 0
+        : (completedToday / range.totalAyahs).clamp(0.0, 1.0).toDouble();
+    final int percentComplete = (dailyFraction * 100).round();
+    final int percentLeft = 100 - percentComplete;
 
     return EquranSurfaceCard(
       backgroundColor: done ? null : colors.surface,
@@ -418,11 +379,31 @@ class _TodayTaskCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(EquranRadii.pill),
+            child: LinearProgressIndicator(
+              value: dailyFraction,
+              minHeight: 8,
+              color: colors.primary,
+              backgroundColor: colors.mint,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            done
+                ? '100% complete'
+                : '$percentComplete% complete • $percentLeft% left today',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             children: <Widget>[
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () => _openStart(context, start),
+                  onPressed: () => _openContinue(context, range),
                   icon: const Icon(Icons.play_arrow_rounded),
                   label: const Text('Continue'),
                 ),
@@ -442,17 +423,30 @@ class _TodayTaskCard extends StatelessWidget {
     );
   }
 
-  void _openStart(BuildContext context, _AyahRef start) {
+  void _openContinue(BuildContext context, _TodayRange range) {
+    final int resumeGlobalAyah =
+        plan.lastCompletedGlobalAyah < range.startGlobalAyah
+        ? range.startGlobalAyah
+        : math.min(plan.lastCompletedGlobalAyah + 1, range.endGlobalAyah);
+    final _AyahRef resume = _ayahRefFromGlobalIndex(resumeGlobalAyah);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          return ReadPage(chapter: start.surah, startVerse: start.verse);
+          return ReadPage(chapter: resume.surah, startVerse: resume.verse);
         },
       ),
     );
   }
 
   Future<void> _markDone(BuildContext context, _TodayRange range) async {
+    final bool confirmed = await _confirmRoutineAction(
+      context: context,
+      title: 'Mark today complete?',
+      message: 'Mark today\'s reading as complete?',
+      confirmLabel: 'Mark Done',
+    );
+    if (!confirmed) return;
+
     final ReadingPlanEntry updated = ReadingPlanEntry(
       id: plan.id,
       type: plan.type,
@@ -533,6 +527,160 @@ class _TodayTaskCard extends StatelessWidget {
   }
 }
 
+class _RoutineHistorySection extends StatelessWidget {
+  const _RoutineHistorySection({required this.plans, required this.activePlan});
+
+  final List<ReadingPlanEntry> plans;
+  final ReadingPlanEntry? activePlan;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    final List<ReadingPlanEntry> pastPlans = plans
+        .where((ReadingPlanEntry plan) => !plan.active)
+        .toList(growable: false);
+
+    return EquranSurfaceCard(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Routine history',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (activePlan != null)
+            _RoutineHistoryTile(
+              plan: activePlan!,
+              label: 'Current routine',
+              onDelete: () => _deleteRoutine(context, activePlan!),
+            )
+          else
+            Text(
+              'No current routine.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
+            ),
+          if (pastPlans.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 8),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              childrenPadding: EdgeInsets.zero,
+              title: Text(
+                'Past routines',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              children: <Widget>[
+                for (final ReadingPlanEntry plan in pastPlans)
+                  _RoutineHistoryTile(
+                    plan: plan,
+                    label: 'Past routine',
+                    onDelete: () => _deleteRoutine(context, plan),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RoutineHistoryTile extends StatelessWidget {
+  const _RoutineHistoryTile({
+    required this.plan,
+    required this.label,
+    required this.onDelete,
+  });
+
+  final ReadingPlanEntry plan;
+  final String label;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final _PlanProgress progress = _planProgress(plan);
+    final EquranColors colors = context.equranColors;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: EquranIconBadge(
+        icon: plan.active ? Icons.route_outlined : Icons.history_rounded,
+        size: 38,
+      ),
+      title: Text(plan.title),
+      subtitle: Text(
+        '$label • ${progress.completedAyahs}/${progress.totalAyahs} ayahs • ${_shortDate(plan.startedAt)}',
+      ),
+      trailing: IconButton(
+        tooltip: 'Delete routine',
+        onPressed: onDelete,
+        color: colors.textMuted,
+        icon: const Icon(Icons.delete_outline_rounded),
+      ),
+    );
+  }
+}
+
+Future<void> _deleteRoutine(BuildContext context, ReadingPlanEntry plan) async {
+  final bool confirmed = await _confirmRoutineAction(
+    context: context,
+    title: plan.active ? 'Delete current routine?' : 'Delete routine?',
+    message: 'This removes "${plan.title}" from your routine history.',
+    confirmLabel: 'Delete',
+    destructive: true,
+  );
+  if (!confirmed) return;
+  await ReadingPlansDB().delete(plan.id);
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(const SnackBar(content: Text('Routine deleted')));
+}
+
+Future<bool> _confirmRoutineAction({
+  required BuildContext context,
+  required String title,
+  required String message,
+  required String confirmLabel,
+  bool destructive = false,
+}) async {
+  final bool? confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: destructive
+                ? FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                    foregroundColor: Theme.of(context).colorScheme.onError,
+                  )
+                : null,
+            child: Text(confirmLabel),
+          ),
+        ],
+      );
+    },
+  );
+  return confirmed == true;
+}
+
 class _PlanPresetGrid extends StatelessWidget {
   const _PlanPresetGrid({required this.onCreatePlan});
 
@@ -544,7 +692,6 @@ class _PlanPresetGrid extends StatelessWidget {
       _PlanPreset.sevenDays,
       _PlanPreset.thirtyDays,
       _PlanPreset.sixtyDays,
-      _PlanPreset.ramadan,
     ];
 
     return Column(
@@ -669,15 +816,7 @@ class _PlanPreset {
     title: 'Complete Quran in 60 days',
     subtitle: 'Gentle long-form reading',
     days: 60,
-    icon: Icons.spa_outlined,
-  );
-
-  static const _PlanPreset ramadan = _PlanPreset(
-    type: 'ramadan_30_days',
-    title: 'Ramadan-style routine',
-    subtitle: 'A 30-day month plan',
-    days: 30,
-    icon: Icons.nights_stay_outlined,
+    icon: Icons.auto_stories_outlined,
   );
 }
 
@@ -773,19 +912,6 @@ String _refLabel(_AyahRef ref) {
   return '${quran.getSurahName(ref.surah)} ${ref.verse}';
 }
 
-String _weekdayLabel(int weekday) {
-  const List<String> labels = <String>[
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun',
-  ];
-  return labels[(weekday - 1).clamp(0, labels.length - 1).toInt()];
-}
-
 String _shortDate(DateTime date) {
   const List<String> months = <String>[
     'Jan',
@@ -811,11 +937,7 @@ String _dateKey(DateTime date) {
 }
 
 int _estimatedArabicLetters(_AyahRef ref) {
-  final String text = quran.getVerse(ref.surah, ref.verse);
-  return text.runes.where((int rune) {
-    final String char = String.fromCharCode(rune);
-    return char.trim().isNotEmpty && !RegExp(r'[0-9٠-٩\s]').hasMatch(char);
-  }).length;
+  return quranVerseArabicLetterCount(ref.surah, ref.verse);
 }
 
 int _readingStreakIncluding(String todayKey) {

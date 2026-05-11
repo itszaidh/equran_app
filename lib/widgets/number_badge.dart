@@ -13,6 +13,10 @@ class NumberBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final double diamondSize = size * 0.82;
+    final double fontSize = label.length >= 3
+        ? (size * 0.30).clamp(11.0, 12.8).toDouble()
+        : (size * 0.36).clamp(13.0, 15.5).toDouble();
 
     return SizedBox.square(
       dimension: size,
@@ -20,21 +24,25 @@ class NumberBadge extends StatelessWidget {
         child: Transform.rotate(
           angle: math.pi / 4,
           child: Container(
-            width: size * 0.72,
-            height: size * 0.72,
+            width: diamondSize,
+            height: diamondSize,
             decoration: BoxDecoration(
               color: Colors.transparent,
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(5),
               border: Border.all(color: colors.accentGold, width: 1.2),
             ),
             alignment: Alignment.center,
             child: Transform.rotate(
               angle: -math.pi / 4,
-              child: Text(
-                label,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: colors.textPrimary,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w800,
+                    color: colors.textPrimary,
+                  ),
                 ),
               ),
             ),
