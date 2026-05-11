@@ -5,7 +5,9 @@ import 'package:equran/backend/library.dart'
     show
         BookmarkDB,
         FavouritesDB,
+        initCompanionStorageBoxes,
         ReadingEntryAdapter,
+        registerCompanionStorageAdapters,
         SettingsDB,
         SurahAdapter,
         SurahDB;
@@ -66,6 +68,7 @@ Future<void> initTestHarness() async {
     if (!Hive.isAdapterRegistered(1)) {
       Hive.registerAdapter(SurahAdapter());
     }
+    registerCompanionStorageAdapters();
 
     await BookmarkDB().initBox().timeout(const Duration(seconds: 3));
 
@@ -74,6 +77,7 @@ Future<void> initTestHarness() async {
     await SurahDB().initBox().timeout(const Duration(seconds: 3));
 
     await FavouritesDB().initBox().timeout(const Duration(seconds: 3));
+    await initCompanionStorageBoxes().timeout(const Duration(seconds: 3));
 
     _hiveInitialized = true;
   }
@@ -96,6 +100,22 @@ Future<void> clearTestData() async {
 
   if (Hive.isBoxOpen('favourites')) {
     await Hive.box('favourites').clear().timeout(const Duration(seconds: 3));
+  }
+
+  for (final String boxName in <String>[
+    'schema_migrations',
+    'quran_bookmarks',
+    'quran_activity',
+    'reading_plans',
+    'resume_state',
+    'recent_searches',
+    'dhikr_sessions',
+    'quran_stats',
+    'download_metadata',
+  ]) {
+    if (Hive.isBoxOpen(boxName)) {
+      await Hive.box(boxName).clear().timeout(const Duration(seconds: 3));
+    }
   }
 }
 

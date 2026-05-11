@@ -1,9 +1,9 @@
 import 'dart:async' show unawaited;
 
-import 'package:equran/backend/favourites_db.dart';
 import 'package:equran/backend/android_audio_display_mode.dart';
+import 'package:equran/backend/library.dart'
+    show FavouritesDB, QuranBookmarkService;
 import 'package:equran/utils/app_radii.dart';
-import 'package:equran/utils/quran_text.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
 
@@ -70,10 +70,6 @@ class ReadQuranCard extends StatelessWidget {
     this.isDownloaded = false,
   });
 
-  String get _favouriteKey {
-    return favouriteAyahKey(currentChapter, currentVerse);
-  }
-
   Future<bool> _showInputPrompt(BuildContext context) async {
     final TextEditingController textController = TextEditingController();
     bool saved = false;
@@ -101,9 +97,10 @@ class ReadQuranCard extends StatelessWidget {
                 onPressed: () async {
                   final NavigatorState navigator = Navigator.of(context);
                   try {
-                    await FavouritesDB().put(
-                      _favouriteKey,
-                      textController.text.trim(),
+                    await const QuranBookmarkService().saveFavourite(
+                      currentChapter,
+                      currentVerse,
+                      note: textController.text,
                     );
                     saved = true;
                   } catch (_) {
@@ -218,7 +215,10 @@ class ReadQuranCard extends StatelessWidget {
       valueListenable: FavouritesDB().listener,
       builder: (context, favouritesBox, child) {
         final ColorScheme colorScheme = Theme.of(context).colorScheme;
-        final bool isFavourite = FavouritesDB().contains(_favouriteKey);
+        final bool isFavourite = const QuranBookmarkService().isFavourite(
+          currentChapter,
+          currentVerse,
+        );
         final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
         final double actionGap = wideActions ? 10 : 6;
         final double playIconSize = wideActions ? 23 : 21;
@@ -298,7 +298,10 @@ class ReadQuranCard extends StatelessWidget {
               AndroidAudioDisplayMode.notifyUserActivity();
               try {
                 if (liked) {
-                  await FavouritesDB().delete(_favouriteKey);
+                  await const QuranBookmarkService().removeFavourite(
+                    currentChapter,
+                    currentVerse,
+                  );
                   return false;
                 }
                 return _showInputPrompt(context);

@@ -4,13 +4,26 @@ import 'package:equran/backend/library.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
 import 'package:equran/utils/responsive_nav.dart';
+import 'package:equran/search/quran_text_search_results.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/widgets/library.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
+enum QuranSearchMode { surahs, quranText }
+
+class QuranSearchRequest {
+  const QuranSearchRequest({required this.mode, required this.nonce});
+
+  final QuranSearchMode mode;
+  final int nonce;
+}
+
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({super.key, this.searchRequestListenable});
+
+  final ValueListenable<QuranSearchRequest?>? searchRequestListenable;
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -21,27 +34,45 @@ class _MainPageState extends State<MainPage>
   final Debouncer _debouncer = Debouncer(milliseconds: 400);
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _surahScrollController = ScrollController();
+  final ScrollController _quranTextScrollController = ScrollController();
   final ScrollController _juzScrollController = ScrollController();
   final ScrollController _favouritesScrollController = ScrollController();
   late final TabController _tabController;
 
   String _searchQuery = '';
   int _selectedSegment = 0;
+  int _lastHandledSearchRequestNonce = -1;
   bool _showSearch = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_handleTabChanged);
+    widget.searchRequestListenable?.addListener(_handleExternalSearchRequest);
+  }
+
+  @override
+  void didUpdateWidget(covariant MainPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchRequestListenable != widget.searchRequestListenable) {
+      oldWidget.searchRequestListenable?.removeListener(
+        _handleExternalSearchRequest,
+      );
+      widget.searchRequestListenable?.addListener(_handleExternalSearchRequest);
+    }
   }
 
   @override
   void dispose() {
     _debouncer.cancel();
+    widget.searchRequestListenable?.removeListener(
+      _handleExternalSearchRequest,
+    );
     _tabController.removeListener(_handleTabChanged);
     _tabController.dispose();
     _surahScrollController.dispose();
+    _quranTextScrollController.dispose();
     _juzScrollController.dispose();
     _favouritesScrollController.dispose();
     _searchController.dispose();
@@ -237,7 +268,7 @@ class _MainPageState extends State<MainPage>
 
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
+        constraints: const BoxConstraints(maxWidth: 560),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: isLight
@@ -291,7 +322,8 @@ class _MainPageState extends State<MainPage>
               ),
               splashBorderRadius: BorderRadius.circular(AppRadii.small),
               tabs: <Widget>[
-                _buildTabLabel(Icons.menu_book_outlined, 'Surah'),
+                _buildTabLabel(Icons.menu_book_outlined, 'Surahs'),
+                _buildTabLabel(Icons.travel_explore_rounded, 'Quran Text'),
                 _buildTabLabel(Icons.layers_outlined, 'Juz'),
                 _buildTabLabel(Icons.favorite_border_rounded, 'Saved'),
               ],
@@ -332,6 +364,16 @@ class _MainPageState extends State<MainPage>
               key: const ValueKey<String>('surah-list'),
               searchQuery: _searchQuery,
               header: _buildLastReadCard(),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: PrimaryScrollController(
+            controller: _quranTextScrollController,
+            child: QuranTextSearchResults(
+              searchQuery: _searchQuery,
+              onSearchSelected: _useSearchQuery,
             ),
           ),
         ),
@@ -381,6 +423,16 @@ class _MainPageState extends State<MainPage>
     });
   }
 
+  void _useSearchQuery(String value) {
+    _debouncer.cancel();
+    _searchController.text = value;
+    _searchController.selection = TextSelection.collapsed(offset: value.length);
+    setState(() {
+      _showSearch = true;
+      _searchQuery = value;
+    });
+  }
+
   void _closeSearch() {
     _debouncer.cancel();
     setState(() {
@@ -397,9 +449,32 @@ class _MainPageState extends State<MainPage>
     });
   }
 
+  void _handleExternalSearchRequest() {
+    final QuranSearchRequest? request = widget.searchRequestListenable?.value;
+    if (request == null || request.nonce == _lastHandledSearchRequestNonce) {
+      return;
+    }
+    _lastHandledSearchRequestNonce = request.nonce;
+    final int targetIndex = switch (request.mode) {
+      QuranSearchMode.surahs => 0,
+      QuranSearchMode.quranText => 1,
+    };
+
+    if (_tabController.index != targetIndex) {
+      _tabController.animateTo(targetIndex);
+    }
+    setState(() {
+      _selectedSegment = targetIndex;
+      _showSearch = true;
+      _searchQuery = '';
+      _searchController.clear();
+    });
+  }
+
   String get _searchHint => switch (_selectedSegment) {
-    1 => "Juz number or surah name...",
-    2 => "Saved ayah, surah, note, or number...",
+    1 => "Arabic word or translation...",
+    2 => "Juz number or surah name...",
+    3 => "Saved ayah, surah, note, or number...",
     _ => "Surah name or number...",
   };
 
@@ -439,7 +514,8 @@ class _MainPageState extends State<MainPage>
   void _scrollToTop() {
     final ScrollController scrollController = switch (_selectedSegment) {
       0 => _surahScrollController,
-      1 => _juzScrollController,
+      1 => _quranTextScrollController,
+      2 => _juzScrollController,
       _ => _favouritesScrollController,
     };
     if (!scrollController.hasClients) return;

@@ -10,7 +10,7 @@ import 'package:equran/backend/library.dart'
         AndroidAudioDisplayMode,
         AudioDownloadService,
         DownloadNotifications,
-        FavouritesDB,
+        QuranBookmarkService,
         QuranTransliterationService,
         QuranAudioService,
         SettingsDB,
@@ -4678,8 +4678,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         context: context,
         showDragHandle: true,
         builder: (context) {
-          bool isFavourite = FavouritesDB().contains(
-            favouriteAyahKey(_currentChapter, verse),
+          bool isFavourite = const QuranBookmarkService().isFavourite(
+            _currentChapter,
+            verse,
           );
           return StatefulBuilder(
             builder: (context, setSheetState) {
@@ -5190,8 +5191,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 ),
                 FilledButton(
                   onPressed: () {
-                    final String key = favouriteAyahKey(_currentChapter, verse);
-                    FavouritesDB().put(key, textController.text.trim());
+                    unawaited(
+                      const QuranBookmarkService().saveFavourite(
+                        _currentChapter,
+                        verse,
+                        note: textController.text,
+                      ),
+                    );
                     Navigator.of(context).pop();
                   },
                   child: const Text('SAVE'),
@@ -5208,9 +5214,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _toggleFavourite(int verse, {required bool isFavourite}) {
-    final String key = favouriteAyahKey(_currentChapter, verse);
     if (isFavourite) {
-      FavouritesDB().delete(key);
+      unawaited(
+        const QuranBookmarkService().removeFavourite(_currentChapter, verse),
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Removed from favourites.')),
@@ -5218,7 +5225,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       }
       return;
     }
-    FavouritesDB().put(key, '');
+    unawaited(
+      const QuranBookmarkService().saveFavourite(_currentChapter, verse),
+    );
   }
 }
 

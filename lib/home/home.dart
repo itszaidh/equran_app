@@ -8,6 +8,7 @@ import 'package:equran/home/downloads.dart';
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/player.dart';
 import 'package:equran/home/settings.dart';
+import 'package:equran/home_dashboard/home_dashboard_page.dart';
 import 'package:equran/prayer/prayer_times_page.dart';
 import 'package:equran/prayer/qibla_page.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
@@ -15,9 +16,20 @@ import 'package:equran/utils/responsive_nav.dart';
 import 'package:flutter/material.dart';
 
 const EdgeInsets _drawerTilePadding = EdgeInsets.symmetric(horizontal: 12);
-const int _downloadsDestinationIndex = 3;
-const int _settingsDestinationIndex = 5;
-const List<int> _drawerDestinationIndices = <int>[0, 1, 2, 4];
+const int _homeDestinationIndex = 0;
+const int _quranDestinationIndex = 1;
+const int _playerDestinationIndex = 2;
+const int _duasDestinationIndex = 3;
+const int _downloadsDestinationIndex = 4;
+const int _prayerDestinationIndex = 5;
+const int _settingsDestinationIndex = 6;
+const List<int> _drawerDestinationIndices = <int>[
+  _homeDestinationIndex,
+  _quranDestinationIndex,
+  _playerDestinationIndex,
+  _duasDestinationIndex,
+  _prayerDestinationIndex,
+];
 const String _homePointerRefreshBlocker = 'home.userPointerActive';
 const String _drawerRefreshBlocker = 'home.drawerOpenOrAnimating';
 const String _routeTransitionRefreshBlocker = 'home.routeTransitionActive';
@@ -49,48 +61,72 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   int _previousPageIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final ValueNotifier<QuranSearchRequest?> _quranSearchRequest =
+      ValueNotifier<QuranSearchRequest?>(null);
 
-  final List<Destinations> _pageDestinations = <Destinations>[
-    Destinations(
-      'Home',
-      Icon(Icons.home_outlined),
-      Icon(Icons.home_rounded),
-      MainPage(),
-    ),
-    Destinations(
-      'Player',
-      Icon(Icons.library_music_outlined),
-      Icon(Icons.library_music),
-      PlayerPage(),
-    ),
-    Destinations(
-      'Duas',
-      Icon(Icons.auto_stories_outlined),
-      Icon(Icons.auto_stories_rounded),
-      DuasPage(),
-    ),
-    Destinations(
-      'Downloads',
-      Icon(Icons.download_outlined),
-      Icon(Icons.download_rounded),
-      DownloadsPage(),
-    ),
-    Destinations(
-      'Prayer Times',
-      Icon(Icons.access_time_outlined),
-      Icon(Icons.schedule_rounded),
-      PrayerTimesPage(),
-    ),
-    Destinations(
-      'Settings',
-      Icon(Icons.settings_outlined),
-      Icon(Icons.settings),
-      SettingsPage(),
-    ),
-  ];
+  late final List<Destinations> _pageDestinations;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageDestinations = <Destinations>[
+      Destinations(
+        'Home',
+        const Icon(Icons.home_outlined),
+        const Icon(Icons.home_rounded),
+        HomeDashboardPage(
+          onMenuPressed: _openDrawerFromDashboard,
+          onOpenQuran: () => _onItemTapped(_quranDestinationIndex),
+          onOpenPlayer: () => _onItemTapped(_playerDestinationIndex),
+          onOpenPrayerTimes: () => _onItemTapped(_prayerDestinationIndex),
+          onOpenQibla: _openQiblaPage,
+          onOpenDuas: () => _onItemTapped(_duasDestinationIndex),
+          onOpenDownloads: () => _onItemTapped(_downloadsDestinationIndex),
+          onOpenSearch: _openQuranTextSearch,
+        ),
+      ),
+      Destinations(
+        'Quran',
+        const Icon(Icons.menu_book_outlined),
+        const Icon(Icons.menu_book_rounded),
+        MainPage(searchRequestListenable: _quranSearchRequest),
+      ),
+      Destinations(
+        'Player',
+        const Icon(Icons.library_music_outlined),
+        const Icon(Icons.library_music),
+        const PlayerPage(),
+      ),
+      Destinations(
+        'Duas',
+        const Icon(Icons.auto_stories_outlined),
+        const Icon(Icons.auto_stories_rounded),
+        DuasPage(),
+      ),
+      Destinations(
+        'Downloads',
+        const Icon(Icons.download_outlined),
+        const Icon(Icons.download_rounded),
+        const DownloadsPage(),
+      ),
+      Destinations(
+        'Prayer Times',
+        const Icon(Icons.access_time_outlined),
+        const Icon(Icons.schedule_rounded),
+        const PrayerTimesPage(),
+      ),
+      Destinations(
+        'Settings',
+        const Icon(Icons.settings_outlined),
+        const Icon(Icons.settings),
+        const SettingsPage(),
+      ),
+    ];
+  }
 
   @override
   void dispose() {
+    _quranSearchRequest.dispose();
     FrameRatePolicyManager.instance.setPointerActive(
       false,
       source: _homePointerPolicySource,
@@ -214,7 +250,7 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-        appBar: _selectedIndex >= 2
+        appBar: _selectedIndex >= _duasDestinationIndex
             ? AppBar(
                 toolbarHeight: ResponsiveNav.toolbarHeight(context),
                 leading: showSecondaryBackButton
@@ -309,6 +345,31 @@ class _HomePageState extends State<HomePage> {
         );
       }),
     );
+  }
+
+  void _openDrawerFromDashboard() {
+    AndroidAudioDisplayMode.notifyUserActivity();
+    FrameRatePolicyManager.instance.setDrawerOpen(
+      true,
+      reason: 'dashboard_drawer_opening',
+    );
+    unawaited(
+      AndroidAudioDisplayMode.addLowRefreshBlocker(
+        _drawerRefreshBlocker,
+        reason: 'dashboard drawer opening',
+      ),
+    );
+    _scaffoldKey.currentState?.openDrawer();
+  }
+
+  void _openQuranTextSearch() {
+    _onItemTapped(_quranDestinationIndex);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _quranSearchRequest.value = QuranSearchRequest(
+        mode: QuranSearchMode.quranText,
+        nonce: DateTime.now().microsecondsSinceEpoch,
+      );
+    });
   }
 
   void _onDrawerDestinationSelected(int index) {
@@ -451,7 +512,7 @@ class _HomePageState extends State<HomePage> {
     );
     setState(() {
       _selectedIndex = _isSecondaryPage(_previousPageIndex)
-          ? 0
+          ? _homeDestinationIndex
           : _previousPageIndex;
     });
   }

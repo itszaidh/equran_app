@@ -1,5 +1,9 @@
 import 'package:equran/backend/library.dart'
-    show AudioDownloadEntry, AudioDownloadService, AudioDownloadsSummary;
+    show
+        AudioDownloadEntry,
+        AudioDownloadService,
+        AudioDownloadsSummary,
+        DownloadMetadataService;
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/downloads_grouping.dart';
 import 'package:flutter/material.dart';
@@ -31,13 +35,20 @@ class _DownloadsPageState extends State<DownloadsPage> {
   @override
   void initState() {
     super.initState();
-    _summaryFuture = AudioDownloadService().summary();
+    _summaryFuture = _loadSummary();
   }
 
   void _refresh() {
     setState(() {
-      _summaryFuture = AudioDownloadService().summary();
+      _summaryFuture = _loadSummary();
     });
+  }
+
+  Future<AudioDownloadsSummary> _loadSummary() async {
+    final AudioDownloadsSummary summary = await AudioDownloadService()
+        .summary();
+    await const DownloadMetadataService().syncFromSummary(summary);
+    return summary;
   }
 
   Future<void> _deleteEntry(AudioDownloadEntry entry) async {

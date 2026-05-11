@@ -16,9 +16,12 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'backend/library.dart'
     show
         BookmarkDB,
+        initCompanionStorageBoxes,
+        registerCompanionStorageAdapters,
         DuaFavouritesDB,
         FavouritesDB,
         ReadingEntryAdapter,
+        SchemaMigrationService,
         SettingsDB,
         SurahAdapter,
         SurahDB;
@@ -40,6 +43,7 @@ Future<void> main() async {
 
   Hive.registerAdapter(SurahAdapter());
   Hive.registerAdapter(ReadingEntryAdapter());
+  registerCompanionStorageAdapters();
 
   // Hive.deleteBoxFromDisk("bookmarks");
 
@@ -48,6 +52,8 @@ Future<void> main() async {
   await SurahDB().initBox();
   await FavouritesDB().initBox();
   await DuaFavouritesDB().initBox();
+  await initCompanionStorageBoxes();
+  await SchemaMigrationService.instance.runSafeMigrations();
 
   await PrayerTimezoneService.configureDeviceTimezone();
   final PrayerSettingsStore prayerSettingsStore = PrayerSettingsStore();

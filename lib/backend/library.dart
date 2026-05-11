@@ -1,10 +1,15 @@
 export 'android_audio_display_mode.dart';
 export 'bookmark_db.dart';
+export 'companion_storage.dart';
+export 'companion_storage_models.dart';
 export 'audio_downloads.dart';
 export 'download_notifications.dart';
+export 'download_metadata_service.dart';
 export 'dua_favourites_db.dart';
 export 'favourites_db.dart';
 export 'reading_model.dart';
+export 'quran_bookmark_service.dart';
+export 'schema_migration_service.dart';
 export 'settings_db.dart';
 export 'surah_db.dart';
 export 'surah_model.dart';
