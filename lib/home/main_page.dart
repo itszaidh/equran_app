@@ -1,4 +1,5 @@
 import 'package:equran/backend/library.dart';
+import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -9,8 +10,11 @@ import 'package:equran/widgets/library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:quran/quran.dart' as quran;
 
 enum QuranSearchMode { surahs, quranText }
+
+const String _quranCardAsset = 'assets/images/app_assets/quran.png';
 
 class QuranSearchRequest {
   const QuranSearchRequest({required this.mode, required this.nonce});
@@ -35,6 +39,7 @@ class _MainPageState extends State<MainPage>
   final ScrollController _surahScrollController = ScrollController();
   final ScrollController _quranTextScrollController = ScrollController();
   final ScrollController _juzScrollController = ScrollController();
+  final ScrollController _pageScrollController = ScrollController();
   final ScrollController _favouritesScrollController = ScrollController();
   late final TabController _tabController;
 
@@ -46,7 +51,7 @@ class _MainPageState extends State<MainPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(_handleTabChanged);
     widget.searchRequestListenable?.addListener(_handleExternalSearchRequest);
   }
@@ -73,6 +78,7 @@ class _MainPageState extends State<MainPage>
     _surahScrollController.dispose();
     _quranTextScrollController.dispose();
     _juzScrollController.dispose();
+    _pageScrollController.dispose();
     _favouritesScrollController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -206,7 +212,7 @@ class _MainPageState extends State<MainPage>
                   : IconButton(
                       tooltip: 'Search Quran text',
                       onPressed: () {
-                        _tabController.animateTo(1);
+                        _tabController.animateTo(3);
                         _openSearch();
                       },
                       color: colors.onPrimary,
@@ -267,8 +273,9 @@ class _MainPageState extends State<MainPage>
             splashBorderRadius: BorderRadius.circular(AppRadii.pill),
             tabs: <Widget>[
               _buildTabLabel(Icons.menu_book_outlined, 'Sura'),
-              _buildTabLabel(Icons.travel_explore_rounded, 'Text'),
               _buildTabLabel(Icons.layers_outlined, 'Juz'),
+              _buildTabLabel(Icons.article_outlined, 'Page'),
+              _buildTabLabel(Icons.travel_explore_rounded, 'Quran Text'),
               _buildTabLabel(Icons.favorite_border_rounded, 'Bookmark'),
             ],
           ),
@@ -313,20 +320,27 @@ class _MainPageState extends State<MainPage>
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: PrimaryScrollController(
-            controller: _quranTextScrollController,
-            child: QuranTextSearchResults(
+            controller: _juzScrollController,
+            child: JuzCardList(
+              key: ValueKey<String>('juz-list'),
               searchQuery: _searchQuery,
-              onSearchSelected: _useSearchQuery,
             ),
           ),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: PrimaryScrollController(
-            controller: _juzScrollController,
-            child: JuzCardList(
-              key: ValueKey<String>('juz-list'),
+            controller: _pageScrollController,
+            child: _QuranPageList(searchQuery: _searchQuery),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: PrimaryScrollController(
+            controller: _quranTextScrollController,
+            child: QuranTextSearchResults(
               searchQuery: _searchQuery,
+              onSearchSelected: _useSearchQuery,
             ),
           ),
         ),
@@ -400,7 +414,7 @@ class _MainPageState extends State<MainPage>
     _lastHandledSearchRequestNonce = request.nonce;
     final int targetIndex = switch (request.mode) {
       QuranSearchMode.surahs => 0,
-      QuranSearchMode.quranText => 1,
+      QuranSearchMode.quranText => 3,
     };
 
     if (_tabController.index != targetIndex) {
@@ -415,9 +429,10 @@ class _MainPageState extends State<MainPage>
   }
 
   String get _searchHint => switch (_selectedSegment) {
-    1 => "Arabic word or translation...",
-    2 => "Juz number or surah name...",
-    3 => "Saved ayah, surah, note, or number...",
+    1 => "Juz number or surah name...",
+    2 => "Page number, surah, or juz...",
+    3 => "Arabic word or translation...",
+    4 => "Saved ayah, surah, note, or number...",
     _ => "Surah name or number...",
   };
 
@@ -430,16 +445,14 @@ class _MainPageState extends State<MainPage>
       valueListenable: BookmarkDB().listener,
       builder: (BuildContext context, Box<dynamic> box, child) {
         final entries = LastReadCard.displayReadingHistory(box.values);
-        Widget currentChild = const SizedBox.shrink(
-          key: ValueKey<String>('last-read-empty'),
-        );
-
-        if (entries.isNotEmpty) {
-          currentChild = _QuranLastReadSection(
-            key: const ValueKey<String>('last-read-card'),
-            entries: entries,
-          );
-        }
+        final Widget currentChild = entries.isEmpty
+            ? const _QuranLastReadEmptySection(
+                key: ValueKey<String>('last-read-empty'),
+              )
+            : _QuranLastReadSection(
+                key: const ValueKey<String>('last-read-card'),
+                entries: entries,
+              );
 
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
@@ -457,8 +470,9 @@ class _MainPageState extends State<MainPage>
   void _scrollToTop() {
     final ScrollController scrollController = switch (_selectedSegment) {
       0 => _surahScrollController,
-      1 => _quranTextScrollController,
-      2 => _juzScrollController,
+      1 => _juzScrollController,
+      2 => _pageScrollController,
+      3 => _quranTextScrollController,
       _ => _favouritesScrollController,
     };
     if (!scrollController.hasClients) return;
@@ -469,6 +483,172 @@ class _MainPageState extends State<MainPage>
       curve: Curves.easeOutCubic,
     );
   }
+}
+
+class _QuranPageList extends StatelessWidget {
+  const _QuranPageList({required this.searchQuery});
+
+  final String searchQuery;
+
+  @override
+  Widget build(BuildContext context) {
+    final String query = searchQuery.trim().toLowerCase();
+    final List<int> pages =
+        List<int>.generate(quran.totalPagesCount, (index) {
+              return index + 1;
+            })
+            .where((page) {
+              if (query.isEmpty) return true;
+              final _PageSummary summary = _pageSummary(page);
+              return page.toString().contains(query) ||
+                  summary.primarySurah.toLowerCase().contains(query) ||
+                  summary.juzLabel.toLowerCase().contains(query);
+            })
+            .toList(growable: false);
+
+    return GridView.builder(
+      key: const PageStorageKey<String>('quran-page-grid'),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 28),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
+        mainAxisExtent: 118,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+      ),
+      itemCount: pages.length,
+      itemBuilder: (context, index) {
+        final int page = pages[index];
+        return _QuranPageTile(page: page, summary: _pageSummary(page));
+      },
+    );
+  }
+}
+
+class _QuranPageTile extends StatelessWidget {
+  const _QuranPageTile({required this.page, required this.summary});
+
+  final int page;
+  final _PageSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => ReadPage(
+              chapter: summary.startSurah,
+              startVerse: summary.startVerse,
+            ),
+          ),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(AppRadii.large),
+            border: Border.all(color: colors.border),
+          ),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Container(
+                    width: 38,
+                    height: 38,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: colors.mint,
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                    ),
+                    child: Text(
+                      page.toString(),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    summary.juzLabel,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.textMuted,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                summary.primarySurah,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                summary.rangeLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PageSummary {
+  const _PageSummary({
+    required this.startSurah,
+    required this.startVerse,
+    required this.primarySurah,
+    required this.rangeLabel,
+    required this.juzLabel,
+  });
+
+  final int startSurah;
+  final int startVerse;
+  final String primarySurah;
+  final String rangeLabel;
+  final String juzLabel;
+}
+
+_PageSummary _pageSummary(int page) {
+  final List<dynamic> data = quran.getPageData(page);
+  final Map<dynamic, dynamic> first = data.first as Map<dynamic, dynamic>;
+  final Map<dynamic, dynamic> last = data.last as Map<dynamic, dynamic>;
+  final int startSurah = first['surah'] as int;
+  final int startVerse = first['start'] as int;
+  final int endSurah = last['surah'] as int;
+  final int endVerse = last['end'] as int;
+  final int juz = quran.getJuzNumber(startSurah, startVerse);
+  final String primarySurah = quran.getSurahName(startSurah);
+  final String rangeLabel = startSurah == endSurah
+      ? 'Ayah $startVerse-$endVerse'
+      : '$primarySurah $startVerse - ${quran.getSurahName(endSurah)} $endVerse';
+  return _PageSummary(
+    startSurah: startSurah,
+    startVerse: startVerse,
+    primarySurah: primarySurah,
+    rangeLabel: rangeLabel,
+    juzLabel: 'Juz $juz',
+  );
 }
 
 class _QuranLastReadSection extends StatelessWidget {
@@ -487,14 +667,10 @@ class _QuranLastReadSection extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
           child: Row(
             children: <Widget>[
-              Icon(
-                Icons.history_rounded,
-                size: 18,
-                color: colors.primary,
-              ),
+              Icon(Icons.history_rounded, size: 18, color: colors.primary),
               const SizedBox(width: 7),
               Text(
-                'Last read',
+                'Last Read',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: colors.textPrimary,
                   fontWeight: FontWeight.w900,
@@ -504,6 +680,82 @@ class _QuranLastReadSection extends StatelessWidget {
           ),
         ),
         LastReadCard(entries: entries),
+      ],
+    );
+  }
+}
+
+class _QuranLastReadEmptySection extends StatelessWidget {
+  const _QuranLastReadEmptySection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
+          child: Text(
+            'Last Read',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        EquranSurfaceCard(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => const ReadPage(chapter: 1, startVerse: 1),
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(18, 16, 14, 14),
+          backgroundColor: colors.surfaceAlt,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Begin with the Quran',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Start reading and your place will appear here.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.textSecondary,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Start reading ->',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Image.asset(
+                _quranCardAsset,
+                width: 104,
+                height: 96,
+                fit: BoxFit.contain,
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

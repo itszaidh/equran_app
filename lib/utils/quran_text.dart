@@ -49,22 +49,23 @@ double shareArabicFontSizeForText(String verseText) {
   final int ayahLength = verseText.runes.length;
   return switch (ayahLength) {
     <= 80 => 86,
-    <= 140 => 76,
-    <= 220 => 66,
-    <= 360 => 60,
-    <= 520 => 52,
-    <= 760 => 46,
-    <= 980 => 42,
-    _ => 36,
+    <= 140 => 74,
+    <= 220 => 62,
+    <= 360 => 52,
+    <= 520 => 42,
+    <= 760 => 34,
+    <= 980 => 30,
+    _ => 26,
   };
 }
 
 double shareTranslationFontSizeForText(String verseText) {
   final int ayahLength = verseText.runes.length;
   return switch (ayahLength) {
-    <= 360 => 22,
-    <= 760 => 20,
-    <= 980 => 18,
-    _ => 17,
+    <= 140 => 26,
+    <= 360 => 23,
+    <= 760 => 18,
+    <= 980 => 16,
+    _ => 15,
   };
 }

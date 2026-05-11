@@ -80,6 +80,7 @@ flutter:
     - assets/contents/hisn/index.json
     - assets/contents/hisn/categories/
     - assets/tafsir/en_al_mukhtasar/
+    - assets/images/app_assets/
     # Flutter bundles files directly inside directory asset entries, so each
     # timing reciter folder must be declared here for AssetManifest detection.
     - assets/timings/2/

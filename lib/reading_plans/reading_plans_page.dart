@@ -83,9 +83,7 @@ class ReadingPlansPage extends StatelessWidget {
     _PlanPreset preset,
   ) async {
     final DateTime now = DateTime.now();
-    final List<ReadingPlanEntry> existingPlans = ReadingPlansDB()
-        .box
-        .values
+    final List<ReadingPlanEntry> existingPlans = ReadingPlansDB().box.values
         .whereType<ReadingPlanEntry>()
         .toList(growable: false);
     for (final ReadingPlanEntry plan in existingPlans) {
@@ -120,9 +118,9 @@ class ReadingPlansPage extends StatelessWidget {
     await ReadingPlansDB().put(newPlan.id, newPlan);
 
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${preset.title} started')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('${preset.title} started')));
   }
 }
 
@@ -471,9 +469,66 @@ class _TodayTaskCard extends StatelessWidget {
       schemaVersion: plan.schemaVersion,
     );
     await ReadingPlansDB().put(updated.id, updated);
+    await _recordManualGoalCompletion(range);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Today\'s reading marked complete')),
+    );
+  }
+
+  Future<void> _recordManualGoalCompletion(_TodayRange range) async {
+    final DateTime now = DateTime.now();
+    final String todayKey = _dateKey(now);
+    final dynamic existingActivity = QuranActivityDB().get(todayKey);
+    final QuranActivityDay activity = existingActivity is QuranActivityDay
+        ? existingActivity
+        : QuranActivityDay(dateKey: todayKey, updatedAt: now);
+    final Set<String> readKeys = activity.readAyahKeys.toSet();
+    int added = 0;
+    int addedLetters = 0;
+
+    for (
+      int global = range.startGlobalAyah;
+      global <= range.endGlobalAyah;
+      global++
+    ) {
+      final _AyahRef ref = _ayahRefFromGlobalIndex(global);
+      final String key = '${ref.surah}:${ref.verse}';
+      if (readKeys.add(key)) {
+        added++;
+        addedLetters += _estimatedArabicLetters(ref);
+      }
+    }
+    if (added == 0) return;
+
+    await QuranActivityDB().put(
+      todayKey,
+      QuranActivityDay(
+        dateKey: todayKey,
+        ayahsRead: activity.ayahsRead + added,
+        pagesRead: activity.pagesRead,
+        listeningSeconds: activity.listeningSeconds,
+        readAyahKeys: readKeys.toList()..sort(),
+        updatedAt: now,
+        schemaVersion: activity.schemaVersion,
+      ),
+    );
+
+    final dynamic existingStats = QuranStatsDB().get('summary');
+    final QuranStatsSnapshot stats = existingStats is QuranStatsSnapshot
+        ? existingStats
+        : QuranStatsSnapshot(id: 'summary', updatedAt: now);
+    await QuranStatsDB().put(
+      'summary',
+      QuranStatsSnapshot(
+        id: 'summary',
+        totalAyahsRead: stats.totalAyahsRead + added,
+        estimatedLettersRead: stats.estimatedLettersRead + addedLetters,
+        listeningSeconds: stats.listeningSeconds,
+        currentStreak: _readingStreakIncluding(todayKey),
+        updatedAt: now,
+        schemaVersion: stats.schemaVersion,
+      ),
     );
   }
 }
@@ -497,9 +552,9 @@ class _PlanPresetGrid extends StatelessWidget {
       children: <Widget>[
         Text(
           'Choose a plan',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w900,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
         ),
         const SizedBox(height: 10),
         LayoutBuilder(
@@ -564,9 +619,9 @@ class _PlanPresetCard extends StatelessWidget {
                   preset.subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colors.textSecondary,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: colors.textSecondary),
                 ),
               ],
             ),
@@ -627,10 +682,7 @@ class _PlanPreset {
 }
 
 class _PlanProgress {
-  const _PlanProgress({
-    required this.completedAyahs,
-    required this.totalAyahs,
-  });
+  const _PlanProgress({required this.completedAyahs, required this.totalAyahs});
 
   final int completedAyahs;
   final int totalAyahs;
@@ -667,10 +719,10 @@ _PlanProgress _planProgress(ReadingPlanEntry plan) {
     1,
     plan.targetGlobalAyah - plan.startGlobalAyah + 1,
   );
-  final int completed = math.max(
-    0,
-    plan.lastCompletedGlobalAyah - plan.startGlobalAyah + 1,
-  ).clamp(0, total).toInt();
+  final int completed = math
+      .max(0, plan.lastCompletedGlobalAyah - plan.startGlobalAyah + 1)
+      .clamp(0, total)
+      .toInt();
   return _PlanProgress(completedAyahs: completed, totalAyahs: total);
 }
 
@@ -750,4 +802,35 @@ String _shortDate(DateTime date) {
     'Dec',
   ];
   return '${months[(date.month - 1).clamp(0, 11).toInt()]} ${date.day}, ${date.year}';
+}
+
+String _dateKey(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+}
+
+int _estimatedArabicLetters(_AyahRef ref) {
+  final String text = quran.getVerse(ref.surah, ref.verse);
+  return text.runes.where((int rune) {
+    final String char = String.fromCharCode(rune);
+    return char.trim().isNotEmpty && !RegExp(r'[0-9٠-٩\s]').hasMatch(char);
+  }).length;
+}
+
+int _readingStreakIncluding(String todayKey) {
+  final Set<String> activeDays = QuranActivityDB().box.values
+      .whereType<QuranActivityDay>()
+      .where((day) => day.ayahsRead > 0 || day.readAyahKeys.isNotEmpty)
+      .map((day) => day.dateKey)
+      .toSet();
+  activeDays.add(todayKey);
+
+  DateTime cursor = DateTime.now();
+  int streak = 0;
+  while (activeDays.contains(_dateKey(cursor))) {
+    streak++;
+    cursor = cursor.subtract(const Duration(days: 1));
+  }
+  return streak;
 }

@@ -10,9 +10,17 @@ import 'package:equran/backend/library.dart'
         AndroidAudioDisplayMode,
         AudioDownloadService,
         DownloadNotifications,
+        QuranActivityDB,
+        QuranActivityDay,
         QuranBookmarkService,
+        QuranStatsDB,
+        QuranStatsSnapshot,
         QuranTransliterationService,
         QuranAudioService,
+        ReadingPlansDB,
+        ReadingPlanEntry,
+        ResumeStateDB,
+        ResumeStateEntry,
         SettingsDB,
         TafsirService,
         TafsirSource;
@@ -61,9 +69,7 @@ import 'package:quran/quran.dart' as quran;
 import 'package:share_plus/share_plus.dart';
 import 'package:vibration/vibration.dart';
 
-// TODO: Download and bundle this as a local decorative asset.
-const String _mushafDecorationImageUrl =
-    'https://static.vecteezy.com/system/resources/previews/024/554/569/non_2x/holy-quran-book-on-stand-islamic-ramadan-illustration-free-png.png';
+const String _mushafDecorationAsset = 'assets/images/app_assets/quran.png';
 
 class _OfflineAudioPlaybackException implements Exception {
   const _OfflineAudioPlaybackException();
@@ -3307,7 +3313,104 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   void _updateDB() {
     BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
+    _recordReadingProgress(_currentChapter, _currentVerse);
     unawaited(_refreshCurrentAyahDownloadState());
+  }
+
+  void _recordReadingProgress(int surah, int verse) {
+    final int safeSurah = surah.clamp(1, 114).toInt();
+    final int safeVerse = verse
+        .clamp(1, quran.getVerseCount(safeSurah))
+        .toInt();
+    final DateTime now = DateTime.now();
+    final String key = '$safeSurah:$safeVerse';
+    final String todayKey = _readingDateKey(now);
+    final dynamic existingActivity = QuranActivityDB().get(todayKey);
+    final QuranActivityDay activity = existingActivity is QuranActivityDay
+        ? existingActivity
+        : QuranActivityDay(dateKey: todayKey, updatedAt: now);
+    final Set<String> readKeys = activity.readAyahKeys.toSet();
+    final bool isNewToday = readKeys.add(key);
+
+    unawaited(
+      ResumeStateDB().put(
+        'reading:$safeSurah',
+        ResumeStateEntry(
+          id: 'reading:$safeSurah',
+          kind: 'reading',
+          surah: safeSurah,
+          ayah: safeVerse,
+          title: quran.getSurahName(safeSurah),
+          subtitle: 'Ayah $safeVerse',
+          updatedAt: now,
+        ),
+      ),
+    );
+
+    if (!isNewToday) return;
+
+    final QuranActivityDay updatedActivity = QuranActivityDay(
+      dateKey: todayKey,
+      ayahsRead: activity.ayahsRead + 1,
+      pagesRead: activity.pagesRead,
+      listeningSeconds: activity.listeningSeconds,
+      readAyahKeys: readKeys.toList()..sort(),
+      updatedAt: now,
+      schemaVersion: activity.schemaVersion,
+    );
+    unawaited(QuranActivityDB().put(todayKey, updatedActivity));
+
+    final dynamic existingStats = QuranStatsDB().get('summary');
+    final QuranStatsSnapshot stats = existingStats is QuranStatsSnapshot
+        ? existingStats
+        : QuranStatsSnapshot(id: 'summary', updatedAt: now);
+    unawaited(
+      QuranStatsDB().put(
+        'summary',
+        QuranStatsSnapshot(
+          id: 'summary',
+          totalAyahsRead: stats.totalAyahsRead + 1,
+          estimatedLettersRead:
+              stats.estimatedLettersRead +
+              _estimatedArabicLetters(safeSurah, safeVerse),
+          listeningSeconds: stats.listeningSeconds,
+          currentStreak: _readingStreakIncluding(todayKey),
+          updatedAt: now,
+          schemaVersion: stats.schemaVersion,
+        ),
+      ),
+    );
+    _advanceActiveReadingPlans(safeSurah, safeVerse);
+  }
+
+  void _advanceActiveReadingPlans(int surah, int verse) {
+    final int globalAyah = _globalAyahIndex(surah, verse);
+    for (final ReadingPlanEntry plan
+        in ReadingPlansDB().box.values.whereType<ReadingPlanEntry>()) {
+      if (!plan.active || globalAyah <= plan.lastCompletedGlobalAyah) {
+        continue;
+      }
+      unawaited(
+        ReadingPlansDB().put(
+          plan.id,
+          ReadingPlanEntry(
+            id: plan.id,
+            type: plan.type,
+            title: plan.title,
+            startedAt: plan.startedAt,
+            finishBy: plan.finishBy,
+            startGlobalAyah: plan.startGlobalAyah,
+            targetGlobalAyah: plan.targetGlobalAyah,
+            lastCompletedGlobalAyah: globalAyah.clamp(
+              plan.startGlobalAyah,
+              plan.targetGlobalAyah,
+            ),
+            active: plan.active,
+            schemaVersion: plan.schemaVersion,
+          ),
+        ),
+      );
+    }
   }
 
   void _updateVerseFromProgress({
@@ -4148,6 +4251,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     final _ShareImageMode? mode = await _chooseShareImageMode();
     if (mode == null) return;
+    if (!mounted) return;
     _shareImageMode = mode;
 
     final RenderObject? pageRenderObject = context.findRenderObject();
@@ -4386,15 +4490,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final String translation = quran.getVerseTranslation(
       _currentChapter,
       _currentVerse,
-      translation:
-          quran.Translation.values[SettingsDB().get("translation", defaultValue: 0)],
+      translation: quran
+          .Translation
+          .values[SettingsDB().get("translation", defaultValue: 0)],
     );
     final double sidePadding = _shareImageMode == _ShareImageMode.square
-        ? 72
-        : 86;
+        ? 58
+        : 72;
     final double contentWidth = shareImageSize.width - (sidePadding * 2);
-    final double contentMaxHeight = shareImageSize.height -
-        (_shareImageMode == _ShareImageMode.square ? 220 : 300);
 
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -4429,7 +4532,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsets.all(sidePadding),
+                padding: EdgeInsets.fromLTRB(
+                  sidePadding,
+                  sidePadding,
+                  sidePadding,
+                  sidePadding * 0.78,
+                ),
                 child: Column(
                   children: <Widget>[
                     _ShareImageHeader(
@@ -4437,32 +4545,37 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       verse: _currentVerse,
                       mode: _shareImageMode,
                     ),
-                    const Spacer(),
                     SizedBox(
-                      width: contentWidth,
-                      height: contentMaxHeight,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.center,
-                        child: SizedBox(
-                          width: contentWidth,
-                          child: _ShareImageAyahContent(
-                            verseText: verseText,
-                            translation: translation,
-                            transliteration: _transliterationForVerse(
-                              _currentVerse,
-                            ),
-                            showTranslation: showTranslation,
-                            showTransliteration: showTransliteration,
-                            arabicFontSize: _shareArabicFontSize(),
-                            translationFontSize: _shareTranslationFontSize(),
+                      height: _shareImageMode == _ShareImageMode.square
+                          ? 22
+                          : 32,
+                    ),
+                    Expanded(
+                      child: SizedBox(
+                        width: contentWidth,
+                        child: _ShareImageAyahContent(
+                          verseText: verseText,
+                          translation: translation,
+                          transliteration: _transliterationForVerse(
+                            _currentVerse,
                           ),
+                          showTranslation: showTranslation,
+                          showTransliteration: showTransliteration,
+                          arabicFontSize: _shareArabicFontSize(),
+                          translationFontSize: _shareTranslationFontSize(),
                         ),
                       ),
                     ),
-                    const Spacer(),
+                    SizedBox(
+                      height: _shareImageMode == _ShareImageMode.square
+                          ? 18
+                          : 26,
+                    ),
+                    Divider(height: 1, color: colors.border),
+                    const SizedBox(height: 14),
                     Text(
-                      'eQuran',
+                      'eQuran - ${quran.getSurahName(_currentChapter)} $_currentVerse',
+                      textAlign: TextAlign.center,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: colors.primary,
                         fontWeight: FontWeight.w900,
@@ -4513,8 +4626,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               height: 140,
               child: Opacity(
                 opacity: 0.36,
-                child: Image.network(
-                  _mushafDecorationImageUrl,
+                child: Image.asset(
+                  _mushafDecorationAsset,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return const EquranOpenBookMark(opacity: 0.34);
@@ -5671,10 +5784,11 @@ class _ShareImageHeader extends StatelessWidget {
     final EquranColors colors = context.equranColors;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
       decoration: BoxDecoration(
         gradient: colors.heroGradient,
         borderRadius: BorderRadius.circular(AppRadii.xl),
+        border: Border.all(color: colors.onPrimary.withAlpha(34)),
       ),
       child: Row(
         children: <Widget>[
@@ -5686,7 +5800,7 @@ class _ShareImageHeader extends StatelessWidget {
                   quran.getSurahName(chapter),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.headlineSmall?.copyWith(
+                  style: theme.textTheme.headlineMedium?.copyWith(
                     color: colors.onPrimary,
                     fontWeight: FontWeight.w900,
                   ),
@@ -5694,7 +5808,7 @@ class _ShareImageHeader extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Ayah $verse - ${mode.label}',
-                  style: theme.textTheme.labelLarge?.copyWith(
+                  style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.onPrimaryMuted,
                     fontWeight: FontWeight.w800,
                   ),
@@ -5709,7 +5823,7 @@ class _ShareImageHeader extends StatelessWidget {
             style: EquranTextStyles.arabicSmall(
               context,
               color: colors.onPrimary,
-            ),
+            ).copyWith(fontSize: 30),
           ),
         ],
       ),
@@ -5744,56 +5858,144 @@ class _ShareImageAyahContent extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surface,
+        gradient: colors.softSurfaceGradient,
         borderRadius: BorderRadius.circular(AppRadii.xl),
         border: Border.all(color: colors.border),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: colors.shadow.withAlpha(38),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(38, 38, 38, 34),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Text(
-              verseText,
-              textDirection: TextDirection.rtl,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: colors.textPrimary,
-                fontFamily: 'Hafs',
-                fontSize: arabicFontSize,
-                height: 2.05,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (showTransliteration && transliteration.isNotEmpty) ...<Widget>[
-              const SizedBox(height: 26),
-              Text(
-                transliteration,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.primary,
-                  height: 1.45,
-                  fontWeight: FontWeight.w700,
+        padding: const EdgeInsets.fromLTRB(40, 40, 40, 36),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double textWidth = constraints.maxWidth;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Expanded(
+                  flex: showTranslation ? 6 : 10,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: textWidth,
+                        child: Text(
+                          verseText,
+                          textDirection: TextDirection.rtl,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: colors.textPrimary,
+                            fontFamily: 'Hafs',
+                            fontSize: arabicFontSize,
+                            height: 1.95,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
-            if (showTranslation) ...<Widget>[
-              const SizedBox(height: 24),
-              Text(
-                translation,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: colors.textSecondary,
-                  fontSize: translationFontSize,
-                  height: 1.55,
-                ),
-              ),
-            ],
-          ],
+                if (showTransliteration &&
+                    transliteration.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: 22),
+                  Flexible(
+                    flex: 2,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: textWidth,
+                        child: Text(
+                          transliteration,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: colors.primary,
+                            height: 1.42,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                if (showTranslation) ...<Widget>[
+                  const SizedBox(height: 24),
+                  Divider(height: 1, color: colors.divider),
+                  const SizedBox(height: 22),
+                  Expanded(
+                    flex: 4,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: textWidth,
+                        child: Text(
+                          translation,
+                          textAlign: TextAlign.justify,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: colors.textSecondary,
+                            fontSize: translationFontSize,
+                            height: 1.55,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );
   }
+}
+
+String _readingDateKey(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+}
+
+int _estimatedArabicLetters(int surah, int verse) {
+  final String text = quranVerseText(surah, verse);
+  return text.runes.where((int rune) {
+    final String char = String.fromCharCode(rune);
+    return char.trim().isNotEmpty && !RegExp(r'[0-9٠-٩\s]').hasMatch(char);
+  }).length;
+}
+
+int _readingStreakIncluding(String todayKey) {
+  final Set<String> activeDays = QuranActivityDB().box.values
+      .whereType<QuranActivityDay>()
+      .where((day) => day.ayahsRead > 0 || day.readAyahKeys.isNotEmpty)
+      .map((day) => day.dateKey)
+      .toSet();
+  activeDays.add(todayKey);
+
+  DateTime cursor = DateTime.now();
+  int streak = 0;
+  while (activeDays.contains(_readingDateKey(cursor))) {
+    streak++;
+    cursor = cursor.subtract(const Duration(days: 1));
+  }
+  return streak;
+}
+
+int _globalAyahIndex(int surah, int verse) {
+  int index = verse.clamp(1, quran.getVerseCount(surah)).toInt();
+  for (int currentSurah = 1; currentSurah < surah; currentSurah++) {
+    index += quran.getVerseCount(currentSurah);
+  }
+  return index.clamp(1, quran.totalVerseCount).toInt();
 }
 
 String _revelationLabel(int surah) {

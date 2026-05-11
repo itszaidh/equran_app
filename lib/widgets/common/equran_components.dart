@@ -193,11 +193,13 @@ class EquranShortcutTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.assetPath,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final String? assetPath;
 
   @override
   Widget build(BuildContext context) {
@@ -208,12 +210,30 @@ class EquranShortcutTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(EquranRadii.medium),
       child: SizedBox(
-        height: 72,
+        height: 76,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(icon, color: colors.primary, size: 24),
-            const SizedBox(height: 7),
+            Container(
+              width: 40,
+              height: 40,
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: colors.mint,
+                borderRadius: BorderRadius.circular(EquranRadii.medium),
+                border: Border.all(color: colors.border),
+              ),
+              child: assetPath == null
+                  ? Icon(icon, color: colors.primary, size: 24)
+                  : Image.asset(
+                      assetPath!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(icon, color: colors.primary, size: 24);
+                      },
+                    ),
+            ),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 3),
               child: Text(
@@ -274,7 +294,10 @@ class _MosqueSilhouettePainter extends CustomPainter {
       ..quadraticBezierTo(w * 0.46, h * 0.12, w * 0.70, h * 0.50)
       ..close();
     canvas.drawPath(dome, paint);
-    canvas.drawRect(Rect.fromLTWH(w * 0.43, h * 0.18, w * 0.035, h * 0.20), paint);
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.43, h * 0.18, w * 0.035, h * 0.20),
+      paint,
+    );
     canvas.drawCircle(Offset(w * 0.447, h * 0.15), w * 0.025, paint);
 
     final RRect minaret = RRect.fromRectAndRadius(
@@ -302,7 +325,11 @@ class _MosqueSilhouettePainter extends CustomPainter {
       ..color = color.withAlpha(150)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
-    canvas.drawLine(Offset(w * 0.10, baseY), Offset(w * 0.88, baseY), stepPaint);
+    canvas.drawLine(
+      Offset(w * 0.10, baseY),
+      Offset(w * 0.88, baseY),
+      stepPaint,
+    );
     canvas.drawLine(
       Offset(w * 0.16, baseY + h * 0.06),
       Offset(w * 0.82, baseY + h * 0.06),
@@ -366,10 +393,22 @@ class _OpenBookPainter extends CustomPainter {
       ..close();
     canvas.drawPath(left, pagePaint);
     canvas.drawPath(right, pagePaint);
-    canvas.drawLine(Offset(w * 0.50, h * 0.34), Offset(w * 0.50, h * 0.84), linePaint);
+    canvas.drawLine(
+      Offset(w * 0.50, h * 0.34),
+      Offset(w * 0.50, h * 0.84),
+      linePaint,
+    );
     for (final double y in <double>[0.46, 0.56, 0.66]) {
-      canvas.drawLine(Offset(w * 0.22, h * y), Offset(w * 0.42, h * (y - 0.03)), linePaint);
-      canvas.drawLine(Offset(w * 0.58, h * (y - 0.03)), Offset(w * 0.80, h * y), linePaint);
+      canvas.drawLine(
+        Offset(w * 0.22, h * y),
+        Offset(w * 0.42, h * (y - 0.03)),
+        linePaint,
+      );
+      canvas.drawLine(
+        Offset(w * 0.58, h * (y - 0.03)),
+        Offset(w * 0.80, h * y),
+        linePaint,
+      );
     }
   }
 

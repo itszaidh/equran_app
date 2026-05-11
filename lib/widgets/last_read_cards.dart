@@ -3,12 +3,12 @@ import 'dart:math';
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
-import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
-import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:quran/quran.dart';
+
+const String _lastReadQuranAsset = 'assets/images/app_assets/quran.png';
 
 class LastReadCard extends StatefulWidget {
   const LastReadCard({super.key, required this.entries});
@@ -32,18 +32,12 @@ class LastReadCard extends StatefulWidget {
     return entries.take(7).toList();
   }
 
-  Future<void> _handleMenuAction(String value, ReadingEntry entry) async {
-    if (value == 'delete') {
-      await BookmarkDB().delete(entry.surah);
-    }
-  }
-
   @override
   State<LastReadCard> createState() => _LastReadCardState();
 }
 
 class _LastReadCardState extends State<LastReadCard> {
-  static const double _estimatedCarouselPageSize = 220;
+  static const double _estimatedCarouselPageSize = 246;
 
   int _currentPage = 0;
 
@@ -116,7 +110,6 @@ class _LastReadCardState extends State<LastReadCard> {
                           '${entry.surah}-${entry.verse}-${entry.timestamp.microsecondsSinceEpoch}',
                         ),
                         entry: entry,
-                        onMenuAction: widget._handleMenuAction,
                         showIndicatorSpace: entries.length > 1,
                       ),
                     );
@@ -144,7 +137,7 @@ class _LastReadCardState extends State<LastReadCard> {
                   child: Align(
                     alignment: Alignment.bottomCenter,
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.only(bottom: 22),
                       child: _CarouselPillsIndicator(
                         itemCount: entries.length,
                         activeIndex: activeIndex,
@@ -171,7 +164,7 @@ class _CarouselPillsIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final EquranColors colors = context.equranColors;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -186,13 +179,13 @@ class _CarouselPillsIndicator extends StatelessWidget {
           height: 5,
           decoration: BoxDecoration(
             color: isActive
-                ? colorScheme.primary
-                : colorScheme.onSurfaceVariant.withAlpha(88),
+                ? colors.accentGold
+                : colors.onPrimaryMuted.withAlpha(170),
             borderRadius: BorderRadius.circular(999),
             boxShadow: isActive
                 ? <BoxShadow>[
                     BoxShadow(
-                      color: colorScheme.primary.withAlpha(34),
+                      color: colors.accentGold.withAlpha(78),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -209,12 +202,10 @@ class _LastReadEntryCard extends StatelessWidget {
   const _LastReadEntryCard({
     super.key,
     required this.entry,
-    required this.onMenuAction,
     required this.showIndicatorSpace,
   });
 
   final ReadingEntry entry;
-  final Future<void> Function(String value, ReadingEntry entry) onMenuAction;
   final bool showIndicatorSpace;
 
   @override
@@ -224,201 +215,95 @@ class _LastReadEntryCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
 
-    return Card(
-      margin: const EdgeInsets.fromLTRB(0, 2, 0, 14),
-      elevation: 0,
-      color: Colors.transparent,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 4, 6, 24),
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadii.large),
-      ),
-      child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) =>
-                ReadPage(chapter: keySurah, startVerse: verse),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  ReadPage(chapter: keySurah, startVerse: verse),
+            ),
           ),
-        ),
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: colors.heroGradient,
-            borderRadius: BorderRadius.circular(AppRadii.large),
-          ),
-          child: Stack(
-            children: <Widget>[
-              const Positioned(
-                right: -18,
-                top: 6,
-                width: 180,
-                height: 130,
-                child: EquranOpenBookMark(opacity: 0.50),
-              ),
-              Positioned(
-                top: 0,
-                right: 74,
-                child: _BookmarkRibbon(
-                  color: colors.accentGold.withAlpha(100),
-                  edgeColor: colors.goldSoft.withAlpha(160),
-                ),
-              ),
-              Positioned(
-                top: 6,
-                right: 8,
-                child: PopupMenuButton<String>(
-                  tooltip: 'More options',
-                  icon: Icon(
-                    Icons.more_horiz_rounded,
-                    color: colors.onPrimary,
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: colors.heroGradient,
+              borderRadius: BorderRadius.circular(AppRadii.large),
+              border: Border.all(color: colors.onPrimary.withAlpha(36)),
+            ),
+            child: Stack(
+              children: <Widget>[
+                Positioned(
+                  right: -20,
+                  top: -6,
+                  bottom: -10,
+                  width: 176,
+                  child: Opacity(
+                    opacity: 0.84,
+                    child: Image.asset(
+                      _lastReadQuranAsset,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                  onSelected: (value) => onMenuAction(value, entry),
-                  itemBuilder: (BuildContext context) =>
-                      const <PopupMenuEntry<String>>[
-                        PopupMenuItem<String>(
-                          value: 'delete',
-                          child: ListTile(
-                            leading: Icon(Icons.delete_outline_rounded),
-                            title: Text('Delete'),
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                        ),
-                      ],
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      getSurahNameArabic(keySurah),
-                      textDirection: TextDirection.rtl,
-                      textAlign: TextAlign.center,
-                      style: EquranTextStyles.arabicBody(
-                        context,
-                        color: colors.onPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      getSurahName(keySurah),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: colors.onPrimary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Ayah $verse',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: colors.onPrimaryMuted,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 13,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors.onPrimary.withAlpha(28),
-                        borderRadius: BorderRadius.circular(AppRadii.pill),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(
-                            'Resume',
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: colors.onPrimary,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 16,
-                            color: colors.onPrimary,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: 160,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppRadii.pill),
-                        child: LinearProgressIndicator(
-                          minHeight: 4,
-                          value: (verse / getVerseCount(keySurah))
-                              .clamp(0.0, 1.0)
-                              .toDouble(),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    20,
+                    154,
+                    showIndicatorSpace ? 42 : 24,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        getSurahName(keySurah),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.headlineSmall?.copyWith(
                           color: colors.onPrimary,
-                          backgroundColor: colors.onPrimary.withAlpha(36),
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
-                    ),
-                    if (showIndicatorSpace) const SizedBox(height: 16),
-                  ],
+                      const SizedBox(height: 6),
+                      Text(
+                        'Ayah $verse',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: colors.onPrimaryMuted,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        child: SizedBox(
+                          width: 112,
+                          child: Divider(
+                            height: 1,
+                            color: colors.onPrimary.withAlpha(52),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Resume ->',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: colors.onPrimary,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
-  }
-}
-
-class _BookmarkRibbon extends StatelessWidget {
-  const _BookmarkRibbon({required this.color, required this.edgeColor});
-
-  final Color color;
-  final Color edgeColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(22, 58),
-      painter: _BookmarkRibbonPainter(color: color, edgeColor: edgeColor),
-    );
-  }
-}
-
-class _BookmarkRibbonPainter extends CustomPainter {
-  const _BookmarkRibbonPainter({required this.color, required this.edgeColor});
-
-  final Color color;
-  final Color edgeColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint fill = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    final Paint edge = Paint()
-      ..color = edgeColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    final Path path = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(size.width, size.height)
-      ..lineTo(size.width / 2, size.height - 9)
-      ..lineTo(0, size.height)
-      ..close();
-
-    canvas.drawPath(path, fill);
-    canvas.drawPath(path, edge);
-  }
-
-  @override
-  bool shouldRepaint(covariant _BookmarkRibbonPainter oldDelegate) {
-    return color != oldDelegate.color || edgeColor != oldDelegate.edgeColor;
   }
 }
