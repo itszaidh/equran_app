@@ -12,6 +12,7 @@ import 'package:equran/home_dashboard/home_dashboard_page.dart';
 import 'package:equran/prayer/prayer_times_page.dart';
 import 'package:equran/prayer/qibla_page.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:flutter/material.dart';
 
@@ -23,6 +24,12 @@ const int _duasDestinationIndex = 3;
 const int _downloadsDestinationIndex = 4;
 const int _prayerDestinationIndex = 5;
 const int _settingsDestinationIndex = 6;
+const List<int> _bottomDestinationIndices = <int>[
+  _homeDestinationIndex,
+  _quranDestinationIndex,
+  _prayerDestinationIndex,
+  _duasDestinationIndex,
+];
 const List<int> _drawerDestinationIndices = <int>[
   _homeDestinationIndex,
   _quranDestinationIndex,
@@ -153,6 +160,7 @@ class _HomePageState extends State<HomePage> {
     final double navIconSize = ResponsiveNav.iconSize(context);
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors equranColors = context.equranColors;
     final bool showSecondaryBackButton = _isSecondaryPage(_selectedIndex);
 
     return Listener(
@@ -262,8 +270,11 @@ class _HomePageState extends State<HomePage> {
                     : null,
                 title: Text(_pageDestinations[_selectedIndex].label),
                 centerTitle: true,
+                backgroundColor: equranColors.primary,
+                foregroundColor: equranColors.onPrimary,
+                surfaceTintColor: Colors.transparent,
                 iconTheme: IconThemeData(
-                  color: colorScheme.onSurface,
+                  color: equranColors.onPrimary,
                   size: navIconSize,
                 ),
                 actions: <Widget>[
@@ -281,6 +292,64 @@ class _HomePageState extends State<HomePage> {
               )
             : null,
         body: _pageDestinations[_selectedIndex].destination,
+        bottomNavigationBar: tabletLayout ? null : _buildBottomNavigation(),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigation() {
+    final EquranColors colors = context.equranColors;
+    final int navIndex = switch (_selectedIndex) {
+      _homeDestinationIndex => 0,
+      _quranDestinationIndex => 1,
+      _prayerDestinationIndex => 2,
+      _duasDestinationIndex => 3,
+      _ => 4,
+    };
+
+    return ColoredBox(
+      color: colors.primary,
+      child: SafeArea(
+        top: false,
+        child: NavigationBar(
+          height: 68,
+          selectedIndex: navIndex,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          onDestinationSelected: (int index) {
+            if (index == 4) {
+              _openDrawerFromDashboard();
+              return;
+            }
+            _onItemTapped(_bottomDestinationIndices[index]);
+          },
+          destinations: const <NavigationDestination>[
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.menu_book_outlined),
+              selectedIcon: Icon(Icons.menu_book_rounded),
+              label: 'Quran',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.schedule_outlined),
+              selectedIcon: Icon(Icons.schedule_rounded),
+              label: 'Prayer',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.auto_stories_outlined),
+              selectedIcon: Icon(Icons.auto_stories_rounded),
+              label: 'Duas',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.grid_view_rounded),
+              selectedIcon: Icon(Icons.grid_view_rounded),
+              label: 'More',
+            ),
+          ],
+        ),
       ),
     );
   }

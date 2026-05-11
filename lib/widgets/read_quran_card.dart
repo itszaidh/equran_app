@@ -3,6 +3,8 @@ import 'dart:async' show unawaited;
 import 'package:equran/backend/android_audio_display_mode.dart';
 import 'package:equran/backend/library.dart'
     show FavouritesDB, QuranBookmarkService;
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
@@ -131,6 +133,7 @@ class ReadQuranCard extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
 
     final TextStyle? mutedStyle =
         (shareImageMode
@@ -153,9 +156,9 @@ class ReadQuranCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withAlpha(14),
-                  borderRadius: BorderRadius.circular(AppRadii.medium),
-                  border: Border.all(color: colorScheme.primary.withAlpha(24)),
+                  color: colors.mint,
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                  border: Border.all(color: colors.border),
                 ),
                 child: Text("Juz' $juzNumber", style: mutedStyle),
               ),
@@ -320,6 +323,7 @@ class ReadQuranCard extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
     final bool isLight = theme.brightness == Brightness.light;
     final Color resolvedCardColor =
         theme.cardTheme.color ??
@@ -344,36 +348,30 @@ class ReadQuranCard extends StatelessWidget {
     }
 
     return Card(
-      elevation: isLight ? 3 : 0,
+      elevation: 0,
       color: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.symmetric(horizontal: marginValue, vertical: 10),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: BorderRadius.circular(AppRadii.large),
         side: BorderSide(
-          color: isLight
-              ? colorScheme.primary.withAlpha(28)
-              : colorScheme.outlineVariant.withAlpha(80),
+          color: isLight ? colors.border : colors.border.withAlpha(160),
         ),
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
+          borderRadius: BorderRadius.circular(AppRadii.large),
           color: resolvedCardColor,
-          gradient: isLight
+          gradient: shareImageMode
+              ? colors.softSurfaceGradient
+              : isLight
               ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: <Color>[
-                    Color.alphaBlend(
-                      colorScheme.primary.withAlpha(10),
-                      resolvedCardColor,
-                    ),
-                    Color.alphaBlend(
-                      colorScheme.tertiary.withAlpha(8),
-                      resolvedCardColor,
-                    ),
+                    colors.paleGreen,
+                    colors.surface,
                   ],
                 )
               : LinearGradient(
@@ -392,17 +390,17 @@ class ReadQuranCard extends StatelessWidget {
                 ),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: Colors.black.withAlpha(isLight ? 10 : 20),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
+              color: colors.shadow.withAlpha(isLight ? 14 : 36),
+              blurRadius: 22,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-            20,
+            EquranSpacing.pagePadding,
             compactShareContent ? 14 : 16,
-            20,
+            EquranSpacing.pagePadding,
             shareImageMode ? (compactShareContent ? 14 : 16) : 20,
           ),
           child: Column(

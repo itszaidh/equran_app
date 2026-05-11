@@ -1,5 +1,7 @@
 import 'package:equran/backend/surah_model.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/widgets/number_badge.dart';
@@ -20,12 +22,12 @@ class QuranCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
     final bool tabletLayout = ResponsiveNav.isTablet(context);
     final bool compactText = compact && reduceTitleSize;
     final double verticalPadding = compact
-        ? (tabletLayout ? 12 : 10)
-        : (tabletLayout ? 14 : 12);
+        ? (tabletLayout ? 14 : 12)
+        : (tabletLayout ? 17 : 15);
     final TextStyle? titleStyle =
         (compactText
                 ? theme.textTheme.titleSmall
@@ -39,35 +41,44 @@ class QuranCard extends StatelessWidget {
                 : compact
                 ? theme.textTheme.titleLarge
                 : theme.textTheme.titleMedium)
-            ?.copyWith(color: colorScheme.onSurfaceVariant);
+            ?.copyWith(
+              color: colors.textPrimary,
+              fontFamily: 'Hafs',
+              fontSize: compactText
+                  ? 19
+                  : compact
+                  ? 22
+                  : 21,
+              height: 1.1,
+            );
     final TextStyle? versesStyle =
         (compactText
                 ? theme.textTheme.bodySmall
                 : compact
                 ? theme.textTheme.bodyMedium
                 : theme.textTheme.bodyLarge)
-            ?.copyWith(color: colorScheme.onSurfaceVariant);
+            ?.copyWith(color: colors.textSecondary);
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-      ),
+    return Material(
+      color: colors.surface,
+      borderRadius: BorderRadius.circular(AppRadii.medium),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.medium),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => ReadPage(chapter: surah.id)),
         ),
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: colors.divider)),
+          ),
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? 10 : 12,
+            horizontal: compact ? 8 : 10,
             vertical: verticalPadding,
           ),
           child: Row(
             children: <Widget>[
-              NumberBadge(label: surah.id.toString(), size: compact ? 38 : 44),
-              SizedBox(width: compact ? 10 : 14),
+              NumberBadge(label: surah.id.toString(), size: compact ? 34 : 38),
+              const SizedBox(width: EquranSpacing.l),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,18 +87,29 @@ class QuranCard extends StatelessWidget {
                       surah.transliteration,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: titleStyle,
+                      style: titleStyle?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: <Widget>[
-                        Text('${surah.verses} Ayahs', style: versesStyle),
-                      ],
+                    const SizedBox(height: 3),
+                    Text(
+                      '${surah.englishName} • ${surah.verses} verses',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: versesStyle,
                     ),
                   ],
                 ),
               ),
-              Text(surah.name, style: arabicTitleStyle),
+              const SizedBox(width: EquranSpacing.m),
+              Text(
+                surah.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textDirection: TextDirection.rtl,
+                style: arabicTitleStyle,
+              ),
             ],
           ),
         ),

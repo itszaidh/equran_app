@@ -4,6 +4,7 @@ import 'package:equran/backend/library.dart'
         AudioDownloadService,
         AudioDownloadsSummary,
         DownloadMetadataService;
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/downloads_grouping.dart';
 import 'package:flutter/material.dart';
@@ -154,11 +155,18 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }
 
   Widget _buildSummaryCard(ThemeData theme, AudioDownloadsSummary summary) {
-    final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        gradient: colors.heroGradient,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: colors.primaryStrong.withAlpha(42),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -168,7 +176,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
             Text(
               'Offline Audio',
               style: theme.textTheme.titleLarge?.copyWith(
-                color: colorScheme.onPrimaryContainer,
+                color: colors.onPrimary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -176,14 +184,14 @@ class _DownloadsPageState extends State<DownloadsPage> {
             Text(
               '${summary.surahCount} surahs • ${summary.ayahCount} ayahs',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onPrimaryContainer,
+                color: colors.onPrimaryMuted,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               AudioDownloadService.formatBytes(summary.totalSizeBytes),
               style: theme.textTheme.headlineSmall?.copyWith(
-                color: colorScheme.onPrimaryContainer,
+                color: colors.onPrimary,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -194,6 +202,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 onPressed: summary.allDownloads.isEmpty
                     ? null
                     : () => _clearAll(summary),
+                style: FilledButton.styleFrom(
+                  backgroundColor: colors.onPrimary,
+                  foregroundColor: colors.primary,
+                ),
                 icon: const Icon(Icons.delete_sweep_rounded),
                 label: const Text('Clear All'),
               ),

@@ -14,6 +14,7 @@ import 'package:equran/backend/library.dart'
         SurahTiming,
         SurahTimingRepository,
         SettingsDB;
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/app_slider_theme.dart';
 import 'package:equran/utils/number_formatting.dart';
@@ -1799,11 +1800,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     final int ayahCount = quran.getVerseCount(_selectedSurah);
     final bool offlineReady = _playingFromOffline || _isDownloaded;
     final Color artBackground = Color.alphaBlend(
-      colorScheme.primary.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.18 : 0.12,
+      context.equranColors.primary.withAlpha(
+        theme.brightness == Brightness.dark ? 46 : 30,
       ),
-      colorScheme.surfaceContainerHighest,
+      context.equranColors.mint,
     );
+    final EquranColors equranColors = context.equranColors;
 
     return Center(
       child: SingleChildScrollView(
@@ -1818,14 +1820,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               vertical: isDesktop ? 36 : 30,
             ),
             decoration: BoxDecoration(
-              color: colorScheme.surface.withValues(alpha: 0.88),
+              gradient: equranColors.heroGradient,
               borderRadius: BorderRadius.circular(AppRadii.large),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.36),
-              ),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: colorScheme.shadow.withValues(alpha: 0.16),
+                  color: equranColors.primaryStrong.withAlpha(54),
                   blurRadius: 30,
                   offset: const Offset(0, 14),
                 ),
@@ -1875,7 +1874,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                                 ? theme.textTheme.displaySmall
                                 : theme.textTheme.headlineMedium)
                             ?.copyWith(
-                              color: colorScheme.onSurface,
+                              color: equranColors.onPrimary,
                               fontWeight: FontWeight.w800,
                             ),
                   ),
@@ -1891,7 +1890,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                               ? theme.textTheme.headlineSmall
                               : theme.textTheme.titleLarge)
                           ?.copyWith(
-                            color: colorScheme.onSurface,
+                            color: equranColors.onPrimary,
                             fontWeight: FontWeight.w800,
                           ),
                 ),
@@ -1902,7 +1901,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                    color: equranColors.onPrimaryMuted,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

@@ -9,6 +9,7 @@ import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 
@@ -184,8 +185,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     bool isViewingToday,
   ) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+    final EquranColors equranColors = context.equranColors;
     final String methodLabel = prayerMethodDisplayLabel(
       settings: settings,
       effectiveMethod: day.effectiveMethod,
@@ -194,27 +194,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.large),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            Color.alphaBlend(
-              colors.primary.withAlpha(isLight ? 34 : 54),
-              colors.surfaceContainerLow,
-            ),
-            Color.alphaBlend(
-              colors.tertiary.withAlpha(isLight ? 24 : 42),
-              colors.surfaceContainer,
-            ),
-            colors.surfaceContainerLow,
-          ],
-        ),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: isLight ? 0.16 : 0.28),
-        ),
+        gradient: equranColors.heroGradient,
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: colors.shadow.withValues(alpha: isLight ? 0.12 : 0.28),
+            color: equranColors.primaryStrong.withAlpha(56),
             blurRadius: 26,
             offset: const Offset(0, 12),
           ),
@@ -231,7 +214,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   child: Text(
                     isViewingToday ? 'Next prayer' : 'Selected date',
                     style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.primary,
+                      color: equranColors.onPrimaryMuted,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -239,6 +222,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                 IconButton(
                   tooltip: 'Prayer settings',
                   onPressed: _openPrayerSettings,
+                  color: equranColors.onPrimary,
                   icon: const Icon(Icons.tune_rounded),
                 ),
               ],
@@ -256,7 +240,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       settings.use24HourFormat,
                     ),
                     style: theme.textTheme.headlineSmall?.copyWith(
-                      color: colors.onSurfaceVariant,
+                      color: equranColors.onPrimaryMuted,
                       fontWeight: FontWeight.w700,
                       height: 1.02,
                     ),
@@ -266,6 +250,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.displaySmall?.copyWith(
+                color: equranColors.onPrimary,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 0,
                 height: 1.02,

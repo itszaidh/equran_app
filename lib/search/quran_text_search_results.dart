@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/search/quran_text_search_service.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -129,7 +130,7 @@ class _QuranTextSearchTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
     final String surahName = quran.getSurahNameEnglish(result.surah);
 
     return Material(
@@ -146,12 +147,12 @@ class _QuranTextSearchTile extends StatelessWidget {
         },
         child: Ink(
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(AppRadii.medium),
-            border: Border.all(color: colorScheme.outlineVariant),
+            border: Border.all(color: colors.border),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: colorScheme.shadow.withAlpha(12),
+                color: colors.shadow.withAlpha(12),
                 blurRadius: 12,
                 offset: const Offset(0, 3),
               ),
@@ -170,13 +171,13 @@ class _QuranTextSearchTile extends StatelessWidget {
                         vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer.withAlpha(150),
+                        color: colors.mint,
                         borderRadius: BorderRadius.circular(AppRadii.small),
                       ),
                       child: Text(
                         '$surahName ${result.verse}',
                         style: theme.textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
+                          color: colors.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -187,7 +188,7 @@ class _QuranTextSearchTile extends StatelessWidget {
                           ? Icons.translate_rounded
                           : Icons.menu_book_rounded,
                       size: 18,
-                      color: colorScheme.onSurfaceVariant,
+                      color: colors.textMuted,
                     ),
                   ],
                 ),
@@ -201,7 +202,7 @@ class _QuranTextSearchTile extends StatelessWidget {
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontFamily: 'Hafs',
                     height: 1.65,
-                    color: colorScheme.onSurface,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -211,7 +212,7 @@ class _QuranTextSearchTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     height: 1.35,
-                    color: colorScheme.onSurfaceVariant,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],

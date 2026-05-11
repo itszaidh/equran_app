@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:equran/backend/library.dart';
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
 import 'package:equran/utils/responsive_nav.dart';
@@ -87,17 +89,17 @@ class _MainPageState extends State<MainPage>
         ? 36
         : width >= 1100
         ? 28
-        : 14;
+        : EquranSpacing.pagePadding;
     return Column(
       children: <Widget>[
         DecoratedBox(
-          decoration: _topBarDecoration(theme),
+          decoration: _topBarDecoration(),
           child: SafeArea(
             bottom: false,
             child: Material(
               color: Colors.transparent,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                 child: _buildTopBar(theme),
               ),
             ),
@@ -118,6 +120,7 @@ class _MainPageState extends State<MainPage>
   }
 
   Widget _buildTopBar(ThemeData theme) {
+    final EquranColors colors = context.equranColors;
     return Row(
       children: <Widget>[
         Builder(
@@ -126,6 +129,7 @@ class _MainPageState extends State<MainPage>
             style: ResponsiveNav.iconButtonStyle(context),
             icon: Icon(
               Icons.menu_rounded,
+              color: colors.onPrimary,
               size: ResponsiveNav.iconSize(context),
             ),
           ),
@@ -166,7 +170,7 @@ class _MainPageState extends State<MainPage>
                     elevation: const WidgetStatePropertyAll(0),
                     shape: WidgetStatePropertyAll(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadii.small),
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
                       ),
                     ),
                   )
@@ -175,11 +179,12 @@ class _MainPageState extends State<MainPage>
                     behavior: HitTestBehavior.opaque,
                     onTap: _scrollToTop,
                     child: Text(
-                      'eQuran',
+                      'Quran',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.titleLarge?.copyWith(
+                        color: colors.onPrimary,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6,
+                        letterSpacing: 0,
                       ),
                     ),
                   ),
@@ -199,7 +204,19 @@ class _MainPageState extends State<MainPage>
                   : IconButton(
                       key: const ValueKey<String>('search-button'),
                       onPressed: _openSearch,
+                      color: colors.onPrimary,
                       icon: const Icon(Icons.search_rounded),
+                    ),
+              _showSearch
+                  ? const SizedBox.shrink()
+                  : IconButton(
+                      tooltip: 'Search Quran text',
+                      onPressed: () {
+                        _tabController.animateTo(1);
+                        _openSearch();
+                      },
+                      color: colors.onPrimary,
+                      icon: const Icon(Icons.travel_explore_rounded),
                     ),
             ],
           ),
@@ -223,111 +240,58 @@ class _MainPageState extends State<MainPage>
     Scaffold.of(context).openDrawer();
   }
 
-  BoxDecoration _topBarDecoration(ThemeData theme) {
-    final ColorScheme colorScheme = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+  BoxDecoration _topBarDecoration() {
+    final EquranColors colors = context.equranColors;
 
     return BoxDecoration(
-      color: isLight ? null : colorScheme.primaryContainer,
-      gradient: isLight
-          ? LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: <Color>[
-                Color.alphaBlend(
-                  colorScheme.primary.withAlpha(28),
-                  colorScheme.surfaceContainerLow,
-                ),
-                Color.alphaBlend(
-                  colorScheme.tertiary.withAlpha(18),
-                  colorScheme.surfaceContainerLow,
-                ),
-              ],
-            )
-          : null,
-      border: Border(
-        bottom: BorderSide(
-          color: isLight
-              ? colorScheme.primary.withAlpha(34)
-              : colorScheme.outlineVariant.withAlpha(120),
-        ),
-      ),
+      color: colors.primary,
+      border: Border(bottom: BorderSide(color: colors.primaryStrong)),
       boxShadow: <BoxShadow>[
         BoxShadow(
-          color: colorScheme.shadow.withAlpha(isLight ? 20 : 14),
-          blurRadius: 10,
-          offset: const Offset(0, 2),
+          color: colors.shadow.withAlpha(24),
+          blurRadius: 18,
+          offset: const Offset(0, 6),
         ),
       ],
     );
   }
 
   Widget _buildSectionHeader(ThemeData theme) {
-    final ColorScheme colorScheme = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+    final EquranColors colors = context.equranColors;
 
     return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 560),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: isLight
-                ? colorScheme.surfaceContainerLow
-                : colorScheme.surfaceContainerHighest.withAlpha(150),
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-            border: Border.all(color: colorScheme.outlineVariant),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: colorScheme.shadow.withAlpha(18),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(4),
-            child: TabBar(
-              controller: _tabController,
-              dividerColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicator: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    colorScheme.primaryContainer,
-                    colorScheme.tertiaryContainer,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(AppRadii.small),
-                border: Border.all(color: colorScheme.primary.withAlpha(58)),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: colorScheme.shadow.withAlpha(18),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              labelColor: colorScheme.onPrimaryContainer,
-              unselectedLabelColor: colorScheme.onSurfaceVariant,
-              labelStyle: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-              overlayColor: WidgetStatePropertyAll(
-                colorScheme.primary.withAlpha(16),
-              ),
-              splashBorderRadius: BorderRadius.circular(AppRadii.small),
-              tabs: <Widget>[
-                _buildTabLabel(Icons.menu_book_outlined, 'Surahs'),
-                _buildTabLabel(Icons.travel_explore_rounded, 'Quran Text'),
-                _buildTabLabel(Icons.layers_outlined, 'Juz'),
-                _buildTabLabel(Icons.favorite_border_rounded, 'Saved'),
-              ],
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          border: Border.all(color: colors.border),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: TabBar(
+            controller: _tabController,
+            dividerColor: Colors.transparent,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BoxDecoration(
+              color: colors.primary,
+              borderRadius: BorderRadius.circular(AppRadii.pill),
             ),
+            labelColor: colors.onPrimary,
+            unselectedLabelColor: colors.textSecondary,
+            labelStyle: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+            unselectedLabelStyle: theme.textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+            overlayColor: WidgetStatePropertyAll(colors.primary.withAlpha(14)),
+            splashBorderRadius: BorderRadius.circular(AppRadii.pill),
+            tabs: <Widget>[
+              _buildTabLabel(Icons.menu_book_outlined, 'Sura'),
+              _buildTabLabel(Icons.travel_explore_rounded, 'Text'),
+              _buildTabLabel(Icons.layers_outlined, 'Juz'),
+              _buildTabLabel(Icons.favorite_border_rounded, 'Bookmark'),
+            ],
           ),
         ),
       ),

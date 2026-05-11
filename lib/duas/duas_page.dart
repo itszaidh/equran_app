@@ -3,6 +3,7 @@ import 'package:equran/duas/duas_category_page.dart';
 import 'package:equran/duas/duas_favourites_page.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -261,30 +262,19 @@ class _DuasHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+    final EquranColors colors = context.equranColors;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.large),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            Color.alphaBlend(
-              colors.primary.withAlpha(isLight ? 34 : 54),
-              colors.surfaceContainerLow,
-            ),
-            Color.alphaBlend(
-              colors.tertiary.withAlpha(isLight ? 24 : 42),
-              colors.surfaceContainer,
-            ),
-            colors.surfaceContainerLow,
-          ],
-        ),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: isLight ? 0.16 : 0.28),
-        ),
+        gradient: colors.heroGradient,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: colors.primaryStrong.withAlpha(42),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
@@ -294,12 +284,12 @@ class _DuasHero extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: colors.primaryContainer.withValues(alpha: 0.72),
+                color: colors.onPrimary.withAlpha(24),
                 borderRadius: BorderRadius.circular(AppRadii.medium),
               ),
               child: Icon(
                 Icons.auto_stories_outlined,
-                color: colors.onPrimaryContainer,
+                color: colors.onPrimary,
               ),
             ),
             const SizedBox(width: 14),
@@ -310,6 +300,7 @@ class _DuasHero extends StatelessWidget {
                   Text(
                     'Hisn al Muslim',
                     style: theme.textTheme.titleLarge?.copyWith(
+                      color: colors.onPrimary,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0,
                     ),
@@ -318,7 +309,7 @@ class _DuasHero extends StatelessWidget {
                   Text(
                     '$categoryCount Arabic categories - $duaCount duas offline',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
+                      color: colors.onPrimaryMuted,
                       height: 1.3,
                     ),
                   ),

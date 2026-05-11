@@ -6,8 +6,12 @@ import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_text.dart';
+import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
@@ -61,9 +65,10 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
 
     return Material(
+      color: colors.background,
       child: SafeArea(
         bottom: false,
         child: RefreshIndicator(
@@ -78,9 +83,14 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
               parent: BouncingScrollPhysics(),
             ),
             slivers: <Widget>[
-              SliverToBoxAdapter(child: _buildHeader(theme, colors)),
+              SliverToBoxAdapter(child: _buildHeader(theme)),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(14, 6, 14, 28),
+                padding: const EdgeInsets.fromLTRB(
+                  EquranSpacing.pagePadding,
+                  8,
+                  EquranSpacing.pagePadding,
+                  28,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: Center(
                     child: ConstrainedBox(
@@ -103,48 +113,110 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     );
   }
 
-  Widget _buildHeader(ThemeData theme, ColorScheme colors) {
-    final String greeting = _greetingFor(_now);
+  Widget _buildHeader(ThemeData theme) {
+    final EquranColors colors = context.equranColors;
+    final PrayerLocation? location = _prayerStore.getLocation();
+    final String locationLabel = location?.displayLabel ?? 'Set prayer location';
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 6, 14, 6),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(
+        EquranSpacing.pagePadding,
+        10,
+        EquranSpacing.pagePadding,
+        8,
+      ),
+      child: Column(
         children: <Widget>[
-          IconButton(
-            tooltip: 'Menu',
-            onPressed: widget.onMenuPressed,
-            icon: const Icon(Icons.menu_rounded),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  greeting,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0,
-                  ),
+          Row(
+            children: <Widget>[
+              IconButton.filledTonal(
+                tooltip: 'Menu',
+                onPressed: widget.onMenuPressed,
+                style: IconButton.styleFrom(
+                  backgroundColor: colors.mint,
+                  foregroundColor: colors.primary,
                 ),
-                const SizedBox(height: 2),
-                Text(
+                icon: const Icon(Icons.menu_rounded),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Icon(
+                          Icons.location_on_rounded,
+                          size: 14,
+                          color: colors.primary,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Current Location',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: colors.textMuted,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      locationLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: 'Search Quran text',
+                onPressed: widget.onOpenSearch,
+                color: colors.primary,
+                icon: const Icon(Icons.search_rounded),
+              ),
+              IconButton(
+                tooltip: 'More',
+                onPressed: widget.onMenuPressed,
+                color: colors.primary,
+                icon: const Icon(Icons.tune_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
                   _formatDashboardDate(_now),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ],
-            ),
-          ),
-          IconButton(
-            tooltip: 'Search Quran text',
-            onPressed: widget.onOpenSearch,
-            icon: const Icon(Icons.search_rounded),
+              ),
+              TextButton(
+                onPressed: widget.onOpenPrayerTimes,
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  minimumSize: const Size(0, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text('Prayer Times'),
+                    SizedBox(width: 2),
+                    Icon(Icons.chevron_right_rounded, size: 18),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -274,45 +346,44 @@ class _DashboardContent extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _PrayerDashboardCard(
+            _HomePrayerHeroCard(
               prayerSummary: summary.prayerSummary,
               exactAlarmPermission: exactAlarmPermission,
               onOpenPrayerTimes: actions.onOpenPrayerTimes,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
+            _RoutinePlanCta(
+              plan: summary.activePlan,
+              onTap: actions.onOpenQuran,
+            ),
+            const SizedBox(height: 14),
+            _MuslimDailyQuickActions(
+              latestReading: summary.latestReading,
+              actions: actions,
+            ),
+            const SizedBox(height: 22),
+            _DailyAyahPreview(
+              ayah: summary.dailyAyah,
+              onOpenQuran: actions.onOpenQuran,
+            ),
+            const SizedBox(height: 22),
             _ResponsiveTwoColumn(
               wide: wide,
               children: <Widget>[
-                _ContinueReadingCard(entry: summary.latestReading),
+                _JourneyPreviewCard(
+                  stats: summary.stats,
+                  activity: summary.todayActivity,
+                  plan: summary.activePlan,
+                  onOpenQuran: actions.onOpenQuran,
+                ),
                 _ContinueListeningCard(
                   entry: summary.latestListening,
                   onOpenPlayer: actions.onOpenPlayer,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            _ResponsiveTwoColumn(
-              wide: wide,
-              children: <Widget>[
-                _DailyGoalCard(activity: summary.todayActivity),
-                _ReadingPlanCard(plan: summary.activePlan),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _QuickActionsCard(actions: actions),
-            const SizedBox(height: 12),
-            _ResponsiveTwoColumn(
-              wide: wide,
-              children: <Widget>[
-                _DailyAyahCard(ayah: summary.dailyAyah),
-                _StatsPreviewCard(
-                  stats: summary.stats,
-                  activity: summary.todayActivity,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _BookmarksPreviewCard(bookmarks: summary.bookmarks),
+            const SizedBox(height: 14),
+            _PersonalLibraryPreview(bookmarks: summary.bookmarks),
           ],
         );
       },
@@ -490,6 +561,705 @@ class _DailyAyah {
         ref.surah,
         ref.verse,
         translation: quran.Translation.values[translationIndex],
+      ),
+    );
+  }
+}
+
+class _HomePrayerHeroCard extends StatelessWidget {
+  const _HomePrayerHeroCard({
+    required this.prayerSummary,
+    required this.exactAlarmPermission,
+    required this.onOpenPrayerTimes,
+  });
+
+  final _PrayerSummary prayerSummary;
+  final PrayerExactAlarmPermissionStatus? exactAlarmPermission;
+  final VoidCallback onOpenPrayerTimes;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final PrayerDay? day = prayerSummary.day;
+    final NextPrayer? nextPrayer = prayerSummary.nextPrayer;
+
+    if (day == null || nextPrayer == null) {
+      return EquranGradientCard(
+        onTap: onOpenPrayerTimes,
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+        child: SizedBox(
+          height: 148,
+          child: Stack(
+            children: <Widget>[
+              const Positioned(
+                right: -18,
+                bottom: -10,
+                width: 190,
+                height: 128,
+                child: EquranMosqueSilhouette(opacity: 0.28),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Prayer Times',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: colors.onPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: 210,
+                    child: Text(
+                      'Choose a location to show your next prayer here.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onPrimaryMuted,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Set up location',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.onPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final PrayerTimeSettings settings = day.settings;
+    final String prayerTime = _formatTime(
+      nextPrayer.entry.time,
+      settings.use24HourFormat,
+    );
+    final String countdown = _formatCountdown(nextPrayer.countdown);
+    final bool exactAlarmDenied =
+        exactAlarmPermission == PrayerExactAlarmPermissionStatus.denied;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        EquranGradientCard(
+          onTap: onOpenPrayerTimes,
+          padding: const EdgeInsets.fromLTRB(22, 20, 18, 18),
+          child: SizedBox(
+            height: 164,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                const Positioned(
+                  right: -24,
+                  bottom: -14,
+                  width: 210,
+                  height: 142,
+                  child: EquranMosqueSilhouette(opacity: 0.48),
+                ),
+                Positioned.fill(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              'Next Prayer Time',
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: colors.onPrimaryMuted,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: colors.onPrimary,
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Text(
+                        prayerTime,
+                        maxLines: 1,
+                        style: theme.textTheme.displayLarge?.copyWith(
+                          color: colors.onPrimary,
+                          fontWeight: FontWeight.w900,
+                          height: 0.98,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${nextPrayer.entry.kind.label} Prayer Time',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: colors.onPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        '${nextPrayer.entry.kind.label} in $countdown',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onPrimaryMuted,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (exactAlarmDenied) ...<Widget>[
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: colors.warningSurface,
+              borderRadius: BorderRadius.circular(EquranRadii.medium),
+              border: Border.all(color: colors.warning.withAlpha(72)),
+            ),
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  Icons.notifications_paused_outlined,
+                  size: 18,
+                  color: colors.warning,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Exact alarm permission is off. Prayer reminders may be delayed.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.warning,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _RoutinePlanCta extends StatelessWidget {
+  const _RoutinePlanCta({required this.plan, required this.onTap});
+
+  final ReadingPlanEntry? plan;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final ReadingPlanEntry? activePlan = plan;
+
+    return EquranSurfaceCard(
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      borderColor: colors.primary.withAlpha(150),
+      backgroundColor: colors.surface,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Text(
+              activePlan == null ? 'Start Reading Plan' : activePlan.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: colors.mint,
+              borderRadius: BorderRadius.circular(EquranRadii.medium),
+            ),
+            child: Icon(
+              Icons.calendar_month_rounded,
+              size: 19,
+              color: colors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MuslimDailyQuickActions extends StatelessWidget {
+  const _MuslimDailyQuickActions({
+    required this.latestReading,
+    required this.actions,
+  });
+
+  final ResumeStateEntry? latestReading;
+  final HomeDashboardPage actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    final List<_QuickAction> items = <_QuickAction>[
+      _QuickAction(
+        Icons.history_rounded,
+        'Last Read',
+        () => _openLatestReading(context),
+      ),
+      _QuickAction(Icons.menu_book_outlined, 'Quran', actions.onOpenQuran),
+      _QuickAction(
+        Icons.schedule_outlined,
+        'Prayer',
+        actions.onOpenPrayerTimes,
+      ),
+      _QuickAction(Icons.explore_outlined, 'Qibla', actions.onOpenQibla),
+      _QuickAction(
+        Icons.graphic_eq_rounded,
+        'Player',
+        actions.onOpenPlayer,
+      ),
+      _QuickAction(Icons.auto_awesome_outlined, 'Tasbih', actions.onOpenDuas),
+      _QuickAction(Icons.auto_stories_outlined, 'Dua', actions.onOpenDuas),
+      _QuickAction(
+        Icons.download_outlined,
+        'Downloads',
+        actions.onOpenDownloads,
+      ),
+    ];
+
+    return EquranSurfaceCard(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      child: Column(
+        children: <Widget>[
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final int columns = constraints.maxWidth >= 620 ? 8 : 4;
+              return GridView.builder(
+                itemCount: items.length,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  childAspectRatio: columns == 4 ? 1.05 : 0.95,
+                ),
+                itemBuilder: (context, index) {
+                  final _QuickAction item = items[index];
+                  return EquranShortcutTile(
+                    icon: item.icon,
+                    label: item.label,
+                    onTap: item.onTap,
+                  );
+                },
+              );
+            },
+          ),
+          Divider(height: 20, color: colors.divider),
+          InkWell(
+            onTap: actions.onMenuPressed,
+            borderRadius: BorderRadius.circular(EquranRadii.medium),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 4, 8, 6),
+              child: Row(
+                children: <Widget>[
+                  const Spacer(),
+                  Text(
+                    'Explore All Features',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: colors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: colors.textMuted,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openLatestReading(BuildContext context) {
+    final ResumeStateEntry? current = latestReading;
+    final int? surah = current?.surah;
+    final int? ayah = current?.ayah;
+    if (surah == null || ayah == null) {
+      actions.onOpenQuran();
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => ReadPage(chapter: surah, startVerse: ayah),
+      ),
+    );
+  }
+}
+
+class _DailyAyahPreview extends StatelessWidget {
+  const _DailyAyahPreview({required this.ayah, required this.onOpenQuran});
+
+  final _DailyAyah ayah;
+  final VoidCallback onOpenQuran;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        EquranSectionHeader(
+          icon: Icons.local_florist_outlined,
+          title: 'Daily Ayah',
+          actionLabel: 'See all',
+          onAction: onOpenQuran,
+        ),
+        const SizedBox(height: 10),
+        EquranSurfaceCard(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) =>
+                  ReadPage(chapter: ayah.surah, startVerse: ayah.verse),
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(
+                '${quran.getSurahName(ayah.surah)} ${ayah.verse}',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                ayah.arabic,
+                textDirection: TextDirection.rtl,
+                textAlign: TextAlign.right,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: EquranTextStyles.arabicBody(
+                  context,
+                  color: colors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                ayah.translation,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.textSecondary,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _JourneyPreviewCard extends StatelessWidget {
+  const _JourneyPreviewCard({
+    required this.stats,
+    required this.activity,
+    required this.plan,
+    required this.onOpenQuran,
+  });
+
+  final QuranStatsSnapshot? stats;
+  final QuranActivityDay? activity;
+  final ReadingPlanEntry? plan;
+  final VoidCallback onOpenQuran;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final QuranStatsSnapshot snapshot =
+        stats ?? QuranStatsSnapshot(id: 'summary', updatedAt: DateTime.now());
+    final int ayahsRead = activity?.ayahsRead ?? 0;
+    const int dailyGoal = 20;
+    final double progress = (ayahsRead / dailyGoal).clamp(0.0, 1.0);
+
+    return EquranSurfaceCard(
+      onTap: onOpenQuran,
+      backgroundColor: colors.paleGreen,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const EquranSectionHeader(
+            icon: Icons.route_outlined,
+            title: 'Quran Journey',
+          ),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              Text(
+                '$ayahsRead',
+                style: theme.textTheme.headlineLarge?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(width: 5),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: Text(
+                  '/ $dailyGoal ayahs today',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(EquranRadii.pill),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              color: colors.primary,
+              backgroundColor: colors.surface,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            plan?.title ?? 'No active reading plan',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _WeeklyBars(value: progress),
+          const SizedBox(height: 12),
+          Row(
+            children: <Widget>[
+              _HomeMetricPill(
+                icon: Icons.local_fire_department_outlined,
+                label: '${snapshot.currentStreak} day streak',
+              ),
+              const SizedBox(width: 8),
+              _HomeMetricPill(
+                icon: Icons.done_all_rounded,
+                label: '${snapshot.totalAyahsRead} total',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeeklyBars extends StatelessWidget {
+  const _WeeklyBars({required this.value});
+
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    final List<double> bars = <double>[0.35, 0.58, 0.44, 0.70, value, 0.22, 0.50];
+
+    return SizedBox(
+      height: 42,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: <Widget>[
+          for (int i = 0; i < bars.length; i++) ...<Widget>[
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: FractionallySizedBox(
+                  heightFactor: bars[i].clamp(0.16, 1.0),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: i == 4 ? colors.primary : colors.mint,
+                      borderRadius: BorderRadius.circular(EquranRadii.pill),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (i != bars.length - 1) const SizedBox(width: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeMetricPill extends StatelessWidget {
+  const _HomeMetricPill({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(EquranRadii.pill),
+          border: Border.all(color: colors.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 15, color: colors.primary),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: colors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PersonalLibraryPreview extends StatelessWidget {
+  const _PersonalLibraryPreview({required this.bookmarks});
+
+  final List<QuranBookmarkEntry> bookmarks;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+
+    return EquranSurfaceCard(
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const EquranSectionHeader(
+            icon: Icons.bookmark_border_rounded,
+            title: 'Personal Library',
+          ),
+          const SizedBox(height: 8),
+          if (bookmarks.isEmpty)
+            Text(
+              'Save ayahs and notes here as you read.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colors.textSecondary,
+              ),
+            )
+          else
+            for (final QuranBookmarkEntry bookmark in bookmarks.take(2))
+              _LibraryPreviewTile(bookmark: bookmark),
+        ],
+      ),
+    );
+  }
+}
+
+class _LibraryPreviewTile extends StatelessWidget {
+  const _LibraryPreviewTile({required this.bookmark});
+
+  final QuranBookmarkEntry bookmark;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return InkWell(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) =>
+              ReadPage(chapter: bookmark.surah, startVerse: bookmark.verse),
+        ),
+      ),
+      borderRadius: BorderRadius.circular(EquranRadii.medium),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: colors.mint,
+                borderRadius: BorderRadius.circular(EquranRadii.medium),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                bookmark.verse.toString(),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    '${quran.getSurahName(bookmark.surah)} ${bookmark.verse}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    bookmark.note.trim().isEmpty ? bookmark.folder : bookmark.note,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

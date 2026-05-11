@@ -2,7 +2,10 @@ import 'dart:math';
 
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:quran/quran.dart';
@@ -40,7 +43,7 @@ class LastReadCard extends StatefulWidget {
 }
 
 class _LastReadCardState extends State<LastReadCard> {
-  static const double _estimatedCarouselPageSize = 146;
+  static const double _estimatedCarouselPageSize = 164;
 
   int _currentPage = 0;
 
@@ -219,21 +222,15 @@ class _LastReadEntryCard extends StatelessWidget {
     final int keySurah = entry.surah;
     final int verse = entry.verse;
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+    final EquranColors colors = context.equranColors;
 
     return Card(
-      margin: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-      elevation: isLight ? 4 : 2,
+      margin: const EdgeInsets.fromLTRB(0, 2, 0, 14),
+      elevation: 0,
       color: Colors.transparent,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        side: BorderSide(
-          color: isLight
-              ? colorScheme.primary.withAlpha(50)
-              : colorScheme.outlineVariant,
-        ),
+        borderRadius: BorderRadius.circular(AppRadii.large),
       ),
       child: InkWell(
         onTap: () => Navigator.of(context).push(
@@ -244,40 +241,28 @@ class _LastReadEntryCard extends StatelessWidget {
         ),
         child: Ink(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: <Color>[
-                isLight
-                    ? Color.alphaBlend(
-                        colorScheme.primary.withAlpha(28),
-                        colorScheme.primaryContainer,
-                      )
-                    : colorScheme.primaryContainer,
-                isLight
-                    ? Color.alphaBlend(
-                        colorScheme.tertiary.withAlpha(24),
-                        colorScheme.tertiaryContainer,
-                      )
-                    : colorScheme.tertiaryContainer,
-              ],
-            ),
+            gradient: colors.heroGradient,
+            borderRadius: BorderRadius.circular(AppRadii.large),
           ),
           child: Stack(
             children: <Widget>[
+              const Positioned(
+                right: -18,
+                top: 6,
+                width: 180,
+                height: 130,
+                child: EquranOpenBookMark(opacity: 0.50),
+              ),
               Positioned(
                 top: 0,
-                right: 67, // six sevennnnnn
+                right: 74,
                 child: _BookmarkRibbon(
-                  color: colorScheme.primary.withAlpha(isLight ? 58 : 74),
-                  edgeColor: colorScheme.primary.withAlpha(isLight ? 70 : 92),
+                  color: colors.accentGold.withAlpha(100),
+                  edgeColor: colors.goldSoft.withAlpha(160),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,16 +272,19 @@ class _LastReadEntryCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             'Last Read',
-                            style: theme.textTheme.titleLarge?.copyWith(
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colors.onPrimaryMuted,
                               fontWeight: FontWeight.w700,
-                              fontSize: 24,
                             ),
                           ),
                         ),
                         const SizedBox(width: 30),
                         PopupMenuButton<String>(
                           tooltip: 'More options',
-                          icon: const Icon(Icons.more_vert_rounded),
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            color: colors.onPrimary,
+                          ),
                           onSelected: (value) => onMenuAction(value, entry),
                           itemBuilder: (BuildContext context) =>
                               const <PopupMenuEntry<String>>[
@@ -312,24 +300,43 @@ class _LastReadEntryCard extends StatelessWidget {
                         ),
                       ],
                     ),
-
-                    Text(
-                      getSurahName(keySurah),
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
-                      ),
-                    ),
                     const SizedBox(height: 2),
                     Text(
-                      'Ayah $verse',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 15,
+                      getSurahNameArabic(keySurah),
+                      textDirection: TextDirection.rtl,
+                      style: EquranTextStyles.arabicBody(
+                        context,
+                        color: colors.onPrimary,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Verse $verse',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.onPrimaryMuted,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          'Continue to read',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.onPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 16,
+                          color: colors.onPrimary,
+                        ),
+                      ],
+                    ),
+                    if (showIndicatorSpace) const SizedBox(height: 16),
                   ],
                 ),
               ),

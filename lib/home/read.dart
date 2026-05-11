@@ -16,6 +16,9 @@ import 'package:equran/backend/library.dart'
         SettingsDB,
         TafsirService,
         TafsirSource;
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/utils/reciter.dart';
@@ -26,6 +29,8 @@ import 'package:equran/widgets/library.dart'
     show
         AppSelectionDialog,
         AppSelectionOption,
+        EquranMosqueSilhouette,
+        EquranOpenBookMark,
         ReadProgressBar,
         ReadQuranCard,
         ReadVersePlayerBar;
@@ -1185,6 +1190,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
+    final EquranColors colors = context.equranColors;
 
     // Define margin values for different screen sizes
     double marginValue;
@@ -1234,6 +1240,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           child: Scaffold(
             appBar: AppBar(
               toolbarHeight: ResponsiveNav.toolbarHeight(context),
+              backgroundColor: colors.background,
+              foregroundColor: colors.textPrimary,
+              surfaceTintColor: Colors.transparent,
               iconTheme: IconThemeData(size: ResponsiveNav.iconSize(context)),
               leading: const BackButton(),
               title: Text(quran.getSurahName(_currentChapter)),
@@ -4371,6 +4380,117 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildReadSurahHeaderCard({required double marginValue}) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final String surahName = quran.getSurahName(_currentChapter);
+    final String englishName = quran.getSurahNameEnglish(_currentChapter);
+    final int verseCount = quran.getVerseCount(_currentChapter);
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(marginValue, 10, marginValue, 8),
+      decoration: BoxDecoration(
+        gradient: colors.heroGradient,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: colors.primaryStrong.withAlpha(
+              theme.brightness == Brightness.light ? 42 : 68,
+            ),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(
+        height: 178,
+        child: Stack(
+          children: <Widget>[
+            const Positioned(
+              right: -24,
+              bottom: -12,
+              width: 220,
+              height: 132,
+              child: EquranOpenBookMark(opacity: 0.34),
+            ),
+            const Positioned(
+              left: -42,
+              bottom: -34,
+              width: 190,
+              height: 118,
+              child: EquranMosqueSilhouette(opacity: 0.15),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                EquranSpacing.pagePadding,
+                20,
+                EquranSpacing.pagePadding,
+                18,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    surahName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: colors.onPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    englishName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.onPrimaryMuted,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.onPrimary.withAlpha(24),
+                      borderRadius: BorderRadius.circular(AppRadii.pill),
+                      border: Border.all(color: colors.onPrimary.withAlpha(42)),
+                    ),
+                    child: Text(
+                      'Surah $_currentChapter • $verseCount verses',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colors.onPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    quran.basmala,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textDirection: TextDirection.rtl,
+                    style: EquranTextStyles.arabicSmall(
+                      context,
+                      color: colors.onPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget cardView({required double marginValue}) {
     final bool compactPlayerLayout = MediaQuery.sizeOf(context).width < 700;
     final double expandedSpacer = compactPlayerLayout ? 392 : 304;
@@ -4397,6 +4517,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   children: [
+                    _buildReadSurahHeaderCard(marginValue: marginValue),
                     _buildProgressBar(marginValue),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -4557,42 +4678,50 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final Color pageCardColor =
         theme.cardTheme.color ?? colorScheme.surfaceContainerLow;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: pageMargin, vertical: 10),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: pageCardColor,
-          borderRadius: BorderRadius.circular(AppRadii.small),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withAlpha((0.45 * 255).round()),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              if (_currentChapter != 1 && _currentChapter != 9)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                    quran.basmala,
-                    textDirection: TextDirection.rtl,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      height: 2,
-                      fontFamily: 'Hafs',
-                      fontSize: fontSize,
-                    ),
-                  ),
+    return Column(
+      children: <Widget>[
+        _buildReadSurahHeaderCard(marginValue: pageMargin),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: pageMargin, vertical: 10),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: pageCardColor,
+              borderRadius: BorderRadius.circular(AppRadii.large),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withAlpha(
+                  (0.45 * 255).round(),
                 ),
-              const SizedBox(height: 16),
-              _buildInlineSurahText(fontSize),
-            ],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  if (_currentChapter != 1 && _currentChapter != 9)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text(
+                        quran.basmala,
+                        textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          height: 2,
+                          fontFamily: 'Hafs',
+                          fontSize: fontSize,
+                          color: context.equranColors.primary,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  _buildInlineSurahText(fontSize),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
