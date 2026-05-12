@@ -58,7 +58,22 @@ class _QiblaPageState extends State<QiblaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(), body: _buildBody());
+    final EquranColors colors = context.equranColors;
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: colors.background,
+        foregroundColor: colors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: colors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: colors.textSecondary),
+        actionsIconTheme: IconThemeData(color: colors.textSecondary),
+      ),
+      body: _buildBody(),
+    );
   }
 
   Widget _buildBody() {

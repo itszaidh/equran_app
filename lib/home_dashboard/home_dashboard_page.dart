@@ -412,21 +412,12 @@ class _DashboardContent extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 22),
-            _ResponsiveTwoColumn(
+            _DailyQuranCompanionSection(
               wide: wide,
-              children: <Widget>[
-                _HomeQuranLastReadCard(
-                  entry: summary.latestReading,
-                  onOpenQuran: actions.onOpenQuran,
-                ),
-                _ContinueListeningCard(
-                  entry: summary.latestListening,
-                  onOpenPlayer: actions.onOpenPlayer,
-                ),
-              ],
+              latestReading: summary.latestReading,
+              latestListening: summary.latestListening,
+              actions: actions,
             ),
-            const SizedBox(height: 14),
-            _MuslimDailyQuickActions(actions: actions),
             const SizedBox(height: 22),
             _DailyAyahPreview(
               ayah: summary.dailyAyah,
@@ -1067,6 +1058,165 @@ class _RoutinePlanCta extends StatelessWidget {
   }
 }
 
+class _DailyQuranCompanionSection extends StatelessWidget {
+  const _DailyQuranCompanionSection({
+    required this.wide,
+    required this.latestReading,
+    required this.latestListening,
+    required this.actions,
+  });
+
+  final bool wide;
+  final ResumeStateEntry? latestReading;
+  final ResumeStateEntry? latestListening;
+  final HomeDashboardPage actions;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 940),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            const _CompanionSectionHeader(
+              icon: Icons.auto_stories_outlined,
+              title: 'Daily Quran Companion',
+              subtitle: 'Pick up your recitation and daily tools',
+            ),
+            const SizedBox(height: 12),
+            _ContinueExperience(
+              wide: wide,
+              latestReading: latestReading,
+              latestListening: latestListening,
+              onOpenQuran: actions.onOpenQuran,
+              onOpenPlayer: actions.onOpenPlayer,
+            ),
+            const SizedBox(height: 16),
+            const _CompanionSectionHeader(
+              icon: Icons.grid_view_rounded,
+              title: 'Daily Tools',
+              subtitle: 'Fast access to the essentials',
+              compact: true,
+            ),
+            const SizedBox(height: 10),
+            _MuslimDailyQuickActions(actions: actions),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CompanionSectionHeader extends StatelessWidget {
+  const _CompanionSectionHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.compact = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    return Row(
+      children: <Widget>[
+        Container(
+          width: compact ? 32 : 36,
+          height: compact ? 32 : 36,
+          decoration: BoxDecoration(
+            color: colors.mint.withAlpha(170),
+            borderRadius: BorderRadius.circular(AppRadii.medium),
+            border: Border.all(color: colors.border.withAlpha(170)),
+          ),
+          child: Icon(icon, color: colors.primary, size: compact ? 17 : 19),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 1),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ContinueExperience extends StatelessWidget {
+  const _ContinueExperience({
+    required this.wide,
+    required this.latestReading,
+    required this.latestListening,
+    required this.onOpenQuran,
+    required this.onOpenPlayer,
+  });
+
+  final bool wide;
+  final ResumeStateEntry? latestReading;
+  final ResumeStateEntry? latestListening;
+  final VoidCallback onOpenQuran;
+  final VoidCallback onOpenPlayer;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget readingCard = _HomeQuranLastReadCard(
+      entry: latestReading,
+      onOpenQuran: onOpenQuran,
+    );
+    final Widget listeningCard = _ContinueListeningCard(
+      entry: latestListening,
+      onOpenPlayer: onOpenPlayer,
+    );
+
+    if (!wide) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          readingCard,
+          const SizedBox(height: 10),
+          listeningCard,
+        ],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Expanded(flex: 6, child: readingCard),
+        const SizedBox(width: 12),
+        Expanded(flex: 5, child: listeningCard),
+      ],
+    );
+  }
+}
+
 class _MuslimDailyQuickActions extends StatefulWidget {
   const _MuslimDailyQuickActions({required this.actions});
 
@@ -1145,78 +1295,63 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
       items.skip(4).take(4).toList(growable: false),
     ];
 
-    return _HomePremiumCard(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-      baseColor: colors.surface,
-      accentColor: colors.primary,
-      child: Column(
-        children: <Widget>[
-          SizedBox(
-            height: 148,
-            child: PageView.builder(
-              controller: _pageController,
-              physics: const BouncingScrollPhysics(),
-              itemCount: pages.length,
-              onPageChanged: (int value) {
-                setState(() {
-                  _page = value;
-                });
-              },
-              itemBuilder: (context, pageIndex) {
-                final List<_QuickAction> pageItems = pages[pageIndex];
-                return GridView.builder(
-                  itemCount: pageItems.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisExtent: 70,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                  ),
-                  itemBuilder: (context, index) {
-                    final _QuickAction item = pageItems[index];
-                    return _DashboardActionTile(
-                      icon: item.icon,
-                      label: item.label,
-                      onTap: item.onTap,
-                      assetPath: item.assetPath,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 760),
+        child: _HomePremiumCard(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+          baseColor: colors.surface,
+          accentColor: colors.primary,
+          assetPath: _designAsset,
+          assetOpacity: 0.035,
+          assetWidth: 170,
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: 142,
+                child: PageView.builder(
+                  controller: _pageController,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: pages.length,
+                  onPageChanged: (int value) {
+                    setState(() {
+                      _page = value;
+                    });
+                  },
+                  itemBuilder: (context, pageIndex) {
+                    final List<_QuickAction> pageItems = pages[pageIndex];
+                    return GridView.builder(
+                      itemCount: pageItems.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.zero,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisExtent: 67,
+                            mainAxisSpacing: 8,
+                            crossAxisSpacing: 8,
+                          ),
+                      itemBuilder: (context, index) {
+                        final _QuickAction item = pageItems[index];
+                        return _DashboardActionTile(
+                          icon: item.icon,
+                          label: item.label,
+                          onTap: item.onTap,
+                          assetPath: item.assetPath,
+                        );
+                      },
                     );
                   },
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 5),
-          _QuickActionPageDots(itemCount: pages.length, activeIndex: _page),
-          Divider(height: 18, color: colors.divider.withAlpha(150)),
-          InkWell(
-            onTap: widget.actions.onOpenMore,
-            borderRadius: BorderRadius.circular(EquranRadii.medium),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 2, 8, 4),
-              child: Row(
-                children: <Widget>[
-                  const Spacer(),
-                  Text(
-                    'Explore All Features',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: colors.textSecondary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: colors.textMuted,
-                    size: 20,
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 6),
+              _QuickActionPageDots(itemCount: pages.length, activeIndex: _page),
+              const SizedBox(height: 9),
+              _ExploreAllFeaturesRow(onTap: widget.actions.onOpenMore),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1242,46 +1377,123 @@ class _DashboardActionTile extends StatelessWidget {
     final BorderRadius radius = BorderRadius.circular(EquranRadii.medium);
 
     return Material(
-      color: colors.mint.withAlpha(145),
+      color: Colors.transparent,
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         borderRadius: radius,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Ink(
           decoration: BoxDecoration(
+            color: Color.alphaBlend(
+              colors.primary.withAlpha(18),
+              colors.surfaceSoft,
+            ),
             borderRadius: radius,
-            border: Border.all(color: colors.border.withAlpha(180)),
+            border: Border.all(color: colors.border.withAlpha(130)),
           ),
-          child: Row(
-            children: <Widget>[
-              SizedBox(
-                width: 46,
-                height: 46,
-                child: assetPath == null
-                    ? Icon(icon, color: colors.primary, size: 30)
-                    : Image.asset(
-                        assetPath!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(icon, color: colors.primary, size: 30);
-                        },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Row(
+              children: <Widget>[
+                Container(
+                  width: 42,
+                  height: 42,
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: colors.mint.withAlpha(135),
+                    borderRadius: BorderRadius.circular(AppRadii.medium),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: colors.primary.withAlpha(22),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
                       ),
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w900,
+                    ],
+                  ),
+                  child: assetPath == null
+                      ? Icon(icon, color: colors.primary, size: 27)
+                      : Image.asset(
+                          assetPath!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(icon, color: colors.primary, size: 27);
+                          },
+                        ),
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExploreAllFeaturesRow extends StatelessWidget {
+  const _ExploreAllFeaturesRow({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    final ThemeData theme = Theme.of(context);
+    final BorderRadius radius = BorderRadius.circular(EquranRadii.medium);
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colors.surface.withAlpha(120),
+            borderRadius: radius,
+            border: Border.all(color: colors.border.withAlpha(120)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(11, 8, 9, 8),
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  Icons.dashboard_customize_outlined,
+                  color: colors.primary,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Explore all features',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  color: colors.primary,
+                  size: 18,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2116,35 +2328,7 @@ class _HomeQuranLastReadCard extends StatelessWidget {
       );
     }
 
-    return _HomeResumeSection(label: 'Last Read', child: card);
-  }
-}
-
-class _HomeResumeSection extends StatelessWidget {
-  const _HomeResumeSection({required this.label, required this.child});
-
-  final String label;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final EquranColors colors = context.equranColors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(2, 0, 2, 7),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-        child,
-      ],
-    );
+    return card;
   }
 }
 
@@ -2167,6 +2351,8 @@ class _ContinueListeningCard extends StatelessWidget {
         subtitle: 'Start audio and it will appear here',
         actionText: 'Open Player ->',
         trailingAssetPath: _playerAsset,
+        secondary: true,
+        artworkScale: 1.18,
         onTap: onOpenPlayer,
       );
     } else {
@@ -2182,6 +2368,8 @@ class _ContinueListeningCard extends StatelessWidget {
             : 'Ayah ${current.ayah}',
         actionText: 'Resume ->',
         trailingAssetPath: _playerAsset,
+        secondary: true,
+        artworkScale: 1.18,
         onTap: () {
           unawaited(
             SettingsDB().put(
@@ -2194,7 +2382,7 @@ class _ContinueListeningCard extends StatelessWidget {
       );
     }
 
-    return _HomeResumeSection(label: 'Continue Listening', child: card);
+    return card;
   }
 }
 
@@ -2535,36 +2723,6 @@ class _BookmarkPreviewTile extends StatelessWidget {
               ReadPage(chapter: bookmark.surah, startVerse: bookmark.verse),
         ),
       ),
-    );
-  }
-}
-
-class _ResponsiveTwoColumn extends StatelessWidget {
-  const _ResponsiveTwoColumn({required this.wide, required this.children});
-
-  final bool wide;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!wide) {
-      return Column(
-        children: <Widget>[
-          for (int i = 0; i < children.length; i++) ...<Widget>[
-            children[i],
-            if (i != children.length - 1) const SizedBox(height: 12),
-          ],
-        ],
-      );
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        for (int i = 0; i < children.length; i++) ...<Widget>[
-          Expanded(child: children[i]),
-          if (i != children.length - 1) const SizedBox(width: 12),
-        ],
-      ],
     );
   }
 }

@@ -4,12 +4,9 @@ import 'dart:math' as math;
 import 'package:equran/backend/library.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
-import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
-
-const String _tasbihDesignAsset = 'assets/images/app_assets/design.png';
 
 class TasbihPage extends StatefulWidget {
   const TasbihPage({super.key});
@@ -32,6 +29,7 @@ class _TasbihPageState extends State<TasbihPage> {
   int _liveUnsavedCountToday = 0;
   int _liveUnsavedRoundsToday = 0;
   String? _completionMessage;
+  bool _completionPulse = false;
 
   _DhikrPreset get _selectedPreset =>
       _DhikrPreset.presets[_selectedPresetIndex];
@@ -63,8 +61,23 @@ class _TasbihPageState extends State<TasbihPage> {
       appBar: AppBar(
         title: const Text('Tasbih'),
         centerTitle: true,
-        backgroundColor: colors.primary,
-        foregroundColor: colors.onPrimary,
+        backgroundColor: colors.background.withAlpha(0),
+        foregroundColor: colors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: colors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: colors.textSecondary),
+        actionsIconTheme: IconThemeData(color: colors.textSecondary),
+        actions: <Widget>[
+          IconButton(
+            tooltip: 'Reset counter',
+            onPressed: _reset,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
       ),
       body: ValueListenableBuilder<Box<dynamic>>(
         valueListenable: DhikrSessionsDB().listener,
@@ -80,11 +93,12 @@ class _TasbihPageState extends State<TasbihPage> {
             liveUnsavedRounds: _liveUnsavedRoundsToday,
           );
 
+          final double screenHeight = MediaQuery.sizeOf(context).height;
           return ListView(
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(
               EquranSpacing.pagePadding,
-              10,
+              8,
               EquranSpacing.pagePadding,
               32,
             ),
@@ -95,27 +109,38 @@ class _TasbihPageState extends State<TasbihPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      _TasbihStatsCard(stats: stats),
-                      const SizedBox(height: 10),
+                      _TasbihStatsRow(stats: stats),
+                      const SizedBox(height: 14),
                       _PresetSelector(
                         selectedIndex: _selectedPresetIndex,
-                        onSelected: _selectPreset,
+                        onPrevious: _selectPreviousPreset,
+                        onNext: _selectNextPreset,
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 18),
                       _CircularCounter(
                         preset: _selectedPreset,
                         count: _count,
-                        completionMessage: _completionMessage,
+                        targetHeight: screenHeight * 0.55,
+                        pulse: _completionPulse,
                         onTap: _increment,
                       ),
-                      const SizedBox(height: 10),
-                      _CounterActions(
+                      const SizedBox(height: 14),
+                      _DhikrCaption(
+                        preset: _selectedPreset,
+                        nextPreset: _DhikrPreset
+                            .presets[_nextPresetIndex(_selectedPresetIndex)],
+                        completionMessage: _completionMessage,
+                      ),
+                      const SizedBox(height: 32),
+                      _HapticsRow(
                         hapticsEnabled: _hapticsEnabled,
-                        onReset: _reset,
                         onHapticsChanged: _setHapticsEnabled,
                       ),
-                      const SizedBox(height: 14),
-                      _RecentDhikrSessions(sessions: sessions.take(5).toList()),
+                      const SizedBox(height: 22),
+                      TextButton(
+                        onPressed: () => _showRecentSessionsSheet(sessions),
+                        child: const Text('Recent sessions'),
+                      ),
                     ],
                   ),
                 ),
@@ -153,19 +178,27 @@ class _TasbihPageState extends State<TasbihPage> {
     );
     if (!mounted) return;
 
-    final int nextIndex = _nextPresetIndex(_selectedPresetIndex);
     setState(() {
       _completionMessage = groupedCompletion
           ? 'Post-prayer dhikr complete'
           : '${preset.label} complete';
+      _completionPulse = true;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+
+    final int nextIndex = _nextPresetIndex(_selectedPresetIndex);
+    setState(() {
       _selectedPresetIndex = nextIndex;
       _count = 0;
       _sessionStartedAt = DateTime.now();
+      _completionPulse = false;
     });
     _persistCurrentState();
 
     unawaited(
-      Future<void>.delayed(const Duration(milliseconds: 1300), () {
+      Future<void>.delayed(const Duration(milliseconds: 900), () {
         if (!mounted) return;
         setState(() {
           _completionMessage = null;
@@ -190,6 +223,30 @@ class _TasbihPageState extends State<TasbihPage> {
       _completionMessage = null;
     });
     _persistCurrentState();
+  }
+
+  void _selectPreviousPreset() {
+    final int nextIndex =
+        (_selectedPresetIndex - 1 + _DhikrPreset.presets.length) %
+        _DhikrPreset.presets.length;
+    _selectPreset(nextIndex);
+  }
+
+  void _selectNextPreset() {
+    final int nextIndex =
+        (_selectedPresetIndex + 1) % _DhikrPreset.presets.length;
+    _selectPreset(nextIndex);
+  }
+
+  void _showRecentSessionsSheet(List<DhikrSessionEntry> sessions) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      useSafeArea: true,
+      builder: (context) => _RecentDhikrSessionsSheet(
+        sessions: sessions.take(12).toList(growable: false),
+      ),
+    );
   }
 
   void _selectPreset(int index) {
@@ -304,159 +361,72 @@ class _TasbihPageState extends State<TasbihPage> {
 class _PresetSelector extends StatelessWidget {
   const _PresetSelector({
     required this.selectedIndex,
-    required this.onSelected,
+    required this.onPrevious,
+    required this.onNext,
   });
 
   final int selectedIndex;
-  final ValueChanged<int> onSelected;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
     final _DhikrPreset selectedPreset = _DhikrPreset.presets[selectedIndex];
+    final BorderRadius radius = BorderRadius.circular(16);
 
-    return EquranSurfaceCard(
-      padding: const EdgeInsets.fromLTRB(10, 9, 10, 10),
-      backgroundColor: colors.surfaceSoft,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              EquranIconBadge(
-                icon: Icons.auto_awesome_rounded,
-                size: 30,
-                backgroundColor: colors.mint,
-                foregroundColor: colors.primary,
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      selectedPreset.label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Text(
-                      '${selectedPreset.target} counts • 33 -> 33 -> 34',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.textSecondary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 38,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: _DhikrPreset.presets.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 7),
-              itemBuilder: (context, index) {
-                return _PresetPill(
-                  preset: _DhikrPreset.presets[index],
-                  selected: index == selectedIndex,
-                  sequenceStep: index < 3 ? index + 1 : null,
-                  onTap: () => onSelected(index),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PresetPill extends StatelessWidget {
-  const _PresetPill({
-    required this.preset,
-    required this.selected,
-    required this.onTap,
-    this.sequenceStep,
-  });
-
-  final _DhikrPreset preset;
-  final bool selected;
-  final VoidCallback onTap;
-  final int? sequenceStep;
-
-  @override
-  Widget build(BuildContext context) {
-    final EquranColors colors = context.equranColors;
-    final ThemeData theme = Theme.of(context);
-    final Color foreground = selected ? colors.onPrimary : colors.textPrimary;
-    final BorderRadius radius = BorderRadius.circular(EquranRadii.pill);
     return Material(
-      color: Colors.transparent,
+      color: colors.background.withAlpha(0),
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: radius,
-        child: Ink(
-          padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
-          decoration: BoxDecoration(
-            gradient: selected ? colors.heroGradient : null,
-            color: selected ? null : colors.surface.withAlpha(178),
-            borderRadius: radius,
-            border: Border.all(
-              color: selected
-                  ? colors.primarySoft.withAlpha(170)
-                  : colors.border,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: radius,
+          border: Border.all(color: colors.border),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 10, 8, 11),
+          child: Column(
             children: <Widget>[
-              Container(
-                width: 24,
-                height: 24,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? colors.onPrimary.withAlpha(34)
-                      : colors.mint,
-                  shape: BoxShape.circle,
-                ),
-                child: sequenceStep == null
-                    ? Icon(
-                        preset.label == 'Custom'
-                            ? Icons.tune_rounded
-                            : Icons.spa_rounded,
-                        color: selected ? colors.onPrimary : colors.primary,
-                        size: 16,
-                      )
-                    : Text(
-                        '$sequenceStep',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: selected ? colors.onPrimary : colors.primary,
-                          fontWeight: FontWeight.w900,
-                        ),
+              Row(
+                children: <Widget>[
+                  IconButton(
+                    tooltip: 'Previous dhikr',
+                    onPressed: onPrevious,
+                    color: colors.textSecondary,
+                    icon: const Icon(Icons.chevron_left_rounded),
+                  ),
+                  Expanded(
+                    child: Text(
+                      selectedPreset.label,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Next dhikr',
+                    onPressed: onNext,
+                    color: colors.textSecondary,
+                    icon: const Icon(Icons.chevron_right_rounded),
+                  ),
+                ],
               ),
-              const SizedBox(width: 7),
               Text(
-                '${preset.compactLabel} ${preset.target}',
+                '${selectedPreset.target} counts • 33 → 33 → 34',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.w900,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -467,107 +437,175 @@ class _PresetPill extends StatelessWidget {
   }
 }
 
-class _CircularCounter extends StatelessWidget {
+class _CircularCounter extends StatefulWidget {
   const _CircularCounter({
     required this.preset,
     required this.count,
-    required this.completionMessage,
+    required this.targetHeight,
+    required this.pulse,
     required this.onTap,
   });
 
   final _DhikrPreset preset;
   final int count;
-  final String? completionMessage;
+  final double targetHeight;
+  final bool pulse;
   final VoidCallback onTap;
+
+  @override
+  State<_CircularCounter> createState() => _CircularCounterState();
+}
+
+class _CircularCounterState extends State<_CircularCounter>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _bounceController;
+
+  @override
+  void initState() {
+    super.initState();
+    _bounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 80),
+      reverseDuration: const Duration(milliseconds: 80),
+    );
+  }
+
+  @override
+  void dispose() {
+    _bounceController.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    _bounceController.forward(from: 0).then((_) {
+      if (mounted) _bounceController.reverse();
+    });
+    widget.onTap();
+  }
 
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
-    final double progress = preset.target <= 0
+    final double progress = widget.preset.target <= 0
         ? 0
-        : (count / preset.target).clamp(0.0, 1.0).toDouble();
+        : (widget.count / widget.preset.target).clamp(0.0, 1.0).toDouble();
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double ringSize = math.min(198, constraints.maxWidth - 42);
-        return EquranSurfaceCard(
-          onTap: onTap,
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 15),
-          backgroundColor: colors.surfaceSoft,
-          borderColor: colors.primary.withAlpha(44),
-          child: Column(
-            children: <Widget>[
-              Stack(
-                alignment: Alignment.center,
-                children: <Widget>[
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 0.08,
-                      child: Image.asset(_tasbihDesignAsset, fit: BoxFit.cover),
-                    ),
-                  ),
-                  CustomPaint(
-                    painter: _CounterRingPainter(
-                      progress: progress,
-                      trackColor: colors.border,
-                      progressColor: colors.primarySoft,
-                      glowColor: colors.primary,
-                    ),
-                    child: SizedBox.square(
-                      dimension: ringSize.clamp(152, 198).toDouble(),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(
-                              '$count',
-                              style: theme.textTheme.displayLarge?.copyWith(
-                                color: colors.textPrimary,
-                                fontSize: 54,
-                                fontWeight: FontWeight.w900,
-                                height: 0.95,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              '/ ${preset.target}',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: colors.textSecondary,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
+        final double circleSize = math
+            .min(constraints.maxWidth * 0.72, widget.targetHeight)
+            .clamp(220.0, 420.0);
+        return SizedBox(
+          height: widget.targetHeight.clamp(circleSize, 520.0),
+          child: Center(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _handleTap,
+              child: AnimatedBuilder(
+                animation: _bounceController,
+                builder: (context, child) {
+                  final double scale =
+                      1 - (0.04 * math.sin(_bounceController.value * math.pi));
+                  return Transform.scale(scale: scale, child: child);
+                },
+                child: SizedBox.square(
+                  dimension: circleSize,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        width: widget.pulse ? circleSize : circleSize - 18,
+                        height: widget.pulse ? circleSize : circleSize - 18,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: widget.pulse
+                              ? <BoxShadow>[
+                                  BoxShadow(
+                                    color: colors.primarySoft.withAlpha(110),
+                                    blurRadius: 34,
+                                    spreadRadius: 4,
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
-                    ),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 240),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, animatedProgress, child) {
+                          return CustomPaint(
+                            painter: _CounterRingPainter(
+                              progress: animatedProgress,
+                              trackColor: colors.border,
+                              progressColor: colors.primary,
+                            ),
+                            child: child,
+                          );
+                        },
+                        child: SizedBox.square(
+                          dimension: circleSize,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: <Widget>[
+                              Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: circleSize * 0.08,
+                                ),
+                                child: Text(
+                                  widget.preset.arabic,
+                                  textDirection: TextDirection.rtl,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style:
+                                      TextStyle(
+                                        fontFamily: 'Hafs',
+                                        fontSize: circleSize * 0.2,
+                                        height: 1.15,
+                                        fontWeight: FontWeight.w400,
+                                      ).copyWith(
+                                        color: colors.textPrimary.withAlpha(20),
+                                      ),
+                                ),
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  Text(
+                                    '${widget.count}',
+                                    style: theme.textTheme.displayLarge
+                                        ?.copyWith(
+                                          color: colors.textPrimary,
+                                          fontSize: 88,
+                                          fontWeight: FontWeight.w700,
+                                          height: 0.9,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    '/ ${widget.preset.target}',
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          color: colors.textSecondary,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                preset.label,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  color: colors.textPrimary,
-                  fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                completionMessage ??
-                    (preset.sequenceHint.isEmpty
-                        ? 'Tap anywhere on this card'
-                        : preset.sequenceHint),
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: completionMessage == null
-                      ? colors.textSecondary
-                      : colors.primarySoft,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -575,124 +613,43 @@ class _CircularCounter extends StatelessWidget {
   }
 }
 
-class _CounterActions extends StatelessWidget {
-  const _CounterActions({
-    required this.hapticsEnabled,
-    required this.onReset,
-    required this.onHapticsChanged,
+class _DhikrCaption extends StatelessWidget {
+  const _DhikrCaption({
+    required this.preset,
+    required this.nextPreset,
+    required this.completionMessage,
   });
 
-  final bool hapticsEnabled;
-  final VoidCallback onReset;
-  final ValueChanged<bool> onHapticsChanged;
+  final _DhikrPreset preset;
+  final _DhikrPreset nextPreset;
+  final String? completionMessage;
 
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
-
-    return EquranSurfaceCard(
-      padding: const EdgeInsets.fromLTRB(11, 6, 10, 6),
-      child: Row(
-        children: <Widget>[
-          TextButton.icon(
-            onPressed: onReset,
-            icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Reset'),
-          ),
-          const Spacer(),
-          Icon(Icons.vibration_rounded, color: colors.textMuted, size: 20),
-          const SizedBox(width: 6),
-          Text(
-            'Haptics',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colors.textSecondary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          Switch(value: hapticsEnabled, onChanged: onHapticsChanged),
-        ],
-      ),
-    );
-  }
-}
-
-class _TasbihStatsCard extends StatelessWidget {
-  const _TasbihStatsCard({required this.stats});
-
-  final _TasbihStats stats;
-
-  @override
-  Widget build(BuildContext context) {
-    return EquranGradientCard(
-      padding: EdgeInsets.zero,
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            right: -26,
-            top: -34,
-            bottom: -34,
-            width: 160,
-            child: Opacity(
-              opacity: 0.08,
-              child: Image.asset(_tasbihDesignAsset, fit: BoxFit.cover),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 11, 16, 11),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: _StatsValue(
-                    label: 'Today',
-                    value: '${stats.totalToday}',
-                  ),
-                ),
-                Expanded(
-                  child: _StatsValue(
-                    label: 'Rounds',
-                    value: '${stats.roundsToday}',
-                  ),
-                ),
-                Expanded(
-                  child: _StatsValue(
-                    label: 'Streak',
-                    value: '${stats.streak}d',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatsValue extends StatelessWidget {
-  const _StatsValue({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final EquranColors colors = context.equranColors;
+
     return Column(
       children: <Widget>[
         Text(
-          value,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            color: colors.onPrimary,
-            fontWeight: FontWeight.w900,
+          preset.label,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: colors.textPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 3),
+        const SizedBox(height: 5),
         Text(
-          label,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: colors.onPrimaryMuted,
-            fontWeight: FontWeight.w800,
+          completionMessage ?? 'Auto-advances to ${nextPreset.label}',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: completionMessage == null
+                ? colors.textSecondary
+                : colors.primarySoft,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -700,8 +657,124 @@ class _StatsValue extends StatelessWidget {
   }
 }
 
-class _RecentDhikrSessions extends StatelessWidget {
-  const _RecentDhikrSessions({required this.sessions});
+class _HapticsRow extends StatelessWidget {
+  const _HapticsRow({
+    required this.hapticsEnabled,
+    required this.onHapticsChanged,
+  });
+
+  final bool hapticsEnabled;
+  final ValueChanged<bool> onHapticsChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Icon(Icons.vibration_rounded, color: colors.textSecondary, size: 19),
+        const SizedBox(width: 7),
+        Text(
+          'Haptics',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: colors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Switch(
+          value: hapticsEnabled,
+          activeThumbColor: colors.primary,
+          activeTrackColor: colors.primarySoft.withAlpha(90),
+          onChanged: onHapticsChanged,
+        ),
+      ],
+    );
+  }
+}
+
+class _TasbihStatsRow extends StatelessWidget {
+  const _TasbihStatsRow({required this.stats});
+
+  final _TasbihStats stats;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: _StatsMetricCard(label: 'Today', value: '${stats.totalToday}'),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _StatsMetricCard(
+            label: 'Rounds',
+            value: '${stats.roundsToday}',
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _StatsMetricCard(label: 'Streak', value: '${stats.streak}d'),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatsMetricCard extends StatelessWidget {
+  const _StatsMetricCard({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    final ThemeData theme = Theme.of(context);
+    final BorderRadius radius = BorderRadius.circular(16);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceAlt,
+        borderRadius: radius,
+        border: Border.all(color: colors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
+        child: Column(
+          children: <Widget>[
+            Text(
+              label.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.textMuted,
+                fontSize: 11,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: colors.textPrimary,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RecentDhikrSessionsSheet extends StatelessWidget {
+  const _RecentDhikrSessionsSheet({required this.sessions});
 
   final List<DhikrSessionEntry> sessions;
 
@@ -710,57 +783,46 @@ class _RecentDhikrSessions extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
 
-    return EquranSurfaceCard(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Recent sessions',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w900,
-            ),
+    return ListView(
+      shrinkWrap: true,
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(18, 6, 18, 24),
+      children: <Widget>[
+        Text(
+          'Recent sessions',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w700,
           ),
-          const SizedBox(height: 8),
-          if (sessions.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                'Saved dhikr sessions will appear here.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.textSecondary,
-                ),
+        ),
+        const SizedBox(height: 10),
+        if (sessions.isEmpty)
+          Text(
+            'Saved dhikr sessions will appear here.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colors.textSecondary,
+            ),
+          )
+        else
+          for (final DhikrSessionEntry session in sessions)
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                session.completedAt == null
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.check_circle_rounded,
+                color: session.completedAt == null
+                    ? colors.textMuted
+                    : colors.primary,
               ),
-            )
-          else
-            for (final DhikrSessionEntry session in sessions)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: EquranIconBadge(
-                  icon: session.completedAt == null
-                      ? Icons.radio_button_checked_rounded
-                      : Icons.check_rounded,
-                  size: 36,
-                ),
-                title: Text(session.label),
-                subtitle: Text(
-                  session.label == 'Post-prayer dhikr'
-                      ? 'SubhanAllah 33 • Alhamdulillah 33 • Allahu Akbar 34\n${_sessionTimeLabel(session)}'
-                      : '${session.count} of ${session.targetCount} counted • ${_sessionTimeLabel(session)}',
-                ),
-                trailing: Text(
-                  session.completedAt == null ? 'Saved' : 'Done',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: session.completedAt == null
-                        ? colors.textMuted
-                        : colors.primarySoft,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+              title: Text(session.label),
+              subtitle: Text(
+                session.label == 'Post-prayer dhikr'
+                    ? 'SubhanAllah 33 • Alhamdulillah 33 • Allahu Akbar 34\n${_sessionTimeLabel(session)}'
+                    : '${session.count} of ${session.targetCount} counted • ${_sessionTimeLabel(session)}',
               ),
-        ],
-      ),
+            ),
+      ],
     );
   }
 }
@@ -770,44 +832,33 @@ class _CounterRingPainter extends CustomPainter {
     required this.progress,
     required this.trackColor,
     required this.progressColor,
-    required this.glowColor,
   });
 
   final double progress;
   final Color trackColor;
   final Color progressColor;
-  final Color glowColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final Offset center = size.center(Offset.zero);
-    final double radius = math.min(size.width, size.height) / 2 - 12;
+    final double radius = math.min(size.width, size.height) / 2 - 8;
     final Rect rect = Rect.fromCircle(center: center, radius: radius);
     final Paint track = Paint()
       ..color = trackColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
-    final Paint glow = Paint()
-      ..color = glowColor.withAlpha(70)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 18
+      ..strokeWidth = 6
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+      ..isAntiAlias = true;
     final Paint progressPaint = Paint()
-      ..shader = SweepGradient(
-        startAngle: -math.pi / 2,
-        endAngle: math.pi * 1.5,
-        colors: <Color>[progressColor, glowColor, progressColor],
-      ).createShader(rect)
+      ..color = progressColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
 
     canvas.drawCircle(center, radius, track);
     if (progress <= 0) return;
     final double sweep = (math.pi * 2) * progress.clamp(0.0, 1.0);
-    canvas.drawArc(rect, -math.pi / 2, sweep, false, glow);
     canvas.drawArc(rect, -math.pi / 2, sweep, false, progressPaint);
   }
 
@@ -815,8 +866,7 @@ class _CounterRingPainter extends CustomPainter {
   bool shouldRepaint(covariant _CounterRingPainter oldDelegate) {
     return progress != oldDelegate.progress ||
         trackColor != oldDelegate.trackColor ||
-        progressColor != oldDelegate.progressColor ||
-        glowColor != oldDelegate.glowColor;
+        progressColor != oldDelegate.progressColor;
   }
 }
 
@@ -877,39 +927,47 @@ class _TasbihStats {
 class _DhikrPreset {
   const _DhikrPreset({
     required this.label,
+    required this.arabic,
     required this.target,
     this.shortLabel,
     this.sequenceHint = '',
   });
 
   final String label;
+  final String arabic;
   final int target;
   final String? shortLabel;
   final String sequenceHint;
 
-  String get compactLabel => shortLabel ?? label;
-
   static const List<_DhikrPreset> presets = <_DhikrPreset>[
     _DhikrPreset(
       label: 'SubhanAllah',
+      arabic: 'سُبْحَانَ اللَّه',
       shortLabel: 'Subhan',
       target: 33,
       sequenceHint: 'Auto-advances to Alhamdulillah',
     ),
     _DhikrPreset(
       label: 'Alhamdulillah',
+      arabic: 'ٱلْحَمْدُ لِلَّه',
       shortLabel: 'Hamd',
       target: 33,
       sequenceHint: 'Auto-advances to Allahu Akbar',
     ),
     _DhikrPreset(
       label: 'Allahu Akbar',
+      arabic: 'اللَّهُ أَكْبَر',
       shortLabel: 'Akbar',
       target: 34,
       sequenceHint: 'Completes the post-prayer sequence',
     ),
-    _DhikrPreset(label: 'Astaghfirullah', shortLabel: 'Istighfar', target: 100),
-    _DhikrPreset(label: 'Custom', target: 100),
+    _DhikrPreset(
+      label: 'Astaghfirullah',
+      arabic: 'أَسْتَغْفِرُ اللَّه',
+      shortLabel: 'Istighfar',
+      target: 100,
+    ),
+    _DhikrPreset(label: 'Custom', arabic: 'ذِكْر', target: 100),
   ];
 }
 

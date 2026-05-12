@@ -34,91 +34,109 @@ class _FavouritesListState extends State<FavouritesList> {
 
   @override
   Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
     final ScrollController scrollController =
         PrimaryScrollController.maybeOf(context) ?? _fallbackScrollController;
 
-    return ValueListenableBuilder<Box<dynamic>>(
-      valueListenable: QuranBookmarksDB().listener,
-      builder: (BuildContext context, Box<dynamic> bookmarksBox, _) {
-        return ValueListenableBuilder<Box<dynamic>>(
-          valueListenable: FavouritesDB().listener,
-          builder: (BuildContext context, Box<dynamic> favouritesBox, _) {
-            return ValueListenableBuilder<Box<dynamic>>(
-              valueListenable: QuranBookmarkFoldersDB().listener,
-              builder: (BuildContext context, Box<dynamic> foldersBox, _) {
-                final List<QuranBookmarkEntry> allItems =
-                    const QuranBookmarkService()
-                        .bookmarkEntriesWithLegacyFallback();
-                final List<QuranBookmarkEntry> searched = allItems
-                    .where(_matchesSearch)
-                    .toList(growable: false);
-                final List<QuranBookmarkEntry> items = searched
-                    .where(_matchesFilter)
-                    .toList(growable: false);
-                final bool showEmpty = allItems.isEmpty || items.isEmpty;
+    return ColoredBox(
+      color: colors.background,
+      child: ValueListenableBuilder<Box<dynamic>>(
+        valueListenable: QuranBookmarksDB().listener,
+        builder: (BuildContext context, Box<dynamic> bookmarksBox, _) {
+          return ValueListenableBuilder<Box<dynamic>>(
+            valueListenable: FavouritesDB().listener,
+            builder: (BuildContext context, Box<dynamic> favouritesBox, _) {
+              return ValueListenableBuilder<Box<dynamic>>(
+                valueListenable: QuranBookmarkFoldersDB().listener,
+                builder: (BuildContext context, Box<dynamic> foldersBox, _) {
+                  final List<QuranBookmarkEntry> allItems =
+                      const QuranBookmarkService()
+                          .bookmarkEntriesWithLegacyFallback();
+                  final List<QuranBookmarkEntry> searched = allItems
+                      .where(_matchesSearch)
+                      .toList(growable: false);
+                  final List<QuranBookmarkEntry> items = searched
+                      .where(_matchesFilter)
+                      .toList(growable: false);
+                  final bool showEmpty = allItems.isEmpty || items.isEmpty;
 
-                return Scrollbar(
-                  controller: scrollController,
-                  thumbVisibility: allItems.isNotEmpty,
-                  interactive: true,
-                  child: ListView.separated(
-                    controller: scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: 28),
-                    itemCount: showEmpty ? 2 : items.length + 1,
-                    separatorBuilder: (context, index) => index == 0
-                        ? const SizedBox(height: 10)
-                        : const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return _BookmarkLibraryHeader(
-                          selected: _filter,
-                          selectedFolder: _folderFilter,
-                          selectedTag: _tagFilter,
-                          allItems: searched,
-                          totalSavedCount: allItems.length,
-                          onSelected: (filter) => setState(() {
-                            _filter = filter;
-                            _folderFilter = null;
-                            _tagFilter = null;
-                          }),
-                          onFolderSelected: (folder) => setState(() {
-                            _filter = _SavedAyahFilter.all;
-                            _folderFilter = folder;
-                            _tagFilter = null;
-                          }),
-                          onTagSelected: (tag) => setState(() {
-                            _filter = _SavedAyahFilter.all;
-                            _folderFilter = null;
-                            _tagFilter = tag;
-                          }),
-                          onManageFolders: () => _showFolderManager(context),
-                          onCreateFolder: () async {
-                            final String? folder = await _showFolderNameDialog(
-                              context,
-                            );
-                            if (folder == null) return;
-                            await const QuranBookmarkService().createFolder(
-                              folder,
-                            );
-                          },
-                        );
-                      }
-                      if (showEmpty) {
-                        return _BookmarkEmptyState(
-                          isSearching: widget.searchQuery.trim().isNotEmpty,
-                          hasLibraryItems: allItems.isNotEmpty,
-                        );
-                      }
-                      return _BookmarkRow(entry: items[index - 1]);
-                    },
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
+                  return SafeArea(
+                    top: false,
+                    child: Scrollbar(
+                      controller: scrollController,
+                      thumbVisibility: allItems.isNotEmpty,
+                      interactive: true,
+                      child: CustomScrollView(
+                        controller: scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        slivers: <Widget>[
+                          SliverToBoxAdapter(
+                            child: _BookmarkLibraryHeader(
+                              selected: _filter,
+                              selectedFolder: _folderFilter,
+                              selectedTag: _tagFilter,
+                              allItems: searched,
+                              totalSavedCount: allItems.length,
+                              onSelected: (filter) => setState(() {
+                                _filter = filter;
+                                _folderFilter = null;
+                                _tagFilter = null;
+                              }),
+                              onFolderSelected: (folder) => setState(() {
+                                _filter = _SavedAyahFilter.all;
+                                _folderFilter = folder;
+                                _tagFilter = null;
+                              }),
+                              onTagSelected: (tag) => setState(() {
+                                _filter = _SavedAyahFilter.all;
+                                _folderFilter = null;
+                                _tagFilter = tag;
+                              }),
+                              onManageFolders: () =>
+                                  _showFolderManager(context),
+                              onCreateFolder: () async {
+                                final String? folder =
+                                    await _showFolderNameDialog(context);
+                                if (folder == null) return;
+                                await const QuranBookmarkService().createFolder(
+                                  folder,
+                                );
+                              },
+                            ),
+                          ),
+                          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                          if (showEmpty)
+                            SliverToBoxAdapter(
+                              child: _BookmarkEmptyState(
+                                isSearching: widget.searchQuery
+                                    .trim()
+                                    .isNotEmpty,
+                                hasLibraryItems: allItems.isNotEmpty,
+                              ),
+                            )
+                          else
+                            SliverList(
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
+                                if (index.isOdd) {
+                                  return const SizedBox(height: 12);
+                                }
+                                return _BookmarkRow(entry: items[index ~/ 2]);
+                              }, childCount: items.length * 2 - 1),
+                            ),
+                          const SliverToBoxAdapter(child: SizedBox(height: 28)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -193,142 +211,206 @@ class _BookmarkLibraryHeader extends StatelessWidget {
       QuranBookmarkService.defaultFolder,
     );
 
-    return EquranSurfaceCard(
-      padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
-      backgroundColor: colors.surfaceSoft,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              EquranIconBadge(
-                icon: Icons.bookmark_border_rounded,
-                size: 34,
-                backgroundColor: colors.mint,
-                foregroundColor: colors.primary,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      'Personal Library',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      'Saved ayahs, notes, and reflections',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colors.textSecondary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colors.mint.withAlpha(160),
-                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                  border: Border.all(color: colors.border.withAlpha(180)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  child: Text(
-                    '$totalSavedCount saved',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: colors.primary,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ),
+    final BorderRadius radius = BorderRadius.circular(20);
+
+    return Material(
+      color: colors.background.withAlpha(0),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: <Color>[
+              colors.primaryGradientStart,
+              colors.primaryGradientEnd,
             ],
           ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: <Widget>[
-                _FilterChipButton(
-                  label: 'All',
-                  count: allItems.length,
-                  selected:
-                      selected == _SavedAyahFilter.all &&
-                      selectedFolder == null &&
-                      selectedTag == null,
-                  onTap: () => onSelected(_SavedAyahFilter.all),
-                ),
-                const SizedBox(width: 7),
-                _FilterChipButton(
-                  label: 'Favourites',
-                  count: favouriteCount,
-                  selected: selected == _SavedAyahFilter.favourites,
-                  onTap: () => onSelected(_SavedAyahFilter.favourites),
-                ),
-                const SizedBox(width: 7),
-                _FilterChipButton(
-                  label: 'Notes',
-                  count: noteCount,
-                  selected: selected == _SavedAyahFilter.notes,
-                  onTap: () => onSelected(_SavedAyahFilter.notes),
-                ),
-                if (customFolders.isNotEmpty || unsortedCount > 0) ...<Widget>[
-                  const SizedBox(width: 7),
-                  _FilterChipButton(
-                    label: 'Folders',
-                    selected: selectedFolder != null,
-                    onTap: () => onFolderSelected(
-                      selectedFolder == null
-                          ? (customFolders.isNotEmpty
-                                ? customFolders.first
-                                : QuranBookmarkService.defaultFolder)
-                          : null,
-                    ),
-                  ),
-                ],
-                if (tags.isNotEmpty) ...<Widget>[
-                  const SizedBox(width: 7),
-                  _FilterChipButton(
-                    label: 'Tags',
-                    selected: selectedTag != null,
-                    onTap: () =>
-                        onTagSelected(selectedTag == null ? tags.first : null),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          _FolderChipStrip(
-            folders: folders,
-            allItems: allItems,
-            selectedFolder: selectedFolder,
-            onFolderSelected: onFolderSelected,
-            onCreateFolder: onCreateFolder,
-            onManageFolders: onManageFolders,
-          ),
-          if (tags.isNotEmpty) ...<Widget>[
-            const SizedBox(height: 8),
-            _TagChipStrip(
-              tags: tags,
-              selectedTag: selectedTag,
-              onTagSelected: onTagSelected,
+          borderRadius: radius,
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: colors.shadow.withAlpha(36),
+              blurRadius: 22,
+              offset: const Offset(0, 10),
             ),
           ],
-        ],
+        ),
+        child: Stack(
+          children: <Widget>[
+            Positioned(
+              right: -10,
+              top: 28,
+              child: IgnorePointer(
+                child: Text(
+                  'بِسْمِ اللَّه',
+                  textDirection: TextDirection.rtl,
+                  style: const TextStyle(
+                    fontFamily: 'Hafs',
+                    fontSize: 58,
+                    height: 1,
+                  ).copyWith(color: colors.onPrimary.withAlpha(15)),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: colors.onPrimary.withAlpha(28),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: colors.onPrimary.withAlpha(38),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.bookmark_border_rounded,
+                          color: colors.onPrimary,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 11),
+                      Expanded(
+                        child: Text(
+                          'Personal Library',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colors.onPrimary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colors.onPrimary.withAlpha(31),
+                          borderRadius: BorderRadius.circular(AppRadii.pill),
+                          border: Border.all(
+                            color: colors.onPrimary.withAlpha(28),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          child: Text(
+                            '$totalSavedCount saved',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colors.onPrimary,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 11),
+                  Divider(height: 1, color: colors.onPrimary.withAlpha(31)),
+                  const SizedBox(height: 12),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: <Widget>[
+                        _FilterChipButton(
+                          label: 'All',
+                          count: allItems.length,
+                          selected:
+                              selected == _SavedAyahFilter.all &&
+                              selectedFolder == null &&
+                              selectedTag == null,
+                          onTap: () => onSelected(_SavedAyahFilter.all),
+                        ),
+                        const SizedBox(width: 7),
+                        _FilterChipButton(
+                          label: 'Favourites',
+                          count: favouriteCount,
+                          selected: selected == _SavedAyahFilter.favourites,
+                          onTap: () => onSelected(_SavedAyahFilter.favourites),
+                        ),
+                        const SizedBox(width: 7),
+                        _FilterChipButton(
+                          label: 'Notes',
+                          count: noteCount,
+                          selected: selected == _SavedAyahFilter.notes,
+                          onTap: () => onSelected(_SavedAyahFilter.notes),
+                        ),
+                        if (customFolders.isNotEmpty ||
+                            unsortedCount > 0) ...<Widget>[
+                          const SizedBox(width: 7),
+                          _FilterChipButton(
+                            label: 'Folders',
+                            selected: selectedFolder != null,
+                            onTap: () => onFolderSelected(
+                              selectedFolder == null
+                                  ? (customFolders.isNotEmpty
+                                        ? customFolders.first
+                                        : QuranBookmarkService.defaultFolder)
+                                  : null,
+                            ),
+                          ),
+                        ],
+                        if (tags.isNotEmpty) ...<Widget>[
+                          const SizedBox(width: 7),
+                          _FilterChipButton(
+                            label: 'Tags',
+                            selected: selectedTag != null,
+                            onTap: () => onTagSelected(
+                              selectedTag == null ? tags.first : null,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _FolderChipStrip(
+                    folders: folders,
+                    allItems: allItems,
+                    selectedFolder: selectedFolder,
+                    onFolderSelected: onFolderSelected,
+                    onManageFolders: onManageFolders,
+                  ),
+                  if (tags.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 8),
+                    _TagChipStrip(
+                      tags: tags,
+                      selectedTag: selectedTag,
+                      onTagSelected: onTagSelected,
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                  TextButton.icon(
+                    onPressed: onCreateFolder,
+                    style: TextButton.styleFrom(
+                      foregroundColor: colors.primary,
+                      backgroundColor: colors.mint,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 11,
+                        vertical: 6,
+                      ),
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
+                      ),
+                    ),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('New Folder'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -362,6 +444,7 @@ class _FilterChipButton extends StatelessWidget {
       onTap: onTap,
       selectedColor: colors.primary,
       selectedTextColor: colors.onPrimary,
+      foregroundColor: colors.onPrimaryMuted,
       textStyle: theme.textTheme.labelMedium,
     );
   }
@@ -373,7 +456,6 @@ class _FolderChipStrip extends StatelessWidget {
     required this.allItems,
     required this.selectedFolder,
     required this.onFolderSelected,
-    required this.onCreateFolder,
     required this.onManageFolders,
   });
 
@@ -381,12 +463,10 @@ class _FolderChipStrip extends StatelessWidget {
   final List<QuranBookmarkEntry> allItems;
   final String? selectedFolder;
   final ValueChanged<String?> onFolderSelected;
-  final VoidCallback onCreateFolder;
   final VoidCallback onManageFolders;
 
   @override
   Widget build(BuildContext context) {
-    final EquranColors colors = context.equranColors;
     final List<String> visibleFolders = folders.isEmpty
         ? <String>[QuranBookmarkService.defaultFolder]
         : folders;
@@ -407,16 +487,7 @@ class _FolderChipStrip extends StatelessWidget {
             ),
             const SizedBox(width: 7),
           ],
-          _LibraryOptionChip(
-            icon: Icons.add_rounded,
-            label: 'Folder',
-            selected: false,
-            onTap: onCreateFolder,
-            borderColor: colors.primary.withAlpha(140),
-            foregroundColor: colors.primary,
-          ),
           if (visibleFolders.length > 1) ...<Widget>[
-            const SizedBox(width: 7),
             _LibraryOptionChip(
               icon: Icons.tune_rounded,
               label: 'Manage',
@@ -476,7 +547,6 @@ class _LibraryOptionChip extends StatelessWidget {
     this.selectedColor,
     this.selectedTextColor,
     this.foregroundColor,
-    this.borderColor,
     this.textStyle,
   });
 
@@ -488,21 +558,20 @@ class _LibraryOptionChip extends StatelessWidget {
   final Color? selectedColor;
   final Color? selectedTextColor;
   final Color? foregroundColor;
-  final Color? borderColor;
   final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
-    final Color activeColor = selectedColor ?? colors.mint.withAlpha(210);
-    final Color activeTextColor = selectedTextColor ?? colors.primary;
+    final Color activeColor = selectedColor ?? colors.primary;
+    final Color activeTextColor = selectedTextColor ?? colors.onPrimary;
     final Color textColor = selected
         ? activeTextColor
-        : foregroundColor ?? colors.textSecondary;
+        : foregroundColor ?? colors.onPrimaryMuted;
 
     return Material(
-      color: Colors.transparent,
+      color: colors.background.withAlpha(0),
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -510,12 +579,12 @@ class _LibraryOptionChip extends StatelessWidget {
         borderRadius: radius,
         child: Ink(
           decoration: BoxDecoration(
-            color: selected ? activeColor : colors.surface.withAlpha(190),
+            color: selected ? activeColor : colors.onPrimary.withAlpha(26),
             borderRadius: radius,
             border: Border.all(
               color: selected
-                  ? (selectedColor ?? colors.primary).withAlpha(190)
-                  : borderColor ?? colors.border.withAlpha(180),
+                  ? activeColor.withAlpha(210)
+                  : colors.onPrimary.withAlpha(24),
             ),
           ),
           child: Padding(
@@ -539,7 +608,7 @@ class _LibraryOptionChip extends StatelessWidget {
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: selected
                           ? textColor.withAlpha(220)
-                          : colors.textMuted,
+                          : colors.onPrimaryMuted.withAlpha(170),
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -563,160 +632,239 @@ class _BookmarkRow extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final String preview = _previewText(entry);
+    final String arabicSnippet = quranVerseText(entry.surah, entry.verse);
     final bool hasMeta =
         entry.folder != QuranBookmarkService.defaultFolder ||
         entry.tags.isNotEmpty;
+    final BorderRadius radius = BorderRadius.circular(16);
 
-    return EquranSurfaceCard(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (context) =>
-              ReadPage(chapter: entry.surah, startVerse: entry.verse),
+    return Material(
+      color: colors.background.withAlpha(0),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) =>
+                ReadPage(chapter: entry.surah, startVerse: entry.verse),
+          ),
         ),
-      ),
-      padding: const EdgeInsets.fromLTRB(12, 11, 10, 11),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            width: 42,
-            height: 42,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              gradient: colors.heroGradient,
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-            ),
-            child: Text(
-              entry.verse.toString(),
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: colors.onPrimary,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  '${quran.getSurahName(entry.surah)} • Ayah ${entry.verse}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  preview,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.textSecondary,
-                    height: 1.24,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (hasMeta) ...<Widget>[
-                  const SizedBox(height: 7),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 5,
-                    children: <Widget>[
-                      if (entry.folder != QuranBookmarkService.defaultFolder)
-                        _BookmarkMetaChip(label: _folderLabel(entry.folder)),
-                      for (final String tag in entry.tags.take(3))
-                        _BookmarkMetaChip(label: '#$tag'),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(width: 6),
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: Center(
-              child: LikeButton(
-                size: 23,
-                isLiked: entry.isFavourite,
-                circleColor: CircleColor(
-                  start: colors.primary.withAlpha(180),
-                  end: colors.primary,
-                ),
-                bubblesColor: BubblesColor(
-                  dotPrimaryColor: colors.primary,
-                  dotSecondaryColor: colors.accentGold,
-                ),
-                likeBuilder: (bool liked) {
-                  return Icon(
-                    liked
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    color: liked ? colors.primary : colors.textMuted,
-                    size: 23,
-                  );
-                },
-                onTap: (bool liked) async {
-                  if (liked) {
-                    await const QuranBookmarkService().removeFavourite(
-                      entry.surah,
-                      entry.verse,
-                    );
-                    return false;
-                  }
-                  await const QuranBookmarkService().saveFavourite(
-                    entry.surah,
-                    entry.verse,
-                  );
-                  return true;
-                },
-              ),
-            ),
-          ),
-          PopupMenuButton<_BookmarkAction>(
-            tooltip: 'Saved ayah actions',
-            icon: const Icon(Icons.more_vert_rounded),
-            onSelected: (action) async {
-              switch (action) {
-                case _BookmarkAction.edit:
-                case _BookmarkAction.folder:
-                case _BookmarkAction.tags:
-                  await _showBookmarkEditor(context, entry);
-                case _BookmarkAction.delete:
-                  if (!context.mounted) return;
-                  final bool confirmed = await _confirmDeleteBookmark(context);
-                  if (!confirmed) return;
-                  await const QuranBookmarkService().deleteBookmark(
-                    entry.surah,
-                    entry.verse,
-                  );
-              }
-            },
-            itemBuilder: (context) => const <PopupMenuEntry<_BookmarkAction>>[
-              PopupMenuItem<_BookmarkAction>(
-                value: _BookmarkAction.edit,
-                child: Text('Edit note'),
-              ),
-              PopupMenuItem<_BookmarkAction>(
-                value: _BookmarkAction.folder,
-                child: Text('Move to folder'),
-              ),
-              PopupMenuItem<_BookmarkAction>(
-                value: _BookmarkAction.tags,
-                child: Text('Edit tags'),
-              ),
-              PopupMenuDivider(),
-              PopupMenuItem<_BookmarkAction>(
-                value: _BookmarkAction.delete,
-                child: Text('Delete'),
+        borderRadius: radius,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: radius,
+            border: Border.all(color: colors.border.withAlpha(145)),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: colors.shadow.withAlpha(22),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-        ],
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Container(width: 3, color: colors.primary),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Container(
+                          width: 42,
+                          height: 42,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: <Color>[
+                                colors.primaryGradientStart,
+                                colors.primaryGradientEnd,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            entry.verse.toString(),
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: colors.onPrimary,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                '${quran.getSurahName(entry.surah)} • Ayah ${entry.verse}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: colors.textPrimary,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                arabicSnippet,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textDirection: TextDirection.rtl,
+                                style:
+                                    const TextStyle(
+                                      fontFamily: 'Hafs',
+                                      fontSize: 15,
+                                      height: 1.3,
+                                    ).copyWith(
+                                      color: colors.textPrimary.withAlpha(102),
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                preview,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colors.textSecondary,
+                                  height: 1.24,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (hasMeta) ...<Widget>[
+                                const SizedBox(height: 7),
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 5,
+                                  children: <Widget>[
+                                    if (entry.folder !=
+                                        QuranBookmarkService.defaultFolder)
+                                      _BookmarkMetaChip(
+                                        label: _folderLabel(entry.folder),
+                                      ),
+                                    for (final String tag in entry.tags.take(3))
+                                      _BookmarkMetaChip(label: '#$tag'),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            SizedBox(
+                              width: 36,
+                              height: 34,
+                              child: Center(
+                                child: LikeButton(
+                                  size: 22,
+                                  isLiked: entry.isFavourite,
+                                  circleColor: CircleColor(
+                                    start: colors.primary,
+                                    end: colors.primaryGradientStart,
+                                  ),
+                                  bubblesColor: BubblesColor(
+                                    dotPrimaryColor: colors.primary,
+                                    dotSecondaryColor: colors.accentGold,
+                                  ),
+                                  likeBuilder: (bool liked) {
+                                    return Icon(
+                                      liked
+                                          ? Icons.favorite_rounded
+                                          : Icons.favorite_border_rounded,
+                                      color: liked
+                                          ? colors.primary
+                                          : colors.textMuted,
+                                      size: 22,
+                                    );
+                                  },
+                                  onTap: (bool liked) async {
+                                    if (liked) {
+                                      await const QuranBookmarkService()
+                                          .removeFavourite(
+                                            entry.surah,
+                                            entry.verse,
+                                          );
+                                      return false;
+                                    }
+                                    await const QuranBookmarkService()
+                                        .saveFavourite(
+                                          entry.surah,
+                                          entry.verse,
+                                        );
+                                    return true;
+                                  },
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 36,
+                              height: 34,
+                              child: PopupMenuButton<_BookmarkAction>(
+                                tooltip: 'Saved ayah actions',
+                                padding: EdgeInsets.zero,
+                                icon: Icon(
+                                  Icons.more_horiz_rounded,
+                                  color: colors.textMuted,
+                                ),
+                                onSelected: (action) async {
+                                  switch (action) {
+                                    case _BookmarkAction.edit:
+                                    case _BookmarkAction.folder:
+                                    case _BookmarkAction.tags:
+                                      await _showBookmarkEditor(context, entry);
+                                    case _BookmarkAction.delete:
+                                      if (!context.mounted) return;
+                                      final bool confirmed =
+                                          await _confirmDeleteBookmark(context);
+                                      if (!confirmed) return;
+                                      await const QuranBookmarkService()
+                                          .deleteBookmark(
+                                            entry.surah,
+                                            entry.verse,
+                                          );
+                                  }
+                                },
+                                itemBuilder: (context) =>
+                                    const <PopupMenuEntry<_BookmarkAction>>[
+                                      PopupMenuItem<_BookmarkAction>(
+                                        value: _BookmarkAction.edit,
+                                        child: Text('Edit note'),
+                                      ),
+                                      PopupMenuItem<_BookmarkAction>(
+                                        value: _BookmarkAction.folder,
+                                        child: Text('Move to folder'),
+                                      ),
+                                      PopupMenuItem<_BookmarkAction>(
+                                        value: _BookmarkAction.tags,
+                                        child: Text('Edit tags'),
+                                      ),
+                                      PopupMenuDivider(),
+                                      PopupMenuItem<_BookmarkAction>(
+                                        value: _BookmarkAction.delete,
+                                        child: Text('Delete'),
+                                      ),
+                                    ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -782,38 +930,55 @@ class _BookmarkEmptyState extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
-        child: EquranSurfaceCard(
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              EquranIconBadge(
-                icon: isSearching
-                    ? Icons.search_off_rounded
-                    : Icons.bookmark_add_outlined,
-                size: 48,
-              ),
-              const SizedBox(height: 14),
-              Text(
-                isSearching || hasLibraryItems
-                    ? 'No matching saved ayahs.'
-                    : 'Save ayahs, notes, and reflections here.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: colors.textPrimary,
-                  fontWeight: FontWeight.w900,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.surface.withAlpha(190),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.border.withAlpha(135)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: colors.primarySoft.withAlpha(28),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colors.primarySoft.withAlpha(80)),
+                  ),
+                  child: Icon(
+                    isSearching
+                        ? Icons.search_off_rounded
+                        : Icons.bookmark_add_outlined,
+                    color: colors.primarySoft,
+                    size: 25,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Favourite ayahs quickly, or add folders, tags, and private notes from the reading options.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.textSecondary,
-                  height: 1.35,
+                const SizedBox(height: 14),
+                Text(
+                  isSearching || hasLibraryItems
+                      ? 'No matching saved ayahs.'
+                      : 'Save ayahs, notes, and reflections here.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colors.textSecondary,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  'Favourite ayahs quickly, or add folders, tags, and private notes from the reading options.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.textSecondary,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

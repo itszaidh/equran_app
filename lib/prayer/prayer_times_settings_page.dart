@@ -7,6 +7,7 @@ import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/widgets/app_selection_dialog.dart';
 import 'package:flutter/foundation.dart';
@@ -69,9 +70,22 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Prayer Times Settings')),
+      appBar: AppBar(
+        title: const Text('Prayer Times Settings'),
+        backgroundColor: colors.background,
+        foregroundColor: colors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: theme.textTheme.titleLarge?.copyWith(
+          color: colors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: colors.textSecondary),
+        actionsIconTheme: IconThemeData(color: colors.textSecondary),
+      ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 28),

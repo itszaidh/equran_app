@@ -9,6 +9,7 @@ import 'package:quran/quran.dart';
 const String equranResumeQuranAsset = 'assets/images/app_assets/quran.png';
 const String equranResumePlayerAsset = 'assets/images/app_assets/player.png';
 const double _resumeImageCardMaxWidth = 620;
+const double _resumeImageCardHeight = 158;
 
 class LastReadCard extends StatefulWidget {
   const LastReadCard({super.key, required this.entries});
@@ -156,6 +157,9 @@ class EquranResumeImageCard extends StatelessWidget {
     required this.actionText,
     required this.trailingAssetPath,
     required this.onTap,
+    this.secondary = false,
+    this.artworkScale = 1,
+    this.maxWidth = _resumeImageCardMaxWidth,
   });
 
   final String primary;
@@ -163,6 +167,9 @@ class EquranResumeImageCard extends StatelessWidget {
   final String actionText;
   final String trailingAssetPath;
   final VoidCallback onTap;
+  final bool secondary;
+  final double artworkScale;
+  final double maxWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -172,20 +179,43 @@ class EquranResumeImageCard extends StatelessWidget {
     return Align(
       alignment: Alignment.center,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: _resumeImageCardMaxWidth),
+        constraints: BoxConstraints(maxWidth: maxWidth),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final bool compact = constraints.maxWidth < 340;
             final double artworkEdgePadding = _artworkEdgePadding(
               constraints.maxWidth,
             );
-            final double artWidth = compact ? 108 : 132;
+            final double scale = artworkScale.clamp(0.82, 1.28).toDouble();
+            final double artWidth = (compact ? 108 : 132) * scale;
             final double textRightPadding =
-                (compact ? 94 : 114) + artworkEdgePadding;
+                ((compact ? 94 : 114) * scale.clamp(0.94, 1.16)) +
+                artworkEdgePadding;
             final BorderRadius radius = BorderRadius.circular(AppRadii.large);
+            final Gradient cardGradient = secondary
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: <Color>[
+                      Color.alphaBlend(
+                        colors.primary.withAlpha(80),
+                        colors.surface,
+                      ),
+                      Color.alphaBlend(
+                        colors.primaryStrong.withAlpha(92),
+                        colors.surface,
+                      ),
+                      Color.alphaBlend(
+                        colors.accentGold.withAlpha(22),
+                        colors.primaryStrong,
+                      ),
+                    ],
+                  )
+                : colors.heroGradient;
 
             return SizedBox(
               width: double.infinity,
+              height: _resumeImageCardHeight,
               child: Material(
                 color: Colors.transparent,
                 borderRadius: radius,
@@ -195,7 +225,7 @@ class EquranResumeImageCard extends StatelessWidget {
                   borderRadius: radius,
                   child: Ink(
                     decoration: BoxDecoration(
-                      gradient: colors.heroGradient,
+                      gradient: cardGradient,
                       borderRadius: radius,
                       border: Border.all(color: colors.onPrimary.withAlpha(36)),
                       boxShadow: <BoxShadow>[
@@ -227,58 +257,64 @@ class EquranResumeImageCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            compact ? 16 : 18,
-                            14,
-                            textRightPadding,
-                            13,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                primary,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.headlineSmall?.copyWith(
-                                  color: colors.onPrimary,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1.05,
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                subtitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  color: colors.onPrimaryMuted,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              SizedBox(height: compact ? 6 : 28),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: SizedBox(
-                                  width: 104,
-                                  child: Divider(
-                                    height: 1,
-                                    color: colors.onPrimary.withAlpha(52),
+                        Positioned.fill(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              compact ? 16 : 18,
+                              14,
+                              textRightPadding,
+                              13,
+                            ),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    primary,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.headlineSmall
+                                        ?.copyWith(
+                                          color: colors.onPrimary,
+                                          fontWeight: FontWeight.w900,
+                                          height: 1.05,
+                                        ),
                                   ),
-                                ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    subtitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      color: colors.onPrimaryMuted,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  SizedBox(height: compact ? 6 : 28),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: SizedBox(
+                                      width: 104,
+                                      child: Divider(
+                                        height: 1,
+                                        color: colors.onPrimary.withAlpha(52),
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    actionText,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      color: colors.onPrimary,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                actionText,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: colors.onPrimary,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ],

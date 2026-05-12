@@ -42,7 +42,6 @@ import 'package:equran/widgets/library.dart'
     show
         AppSelectionDialog,
         AppSelectionOption,
-        ReadProgressBar,
         ReadQuranCard,
         ReadVersePlayerBar;
 import 'package:flutter/foundation.dart'
@@ -64,6 +63,7 @@ import 'package:flutter/rendering.dart'
         ScrollDirection,
         ViewConfiguration;
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart' as ja;
 import 'package:just_audio_background/just_audio_background.dart';
@@ -1282,8 +1282,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               toolbarHeight: ResponsiveNav.toolbarHeight(context),
               backgroundColor: colors.background,
               foregroundColor: colors.textPrimary,
+              elevation: 0,
+              scrolledUnderElevation: 0,
               surfaceTintColor: Colors.transparent,
-              iconTheme: IconThemeData(size: ResponsiveNav.iconSize(context)),
+              titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+              iconTheme: IconThemeData(
+                color: colors.textSecondary,
+                size: ResponsiveNav.iconSize(context),
+              ),
+              actionsIconTheme: IconThemeData(
+                color: colors.textSecondary,
+                size: ResponsiveNav.iconSize(context),
+              ),
               leading: const BackButton(),
               title: Text(quran.getSurahName(_currentChapter)),
               centerTitle: true,
@@ -3416,7 +3429,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         .clamp(1, quran.getVerseCount(safeSurah))
         .toInt();
     final DateTime now = DateTime.now();
-    final String key = '$safeSurah:$safeVerse';
     final String todayKey = _readingDateKey(now);
 
     if (_isRoutineReading) {
@@ -3425,15 +3437,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         safeVerse,
         routineId: widget.routineId!,
       );
+      _recordAyahStats(safeSurah, safeVerse, now: now, todayKey: todayKey);
       return;
     }
-
-    final dynamic existingActivity = QuranActivityDB().get(todayKey);
-    final QuranActivityDay activity = existingActivity is QuranActivityDay
-        ? existingActivity
-        : QuranActivityDay(dateKey: todayKey, updatedAt: now);
-    final Set<String> readKeys = activity.readAyahKeys.toSet();
-    final bool isNewToday = readKeys.add(key);
 
     unawaited(
       ResumeStateDB().put(
@@ -3449,6 +3455,23 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ),
       ),
     );
+
+    _recordAyahStats(safeSurah, safeVerse, now: now, todayKey: todayKey);
+  }
+
+  void _recordAyahStats(
+    int safeSurah,
+    int safeVerse, {
+    required DateTime now,
+    required String todayKey,
+  }) {
+    final String key = '$safeSurah:$safeVerse';
+    final dynamic existingActivity = QuranActivityDB().get(todayKey);
+    final QuranActivityDay activity = existingActivity is QuranActivityDay
+        ? existingActivity
+        : QuranActivityDay(dateKey: todayKey, updatedAt: now);
+    final Set<String> readKeys = activity.readAyahKeys.toSet();
+    final bool isNewToday = readKeys.add(key);
 
     if (!isNewToday) return;
 
@@ -3648,16 +3671,80 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Widget _buildProgressBar(double marginValue) {
-    return ReadProgressBar(
-      marginValue: marginValue,
-      currentVerse: _currentVerse,
-      totalVerses: _totalVerses,
-      isScrubbing: _isScrubbingProgress,
-      scrubStartVerse: _scrubStartVerse,
-      onScrubStart: _handleProgressScrubStart,
-      onScrubUpdate: _handleProgressScrubUpdate,
-      onScrubEnd: _resetProgressScrub,
-      onScrubCancel: _resetProgressScrub,
+    final EquranColors colors = context.equranColors;
+    final ThemeData theme = Theme.of(context);
+    final double progress = _totalVerses <= 0
+        ? 0
+        : (_currentVerse / _totalVerses).clamp(0.0, 1.0).toDouble();
+    final BorderRadius radius = BorderRadius.circular(999);
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(marginValue, 12, marginValue, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: Text(
+              '$_currentVerse / $_totalVerses ayahs',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.textMuted,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onLongPressStart: (details) =>
+                    _handleProgressScrubStart(details, constraints.maxWidth),
+                onLongPressMoveUpdate: (details) =>
+                    _handleProgressScrubUpdate(details, constraints.maxWidth),
+                onLongPressEnd: (_) => _resetProgressScrub(),
+                onLongPressCancel: _resetProgressScrub,
+                child: SizedBox(
+                  height: 12,
+                  child: Center(
+                    child: ClipRRect(
+                      borderRadius: radius,
+                      child: SizedBox(
+                        height: 3,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: colors.border,
+                                borderRadius: radius,
+                              ),
+                            ),
+                            FractionallySizedBox(
+                              alignment: AlignmentDirectional.centerStart,
+                              widthFactor: progress,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: colors.primary,
+                                  borderRadius: radius,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -4371,12 +4458,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             FilledButton.tonal(
               onPressed: () => _decrease(),
               style: FilledButton.styleFrom(
+                backgroundColor: colors.surface,
+                foregroundColor: colors.primary,
+                side: BorderSide(color: colors.border),
+                shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
                   horizontal: 16,
                 ),
                 minimumSize: const Size(58, 44),
-                foregroundColor: colors.onPrimary,
               ),
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 2),
@@ -4386,12 +4476,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             FilledButton.tonal(
               onPressed: () => _increase(),
               style: FilledButton.styleFrom(
+                backgroundColor: colors.surface,
+                foregroundColor: colors.primary,
+                side: BorderSide(color: colors.border),
+                shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(
                   vertical: 8,
                   horizontal: 16,
                 ),
                 minimumSize: const Size(58, 44),
-                foregroundColor: colors.onPrimary,
               ),
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 2),
@@ -4802,78 +4895,42 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Widget _buildSurahIntroCard({required double marginValue}) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
-    final bool isLight = theme.brightness == Brightness.light;
-    final Color resolvedCardColor =
-        theme.cardTheme.color ??
-        (isLight
-            ? colorScheme.surfaceContainerLow
-            : colorScheme.surfaceContainer);
-    final String surahName = quran.getSurahName(_currentChapter);
+    final String surahName = quran.getSurahNameArabic(_currentChapter);
     final String englishName = quran.getSurahNameEnglish(_currentChapter);
     final int verseCount = quran.getVerseCount(_currentChapter);
-    final String revelation = _revelationLabel(_currentChapter);
-    final bool showBasmala = _currentChapter != 9;
+    final String revelation = _revelationLabel(_currentChapter).toUpperCase();
+    final int juzNumber = quran.getJuzNumber(_currentChapter, 1);
+    final bool showBasmala = _currentChapter != 1 && _currentChapter != 9;
+    final BorderRadius radius = BorderRadius.circular(20);
 
-    return Card(
-      elevation: 0,
-      color: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.fromLTRB(marginValue, 8, marginValue, 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        side: BorderSide(
-          color: isLight ? colors.border : colors.border.withAlpha(160),
-        ),
-      ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: resolvedCardColor,
-          borderRadius: BorderRadius.circular(AppRadii.large),
-          gradient: isLight
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[colors.paleGreen, colors.surface],
-                )
-              : LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    Color.alphaBlend(
-                      colorScheme.primary.withAlpha(18),
-                      resolvedCardColor,
-                    ),
-                    Color.alphaBlend(
-                      colors.accentGold.withAlpha(9),
-                      resolvedCardColor,
-                    ),
-                  ],
-                ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: colors.shadow.withAlpha(isLight ? 14 : 36),
-              blurRadius: 22,
-              offset: const Offset(0, 10),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                colors.primaryGradientStart,
+                colors.primaryGradientEnd,
+              ],
             ),
-          ],
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool compact = constraints.maxWidth < 360;
-            final double surahNameSize = compact ? 36 : 46;
-            final double basmalaSize = (constraints.maxWidth * 0.145)
-                .clamp(42.0, 64.0)
-                .toDouble();
-
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                compact ? 16 : EquranSpacing.pagePadding,
-                compact ? 18 : 22,
-                compact ? 16 : EquranSpacing.pagePadding,
-                compact ? 18 : 22,
+            border: Border.all(color: colors.accentGold.withAlpha(115)),
+          ),
+          child: CustomPaint(
+            painter: _SurahIntroOrnamentPainter(
+              color: colors.accentGold.withAlpha(153),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                EquranSpacing.pagePadding,
+                20,
+                EquranSpacing.pagePadding,
+                24,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -4883,71 +4940,71 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     child: Text(
                       surahName,
                       maxLines: 1,
+                      textDirection: TextDirection.rtl,
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        color: colors.textPrimary,
-                        fontFamily: 'SurahName',
-                        fontSize: surahNameSize,
-                        fontWeight: FontWeight.w400,
-                        height: 1.0,
-                        letterSpacing: 0,
+                      style: GoogleFonts.amiri(
+                        textStyle: theme.textTheme.displaySmall,
+                        color: colors.onPrimary,
+                        fontSize: 44,
+                        fontWeight: FontWeight.bold,
+                        height: 1.08,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 8),
                   Text(
                     englishName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.textSecondary,
-                      fontWeight: FontWeight.w700,
+                      color: colors.onPrimaryMuted,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: compact ? 11 : 13),
-                    child: SizedBox(
-                      width: compact ? 80 : 104,
-                      child: Divider(
-                        height: 1,
-                        color: colors.primary.withAlpha(isLight ? 80 : 92),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '$revelation • $verseCount VERSES',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.primary,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0,
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: 100,
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: colors.accentGold.withAlpha(89),
                     ),
                   ),
                   if (showBasmala) ...<Widget>[
-                    SizedBox(height: compact ? 15 : 20),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        quranBasmalaText,
-                        textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isLight ? colors.primary : colors.primarySoft,
-                          fontFamily: 'Hafs',
-                          fontSize: basmalaSize,
-                          fontWeight: FontWeight.w400,
-                          height: 1.35,
-                        ),
+                    const SizedBox(height: 20),
+                    Text(
+                      quranBasmalaText,
+                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.amiri(
+                        textStyle: theme.textTheme.headlineSmall,
+                        color: colors.onPrimary,
+                        fontSize: 36,
+                        fontWeight: FontWeight.w400,
+                        height: 2.0,
                       ),
                     ),
                   ],
+                  const SizedBox(height: 20),
+                  Text(
+                    '$revelation · $verseCount VERSES · JUZ\' $juzNumber',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.accentGold.withAlpha(191),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
                 ],
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );
@@ -6461,6 +6518,49 @@ class _ActiveRoutineDayRange {
   final int endGlobalAyah;
 
   int get totalAyahs => max(1, endGlobalAyah - startGlobalAyah + 1);
+}
+
+class _SurahIntroOrnamentPainter extends CustomPainter {
+  const _SurahIntroOrnamentPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const double inset = 10;
+    const double arm = 20;
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
+
+    void drawCorner({required bool right, required bool bottom}) {
+      final double x = right ? size.width - inset : inset;
+      final double y = bottom ? size.height - inset : inset;
+      final double dx = right ? -1 : 1;
+      final double dy = bottom ? -1 : 1;
+
+      final Path path = Path()
+        ..moveTo(x, y + (dy * arm))
+        ..lineTo(x, y)
+        ..lineTo(x + (dx * arm), y)
+        ..moveTo(x, y)
+        ..lineTo(x, y + (dy * arm));
+      canvas.drawPath(path, paint);
+    }
+
+    drawCorner(right: false, bottom: false);
+    drawCorner(right: true, bottom: false);
+    drawCorner(right: true, bottom: true);
+    drawCorner(right: false, bottom: true);
+  }
+
+  @override
+  bool shouldRepaint(covariant _SurahIntroOrnamentPainter oldDelegate) {
+    return color != oldDelegate.color;
+  }
 }
 
 String _revelationLabel(int surah) {

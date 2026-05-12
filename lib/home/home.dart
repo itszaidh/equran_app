@@ -167,11 +167,22 @@ class _HomePageState extends State<HomePage> {
                 toolbarHeight: ResponsiveNav.toolbarHeight(context),
                 title: Text(_pageDestinations[_selectedIndex].label),
                 centerTitle: true,
-                backgroundColor: equranColors.primary,
-                foregroundColor: equranColors.onPrimary,
+                backgroundColor: equranColors.background,
+                foregroundColor: equranColors.textPrimary,
+                elevation: 0,
+                scrolledUnderElevation: 0,
                 surfaceTintColor: Colors.transparent,
+                titleTextStyle: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(
+                      color: equranColors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
                 iconTheme: IconThemeData(
-                  color: equranColors.onPrimary,
+                  color: equranColors.textSecondary,
+                  size: navIconSize,
+                ),
+                actionsIconTheme: IconThemeData(
+                  color: equranColors.textSecondary,
                   size: navIconSize,
                 ),
                 actions: <Widget>[
@@ -332,13 +343,29 @@ class _HomePageState extends State<HomePage> {
         .push(
           MaterialPageRoute<void>(
             builder: (BuildContext context) {
+              final EquranColors colors = context.equranColors;
               return Scaffold(
                 appBar: showAppBar
                     ? AppBar(
                         toolbarHeight: ResponsiveNav.toolbarHeight(context),
                         title: Text(label),
                         centerTitle: true,
+                        backgroundColor: colors.background,
+                        foregroundColor: colors.textPrimary,
+                        elevation: 0,
+                        scrolledUnderElevation: 0,
+                        surfaceTintColor: Colors.transparent,
+                        titleTextStyle: Theme.of(context).textTheme.titleLarge
+                            ?.copyWith(
+                              color: colors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
                         iconTheme: IconThemeData(
+                          color: colors.textSecondary,
+                          size: ResponsiveNav.iconSize(context),
+                        ),
+                        actionsIconTheme: IconThemeData(
+                          color: colors.textSecondary,
                           size: ResponsiveNav.iconSize(context),
                         ),
                       )

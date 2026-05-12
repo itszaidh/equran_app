@@ -24,8 +24,16 @@ class ReadingPlansPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Reading Routine'),
         centerTitle: true,
-        backgroundColor: colors.primary,
-        foregroundColor: colors.onPrimary,
+        backgroundColor: colors.background,
+        foregroundColor: colors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: colors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: colors.textSecondary),
+        actionsIconTheme: IconThemeData(color: colors.textSecondary),
       ),
       body: ValueListenableBuilder<Box<dynamic>>(
         valueListenable: ReadingPlansDB().listener,

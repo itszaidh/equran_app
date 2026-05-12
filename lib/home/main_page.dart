@@ -81,6 +81,7 @@ class _MainPageState extends State<MainPage>
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
     final double width = MediaQuery.of(context).size.width;
     final double horizontalPadding = width >= 1400
         ? 36
@@ -94,7 +95,7 @@ class _MainPageState extends State<MainPage>
           child: SafeArea(
             bottom: false,
             child: Material(
-              color: Colors.transparent,
+              color: colors.background.withAlpha(0),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                 child: _buildTopBar(theme),
@@ -206,15 +207,8 @@ class _MainPageState extends State<MainPage>
     final EquranColors colors = context.equranColors;
 
     return BoxDecoration(
-      color: colors.primary,
-      border: Border(bottom: BorderSide(color: colors.primaryStrong)),
-      boxShadow: <BoxShadow>[
-        BoxShadow(
-          color: colors.shadow.withAlpha(24),
-          blurRadius: 18,
-          offset: const Offset(0, 6),
-        ),
-      ],
+      color: colors.background.withAlpha(0),
+      border: Border(bottom: BorderSide(color: colors.border.withAlpha(90))),
     );
   }
 
@@ -226,16 +220,16 @@ class _MainPageState extends State<MainPage>
         final bool compact = constraints.maxWidth < 390;
         return DecoratedBox(
           decoration: BoxDecoration(
-            color: colors.surface,
+            color: colors.surface.withAlpha(210),
             borderRadius: BorderRadius.circular(AppRadii.pill),
             border: Border.all(color: colors.border),
             boxShadow: <BoxShadow>[
               BoxShadow(
                 color: colors.shadow.withAlpha(
-                  theme.brightness == Brightness.light ? 8 : 18,
+                  theme.brightness == Brightness.light ? 8 : 14,
                 ),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
@@ -262,7 +256,7 @@ class _MainPageState extends State<MainPage>
                             borderRadius: BorderRadius.circular(AppRadii.pill),
                             boxShadow: <BoxShadow>[
                               BoxShadow(
-                                color: colors.primaryStrong.withAlpha(42),
+                                color: colors.primarySoft.withAlpha(38),
                                 blurRadius: 14,
                                 offset: const Offset(0, 5),
                               ),
@@ -333,7 +327,7 @@ class _MainPageState extends State<MainPage>
       child: Tooltip(
         message: tooltip,
         child: Material(
-          color: Colors.transparent,
+          color: colors.background.withAlpha(0),
           borderRadius: radius,
           child: InkWell(
             borderRadius: radius,
@@ -598,7 +592,7 @@ class _QuranPageTile extends StatelessWidget {
     final EquranColors colors = context.equranColors;
 
     return Material(
-      color: Colors.transparent,
+      color: colors.background.withAlpha(0),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.large),
         onTap: () => Navigator.of(context).push(
