@@ -741,7 +741,7 @@ class _HomePrayerHeroCard extends StatelessWidget {
                 (constraints.maxWidth * (compact ? 0.62 : 0.66))
                     .clamp(compact ? 188.0 : 238.0, compact ? 218.0 : 304.0)
                     .toDouble();
-            final double trailingSpace = (artWidth - 10)
+            final double trailingSpace = (artWidth - 12)
                 .clamp(compact ? 166.0 : 210.0, compact ? 202.0 : 286.0)
                 .toDouble();
             final double timeSize =
@@ -769,7 +769,7 @@ class _HomePrayerHeroCard extends StatelessWidget {
                 clipBehavior: Clip.none,
                 children: <Widget>[
                   Positioned(
-                    right: -4,
+                    right: -12,
                     top: -4,
                     bottom: -4,
                     width: artWidth,
@@ -780,7 +780,7 @@ class _HomePrayerHeroCard extends StatelessWidget {
                       Expanded(
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            minHeight: compact ? 162 : 188,
+                            minHeight: compact ? 130 : 148,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -901,13 +901,13 @@ class _PrayerHeroDecoration extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(6, 2, 0, 2),
+              padding: const EdgeInsets.fromLTRB(4, 2, 0, 2),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: Image.asset(
                   _prayerBannerAsset(kind),
-                  width: constraints.maxWidth - 6,
-                  height: constraints.maxHeight - 4,
+                  width: constraints.maxWidth - 4,
+                  height: constraints.maxHeight - 2,
                   fit: BoxFit.contain,
                   alignment: Alignment.centerRight,
                   errorBuilder: (context, error, stackTrace) {

@@ -32,6 +32,8 @@ migrate_working_dir/
 /build/
 assets/tajweed/*
 assets_backup
+assets/tafsir
+assets/timings
 
 # Symbolication related
 app.*.symbols
