@@ -7,6 +7,9 @@ import 'package:quran/quran.dart' as quran;
 class QuranBookmarkService {
   const QuranBookmarkService();
 
+  static const String defaultFolder = 'Default';
+  static const String defaultFolderLabel = 'Unsorted';
+
   bool isFavourite(int surah, int verse) {
     final String key = favouriteAyahKey(surah, verse);
     final dynamic entry = QuranBookmarksDB().get(key);
@@ -176,11 +179,82 @@ class QuranBookmarkService {
     sorted.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return sorted;
   }
+
+  List<String> folders() {
+    final Set<String> folders = <String>{defaultFolder};
+    for (final dynamic key in QuranBookmarkFoldersDB().getKeys()) {
+      final String folder = _cleanFolder(key.toString());
+      folders.add(folder);
+    }
+    for (final QuranBookmarkEntry entry
+        in bookmarkEntriesWithLegacyFallback()) {
+      folders.add(_cleanFolder(entry.folder));
+    }
+    return folders.toList(growable: false)..sort((a, b) {
+      if (a == defaultFolder) return -1;
+      if (b == defaultFolder) return 1;
+      return a.toLowerCase().compareTo(b.toLowerCase());
+    });
+  }
+
+  Future<String> createFolder(String name) async {
+    final String folder = _cleanFolder(name);
+    if (folder == defaultFolder) return defaultFolder;
+    await QuranBookmarkFoldersDB().put(
+      folder,
+      DateTime.now().toIso8601String(),
+    );
+    return folder;
+  }
+
+  Future<void> renameFolder(String oldName, String newName) async {
+    final String oldFolder = _cleanFolder(oldName);
+    final String newFolder = _cleanFolder(newName);
+    if (oldFolder == defaultFolder || newFolder == oldFolder) return;
+    await createFolder(newFolder);
+    await QuranBookmarkFoldersDB().delete(oldFolder);
+    final DateTime now = DateTime.now();
+    for (final QuranBookmarkEntry entry
+        in bookmarkEntriesWithLegacyFallback()) {
+      if (_cleanFolder(entry.folder) != oldFolder) continue;
+      await QuranBookmarksDB().put(
+        entry.id,
+        entry.copyWith(folder: newFolder, updatedAt: now),
+      );
+    }
+  }
+
+  Future<void> deleteFolder(String folderName) async {
+    final String folder = _cleanFolder(folderName);
+    if (folder == defaultFolder) return;
+    await QuranBookmarkFoldersDB().delete(folder);
+    final DateTime now = DateTime.now();
+    for (final QuranBookmarkEntry entry
+        in bookmarkEntriesWithLegacyFallback()) {
+      if (_cleanFolder(entry.folder) != folder) continue;
+      await QuranBookmarksDB().put(
+        entry.id,
+        entry.copyWith(folder: defaultFolder, updatedAt: now),
+      );
+    }
+  }
+
+  List<String> tags() {
+    final Set<String> tags = <String>{};
+    for (final QuranBookmarkEntry entry
+        in bookmarkEntriesWithLegacyFallback()) {
+      tags.addAll(_cleanTags(entry.tags));
+    }
+    return tags.toList(growable: false)..sort();
+  }
 }
 
 String _cleanFolder(String value) {
   final String folder = value.trim();
-  return folder.isEmpty ? 'Default' : folder;
+  if (folder.isEmpty || folder.toLowerCase() == 'unsorted') {
+    return QuranBookmarkService.defaultFolder;
+  }
+  return folder;
 }
 
 List<String> _cleanTags(List<String> tags) {

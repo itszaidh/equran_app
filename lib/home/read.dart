@@ -5352,7 +5352,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                     ListTile(
                       leading: const Icon(Icons.edit_note_rounded),
-                      title: const Text('Edit bookmark or note'),
+                      title: const Text('Save to library'),
+                      subtitle: const Text('Folder, tags, and private note'),
                       onTap: () {
                         Navigator.of(context).pop();
                         _showFavouriteNotePrompt(verse);
@@ -5773,6 +5774,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     bool isFavourite =
         bookmark?.isFavourite ??
         const QuranBookmarkService().isFavourite(_currentChapter, verse);
+    String selectedFolder =
+        bookmark?.folder ?? QuranBookmarkService.defaultFolder;
     try {
       await _withLowFpsSuppressed(() {
         return showModalBottomSheet<void>(
@@ -5785,6 +5788,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               builder: (context, setSheetState) {
                 final ThemeData theme = Theme.of(context);
                 final EquranColors colors = context.equranColors;
+                final List<String> folders = const QuranBookmarkService()
+                    .folders();
+                if (!folders.contains(selectedFolder)) {
+                  selectedFolder = QuranBookmarkService.defaultFolder;
+                }
                 return Padding(
                   padding: EdgeInsets.fromLTRB(
                     20,
@@ -5849,11 +5857,67 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        TextField(
-                          controller: folderController,
-                          decoration: const InputDecoration(
-                            labelText: 'Folder',
-                            hintText: 'Default',
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                initialValue: selectedFolder,
+                                decoration: const InputDecoration(
+                                  labelText: 'Folder',
+                                ),
+                                items: <DropdownMenuItem<String>>[
+                                  for (final String folder in folders)
+                                    DropdownMenuItem<String>(
+                                      value: folder,
+                                      child: Text(
+                                        folder ==
+                                                QuranBookmarkService
+                                                    .defaultFolder
+                                            ? QuranBookmarkService
+                                                  .defaultFolderLabel
+                                            : folder,
+                                      ),
+                                    ),
+                                ],
+                                onChanged: (value) {
+                                  if (value == null) return;
+                                  setSheetState(() {
+                                    selectedFolder = value;
+                                    folderController.text = value;
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton.filledTonal(
+                              tooltip: 'Create folder',
+                              onPressed: () async {
+                                final String? folder =
+                                    await _showBookmarkFolderNameDialog();
+                                if (folder == null) return;
+                                final String created =
+                                    await const QuranBookmarkService()
+                                        .createFolder(folder);
+                                setSheetState(() {
+                                  selectedFolder = created;
+                                  folderController.text = created;
+                                });
+                              },
+                              icon: const Icon(
+                                Icons.create_new_folder_outlined,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Saved ayahs can be organized into folders and tags.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -5890,7 +5954,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                         verse,
                                         isFavourite: isFavourite,
                                         note: noteController.text,
-                                        folder: folderController.text,
+                                        folder: selectedFolder,
                                         tags: _parseBookmarkTags(
                                           tagsController.text,
                                         ),
@@ -5927,6 +5991,50 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       if (cleanTag.isNotEmpty) tags.add(cleanTag);
     }
     return tags.toList(growable: false)..sort();
+  }
+
+  Future<String?> _showBookmarkFolderNameDialog() async {
+    final TextEditingController controller = TextEditingController();
+    try {
+      return showDialog<String>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('New folder'),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                labelText: 'Folder name',
+                hintText: 'Reflections',
+              ),
+              onSubmitted: (_) {
+                final String value = controller.text.trim();
+                if (value.isEmpty) return;
+                Navigator.of(context).pop(value);
+              },
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final String value = controller.text.trim();
+                  if (value.isEmpty) return;
+                  Navigator.of(context).pop(value);
+                },
+                child: const Text('Create'),
+              ),
+            ],
+          );
+        },
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   void _toggleFavourite(int verse, {required bool isFavourite}) {

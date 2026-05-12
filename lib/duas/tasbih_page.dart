@@ -400,18 +400,20 @@ class _PresetPill extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
     final Color foreground = selected ? colors.onPrimary : colors.textPrimary;
+    final BorderRadius radius = BorderRadius.circular(EquranRadii.pill);
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(EquranRadii.pill),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(EquranRadii.pill),
+        borderRadius: radius,
         child: Ink(
           padding: const EdgeInsets.fromLTRB(10, 7, 12, 7),
           decoration: BoxDecoration(
             gradient: selected ? colors.heroGradient : null,
             color: selected ? null : colors.surface.withAlpha(178),
-            borderRadius: BorderRadius.circular(EquranRadii.pill),
+            borderRadius: radius,
             border: Border.all(
               color: selected
                   ? colors.primarySoft.withAlpha(170)

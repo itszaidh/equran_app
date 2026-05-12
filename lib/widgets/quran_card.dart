@@ -25,6 +25,7 @@ class QuranCard extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     final bool tabletLayout = ResponsiveNav.isTablet(context);
     final bool compactText = compact && reduceTitleSize;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
     final double verticalPadding = compact
         ? (tabletLayout ? 14 : 12)
         : (tabletLayout ? 17 : 15);
@@ -61,16 +62,17 @@ class QuranCard extends StatelessWidget {
 
     return Material(
       color: colors.surface,
-      borderRadius: BorderRadius.circular(AppRadii.medium),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: radius,
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => ReadPage(chapter: surah.id)),
         ),
         child: Container(
           decoration: BoxDecoration(
             color: colors.surface,
-            borderRadius: BorderRadius.circular(AppRadii.medium),
+            borderRadius: radius,
             border: Border.all(color: colors.border),
           ),
           padding: EdgeInsets.symmetric(

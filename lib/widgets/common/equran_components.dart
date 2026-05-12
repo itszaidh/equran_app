@@ -25,6 +25,8 @@ class EquranSurfaceCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
+      borderRadius: borderRadius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         borderRadius: borderRadius,
@@ -80,6 +82,8 @@ class EquranGradientCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         borderRadius: radius,

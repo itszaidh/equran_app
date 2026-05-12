@@ -19,6 +19,16 @@ class QuranBookmarksDB extends BaseDB {
   factory QuranBookmarksDB() => _instance;
 }
 
+class QuranBookmarkFoldersDB extends BaseDB {
+  QuranBookmarkFoldersDB._privateConstructor()
+    : super('quran_bookmark_folders');
+
+  static final QuranBookmarkFoldersDB _instance =
+      QuranBookmarkFoldersDB._privateConstructor();
+
+  factory QuranBookmarkFoldersDB() => _instance;
+}
+
 class QuranActivityDB extends BaseDB {
   QuranActivityDB._privateConstructor() : super('quran_activity');
 
@@ -122,6 +132,7 @@ class DownloadMetadataDB extends BaseDB {
 Future<void> initCompanionStorageBoxes() async {
   await SchemaMigrationsDB().initBox();
   await QuranBookmarksDB().initBox();
+  await QuranBookmarkFoldersDB().initBox();
   await QuranActivityDB().initBox();
   await ReadingPlansDB().initBox();
   await RoutineDayProgressDB().initBox();

@@ -360,6 +360,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final String dateLabel = isViewingToday ? 'Today' : _formatDate(day.date);
+    final BorderRadius dateButtonRadius = BorderRadius.circular(
+      AppRadii.medium,
+    );
 
     return EquranSurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -375,9 +378,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           Expanded(
             child: Material(
               color: Colors.transparent,
-              borderRadius: BorderRadius.circular(AppRadii.medium),
+              borderRadius: dateButtonRadius,
+              clipBehavior: Clip.antiAlias,
               child: InkWell(
-                borderRadius: BorderRadius.circular(AppRadii.medium),
+                borderRadius: dateButtonRadius,
                 onTap: () => _selectPrayerDate(day.date),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -1210,16 +1214,18 @@ class _LocationActionRow extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
     final bool enabled = onTap != null;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
     return Material(
       color: colors.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(AppRadii.medium),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: radius,
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.medium),
+            borderRadius: radius,
             border: Border.all(color: colors.outlineVariant),
           ),
           padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
@@ -1292,15 +1298,17 @@ class _LocationSummaryRow extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
     final EquranColors equranColors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
     return Material(
       color: onHero
           ? equranColors.onPrimary.withAlpha(24)
           : colors.surface.withValues(alpha: 0.54),
-      borderRadius: BorderRadius.circular(AppRadii.medium),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         key: const Key('prayer_location_summary'),
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: radius,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
@@ -1360,15 +1368,17 @@ class _PrayerDateArrowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
     return Tooltip(
       message: tooltip,
       child: Material(
         color: colors.mint.withAlpha(150),
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: radius,
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(AppRadii.medium),
+          borderRadius: radius,
           child: SizedBox.square(
             dimension: 40,
             child: Icon(icon, color: colors.primary, size: 24),

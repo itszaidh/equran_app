@@ -194,13 +194,15 @@ class ReadQuranCard extends StatelessWidget {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
     final double actionSize = wideActions ? 38 : 34;
+    final BorderRadius radius = BorderRadius.circular(10);
 
     return Material(
       color: isPrimary ? colorScheme.primary.withAlpha(10) : Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: radius,
         child: Tooltip(
           message: tooltip,
           child: SizedBox(
@@ -348,6 +350,8 @@ class ReadQuranCard extends StatelessWidget {
       marginValue = 6.0;
     }
 
+    final BorderRadius radius = BorderRadius.circular(AppRadii.large);
+
     return Card(
       elevation: 0,
       color: Colors.transparent,
@@ -355,14 +359,14 @@ class ReadQuranCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.symmetric(horizontal: marginValue, vertical: 10),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.large),
+        borderRadius: radius,
         side: BorderSide(
           color: isLight ? colors.border : colors.border.withAlpha(160),
         ),
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadii.large),
+          borderRadius: radius,
           color: resolvedCardColor,
           gradient: shareImageMode
               ? colors.softSurfaceGradient

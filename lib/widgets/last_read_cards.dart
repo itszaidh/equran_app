@@ -182,19 +182,21 @@ class EquranResumeImageCard extends StatelessWidget {
             final double artWidth = compact ? 108 : 132;
             final double textRightPadding =
                 (compact ? 94 : 114) + artworkEdgePadding;
+            final BorderRadius radius = BorderRadius.circular(AppRadii.large);
 
             return SizedBox(
               width: double.infinity,
               child: Material(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.circular(AppRadii.large),
+                borderRadius: radius,
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: onTap,
+                  borderRadius: radius,
                   child: Ink(
                     decoration: BoxDecoration(
                       gradient: colors.heroGradient,
-                      borderRadius: BorderRadius.circular(AppRadii.large),
+                      borderRadius: radius,
                       border: Border.all(color: colors.onPrimary.withAlpha(36)),
                       boxShadow: <BoxShadow>[
                         BoxShadow(

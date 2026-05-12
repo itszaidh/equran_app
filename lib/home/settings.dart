@@ -1,6 +1,15 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart'
-    show BookmarkDB, FavouritesDB, SettingsDB;
+    show
+        BookmarkDB,
+        FavouritesDB,
+        QuranActivityDB,
+        QuranBookmarkFoldersDB,
+        QuranBookmarksDB,
+        QuranStatsDB,
+        ResumeStateDB,
+        RoutineDayProgressDB,
+        SettingsDB;
 import 'package:equran/backend/backup_service.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/utils/app_theme.dart';
@@ -153,17 +162,18 @@ class _SettingsPageState extends State<SettingsPage> {
     bool initiallyExpanded = false,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppRadii.medium),
+          borderRadius: radius,
           border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
+          borderRadius: radius,
           child: ExpansionTile(
             initiallyExpanded: initiallyExpanded,
             shape: const Border(),
@@ -305,17 +315,16 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) {
         final ThemeData theme = Theme.of(context);
         final ColorScheme colorScheme = theme.colorScheme;
+        final BorderRadius radius = BorderRadius.circular(AppRadii.large);
         return Dialog(
           insetPadding: const EdgeInsets.symmetric(
             horizontal: 24,
             vertical: 32,
           ),
           backgroundColor: colorScheme.surfaceContainer,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: radius),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadii.large),
+            borderRadius: radius,
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 maxWidth: 420,
@@ -475,13 +484,15 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildClearReadingHistoryTile(BuildContext context) {
     return ListTile(
       title: const Text("Clear reading history"),
-      subtitle: const Text("Removes all your reading history."),
+      subtitle: const Text(
+        "Removes last read, resume positions, and Quran reading progress.",
+      ),
       onTap: () => _showClearDataDialog(
         context: context,
         title: "Clear reading history",
         message:
-            "WARNING: Are you sure you want to clear your reading history?",
-        onConfirm: () async => BookmarkDB().clear(),
+            "WARNING: This will clear last read, resume positions, Quran stats, and routine day progress.",
+        onConfirm: _clearReadingHistory,
       ),
     );
   }
@@ -552,14 +563,31 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildClearFavouritesTile(BuildContext context) {
     return ListTile(
       title: const Text("Clear Favourites"),
-      subtitle: const Text("Removes all verses you have liked."),
+      subtitle: const Text(
+        "Removes saved ayahs, folders, notes, tags, and favourites.",
+      ),
       onTap: () => _showClearDataDialog(
         context: context,
         title: "Clear Favourites",
-        message: "WARNING: Are you sure you want to clear favourites?",
-        onConfirm: () async => FavouritesDB().clear(),
+        message:
+            "WARNING: This will clear every saved ayah, folder, note, tag, and favourite.",
+        onConfirm: _clearSavedAyahLibrary,
       ),
     );
+  }
+
+  Future<void> _clearReadingHistory() async {
+    await BookmarkDB().clear();
+    await ResumeStateDB().clear();
+    await QuranActivityDB().clear();
+    await QuranStatsDB().clear();
+    await RoutineDayProgressDB().clear();
+  }
+
+  Future<void> _clearSavedAyahLibrary() async {
+    await FavouritesDB().clear();
+    await QuranBookmarksDB().clear();
+    await QuranBookmarkFoldersDB().clear();
   }
 
   void _showClearDataDialog({

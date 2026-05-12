@@ -26,13 +26,15 @@ class PrayerTimeThumbCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final bool isLight = theme.brightness == Brightness.light;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.large);
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadii.large),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadii.large),
+        borderRadius: radius,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           curve: Curves.easeOutCubic,
@@ -52,7 +54,7 @@ class PrayerTimeThumbCard extends StatelessWidget {
                     ],
                   )
                 : null,
-            borderRadius: BorderRadius.circular(AppRadii.large),
+            borderRadius: radius,
             border: Border.all(
               color: isActive ? colors.primary.withAlpha(190) : colors.border,
             ),
@@ -66,88 +68,85 @@ class PrayerTimeThumbCard extends StatelessWidget {
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double imageWidth = (constraints.maxWidth * 0.74)
-                    .clamp(88.0, 132.0)
-                    .toDouble();
-                final double imageHeight = (constraints.maxHeight * 0.52)
-                    .clamp(58.0, 90.0)
-                    .toDouble();
-                final Color primaryText = isActive
-                    ? colors.primarySoft
-                    : colors.textPrimary;
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double imageWidth = (constraints.maxWidth * 0.74)
+                  .clamp(88.0, 132.0)
+                  .toDouble();
+              final double imageHeight = (constraints.maxHeight * 0.52)
+                  .clamp(58.0, 90.0)
+                  .toDouble();
+              final Color primaryText = isActive
+                  ? colors.primarySoft
+                  : colors.textPrimary;
 
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 11, 12, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: Text(
-                              entry.kind.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.left,
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: primaryText,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                          if (isActive)
-                            Container(
-                              width: 7,
-                              height: 7,
-                              decoration: BoxDecoration(
-                                color: colors.primary,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                        ],
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Image.asset(
-                            _prayerThumbAsset(entry.kind),
-                            fit: BoxFit.contain,
-                            width: imageWidth,
-                            height: imageHeight,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                _iconFor(entry.kind),
-                                color: colors.primary,
-                                size: imageHeight * 0.78,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(12, 11, 12, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Expanded(
                           child: Text(
-                            _formatPrayerTime(entry.time, use24HourFormat),
+                            entry.kind.label,
                             maxLines: 1,
-                            style: theme.textTheme.titleMedium?.copyWith(
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.left,
+                            style: theme.textTheme.labelLarge?.copyWith(
                               color: primaryText,
                               fontWeight: FontWeight.w900,
-                              height: 1.0,
                             ),
                           ),
                         ),
+                        if (isActive)
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: colors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                      ],
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Image.asset(
+                          _prayerThumbAsset(entry.kind),
+                          fit: BoxFit.contain,
+                          width: imageWidth,
+                          height: imageHeight,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              _iconFor(entry.kind),
+                              color: colors.primary,
+                              size: imageHeight * 0.78,
+                            );
+                          },
+                        ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _formatPrayerTime(entry.time, use24HourFormat),
+                          maxLines: 1,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: primaryText,
+                            fontWeight: FontWeight.w900,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),

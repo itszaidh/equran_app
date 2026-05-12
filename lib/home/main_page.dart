@@ -4,7 +4,6 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
-import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/widgets/library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -121,14 +120,7 @@ class _MainPageState extends State<MainPage>
     final EquranColors colors = context.equranColors;
     return Row(
       children: <Widget>[
-        SizedBox(
-          width: 48,
-          child: Icon(
-            Icons.menu_book_outlined,
-            color: colors.onPrimary,
-            size: ResponsiveNav.iconSize(context),
-          ),
-        ),
+        const SizedBox(width: 48),
         Expanded(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 260),
@@ -198,20 +190,10 @@ class _MainPageState extends State<MainPage>
                     )
                   : IconButton(
                       key: const ValueKey<String>('search-button'),
+                      tooltip: 'Search Quran',
                       onPressed: _openSearch,
                       color: colors.onPrimary,
                       icon: const Icon(Icons.search_rounded),
-                    ),
-              _showSearch
-                  ? const SizedBox.shrink()
-                  : IconButton(
-                      tooltip: 'Search Surahs',
-                      onPressed: () {
-                        _tabController.animateTo(0);
-                        _openSearch();
-                      },
-                      color: colors.onPrimary,
-                      icon: const Icon(Icons.travel_explore_rounded),
                     ),
             ],
           ),

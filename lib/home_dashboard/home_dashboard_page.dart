@@ -851,6 +851,8 @@ class _HomePremiumCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         borderRadius: radius,
@@ -877,29 +879,26 @@ class _HomePremiumCard extends StatelessWidget {
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: Stack(
-              children: <Widget>[
-                if (assetPath != null)
-                  Positioned(
-                    right: -34,
-                    top: -18,
-                    bottom: -18,
-                    width: assetWidth,
-                    child: Opacity(
-                      opacity: assetOpacity,
-                      child: Image.asset(
-                        assetPath!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox.shrink(),
-                      ),
+          child: Stack(
+            children: <Widget>[
+              if (assetPath != null)
+                Positioned(
+                  right: -34,
+                  top: -18,
+                  bottom: -18,
+                  width: assetWidth,
+                  child: Opacity(
+                    opacity: assetOpacity,
+                    child: Image.asset(
+                      assetPath!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox.shrink(),
                     ),
                   ),
-                Padding(padding: padding, child: child),
-              ],
-            ),
+                ),
+              Padding(padding: padding, child: child),
+            ],
           ),
         ),
       ),
@@ -1240,17 +1239,19 @@ class _DashboardActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(EquranRadii.medium);
 
     return Material(
       color: colors.mint.withAlpha(145),
-      borderRadius: BorderRadius.circular(EquranRadii.medium),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(EquranRadii.medium),
+        borderRadius: radius,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(EquranRadii.medium),
+            borderRadius: radius,
             border: Border.all(color: colors.border.withAlpha(180)),
           ),
           child: Row(
@@ -1903,6 +1904,7 @@ class _DashboardCard extends StatelessWidget {
     final ColorScheme colors = theme.colorScheme;
     final bool isLight = theme.brightness == Brightness.light;
     final Color base = colors.surfaceContainerLow;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.large);
     final BoxDecoration decoration = BoxDecoration(
       color: base,
       gradient: gradient
@@ -1919,7 +1921,7 @@ class _DashboardCard extends StatelessWidget {
               ],
             )
           : null,
-      borderRadius: BorderRadius.circular(AppRadii.large),
+      borderRadius: radius,
       border: Border.all(
         color: colors.outlineVariant.withAlpha(isLight ? 150 : 115),
       ),
@@ -1934,9 +1936,11 @@ class _DashboardCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadii.large),
+        borderRadius: radius,
         child: Ink(
           decoration: decoration,
           child: Padding(padding: padding, child: child),
@@ -2787,15 +2791,17 @@ class _QuickActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
     return Material(
       color: colors.surfaceContainer,
-      borderRadius: BorderRadius.circular(AppRadii.medium),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: radius,
         onTap: item.onTap,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.medium),
+            borderRadius: radius,
             border: Border.all(color: colors.outlineVariant.withAlpha(110)),
           ),
           padding: const EdgeInsets.all(10),
