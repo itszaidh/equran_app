@@ -4,6 +4,7 @@ import 'package:equran/backend/settings_db.dart';
 import 'package:equran/prayer/manual_prayer_location_page.dart';
 import 'package:equran/prayer/prayer_map_location_page.dart';
 import 'package:equran/prayer/prayer_location_service.dart';
+import 'package:equran/prayer/prayer_hero_card.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
@@ -15,8 +16,6 @@ import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
-
-const String _appAssetBase = 'assets/images/app_assets';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({
@@ -189,13 +188,17 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      _buildHeroCard(
-                        context,
-                        selectedDay,
-                        heroTiming,
-                        featuredPrayer,
-                        settings,
-                        isViewingToday,
+                      PrayerHeroCard(
+                        day: selectedDay,
+                        nextPrayer: NextPrayer(
+                          entry: heroTiming.entry,
+                          countdown: heroTiming.countdown,
+                        ),
+                        currentPrayer: featuredPrayer,
+                        subtitleOverride: isViewingToday
+                            ? null
+                            : _formatDate(selectedDay.date),
+                        onTap: _openPrayerSettings,
                       ),
                       const SizedBox(height: 14),
                       _buildPrayerInfoCard(
@@ -226,179 +229,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             ],
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildHeroCard(
-    BuildContext context,
-    PrayerDay day,
-    _PrayerHeroTiming heroTiming,
-    PrayerTimeEntry featuredPrayer,
-    PrayerTimeSettings settings,
-    bool isViewingToday,
-  ) {
-    final ThemeData theme = Theme.of(context);
-    final EquranColors colors = context.equranColors;
-    final String prayerTime = _formatTime(
-      featuredPrayer.time,
-      settings.use24HourFormat,
-    );
-    final String countdown = _formatCountdown(heroTiming.countdown);
-    final String title = featuredPrayer.kind == PrayerTimeKind.sunrise
-        ? 'Sunrise Time'
-        : '${featuredPrayer.kind.label} Time';
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool compact = constraints.maxWidth < 360;
-        final bool use12HourTime = !settings.use24HourFormat;
-        final double artWidth = (constraints.maxWidth * (compact ? 0.62 : 0.66))
-            .clamp(compact ? 188.0 : 238.0, compact ? 218.0 : 304.0)
-            .toDouble();
-        final double trailingSpace = (artWidth - 10)
-            .clamp(compact ? 166.0 : 210.0, compact ? 202.0 : 286.0)
-            .toDouble();
-        final double timeSize =
-            (constraints.maxWidth * (use12HourTime ? 0.105 : 0.13))
-                .clamp(
-                  compact
-                      ? (use12HourTime ? 30.0 : 34.0)
-                      : (use12HourTime ? 34.0 : 40.0),
-                  use12HourTime ? 40.0 : 48.0,
-                )
-                .toDouble();
-        final double titleSize = (constraints.maxWidth * 0.052)
-            .clamp(18.0, 22.0)
-            .toDouble();
-
-        return EquranGradientCard(
-          onTap: _openPrayerSettings,
-          padding: EdgeInsets.fromLTRB(
-            compact ? 16 : 20,
-            compact ? 18 : 20,
-            compact ? 12 : 16,
-            compact ? 18 : 20,
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: <Widget>[
-              Positioned(
-                right: -12,
-                top: -8,
-                bottom: -4,
-                width: artWidth,
-                child: _buildPrayerHeroArt(featuredPrayer.kind),
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: compact ? 162 : 188,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              prayerTime,
-                              maxLines: 1,
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: colors.onPrimary,
-                                fontSize: timeSize,
-                                fontWeight: FontWeight.w900,
-                                height: 0.98,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: compact ? 6 : 8),
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              color: colors.onPrimary,
-                              fontSize: titleSize,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: compact ? 12 : 16,
-                            ),
-                            child: SizedBox(
-                              width: compact ? 88 : 104,
-                              child: Divider(
-                                height: 1,
-                                color: colors.onPrimary.withAlpha(58),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            isViewingToday
-                                ? '${heroTiming.entry.kind.label} begins in $countdown'
-                                : _formatDate(day.date),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              color: colors.onPrimaryMuted,
-                              fontSize: compact ? 13 : null,
-                              fontWeight: FontWeight.w800,
-                              height: 1.25,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: trailingSpace),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPrayerHeroArt(PrayerTimeKind kind) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(EquranRadii.large),
-      child: ShaderMask(
-        shaderCallback: (Rect bounds) => const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: <Color>[Colors.transparent, Colors.white, Colors.white],
-          stops: <double>[0, 0.28, 1],
-        ).createShader(bounds),
-        blendMode: BlendMode.dstIn,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(6, 2, 0, 2),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Image.asset(
-                  _prayerBannerAsset(kind),
-                  width: constraints.maxWidth - 6,
-                  height: constraints.maxHeight - 4,
-                  fit: BoxFit.contain,
-                  alignment: Alignment.centerRight,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      '$_appAssetBase/prayer_time.png',
-                      fit: BoxFit.contain,
-                    );
-                  },
-                ),
-              ),
-            );
-          },
-        ),
       ),
     );
   }
@@ -1600,17 +1430,6 @@ class _NightTimeValue extends StatelessWidget {
   }
 }
 
-String _prayerBannerAsset(PrayerTimeKind kind) {
-  return switch (kind) {
-    PrayerTimeKind.fajr => '$_appAssetBase/fajr_banner.png',
-    PrayerTimeKind.sunrise => '$_appAssetBase/fajr_banner.png',
-    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr_banner.png',
-    PrayerTimeKind.asr => '$_appAssetBase/asr_banner.png',
-    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib_banner.png',
-    PrayerTimeKind.isha => '$_appAssetBase/isha_banner.png',
-  };
-}
-
 String _formatTime(DateTime time, bool use24HourFormat) {
   final int hour = time.hour;
   final int minute = time.minute;
@@ -1634,14 +1453,6 @@ String formatPrayerCountdownLabel(Duration duration, {bool isNow = false}) {
     return minutes == 0 ? 'In ${hours}h' : 'In ${hours}h ${minutes}m';
   }
   return 'In ${totalMinutes}m';
-}
-
-String _formatCountdown(Duration duration) {
-  final Duration normalized = duration.isNegative ? Duration.zero : duration;
-  final int hours = normalized.inHours;
-  final int minutes = normalized.inMinutes.remainder(60);
-  if (hours <= 0) return '$minutes min';
-  return '${hours}h ${minutes}m';
 }
 
 String _formatDate(DateTime date) {

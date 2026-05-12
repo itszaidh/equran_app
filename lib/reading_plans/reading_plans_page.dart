@@ -442,20 +442,24 @@ class _TodayTaskCard extends StatelessWidget {
         savedProgress.lastOpenedAyah,
       );
       if (savedGlobalAyah >= range.startGlobalAyah &&
-          savedGlobalAyah <= range.endGlobalAyah) {
+          savedGlobalAyah <= plan.targetGlobalAyah) {
         resumeGlobalAyah = savedGlobalAyah;
       }
     } else if (plan.lastCompletedGlobalAyah >= range.startGlobalAyah) {
       resumeGlobalAyah = math.min(
         plan.lastCompletedGlobalAyah + 1,
-        range.endGlobalAyah,
+        plan.targetGlobalAyah,
       );
     }
     final _AyahRef resume = _ayahRefFromGlobalIndex(resumeGlobalAyah);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          return ReadPage(chapter: resume.surah, startVerse: resume.verse);
+          return ReadPage(
+            chapter: resume.surah,
+            startVerse: resume.verse,
+            routineId: plan.id,
+          );
         },
       ),
     );

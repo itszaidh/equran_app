@@ -8,6 +8,7 @@ import 'package:quran/quran.dart';
 
 const String equranResumeQuranAsset = 'assets/images/app_assets/quran.png';
 const String equranResumePlayerAsset = 'assets/images/app_assets/player.png';
+const double _resumeImageCardMaxWidth = 620;
 
 class LastReadCard extends StatefulWidget {
   const LastReadCard({super.key, required this.entries});
@@ -66,7 +67,7 @@ class _LastReadCardState extends State<LastReadCard> {
           itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
             final ReadingEntry entry = entries[itemIndex];
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
               child: EquranResumeImageCard(
                 key: ValueKey<String>(
                   '${entry.surah}-${entry.verse}-${entry.timestamp.microsecondsSinceEpoch}',
@@ -171,110 +172,121 @@ class EquranResumeImageCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool compact = constraints.maxWidth < 340;
-        final double artWidth = compact ? 120 : 144;
-        final double textRightPadding =
-            (compact ? 102 : 124) +
-            (trailingRightOffset > 0 ? trailingRightOffset * 0.65 : 0);
+    return Align(
+      alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _resumeImageCardMaxWidth),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bool compact = constraints.maxWidth < 340;
+            final double artWidth = compact ? 120 : 144;
+            final double textRightPadding =
+                (compact ? 102 : 124) +
+                (trailingRightOffset > 0 ? trailingRightOffset * 0.65 : 0);
 
-        return Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(AppRadii.large),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Ink(
-              decoration: BoxDecoration(
-                gradient: colors.heroGradient,
+            return SizedBox(
+              width: double.infinity,
+              child: Material(
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(AppRadii.large),
-                border: Border.all(color: colors.onPrimary.withAlpha(36)),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: colors.primaryStrong.withAlpha(
-                      Theme.of(context).brightness == Brightness.light
-                          ? 34
-                          : 54,
-                    ),
-                    blurRadius: 20,
-                    offset: const Offset(0, 9),
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: <Widget>[
-                  Positioned(
-                    right: 3,
-                    top: -8,
-                    bottom: -8,
-                    width: artWidth,
-                    child: Image.asset(
-                      trailingAssetPath,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox.shrink(),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      compact ? 16 : 18,
-                      17,
-                      textRightPadding,
-                      16,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          primary,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            color: colors.onPrimary,
-                            fontWeight: FontWeight.w900,
-                            height: 1.05,
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onTap,
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      gradient: colors.heroGradient,
+                      borderRadius: BorderRadius.circular(AppRadii.large),
+                      border: Border.all(color: colors.onPrimary.withAlpha(36)),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: colors.primaryStrong.withAlpha(
+                            Theme.of(context).brightness == Brightness.light
+                                ? 34
+                                : 54,
                           ),
+                          blurRadius: 20,
+                          offset: const Offset(0, 9),
                         ),
-                        const SizedBox(height: 5),
-                        Text(
-                          subtitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            color: colors.onPrimaryMuted,
-                            fontWeight: FontWeight.w800,
+                      ],
+                    ),
+                    child: Stack(
+                      children: <Widget>[
+                        Positioned(
+                          right: trailingRightOffset,
+                          top: -8,
+                          bottom: -8,
+                          width: artWidth,
+                          child: Image.asset(
+                            trailingAssetPath,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const SizedBox.shrink(),
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: SizedBox(
-                            width: 104,
-                            child: Divider(
-                              height: 1,
-                              color: colors.onPrimary.withAlpha(52),
-                            ),
+                          padding: EdgeInsets.fromLTRB(
+                            compact ? 16 : 18,
+                            17,
+                            textRightPadding,
+                            16,
                           ),
-                        ),
-                        Text(
-                          actionText,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: colors.onPrimary,
-                            fontWeight: FontWeight.w900,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                primary,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  color: colors.onPrimary,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.05,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                subtitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: colors.onPrimaryMuted,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                child: SizedBox(
+                                  width: 104,
+                                  child: Divider(
+                                    height: 1,
+                                    color: colors.onPrimary.withAlpha(52),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                actionText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: colors.onPrimary,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }

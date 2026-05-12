@@ -753,6 +753,9 @@ class _SettingsPageState extends State<SettingsPage> {
     return switch (savedScheme) {
       AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
       AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
+      AppTheme.sepiaScheme => AppTheme.sepiaScheme,
+      AppTheme.blackScheme => AppTheme.blackScheme,
+      AppTheme.redScheme => AppTheme.redScheme,
       _ => AppTheme.defaultScheme,
     };
   }
@@ -942,13 +945,13 @@ class _ThemeSchemeSwatch extends StatelessWidget {
 const List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
   _ThemeSchemeOption(
     id: AppTheme.defaultScheme,
-    title: 'Classic Green',
+    title: 'Emerald Green',
     subtitle: 'The original calm eQuran palette.',
     colors: <Color>[Color(0xFF07110E), Color(0xFF1E7A61)],
   ),
   _ThemeSchemeOption(
     id: AppTheme.fancyBlueScheme,
-    title: 'Ocean Blue',
+    title: 'Sapphire Blue',
     subtitle: 'Deep navy with sapphire and muted cyan accents.',
     colors: <Color>[Color(0xFF06101C), Color(0xFF3B8DD6)],
   ),
@@ -957,5 +960,23 @@ const List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
     title: 'Royal Purple',
     subtitle: 'Midnight purple with royal violet highlights.',
     colors: <Color>[Color(0xFF100A19), Color(0xFF9368D0)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.sepiaScheme,
+    title: 'Sepia',
+    subtitle: 'Warm parchment, brown, and soft gold tones.',
+    colors: <Color>[Color(0xFF130E09), Color(0xFFC08A4C)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.blackScheme,
+    title: 'Black',
+    subtitle: 'AMOLED black with restrained teal accents.',
+    colors: <Color>[Color(0xFF000000), Color(0xFF18A28D)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.redScheme,
+    title: 'Ruby Red',
+    subtitle: 'Deep maroon surfaces with elegant ruby highlights.',
+    colors: <Color>[Color(0xFF12070A), Color(0xFFC8475D)],
   ),
 ];

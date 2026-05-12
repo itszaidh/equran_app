@@ -153,6 +153,9 @@ class MyApp extends StatelessWidget {
     return switch (scheme) {
       AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
       AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
+      AppTheme.sepiaScheme => AppTheme.sepiaScheme,
+      AppTheme.blackScheme => AppTheme.blackScheme,
+      AppTheme.redScheme => AppTheme.redScheme,
       _ => AppTheme.defaultScheme,
     };
   }

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/prayer/prayer_hero_card.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
@@ -378,10 +379,12 @@ class _DashboardContent extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _HomePrayerHeroCard(
-              prayerSummary: summary.prayerSummary,
+            PrayerHeroCard(
+              day: summary.prayerSummary.day,
+              nextPrayer: summary.prayerSummary.nextPrayer,
+              currentPrayer: summary.prayerSummary.currentPrayer,
               exactAlarmPermission: exactAlarmPermission,
-              onOpenPrayerTimes: actions.onOpenPrayerTimes,
+              onTap: actions.onOpenPrayerTimes,
             ),
             if (summary.prayerSummary.day != null) ...<Widget>[
               const SizedBox(height: 12),
@@ -637,291 +640,6 @@ class _DailyAyah {
         ref.surah,
         ref.verse,
         translation: quran.Translation.values[translationIndex],
-      ),
-    );
-  }
-}
-
-class _HomePrayerHeroCard extends StatelessWidget {
-  const _HomePrayerHeroCard({
-    required this.prayerSummary,
-    required this.exactAlarmPermission,
-    required this.onOpenPrayerTimes,
-  });
-
-  final _PrayerSummary prayerSummary;
-  final PrayerExactAlarmPermissionStatus? exactAlarmPermission;
-  final VoidCallback onOpenPrayerTimes;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final EquranColors colors = context.equranColors;
-    final PrayerDay? day = prayerSummary.day;
-    final NextPrayer? nextPrayer = prayerSummary.nextPrayer;
-    final PrayerTimeEntry? currentPrayer = prayerSummary.currentPrayer;
-
-    if (day == null || nextPrayer == null) {
-      return EquranGradientCard(
-        onTap: onOpenPrayerTimes,
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-        child: SizedBox(
-          height: 176,
-          child: Stack(
-            children: <Widget>[
-              const Positioned(
-                right: -18,
-                top: 8,
-                bottom: 8,
-                width: 190,
-                child: _PrayerHeroDecoration(kind: PrayerTimeKind.fajr),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      'Prayer Times',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: colors.onPrimary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: 230,
-                      child: Text(
-                        'Choose a location to show the next prayer time here.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onPrimaryMuted,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Set up location',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: colors.onPrimary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final PrayerTimeSettings settings = day.settings;
-    final PrayerTimeEntry featuredPrayer = currentPrayer ?? nextPrayer.entry;
-    final String prayerTime = _formatTime(
-      featuredPrayer.time,
-      settings.use24HourFormat,
-    );
-    final String countdown = _formatCountdown(nextPrayer.countdown);
-    final bool exactAlarmDenied =
-        exactAlarmPermission == PrayerExactAlarmPermissionStatus.denied;
-    final String title = featuredPrayer.kind == PrayerTimeKind.sunrise
-        ? 'Sunrise Time'
-        : '${featuredPrayer.kind.label} Time';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final bool compact = constraints.maxWidth < 360;
-            final bool use12HourTime = !settings.use24HourFormat;
-            final double artWidth =
-                (constraints.maxWidth * (compact ? 0.72 : 0.76))
-                    .clamp(compact ? 220.0 : 270.0, compact ? 280.0 : 380.0)
-                    .toDouble();
-            final double trailingSpace = (artWidth * 0.72)
-                .clamp(compact ? 178.0 : 220.0, compact ? 230.0 : 300.0)
-                .toDouble();
-            final double timeSize =
-                (constraints.maxWidth * (use12HourTime ? 0.105 : 0.13))
-                    .clamp(
-                      compact
-                          ? (use12HourTime ? 30.0 : 34.0)
-                          : (use12HourTime ? 34.0 : 40.0),
-                      use12HourTime ? 40.0 : 48.0,
-                    )
-                    .toDouble();
-            final double titleSize = (constraints.maxWidth * 0.052)
-                .clamp(18.0, 22.0)
-                .toDouble();
-
-            return EquranGradientCard(
-              onTap: onOpenPrayerTimes,
-              padding: EdgeInsets.fromLTRB(
-                compact ? 16 : 20,
-                compact ? 14 : 16,
-                compact ? 12 : 16,
-                compact ? 14 : 16,
-              ),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: <Widget>[
-                  Positioned(
-                    right: -28,
-                    top: -24,
-                    bottom: -12,
-                    width: artWidth,
-                    child: Transform.scale(
-                      scale: compact ? 1.12 : 1.25,
-                      alignment: Alignment.centerRight,
-                      child: _PrayerHeroDecoration(kind: featuredPrayer.kind),
-                    ),
-                  ),
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: compact ? 148.0 : 168.0,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  prayerTime,
-                                  maxLines: 1,
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    color: colors.onPrimary,
-                                    fontSize: timeSize,
-                                    fontWeight: FontWeight.w900,
-                                    height: 0.94,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: compact ? 6 : 8),
-                              Text(
-                                title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleLarge?.copyWith(
-                                  color: colors.onPrimary,
-                                  fontSize: titleSize,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: compact ? 12 : 16,
-                                ),
-                                child: SizedBox(
-                                  width: compact ? 88 : 104,
-                                  child: Divider(
-                                    height: 1,
-                                    color: colors.onPrimary.withAlpha(58),
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '${nextPrayer.entry.kind.label} begins in $countdown',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  color: colors.onPrimaryMuted,
-                                  fontSize: compact ? 13 : null,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.25,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: trailingSpace),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        if (exactAlarmDenied) ...<Widget>[
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            decoration: BoxDecoration(
-              color: colors.warningSurface,
-              borderRadius: BorderRadius.circular(EquranRadii.medium),
-              border: Border.all(color: colors.warning.withAlpha(72)),
-            ),
-            child: Row(
-              children: <Widget>[
-                Icon(
-                  Icons.notifications_paused_outlined,
-                  size: 18,
-                  color: colors.warning,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Exact alarm permission is off. Prayer reminders may be delayed.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.warning,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _PrayerHeroDecoration extends StatelessWidget {
-  const _PrayerHeroDecoration({required this.kind});
-
-  final PrayerTimeKind kind;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(EquranRadii.large),
-      child: ShaderMask(
-        shaderCallback: (Rect bounds) => const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: <Color>[Colors.transparent, Colors.white, Colors.white],
-          stops: <double>[0, 0.28, 1],
-        ).createShader(bounds),
-        blendMode: BlendMode.dstIn,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(4, 2, 0, 2),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Image.asset(
-                  _prayerBannerAsset(kind),
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  fit: BoxFit.contain,
-                  alignment: Alignment.centerRight,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(_prayerTimeAsset, fit: BoxFit.contain);
-                  },
-                ),
-              ),
-            );
-          },
-        ),
       ),
     );
   }
@@ -1266,6 +984,7 @@ class _RoutinePlanCta extends StatelessWidget {
           builder: (context) => ReadPage(
             chapter: continueRef.surah,
             startVerse: continueRef.verse,
+            routineId: activePlan.id,
           ),
         ),
       ),
@@ -3179,7 +2898,7 @@ _AyahRef _routineContinueRef(ReadingPlanEntry plan) {
       savedProgress.lastOpenedAyah,
     );
     if (savedGlobalAyah >= range.startGlobalAyah &&
-        savedGlobalAyah <= range.endGlobalAyah) {
+        savedGlobalAyah <= plan.targetGlobalAyah) {
       return _AyahRef(
         surah: savedProgress.lastOpenedSurah,
         verse: savedProgress.lastOpenedAyah,
@@ -3189,7 +2908,7 @@ _AyahRef _routineContinueRef(ReadingPlanEntry plan) {
   final int nextGlobalAyah =
       plan.lastCompletedGlobalAyah < range.startGlobalAyah
       ? range.startGlobalAyah
-      : math.min(plan.lastCompletedGlobalAyah + 1, range.endGlobalAyah);
+      : math.min(plan.lastCompletedGlobalAyah + 1, plan.targetGlobalAyah);
   return _ayahRefFromGlobalIndex(nextGlobalAyah);
 }
 
@@ -3320,17 +3039,6 @@ PrayerTimeEntry _currentPrayerPeriod({
   if (now.isBefore(maghrib.time)) return asr;
   if (now.isBefore(isha.time)) return maghrib;
   return isha;
-}
-
-String _prayerBannerAsset(PrayerTimeKind kind) {
-  return switch (kind) {
-    PrayerTimeKind.fajr => '$_appAssetBase/fajr_banner.png',
-    PrayerTimeKind.sunrise => '$_appAssetBase/fajr_banner.png',
-    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr_banner.png',
-    PrayerTimeKind.asr => '$_appAssetBase/asr_banner.png',
-    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib_banner.png',
-    PrayerTimeKind.isha => '$_appAssetBase/isha_banner.png',
-  };
 }
 
 String _formatTime(DateTime time, bool use24HourFormat) {

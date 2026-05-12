@@ -22,6 +22,23 @@ class EquranTheme {
   static ThemeData fancyPurpleDark() =>
       _build(EquranColors.fancyPurpleDark, Brightness.dark);
 
+  static ThemeData sepiaLight() =>
+      _build(EquranColors.sepiaLight, Brightness.light);
+
+  static ThemeData sepiaDark() =>
+      _build(EquranColors.sepiaDark, Brightness.dark);
+
+  static ThemeData blackLight() =>
+      _build(EquranColors.blackDark, Brightness.dark);
+
+  static ThemeData blackDark() =>
+      _build(EquranColors.blackDark, Brightness.dark);
+
+  static ThemeData redLight() =>
+      _build(EquranColors.redLight, Brightness.light);
+
+  static ThemeData redDark() => _build(EquranColors.redDark, Brightness.dark);
+
   static ThemeData _build(EquranColors tokens, Brightness brightness) {
     final bool isDark = brightness == Brightness.dark;
     final ColorScheme colorScheme = ColorScheme(

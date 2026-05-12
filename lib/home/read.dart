@@ -206,12 +206,14 @@ class ReadPage extends StatefulWidget {
   final int chapter;
   final bool juzMode;
   final int? startVerse;
+  final String? routineId;
 
   const ReadPage({
     super.key,
     required this.chapter,
     this.startVerse,
     this.juzMode = false,
+    this.routineId,
   });
 
   @override
@@ -233,6 +235,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const double _cardSwipeAssistDistance = 46;
   static const double _cardSwipeAxisLockRatio = 1.18;
   static const double _playerBarMinimizeDistance = 44;
+  bool get _isRoutineReading => widget.routineId?.isNotEmpty == true;
   static const double _playerBarExpandDistance = 34;
   static const double _playerBarDismissDistance = 52;
   static const double _playerBarMinVelocity = 220;
@@ -367,7 +370,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     if (!_hasSavedOnExit) {
       _syncCurrentVerseWithVisibleText();
-      BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
+      if (_isRoutineReading) {
+        _recordReadingProgress(_currentChapter, _currentVerse);
+      } else {
+        BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
+      }
     }
     unawaited(_setKeepScreenOn(false));
     _lowRefreshIdleTimer?.cancel();
@@ -1829,6 +1836,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     _hasSavedOnExit = true;
     _syncCurrentVerseWithVisibleText();
+    if (_isRoutineReading) {
+      _recordReadingProgress(_currentChapter, _currentVerse);
+      return;
+    }
     await BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
   }
 
@@ -3392,7 +3403,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _updateDB() {
-    BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
+    if (!_isRoutineReading) {
+      BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
+    }
     _recordReadingProgress(_currentChapter, _currentVerse);
     unawaited(_refreshCurrentAyahDownloadState());
   }
@@ -3405,6 +3418,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final DateTime now = DateTime.now();
     final String key = '$safeSurah:$safeVerse';
     final String todayKey = _readingDateKey(now);
+
+    if (_isRoutineReading) {
+      _advanceActiveReadingPlans(
+        safeSurah,
+        safeVerse,
+        routineId: widget.routineId!,
+      );
+      return;
+    }
+
     final dynamic existingActivity = QuranActivityDB().get(todayKey);
     final QuranActivityDay activity = existingActivity is QuranActivityDay
         ? existingActivity
@@ -3427,7 +3450,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       ),
     );
 
-    _advanceActiveReadingPlans(safeSurah, safeVerse);
     if (!isNewToday) return;
 
     final QuranActivityDay updatedActivity = QuranActivityDay(
@@ -3463,7 +3485,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  void _advanceActiveReadingPlans(int surah, int verse) {
+  void _advanceActiveReadingPlans(
+    int surah,
+    int verse, {
+    required String routineId,
+  }) {
     final int globalAyah = _globalAyahIndex(surah, verse);
     final DateTime now = DateTime.now();
     final String todayKey = _readingDateKey(now);
@@ -3471,8 +3497,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         in ReadingPlansDB().box.values.whereType<ReadingPlanEntry>()) {
       final _ActiveRoutineDayRange todayRange = _activeRoutineDayRange(plan);
       if (!plan.active ||
+          plan.id != routineId ||
           globalAyah < todayRange.startGlobalAyah ||
-          globalAyah > todayRange.endGlobalAyah) {
+          globalAyah > plan.targetGlobalAyah) {
         continue;
       }
       final RoutineDayProgressEntry? existingProgress = RoutineDayProgressDB()
@@ -3482,13 +3509,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               .where(
                 (int ayah) =>
                     ayah >= todayRange.startGlobalAyah &&
-                    ayah <= todayRange.endGlobalAyah,
+                    ayah <= plan.targetGlobalAyah,
               )
               .toSet()
             ..add(globalAyah);
+      final int completedWithinToday = completedGlobalAyahs
+          .where(
+            (int ayah) =>
+                ayah >= todayRange.startGlobalAyah &&
+                ayah <= todayRange.endGlobalAyah,
+          )
+          .length;
+      final bool overflowedToday = globalAyah > todayRange.endGlobalAyah;
       final int completedToday = max(
         existingProgress?.completedAyahCount ?? 0,
-        completedGlobalAyahs.length,
+        overflowedToday ? todayRange.totalAyahs : completedWithinToday,
       ).clamp(0, todayRange.totalAyahs).toInt();
       unawaited(
         RoutineDayProgressDB().saveProgress(
@@ -3506,6 +3541,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ),
       );
       if (globalAyah > plan.lastCompletedGlobalAyah) {
+        final int updatedLastCompleted = globalAyah
+            .clamp(plan.startGlobalAyah, plan.targetGlobalAyah)
+            .toInt();
         unawaited(
           ReadingPlansDB().put(
             plan.id,
@@ -3517,9 +3555,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               finishBy: plan.finishBy,
               startGlobalAyah: plan.startGlobalAyah,
               targetGlobalAyah: plan.targetGlobalAyah,
-              lastCompletedGlobalAyah: globalAyah
-                  .clamp(todayRange.startGlobalAyah, todayRange.endGlobalAyah)
-                  .toInt(),
+              lastCompletedGlobalAyah: updatedLastCompleted,
               active: plan.active,
               schemaVersion: plan.schemaVersion,
             ),

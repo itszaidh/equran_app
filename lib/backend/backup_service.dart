@@ -407,7 +407,10 @@ class BackupService {
     if (value is! String ||
         (value != 'default' &&
             value != 'fancyBlue' &&
-            value != 'fancyPurple')) {
+            value != 'fancyPurple' &&
+            value != 'sepia' &&
+            value != 'black' &&
+            value != 'red')) {
       throw AppBackupException('Invalid value for "themeScheme".');
     }
     return value;
