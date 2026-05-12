@@ -239,57 +239,174 @@ class _MainPageState extends State<MainPage>
   Widget _buildSectionHeader(ThemeData theme) {
     final EquranColors colors = context.equranColors;
 
-    return Center(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.pill),
-          border: Border.all(color: colors.border),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: TabBar(
-            controller: _tabController,
-            dividerColor: Colors.transparent,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BoxDecoration(
-              color: colors.primary,
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-            ),
-            labelColor: colors.onPrimary,
-            unselectedLabelColor: colors.textSecondary,
-            labelStyle: theme.textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-            unselectedLabelStyle: theme.textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-            overlayColor: WidgetStatePropertyAll(colors.primary.withAlpha(14)),
-            splashBorderRadius: BorderRadius.circular(AppRadii.pill),
-            tabs: <Widget>[
-              _buildTabLabel(Icons.menu_book_outlined, 'Surah'),
-              _buildTabLabel(Icons.layers_outlined, 'Juz'),
-              _buildTabLabel(Icons.article_outlined, 'Page'),
-              _buildTabLabel(Icons.favorite_border_rounded, 'Saved'),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final bool compact = constraints.maxWidth < 390;
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(color: colors.border),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: colors.shadow.withAlpha(
+                  theme.brightness == Brightness.light ? 8 : 18,
+                ),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
             ],
           ),
-        ),
-      ),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: LayoutBuilder(
+              builder: (context, segmentConstraints) {
+                final double segmentWidth = segmentConstraints.maxWidth / 4;
+                final double height = compact ? 38 : 42;
+                return SizedBox(
+                  height: height,
+                  child: Stack(
+                    children: <Widget>[
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        left: segmentWidth * _selectedSegment,
+                        top: 0,
+                        bottom: 0,
+                        width: segmentWidth,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colors.primary,
+                            borderRadius: BorderRadius.circular(AppRadii.pill),
+                            boxShadow: <BoxShadow>[
+                              BoxShadow(
+                                color: colors.primaryStrong.withAlpha(42),
+                                blurRadius: 14,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: <Widget>[
+                          _buildSegmentButton(
+                            theme,
+                            index: 0,
+                            icon: Icons.menu_book_rounded,
+                            label: 'Surahs',
+                            tooltip: 'Browse by Surah',
+                            compact: compact,
+                          ),
+                          _buildSegmentButton(
+                            theme,
+                            index: 1,
+                            icon: Icons.format_list_numbered_rtl_rounded,
+                            label: 'Juz',
+                            tooltip: 'Browse by Juz',
+                            compact: compact,
+                          ),
+                          _buildSegmentButton(
+                            theme,
+                            index: 2,
+                            icon: Icons.auto_stories_rounded,
+                            label: 'Pages',
+                            tooltip: 'Browse by page',
+                            compact: compact,
+                          ),
+                          _buildSegmentButton(
+                            theme,
+                            index: 3,
+                            icon: Icons.bookmark_rounded,
+                            label: 'Saved',
+                            tooltip: 'Saved ayahs',
+                            compact: compact,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildTabLabel(IconData icon, String label) {
-    return Tab(
-      height: 42,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: 19),
-            const SizedBox(width: 6),
-            Text(label),
-          ],
+  Widget _buildSegmentButton(
+    ThemeData theme, {
+    required int index,
+    required IconData icon,
+    required String label,
+    required String tooltip,
+    required bool compact,
+  }) {
+    final EquranColors colors = context.equranColors;
+    final bool selected = _selectedSegment == index;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
+
+    return Expanded(
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: radius,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: () {
+              if (_tabController.index != index) {
+                _tabController.animateTo(
+                  index,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                );
+              }
+              if (_selectedSegment != index) {
+                setState(() {
+                  _selectedSegment = index;
+                });
+              }
+            },
+            child: SizedBox(
+              height: compact ? 38 : 42,
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      if (!compact) ...<Widget>[
+                        Icon(
+                          icon,
+                          size: 17,
+                          color: selected
+                              ? colors.onPrimary
+                              : colors.textSecondary,
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        label,
+                        maxLines: 1,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: selected
+                              ? colors.onPrimary
+                              : colors.textSecondary,
+                          fontSize: compact ? 12.5 : null,
+                          fontWeight: selected
+                              ? FontWeight.w900
+                              : FontWeight.w700,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

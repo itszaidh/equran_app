@@ -200,7 +200,6 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       _buildPrayerInfoCard(
                         context,
                         selectedDay,
-                        settings,
                         isViewingToday,
                       ),
                       const SizedBox(height: 12),
@@ -252,11 +251,22 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool compact = constraints.maxWidth < 360;
-        final double artWidth = compact ? 156 : 204;
-        final double trailingSpace = compact ? 82 : 118;
-        final double timeSize = (constraints.maxWidth * 0.13)
-            .clamp(compact ? 34.0 : 40.0, 48.0)
+        final bool use12HourTime = !settings.use24HourFormat;
+        final double artWidth = (constraints.maxWidth * (compact ? 0.62 : 0.66))
+            .clamp(compact ? 188.0 : 238.0, compact ? 218.0 : 304.0)
             .toDouble();
+        final double trailingSpace = (artWidth - 10)
+            .clamp(compact ? 166.0 : 210.0, compact ? 202.0 : 286.0)
+            .toDouble();
+        final double timeSize =
+            (constraints.maxWidth * (use12HourTime ? 0.105 : 0.13))
+                .clamp(
+                  compact
+                      ? (use12HourTime ? 30.0 : 34.0)
+                      : (use12HourTime ? 34.0 : 40.0),
+                  use12HourTime ? 40.0 : 48.0,
+                )
+                .toDouble();
         final double titleSize = (constraints.maxWidth * 0.052)
             .clamp(18.0, 22.0)
             .toDouble();
@@ -273,9 +283,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             clipBehavior: Clip.none,
             children: <Widget>[
               Positioned(
-                right: -18,
-                top: 8,
-                bottom: 8,
+                right: -12,
+                top: -8,
+                bottom: -4,
                 width: artWidth,
                 child: _buildPrayerHeroArt(featuredPrayer.kind),
               ),
@@ -284,7 +294,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   Expanded(
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
-                        minHeight: compact ? 142 : 158,
+                        minHeight: compact ? 162 : 188,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -365,14 +375,26 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           stops: <double>[0, 0.28, 1],
         ).createShader(bounds),
         blendMode: BlendMode.dstIn,
-        child: Image.asset(
-          _prayerBannerAsset(kind),
-          fit: BoxFit.cover,
-          alignment: Alignment.centerRight,
-          errorBuilder: (context, error, stackTrace) {
-            return Image.asset(
-              '$_appAssetBase/prayer_time.png',
-              fit: BoxFit.contain,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(6, 2, 0, 2),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Image.asset(
+                  _prayerBannerAsset(kind),
+                  width: constraints.maxWidth - 6,
+                  height: constraints.maxHeight - 4,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.centerRight,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      '$_appAssetBase/prayer_time.png',
+                      fit: BoxFit.contain,
+                    );
+                  },
+                ),
+              ),
             );
           },
         ),
@@ -502,51 +524,56 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildPrayerInfoCard(
     BuildContext context,
     PrayerDay day,
-    PrayerTimeSettings settings,
     bool isViewingToday,
   ) {
+    final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    final String methodLabel = prayerMethodDisplayLabel(
-      settings: settings,
-      effectiveMethod: day.effectiveMethod,
-    );
+    final String dateLabel = isViewingToday ? 'Today' : _formatDate(day.date);
 
     return EquranSurfaceCard(
-      padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       backgroundColor: colors.surface,
       borderColor: colors.border,
       child: Row(
         children: <Widget>[
-          EquranIconBadge(
-            icon: Icons.tune_rounded,
-            size: 36,
-            backgroundColor: colors.mint,
-            foregroundColor: colors.primary,
+          _PrayerDateArrowButton(
+            icon: Icons.chevron_left_rounded,
+            tooltip: 'Previous day',
+            onPressed: () => _movePrayerDate(day.date, -1),
           ),
-          const SizedBox(width: 11),
           Expanded(
-            child: Wrap(
-              spacing: 7,
-              runSpacing: 7,
-              children: <Widget>[
-                _CompactInfoPill(label: 'Method: $methodLabel'),
-                _CompactInfoPill(label: 'Asr: ${settings.asrMethod.label}'),
-                _CompactInfoPill(
-                  label: isViewingToday ? 'Date: Today' : _formatDate(day.date),
-                  onTap: () => _selectPrayerDate(day.date),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppRadii.medium),
+                onTap: () => _selectPrayerDate(day.date),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      dateLabel,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          TextButton(
-            onPressed: _openPrayerSettings,
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: const Size(0, 34),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: const Text('Settings'),
+          _PrayerDateArrowButton(
+            icon: Icons.chevron_right_rounded,
+            tooltip: 'Next day',
+            onPressed: () => _movePrayerDate(day.date, 1),
           ),
         ],
       ),
@@ -608,7 +635,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             crossAxisCount: columns,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            mainAxisExtent: columns == 3 ? 142 : 136,
+            mainAxisExtent: columns == 3 ? 146 : 142,
           ),
           itemBuilder: (BuildContext context, int index) {
             final PrayerTimeEntry entry = day.entries[index];
@@ -825,6 +852,16 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         pickedDate.year,
         pickedDate.month,
         pickedDate.day,
+      );
+    });
+  }
+
+  void _movePrayerDate(DateTime currentDate, int dayDelta) {
+    setState(() {
+      _selectedDate = DateTime(
+        currentDate.year,
+        currentDate.month,
+        currentDate.day + dayDelta,
       );
     });
   }
@@ -1477,40 +1514,32 @@ class _LocationSummaryRow extends StatelessWidget {
   }
 }
 
-class _CompactInfoPill extends StatelessWidget {
-  const _CompactInfoPill({required this.label, this.onTap});
+class _PrayerDateArrowButton extends StatelessWidget {
+  const _PrayerDateArrowButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
 
-  final String label;
-  final VoidCallback? onTap;
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadii.small),
-        child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          decoration: BoxDecoration(
-            color: colors.mint.withAlpha(150),
-            borderRadius: BorderRadius.circular(AppRadii.small),
-            border: Border.all(color: colors.border),
-          ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 210),
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: colors.textSecondary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: colors.mint.withAlpha(150),
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          child: SizedBox.square(
+            dimension: 40,
+            child: Icon(icon, color: colors.primary, size: 24),
           ),
         ),
       ),
@@ -1625,18 +1654,18 @@ class _PrayerTimeCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadii.large),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final double imageWidth = (constraints.maxWidth * 0.64)
-                  .clamp(84.0, 112.0)
+              final double imageWidth = (constraints.maxWidth * 0.74)
+                  .clamp(96.0, 132.0)
                   .toDouble();
-              final double imageHeight = (constraints.maxHeight * 0.46)
-                  .clamp(58.0, 78.0)
+              final double imageHeight = (constraints.maxHeight * 0.52)
+                  .clamp(66.0, 90.0)
                   .toDouble();
               final Color primaryText = isNext
                   ? colors.primarySoft
                   : colors.textPrimary;
 
               return Padding(
-                padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+                padding: const EdgeInsets.fromLTRB(12, 11, 12, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[

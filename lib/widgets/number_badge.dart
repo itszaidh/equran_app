@@ -13,9 +13,9 @@ class NumberBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    final double diamondSize = size * 0.82;
+    final double diamondSize = size * 0.78;
     final double fontSize = label.length >= 3
-        ? (size * 0.30).clamp(11.0, 12.8).toDouble()
+        ? (size * 0.29).clamp(10.8, 12.4).toDouble()
         : (size * 0.36).clamp(13.0, 15.5).toDouble();
 
     return SizedBox.square(
@@ -41,6 +41,7 @@ class NumberBadge extends StatelessWidget {
                   style: theme.textTheme.labelLarge?.copyWith(
                     fontSize: fontSize,
                     fontWeight: FontWeight.w800,
+                    height: 1,
                     color: colors.textPrimary,
                   ),
                 ),

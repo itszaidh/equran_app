@@ -4706,115 +4706,153 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Widget _buildSurahIntroCard({required double marginValue}) {
     final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
+    final bool isLight = theme.brightness == Brightness.light;
+    final Color resolvedCardColor =
+        theme.cardTheme.color ??
+        (isLight
+            ? colorScheme.surfaceContainerLow
+            : colorScheme.surfaceContainer);
     final String surahName = quran.getSurahName(_currentChapter);
     final String englishName = quran.getSurahNameEnglish(_currentChapter);
     final int verseCount = quran.getVerseCount(_currentChapter);
     final String revelation = _revelationLabel(_currentChapter);
     final bool showBasmala = _currentChapter != 9;
 
-    return Container(
-      width: double.infinity,
-      margin: EdgeInsets.fromLTRB(marginValue, 8, marginValue, 10),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        gradient: colors.softSurfaceGradient,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: colors.border),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: colors.shadow.withAlpha(
-              theme.brightness == Brightness.light ? 12 : 28,
-            ),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    return Card(
+      elevation: 0,
+      color: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
       clipBehavior: Clip.antiAlias,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final bool compact = constraints.maxWidth < 360;
-          final double surahNameSize = compact ? 34 : 42;
-          final double basmalaSize = (constraints.maxWidth * 0.115)
-              .clamp(34.0, 48.0)
-              .toDouble();
-
-          return Padding(
-            padding: EdgeInsets.fromLTRB(
-              compact ? 16 : EquranSpacing.pagePadding,
-              compact ? 18 : 20,
-              compact ? 16 : EquranSpacing.pagePadding,
-              compact ? 18 : 20,
+      margin: EdgeInsets.fromLTRB(marginValue, 8, marginValue, 10),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        side: BorderSide(
+          color: isLight ? colors.border : colors.border.withAlpha(160),
+        ),
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: resolvedCardColor,
+          borderRadius: BorderRadius.circular(AppRadii.large),
+          gradient: isLight
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[colors.paleGreen, colors.surface],
+                )
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[
+                    Color.alphaBlend(
+                      colorScheme.primary.withAlpha(18),
+                      resolvedCardColor,
+                    ),
+                    Color.alphaBlend(
+                      colors.accentGold.withAlpha(9),
+                      resolvedCardColor,
+                    ),
+                  ],
+                ),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: colors.shadow.withAlpha(isLight ? 14 : 36),
+              blurRadius: 22,
+              offset: const Offset(0, 10),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  surahName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.displaySmall?.copyWith(
-                    color: colors.textPrimary,
-                    fontFamily: 'SurahName',
-                    fontSize: surahNameSize,
-                    fontWeight: FontWeight.w400,
-                    height: 1.05,
-                    letterSpacing: 0,
-                  ),
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  englishName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.textSecondary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: compact ? 10 : 12),
-                  child: SizedBox(
-                    width: compact ? 74 : 92,
-                    child: Divider(height: 1, color: colors.divider),
-                  ),
-                ),
-                Text(
-                  '$revelation • $verseCount VERSES',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0,
-                  ),
-                ),
-                if (showBasmala) ...<Widget>[
-                  SizedBox(height: compact ? 14 : 18),
+          ],
+        ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bool compact = constraints.maxWidth < 360;
+            final double surahNameSize = compact ? 36 : 46;
+            final double basmalaSize = (constraints.maxWidth * 0.145)
+                .clamp(42.0, 64.0)
+                .toDouble();
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                compact ? 16 : EquranSpacing.pagePadding,
+                compact ? 18 : 22,
+                compact ? 16 : EquranSpacing.pagePadding,
+                compact ? 18 : 22,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      quranBasmalaText,
-                      textDirection: TextDirection.rtl,
+                      surahName,
+                      maxLines: 1,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: colors.primarySoft,
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        color: colors.textPrimary,
                         fontFamily: 'SurahName',
-                        fontSize: basmalaSize,
+                        fontSize: surahNameSize,
                         fontWeight: FontWeight.w400,
-                        height: 1.45,
+                        height: 1.0,
+                        letterSpacing: 0,
                       ),
                     ),
                   ),
+                  const SizedBox(height: 7),
+                  Text(
+                    englishName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: compact ? 11 : 13),
+                    child: SizedBox(
+                      width: compact ? 80 : 104,
+                      child: Divider(
+                        height: 1,
+                        color: colors.primary.withAlpha(isLight ? 80 : 92),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '$revelation • $verseCount VERSES',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  if (showBasmala) ...<Widget>[
+                    SizedBox(height: compact ? 15 : 20),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        quranBasmalaText,
+                        textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isLight ? colors.primary : colors.primarySoft,
+                          fontFamily: 'Hafs',
+                          fontSize: basmalaSize,
+                          fontWeight: FontWeight.w400,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
