@@ -147,6 +147,69 @@ class ReadingPlanEntry {
   final int schemaVersion;
 }
 
+class RoutineDayProgressEntry {
+  const RoutineDayProgressEntry({
+    required this.routineId,
+    required this.dateKey,
+    required this.currentSurah,
+    required this.currentAyah,
+    required this.completedAyahCount,
+    required this.lastOpenedSurah,
+    required this.lastOpenedAyah,
+    required this.updatedAt,
+    this.completedGlobalAyahs = const <int>[],
+    this.schemaVersion = companionStorageSchemaVersion,
+  });
+
+  final String routineId;
+  final String dateKey;
+  final int currentSurah;
+  final int currentAyah;
+  final int completedAyahCount;
+  final int lastOpenedSurah;
+  final int lastOpenedAyah;
+  final DateTime updatedAt;
+  final List<int> completedGlobalAyahs;
+  final int schemaVersion;
+
+  Map<String, dynamic> toMap() => <String, dynamic>{
+    'routineId': routineId,
+    'dateKey': dateKey,
+    'currentSurah': currentSurah,
+    'currentAyah': currentAyah,
+    'completedAyahCount': completedAyahCount,
+    'lastOpenedSurah': lastOpenedSurah,
+    'lastOpenedAyah': lastOpenedAyah,
+    'updatedAt': updatedAt,
+    'completedGlobalAyahs': completedGlobalAyahs,
+    'schemaVersion': schemaVersion,
+  };
+
+  static RoutineDayProgressEntry? fromStored(dynamic value) {
+    if (value is RoutineDayProgressEntry) return value;
+    if (value is! Map) return null;
+    final dynamic updatedAt = value['updatedAt'];
+    final List<int> completedGlobalAyahs =
+        (value['completedGlobalAyahs'] as List?)?.whereType<int>().toList() ??
+        const <int>[];
+    return RoutineDayProgressEntry(
+      routineId: value['routineId'] as String? ?? '',
+      dateKey: value['dateKey'] as String? ?? '',
+      currentSurah: value['currentSurah'] as int? ?? 1,
+      currentAyah: value['currentAyah'] as int? ?? 1,
+      completedAyahCount: value['completedAyahCount'] as int? ?? 0,
+      lastOpenedSurah: value['lastOpenedSurah'] as int? ?? 1,
+      lastOpenedAyah: value['lastOpenedAyah'] as int? ?? 1,
+      updatedAt: updatedAt is DateTime
+          ? updatedAt
+          : DateTime.fromMillisecondsSinceEpoch(0),
+      completedGlobalAyahs: completedGlobalAyahs,
+      schemaVersion:
+          value['schemaVersion'] as int? ?? companionStorageSchemaVersion,
+    );
+  }
+}
+
 class ResumeStateEntry {
   const ResumeStateEntry({
     required this.id,

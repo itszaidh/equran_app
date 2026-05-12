@@ -9,6 +9,7 @@ import 'package:equran/home/downloads.dart';
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/more_page.dart';
 import 'package:equran/home/player.dart';
+import 'package:equran/home/quran_stats_page.dart';
 import 'package:equran/home/settings.dart';
 import 'package:equran/home_dashboard/home_dashboard_page.dart';
 import 'package:equran/prayer/prayer_times_page.dart';
@@ -83,6 +84,7 @@ class _HomePageState extends State<HomePage> {
           onOpenReadingPlans: _openReadingPlansPage,
           onOpenDownloads: _openDownloadsPage,
           onOpenSearch: _openQuranTextSearch,
+          onOpenStats: _openQuranStatsPage,
         ),
       ),
       Destinations(
@@ -115,6 +117,7 @@ class _HomePageState extends State<HomePage> {
           onOpenReadingPlans: _openReadingPlansPage,
           onOpenTasbih: _openTasbihPage,
           onOpenSettings: _openSettingsPage,
+          onOpenStats: _openQuranStatsPage,
           onToggleTheme: () => unawaited(_toggleQuickTheme()),
         ),
       ),
@@ -411,6 +414,14 @@ class _HomePageState extends State<HomePage> {
       label: 'Settings',
       page: const SettingsPage(),
       reason: 'settings_route',
+    );
+  }
+
+  void _openQuranStatsPage() {
+    _pushSecondaryPage(
+      label: 'Quran Stats',
+      page: const QuranStatsPage(),
+      reason: 'quran_stats_route',
     );
   }
 

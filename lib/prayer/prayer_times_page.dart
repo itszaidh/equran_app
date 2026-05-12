@@ -7,6 +7,7 @@ import 'package:equran/prayer/prayer_location_service.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
+import 'package:equran/prayer/prayer_time_thumb_card.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/theme/equran_colors.dart';
@@ -639,9 +640,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           ),
           itemBuilder: (BuildContext context, int index) {
             final PrayerTimeEntry entry = day.entries[index];
-            return _PrayerTimeCard(
+            return PrayerTimeThumbCard(
               entry: entry,
-              isNext: highlightedKind != null && entry.kind == highlightedKind,
+              isActive:
+                  highlightedKind != null && entry.kind == highlightedKind,
               use24HourFormat: settings.use24HourFormat,
             );
           },
@@ -1596,168 +1598,6 @@ class _NightTimeValue extends StatelessWidget {
       ],
     );
   }
-}
-
-class _PrayerTimeCard extends StatelessWidget {
-  const _PrayerTimeCard({
-    required this.entry,
-    required this.isNext,
-    required this.use24HourFormat,
-  });
-
-  final PrayerTimeEntry entry;
-  final bool isNext;
-  final bool use24HourFormat;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final EquranColors colors = context.equranColors;
-    final bool isLight = theme.brightness == Brightness.light;
-
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadii.large),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: isNext ? colors.surfaceAlt : colors.surface,
-          gradient: isNext
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    Color.alphaBlend(
-                      colors.primary.withAlpha(isLight ? 34 : 42),
-                      colors.surfaceAlt,
-                    ),
-                    colors.surfaceAlt,
-                  ],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(AppRadii.large),
-          border: Border.all(
-            color: isNext ? colors.primary.withAlpha(190) : colors.border,
-          ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: isNext
-                  ? colors.primaryStrong.withAlpha(isLight ? 38 : 58)
-                  : colors.shadow.withAlpha(isLight ? 12 : 26),
-              blurRadius: isNext ? 20 : 14,
-              offset: Offset(0, isNext ? 9 : 5),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.large),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final double imageWidth = (constraints.maxWidth * 0.74)
-                  .clamp(96.0, 132.0)
-                  .toDouble();
-              final double imageHeight = (constraints.maxHeight * 0.52)
-                  .clamp(66.0, 90.0)
-                  .toDouble();
-              final Color primaryText = isNext
-                  ? colors.primarySoft
-                  : colors.textPrimary;
-
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(12, 11, 12, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            entry.kind.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.left,
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: primaryText,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                        if (isNext)
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: colors.primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                      ],
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Image.asset(
-                          _prayerThumbAsset(entry.kind),
-                          fit: BoxFit.contain,
-                          width: imageWidth,
-                          height: imageHeight,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              _iconFor(entry.kind),
-                              color: colors.primary,
-                              size: imageHeight * 0.78,
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _formatTime(entry.time, use24HourFormat),
-                          maxLines: 1,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: primaryText,
-                            fontWeight: FontWeight.w900,
-                            height: 1.0,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  IconData _iconFor(PrayerTimeKind kind) {
-    return switch (kind) {
-      PrayerTimeKind.fajr => Icons.nights_stay_rounded,
-      PrayerTimeKind.sunrise => Icons.wb_twilight_rounded,
-      PrayerTimeKind.dhuhr => Icons.wb_sunny_outlined,
-      PrayerTimeKind.asr => Icons.light_mode_outlined,
-      PrayerTimeKind.maghrib => Icons.wb_twilight_outlined,
-      PrayerTimeKind.isha => Icons.dark_mode_outlined,
-    };
-  }
-}
-
-String _prayerThumbAsset(PrayerTimeKind kind) {
-  return switch (kind) {
-    PrayerTimeKind.fajr => '$_appAssetBase/fajr.png',
-    PrayerTimeKind.sunrise => '$_appAssetBase/fajr.png',
-    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr.png',
-    PrayerTimeKind.asr => '$_appAssetBase/asr.png',
-    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib.png',
-    PrayerTimeKind.isha => '$_appAssetBase/isha.png',
-  };
 }
 
 String _prayerBannerAsset(PrayerTimeKind kind) {

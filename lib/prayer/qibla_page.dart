@@ -4,7 +4,9 @@ import 'dart:math' as math;
 import 'package:equran/prayer/prayer_location_service.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/qibla_service.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -308,8 +310,7 @@ class _QiblaContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
+    final EquranColors equranColors = context.equranColors;
     final bool isAligned = relative != null && relative!.abs() <= 5;
     final String guidance = relative == null
         ? 'Bearing ${_formatCompassDegrees(bearing)}°'
@@ -344,30 +345,27 @@ class _QiblaContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colors.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(AppRadii.large),
-                    border: Border.all(color: colors.outlineVariant),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
-                    child: Column(
-                      children: <Widget>[
-                        _QiblaCompass(
-                          bearing: bearing,
-                          heading: heading,
-                          relative: relative,
-                          size: compassSize,
-                          isAligned: isAligned,
-                        ),
-                        const SizedBox(height: 10),
-                        _AlignmentIndicator(
-                          guidance: guidance,
-                          isAligned: isAligned,
-                        ),
-                      ],
-                    ),
+                EquranSurfaceCard(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+                  backgroundColor: equranColors.surfaceSoft,
+                  borderColor: isAligned
+                      ? equranColors.primary.withAlpha(110)
+                      : equranColors.border,
+                  child: Column(
+                    children: <Widget>[
+                      _QiblaCompass(
+                        bearing: bearing,
+                        heading: heading,
+                        relative: relative,
+                        size: compassSize,
+                        isAligned: isAligned,
+                      ),
+                      const SizedBox(height: 10),
+                      _AlignmentIndicator(
+                        guidance: guidance,
+                        isAligned: isAligned,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -725,76 +723,62 @@ class _QiblaDetailsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: colors.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 8, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Icon(
-                  Icons.location_on_outlined,
-                  color: colors.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _currentLocationLabel(location),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
+    final EquranColors equranColors = context.equranColors;
+    return EquranSurfaceCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 10, 12),
+      backgroundColor: equranColors.surfaceSoft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Icon(Icons.location_on_outlined, color: colors.primary, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _currentLocationLabel(location),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
-                ),
-                IconButton(
-                  tooltip: 'Refresh current location',
-                  onPressed: onRefreshLocation,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 40,
-                    height: 40,
-                  ),
-                  padding: EdgeInsets.zero,
-                  icon: const Icon(Icons.my_location_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: <Widget>[
-                _DetailPill(
-                  text: 'Lat ${location.latitude.toStringAsFixed(4)}',
-                ),
-                _DetailPill(
-                  text: 'Lng ${location.longitude.toStringAsFixed(4)}',
-                ),
-                _DetailPill(text: 'Qibla ${_formatCompassDegrees(bearing)}°'),
-                if (heading != null)
-                  _DetailPill(
-                    text: 'Heading ${_formatCompassDegrees(heading!)}°',
-                  ),
-              ],
-            ),
-            if (compassStatus != null) ...<Widget>[
-              const SizedBox(height: 10),
-              Text(
-                compassStatus!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
                 ),
               ),
+              IconButton(
+                tooltip: 'Refresh current location',
+                onPressed: onRefreshLocation,
+                constraints: const BoxConstraints.tightFor(
+                  width: 40,
+                  height: 40,
+                ),
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.my_location_rounded),
+              ),
             ],
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: <Widget>[
+              _DetailPill(text: 'Target ${_formatCompassDegrees(bearing)}°'),
+              if (heading != null)
+                _DetailPill(
+                  text: 'Heading ${_formatCompassDegrees(heading!)}°',
+                ),
+              _DetailPill(text: _distanceToKaabaLabel(location)),
+            ],
+          ),
+          if (compassStatus != null) ...<Widget>[
+            const SizedBox(height: 10),
+            Text(
+              compassStatus!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.onSurfaceVariant,
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -999,6 +983,31 @@ String _formatCompassDegrees(double degrees) {
       .round();
   return '${rounded == 360 ? 0 : rounded}';
 }
+
+String _distanceToKaabaLabel(PrayerLocation location) {
+  const double kaabaLatitude = 21.4225;
+  const double kaabaLongitude = 39.8262;
+  const double earthRadiusKm = 6371;
+  final double userLat = _degreesToRadians(location.latitude);
+  final double kaabaLat = _degreesToRadians(kaabaLatitude);
+  final double deltaLat = _degreesToRadians(kaabaLatitude - location.latitude);
+  final double deltaLng = _degreesToRadians(
+    kaabaLongitude - location.longitude,
+  );
+  final double a =
+      math.sin(deltaLat / 2) * math.sin(deltaLat / 2) +
+      math.cos(userLat) *
+          math.cos(kaabaLat) *
+          math.sin(deltaLng / 2) *
+          math.sin(deltaLng / 2);
+  final double distanceKm =
+      earthRadiusKm * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  if (!distanceKm.isFinite) return 'Distance unavailable';
+  if (distanceKm >= 1000) return '${distanceKm.round()} km to Kaaba';
+  return '${distanceKm.toStringAsFixed(1)} km to Kaaba';
+}
+
+double _degreesToRadians(double degrees) => degrees * math.pi / 180;
 
 bool _isGenericLocationLabel(String label) {
   final List<String> parts = label.toLowerCase().split(RegExp(r'\s+'));

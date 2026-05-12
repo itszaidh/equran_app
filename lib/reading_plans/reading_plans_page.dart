@@ -330,11 +330,20 @@ class _TodayTaskCard extends StatelessWidget {
     final _TodayRange range = _todayRange(plan);
     final _AyahRef start = _ayahRefFromGlobalIndex(range.startGlobalAyah);
     final _AyahRef end = _ayahRefFromGlobalIndex(range.endGlobalAyah);
-    final bool done = range.isDone;
-    final int completedToday =
+    final RoutineDayProgressEntry? savedProgress = RoutineDayProgressDB()
+        .progressFor(plan.id, _dateKey(DateTime.now()));
+    final int legacyCompleted =
         (plan.lastCompletedGlobalAyah - range.startGlobalAyah + 1)
             .clamp(0, range.totalAyahs)
             .toInt();
+    final int completedToday = math
+        .max(
+          savedProgress?.completedAyahCount ?? legacyCompleted,
+          range.isDone ? range.totalAyahs : 0,
+        )
+        .clamp(0, range.totalAyahs)
+        .toInt();
+    final bool done = completedToday >= range.totalAyahs;
     final double dailyFraction = range.totalAyahs <= 0
         ? 0
         : (completedToday / range.totalAyahs).clamp(0.0, 1.0).toDouble();
@@ -424,10 +433,24 @@ class _TodayTaskCard extends StatelessWidget {
   }
 
   void _openContinue(BuildContext context, _TodayRange range) {
-    final int resumeGlobalAyah =
-        plan.lastCompletedGlobalAyah < range.startGlobalAyah
-        ? range.startGlobalAyah
-        : math.min(plan.lastCompletedGlobalAyah + 1, range.endGlobalAyah);
+    int resumeGlobalAyah = range.startGlobalAyah;
+    final RoutineDayProgressEntry? savedProgress = RoutineDayProgressDB()
+        .progressFor(plan.id, _dateKey(DateTime.now()));
+    if (savedProgress != null) {
+      final int savedGlobalAyah = _globalAyahIndex(
+        savedProgress.lastOpenedSurah,
+        savedProgress.lastOpenedAyah,
+      );
+      if (savedGlobalAyah >= range.startGlobalAyah &&
+          savedGlobalAyah <= range.endGlobalAyah) {
+        resumeGlobalAyah = savedGlobalAyah;
+      }
+    } else if (plan.lastCompletedGlobalAyah >= range.startGlobalAyah) {
+      resumeGlobalAyah = math.min(
+        plan.lastCompletedGlobalAyah + 1,
+        range.endGlobalAyah,
+      );
+    }
     final _AyahRef resume = _ayahRefFromGlobalIndex(resumeGlobalAyah);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -463,6 +486,27 @@ class _TodayTaskCard extends StatelessWidget {
       schemaVersion: plan.schemaVersion,
     );
     await ReadingPlansDB().put(updated.id, updated);
+    final _AyahRef endRef = _ayahRefFromGlobalIndex(range.endGlobalAyah);
+    await RoutineDayProgressDB().saveProgress(
+      RoutineDayProgressEntry(
+        routineId: plan.id,
+        dateKey: _dateKey(DateTime.now()),
+        currentSurah: endRef.surah,
+        currentAyah: endRef.verse,
+        completedAyahCount: range.totalAyahs,
+        lastOpenedSurah: endRef.surah,
+        lastOpenedAyah: endRef.verse,
+        updatedAt: DateTime.now(),
+        completedGlobalAyahs: <int>[
+          for (
+            int ayah = range.startGlobalAyah;
+            ayah <= range.endGlobalAyah;
+            ayah++
+          )
+            ayah,
+        ],
+      ),
+    );
     await _recordManualGoalCompletion(range);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -640,6 +684,7 @@ Future<void> _deleteRoutine(BuildContext context, ReadingPlanEntry plan) async {
   );
   if (!confirmed) return;
   await ReadingPlansDB().delete(plan.id);
+  await RoutineDayProgressDB().deleteProgressForRoutine(plan.id);
   if (!context.mounted) return;
   ScaffoldMessenger.of(
     context,
@@ -906,6 +951,14 @@ _AyahRef _ayahRefFromGlobalIndex(int globalAyah) {
     remaining -= verseCount;
   }
   return const _AyahRef(surah: 114, verse: 6);
+}
+
+int _globalAyahIndex(int surah, int verse) {
+  int index = verse.clamp(1, quran.getVerseCount(surah)).toInt();
+  for (int currentSurah = 1; currentSurah < surah; currentSurah++) {
+    index += quran.getVerseCount(currentSurah);
+  }
+  return index.clamp(1, quran.totalVerseCount).toInt();
 }
 
 String _refLabel(_AyahRef ref) {

@@ -6,6 +6,7 @@ import 'package:equran/home/read.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
+import 'package:equran/prayer/prayer_time_thumb_card.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
@@ -43,6 +44,7 @@ class HomeDashboardPage extends StatefulWidget {
     required this.onOpenReadingPlans,
     required this.onOpenDownloads,
     required this.onOpenSearch,
+    required this.onOpenStats,
   });
 
   final VoidCallback onOpenMore;
@@ -55,6 +57,7 @@ class HomeDashboardPage extends StatefulWidget {
   final VoidCallback onOpenReadingPlans;
   final VoidCallback onOpenDownloads;
   final VoidCallback onOpenSearch;
+  final VoidCallback onOpenStats;
 
   @override
   State<HomeDashboardPage> createState() => _HomeDashboardPageState();
@@ -380,12 +383,20 @@ class _DashboardContent extends StatelessWidget {
               exactAlarmPermission: exactAlarmPermission,
               onOpenPrayerTimes: actions.onOpenPrayerTimes,
             ),
+            if (summary.prayerSummary.day != null) ...<Widget>[
+              const SizedBox(height: 12),
+              _PrayerThumbCarousel(
+                prayerSummary: summary.prayerSummary,
+                onOpenPrayerTimes: actions.onOpenPrayerTimes,
+              ),
+            ],
             const SizedBox(height: 14),
             _JourneyPreviewCard(
               stats: summary.stats,
               activity: summary.todayActivity,
               latestReading: summary.latestReading,
               onOpenQuran: actions.onOpenQuran,
+              onOpenStats: actions.onOpenStats,
             ),
             if (summary.activePlan != null) ...<Widget>[
               const SizedBox(height: 14),
@@ -912,7 +923,6 @@ class _PrayerHeroDecoration extends StatelessWidget {
   }
 }
 
-// ignore: unused_element
 class _PrayerThumbCarousel extends StatelessWidget {
   const _PrayerThumbCarousel({
     required this.prayerSummary,
@@ -928,116 +938,29 @@ class _PrayerThumbCarousel extends StatelessWidget {
     if (day == null) return const SizedBox.shrink();
 
     final PrayerTimeKind? activeKind = prayerSummary.currentPrayer?.kind;
-    return SizedBox(
-      height: 132,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: day.entries.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
-        itemBuilder: (context, index) {
-          final PrayerTimeEntry entry = day.entries[index];
-          return _PrayerThumbCard(
-            entry: entry,
-            use24HourFormat: day.settings.use24HourFormat,
-            isActive: entry.kind == activeKind,
-            onTap: onOpenPrayerTimes,
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ignore: unused_element
-class _PrayerThumbCard extends StatelessWidget {
-  const _PrayerThumbCard({
-    required this.entry,
-    required this.use24HourFormat,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  final PrayerTimeEntry entry;
-  final bool use24HourFormat;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final EquranColors colors = context.equranColors;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(EquranRadii.large),
-        child: Ink(
-          width: 124,
-          decoration: BoxDecoration(
-            color: isActive ? colors.surfaceAlt : colors.surface,
-            borderRadius: BorderRadius.circular(EquranRadii.large),
-            border: Border.all(
-              color: isActive ? colors.primary.withAlpha(190) : colors.border,
-            ),
-            boxShadow: isActive
-                ? <BoxShadow>[
-                    BoxShadow(
-                      color: colors.primaryStrong.withAlpha(42),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool compact = constraints.maxWidth < 380;
+        return SizedBox(
+          height: compact ? 138 : 144,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: day.entries.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final PrayerTimeEntry entry = day.entries[index];
+              return PrayerTimeThumbCard(
+                entry: entry,
+                use24HourFormat: day.settings.use24HourFormat,
+                isActive: entry.kind == activeKind,
+                width: compact ? 132 : 142,
+                onTap: onOpenPrayerTimes,
+              );
+            },
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(EquranRadii.large),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    entry.kind.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: isActive
-                          ? colors.primarySoft
-                          : colors.textSecondary,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 7),
-                  Expanded(
-                    child: Center(
-                      child: Image.asset(
-                        _prayerThumbAsset(entry.kind),
-                        fit: BoxFit.contain,
-                        width: 82,
-                        height: 60,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _formatTime(entry.time, use24HourFormat),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: colors.textPrimary,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -1884,12 +1807,14 @@ class _JourneyPreviewCard extends StatelessWidget {
     required this.activity,
     required this.latestReading,
     required this.onOpenQuran,
+    required this.onOpenStats,
   });
 
   final QuranStatsSnapshot? stats;
   final QuranActivityDay? activity;
   final ResumeStateEntry? latestReading;
   final VoidCallback onOpenQuran;
+  final VoidCallback onOpenStats;
 
   @override
   Widget build(BuildContext context) {
@@ -1941,6 +1866,13 @@ class _JourneyPreviewCard extends StatelessWidget {
                 size: 36,
                 backgroundColor: colors.mint,
                 foregroundColor: colors.primary,
+              ),
+              const SizedBox(width: 7),
+              IconButton(
+                tooltip: 'Quran stats',
+                onPressed: onOpenStats,
+                icon: const Icon(Icons.insights_rounded),
+                color: colors.primary,
               ),
             ],
           ),
@@ -2437,6 +2369,7 @@ class _HomeQuranLastReadCard extends StatelessWidget {
         subtitle: 'Your reading history will appear here',
         actionText: 'Start Reading ->',
         trailingAssetPath: _quranAsset,
+        trailingRightOffset: -24,
         onTap: onOpenQuran,
       );
     } else {
@@ -2449,6 +2382,7 @@ class _HomeQuranLastReadCard extends StatelessWidget {
             : 'Ayah $ayah',
         actionText: 'Resume ->',
         trailingAssetPath: _quranAsset,
+        trailingRightOffset: -24,
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (context) => ReadPage(chapter: surah, startVerse: ayah),
@@ -3213,8 +3147,13 @@ _RoutineDayProgress _routineDayProgress(ReadingPlanEntry plan) {
   final _RoutineTodayRange range = _routineTodayRange(plan);
   final _AyahRef start = _ayahRefFromGlobalIndex(range.startGlobalAyah);
   final _AyahRef end = _ayahRefFromGlobalIndex(range.endGlobalAyah);
-  final int completed = math
-      .max(0, plan.lastCompletedGlobalAyah - range.startGlobalAyah + 1)
+  final RoutineDayProgressEntry? savedProgress = RoutineDayProgressDB()
+      .progressFor(plan.id, _dateKey(DateTime.now()));
+  final int legacyCompleted =
+      (plan.lastCompletedGlobalAyah - range.startGlobalAyah + 1)
+          .clamp(0, range.totalAyahs)
+          .toInt();
+  final int completed = (savedProgress?.completedAyahCount ?? legacyCompleted)
       .clamp(0, range.totalAyahs)
       .toInt();
   final double fraction = range.totalAyahs <= 0
@@ -3228,6 +3167,21 @@ _RoutineDayProgress _routineDayProgress(ReadingPlanEntry plan) {
 
 _AyahRef _routineContinueRef(ReadingPlanEntry plan) {
   final _RoutineTodayRange range = _routineTodayRange(plan);
+  final RoutineDayProgressEntry? savedProgress = RoutineDayProgressDB()
+      .progressFor(plan.id, _dateKey(DateTime.now()));
+  if (savedProgress != null) {
+    final int savedGlobalAyah = _globalAyahIndex(
+      savedProgress.lastOpenedSurah,
+      savedProgress.lastOpenedAyah,
+    );
+    if (savedGlobalAyah >= range.startGlobalAyah &&
+        savedGlobalAyah <= range.endGlobalAyah) {
+      return _AyahRef(
+        surah: savedProgress.lastOpenedSurah,
+        verse: savedProgress.lastOpenedAyah,
+      );
+    }
+  }
   final int nextGlobalAyah =
       plan.lastCompletedGlobalAyah < range.startGlobalAyah
       ? range.startGlobalAyah
@@ -3292,6 +3246,14 @@ _AyahRef _ayahRefFromGlobalIndex(int globalAyah) {
     remaining -= verseCount;
   }
   return const _AyahRef(surah: 114, verse: 6);
+}
+
+int _globalAyahIndex(int surah, int verse) {
+  int index = verse.clamp(1, quran.getVerseCount(surah)).toInt();
+  for (int currentSurah = 1; currentSurah < surah; currentSurah++) {
+    index += quran.getVerseCount(currentSurah);
+  }
+  return index.clamp(1, quran.totalVerseCount).toInt();
 }
 
 int _translationIndex() {
@@ -3364,17 +3326,6 @@ String _prayerBannerAsset(PrayerTimeKind kind) {
     PrayerTimeKind.asr => '$_appAssetBase/asr_banner.png',
     PrayerTimeKind.maghrib => '$_appAssetBase/maghrib_banner.png',
     PrayerTimeKind.isha => '$_appAssetBase/isha_banner.png',
-  };
-}
-
-String _prayerThumbAsset(PrayerTimeKind kind) {
-  return switch (kind) {
-    PrayerTimeKind.fajr => '$_appAssetBase/fajr.png',
-    PrayerTimeKind.sunrise => '$_appAssetBase/fajr.png',
-    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr.png',
-    PrayerTimeKind.asr => '$_appAssetBase/asr.png',
-    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib.png',
-    PrayerTimeKind.isha => '$_appAssetBase/isha.png',
   };
 }
 

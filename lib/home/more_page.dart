@@ -13,6 +13,7 @@ class MorePage extends StatelessWidget {
     required this.onOpenReadingPlans,
     required this.onOpenTasbih,
     required this.onOpenSettings,
+    required this.onOpenStats,
     required this.onToggleTheme,
   });
 
@@ -23,6 +24,7 @@ class MorePage extends StatelessWidget {
   final VoidCallback onOpenReadingPlans;
   final VoidCallback onOpenTasbih;
   final VoidCallback onOpenSettings;
+  final VoidCallback onOpenStats;
   final VoidCallback onToggleTheme;
 
   @override
@@ -85,6 +87,12 @@ class MorePage extends StatelessWidget {
                         title: 'Tasbih',
                         subtitle: 'Calm dhikr counter',
                         onTap: onOpenTasbih,
+                      ),
+                      _MoreAction(
+                        icon: Icons.insights_outlined,
+                        title: 'Quran Stats',
+                        subtitle: 'Streaks, goals, and weekly reading',
+                        onTap: onOpenStats,
                       ),
                       _MoreAction(
                         icon: Icons.settings_outlined,

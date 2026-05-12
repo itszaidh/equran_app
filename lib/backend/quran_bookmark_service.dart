@@ -76,6 +76,75 @@ class QuranBookmarkService {
     );
   }
 
+  Future<void> saveBookmarkDetails(
+    int surah,
+    int verse, {
+    bool? isFavourite,
+    String? note,
+    String? folder,
+    List<String>? tags,
+  }) async {
+    final String key = favouriteAyahKey(surah, verse);
+    final DateTime now = DateTime.now();
+    final dynamic existing = QuranBookmarksDB().get(key);
+    final QuranBookmarkEntry base = existing is QuranBookmarkEntry
+        ? existing
+        : QuranBookmarkEntry(
+            id: key,
+            surah: surah,
+            verse: verse,
+            createdAt: now,
+            updatedAt: now,
+            legacyKey: key,
+            isFavourite: FavouritesDB().contains(key),
+            note: FavouritesDB().get(key, defaultValue: '').toString(),
+          );
+    final String nextNote = note?.trim() ?? base.note;
+    final String nextFolder = _cleanFolder(folder ?? base.folder);
+    final List<String> nextTags = _cleanTags(tags ?? base.tags);
+    final bool nextFavourite = isFavourite ?? base.isFavourite;
+    final bool hasLibraryData =
+        nextFavourite ||
+        nextNote.isNotEmpty ||
+        nextFolder != 'Default' ||
+        nextTags.isNotEmpty;
+
+    if (!hasLibraryData) {
+      await FavouritesDB().delete(key);
+      await QuranBookmarksDB().delete(key);
+      return;
+    }
+
+    if (nextFavourite) {
+      await FavouritesDB().put(key, nextNote);
+    } else {
+      await FavouritesDB().delete(key);
+    }
+
+    await QuranBookmarksDB().put(
+      key,
+      QuranBookmarkEntry(
+        id: key,
+        surah: surah,
+        verse: verse,
+        isFavourite: nextFavourite,
+        note: nextNote,
+        folder: nextFolder,
+        tags: nextTags,
+        legacyKey: key,
+        createdAt: base.createdAt,
+        updatedAt: now,
+        schemaVersion: base.schemaVersion,
+      ),
+    );
+  }
+
+  Future<void> deleteBookmark(int surah, int verse) async {
+    final String key = favouriteAyahKey(surah, verse);
+    await FavouritesDB().delete(key);
+    await QuranBookmarksDB().delete(key);
+  }
+
   List<QuranBookmarkEntry> bookmarkEntriesWithLegacyFallback() {
     final Map<String, QuranBookmarkEntry> entries =
         <String, QuranBookmarkEntry>{};
@@ -107,6 +176,20 @@ class QuranBookmarkService {
     sorted.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return sorted;
   }
+}
+
+String _cleanFolder(String value) {
+  final String folder = value.trim();
+  return folder.isEmpty ? 'Default' : folder;
+}
+
+List<String> _cleanTags(List<String> tags) {
+  final Set<String> cleanTags = <String>{};
+  for (final String tag in tags) {
+    final String cleanTag = tag.trim();
+    if (cleanTag.isNotEmpty) cleanTags.add(cleanTag);
+  }
+  return cleanTags.toList(growable: false)..sort();
 }
 
 class _ParsedAyahKey {

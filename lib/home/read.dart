@@ -10,9 +10,12 @@ import 'package:equran/backend/library.dart'
         AndroidAudioDisplayMode,
         AudioDownloadService,
         DownloadNotifications,
+        FavouritesDB,
         QuranActivityDB,
         QuranActivityDay,
+        QuranBookmarkEntry,
         QuranBookmarkService,
+        QuranBookmarksDB,
         QuranStatsDB,
         QuranStatsSnapshot,
         QuranTransliterationService,
@@ -21,6 +24,8 @@ import 'package:equran/backend/library.dart'
         ReadingPlanEntry,
         ResumeStateDB,
         ResumeStateEntry,
+        RoutineDayProgressDB,
+        RoutineDayProgressEntry,
         SettingsDB,
         TafsirService,
         TafsirSource;
@@ -3422,6 +3427,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       ),
     );
 
+    _advanceActiveReadingPlans(safeSurah, safeVerse);
     if (!isNewToday) return;
 
     final QuranActivityDay updatedActivity = QuranActivityDay(
@@ -3455,39 +3461,71 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ),
       ),
     );
-    _advanceActiveReadingPlans(safeSurah, safeVerse);
   }
 
   void _advanceActiveReadingPlans(int surah, int verse) {
     final int globalAyah = _globalAyahIndex(surah, verse);
+    final DateTime now = DateTime.now();
+    final String todayKey = _readingDateKey(now);
     for (final ReadingPlanEntry plan
         in ReadingPlansDB().box.values.whereType<ReadingPlanEntry>()) {
       final _ActiveRoutineDayRange todayRange = _activeRoutineDayRange(plan);
       if (!plan.active ||
-          globalAyah <= plan.lastCompletedGlobalAyah ||
           globalAyah < todayRange.startGlobalAyah ||
           globalAyah > todayRange.endGlobalAyah) {
         continue;
       }
+      final RoutineDayProgressEntry? existingProgress = RoutineDayProgressDB()
+          .progressFor(plan.id, todayKey);
+      final Set<int> completedGlobalAyahs =
+          (existingProgress?.completedGlobalAyahs ?? const <int>[])
+              .where(
+                (int ayah) =>
+                    ayah >= todayRange.startGlobalAyah &&
+                    ayah <= todayRange.endGlobalAyah,
+              )
+              .toSet()
+            ..add(globalAyah);
+      final int completedToday = max(
+        existingProgress?.completedAyahCount ?? 0,
+        completedGlobalAyahs.length,
+      ).clamp(0, todayRange.totalAyahs).toInt();
       unawaited(
-        ReadingPlansDB().put(
-          plan.id,
-          ReadingPlanEntry(
-            id: plan.id,
-            type: plan.type,
-            title: plan.title,
-            startedAt: plan.startedAt,
-            finishBy: plan.finishBy,
-            startGlobalAyah: plan.startGlobalAyah,
-            targetGlobalAyah: plan.targetGlobalAyah,
-            lastCompletedGlobalAyah: globalAyah
-                .clamp(todayRange.startGlobalAyah, todayRange.endGlobalAyah)
-                .toInt(),
-            active: plan.active,
-            schemaVersion: plan.schemaVersion,
+        RoutineDayProgressDB().saveProgress(
+          RoutineDayProgressEntry(
+            routineId: plan.id,
+            dateKey: todayKey,
+            currentSurah: surah,
+            currentAyah: verse,
+            completedAyahCount: completedToday,
+            lastOpenedSurah: surah,
+            lastOpenedAyah: verse,
+            updatedAt: now,
+            completedGlobalAyahs: completedGlobalAyahs.toList()..sort(),
           ),
         ),
       );
+      if (globalAyah > plan.lastCompletedGlobalAyah) {
+        unawaited(
+          ReadingPlansDB().put(
+            plan.id,
+            ReadingPlanEntry(
+              id: plan.id,
+              type: plan.type,
+              title: plan.title,
+              startedAt: plan.startedAt,
+              finishBy: plan.finishBy,
+              startGlobalAyah: plan.startGlobalAyah,
+              targetGlobalAyah: plan.targetGlobalAyah,
+              lastCompletedGlobalAyah: globalAyah
+                  .clamp(todayRange.startGlobalAyah, todayRange.endGlobalAyah)
+                  .toInt(),
+              active: plan.active,
+              schemaVersion: plan.schemaVersion,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -4587,7 +4625,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Widget _buildShareImageWidget() {
     final ThemeData theme = Theme.of(context);
-    final EquranColors colors = context.equranColors;
     final Size shareImageSize = _shareImageMode.size;
     final bool showTransliteration =
         SettingsDB().get("showTransliteration", defaultValue: false) == true;
@@ -4608,6 +4645,17 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _ShareImageMode.story => 52,
     };
     final double contentWidth = shareImageSize.width - (sidePadding * 2);
+    final int textWeight =
+        verseText.runes.length +
+        (showTranslation ? translation.runes.length ~/ 2 : 0);
+    final double cardWidth = _shareCardWidth(
+      contentWidth: contentWidth,
+      textWeight: textWeight,
+    );
+    final bool longShare = textWeight > 620;
+    final double headerGap = _shareImageMode == _ShareImageMode.square
+        ? 14
+        : 20;
 
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -4649,49 +4697,44 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   sidePadding * 0.78,
                 ),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    _ShareImageHeader(
-                      chapter: _currentChapter,
-                      verse: _currentVerse,
-                      mode: _shareImageMode,
-                    ),
                     SizedBox(
-                      height: _shareImageMode == _ShareImageMode.square
-                          ? 18
-                          : 26,
-                    ),
-                    Expanded(
-                      child: SizedBox(
-                        width: contentWidth,
-                        child: _ShareImageAyahContent(
-                          verseText: verseText,
-                          translation: translation,
-                          transliteration: _transliterationForVerse(
-                            _currentVerse,
-                          ),
-                          showTranslation: showTranslation,
-                          showTransliteration: showTransliteration,
-                          arabicFontSize: _shareArabicFontSize(),
-                          translationFontSize: min(
-                            _shareTranslationFontSize(),
-                            shareTranslationFontSizeForText(translation),
-                          ),
-                        ),
+                      width: cardWidth,
+                      child: _ShareImageHeader(
+                        chapter: _currentChapter,
+                        verse: _currentVerse,
+                        mode: _shareImageMode,
                       ),
                     ),
-                    SizedBox(
-                      height: _shareImageMode == _ShareImageMode.square
-                          ? 18
-                          : 26,
-                    ),
-                    Divider(height: 1, color: colors.border),
-                    const SizedBox(height: 14),
-                    Text(
-                      'eQuran - ${quran.getSurahName(_currentChapter)} $_currentVerse',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: colors.primary,
-                        fontWeight: FontWeight.w900,
+                    SizedBox(height: headerGap),
+                    Flexible(
+                      fit: longShare ? FlexFit.tight : FlexFit.loose,
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: cardWidth,
+                            maxHeight:
+                                shareImageSize.height - (sidePadding * 2) - 132,
+                          ),
+                          child: _ShareImageAyahContent(
+                            verseText: verseText,
+                            translation: translation,
+                            transliteration: _transliterationForVerse(
+                              _currentVerse,
+                            ),
+                            showTranslation: showTranslation,
+                            showTransliteration: showTransliteration,
+                            arabicFontSize: _shareArabicFontSize(),
+                            translationFontSize: min(
+                              _shareTranslationFontSize(),
+                              shareTranslationFontSizeForText(translation),
+                            ),
+                            reference:
+                                'eQuran • ${quran.getSurahName(_currentChapter)} $_currentVerse',
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -4702,6 +4745,23 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  double _shareCardWidth({
+    required double contentWidth,
+    required int textWeight,
+  }) {
+    final double widthFactor = switch (textWeight) {
+      <= 80 => 0.64,
+      <= 180 => 0.74,
+      <= 420 => 0.84,
+      <= 760 => 0.94,
+      _ => 1.0,
+    };
+    final double minWidth = min(contentWidth, 560);
+    return (contentWidth * widthFactor)
+        .clamp(minWidth, contentWidth)
+        .toDouble();
   }
 
   Widget _buildSurahIntroCard({required double marginValue}) {
@@ -5255,6 +5315,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       },
                     ),
                     ListTile(
+                      leading: const Icon(Icons.edit_note_rounded),
+                      title: const Text('Edit bookmark or note'),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        _showFavouriteNotePrompt(verse);
+                      },
+                    ),
+                    ListTile(
                       leading: const Icon(Icons.notes_rounded),
                       title: const Text('Ayah details'),
                       onTap: () {
@@ -5648,47 +5716,181 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<void> _showFavouriteNotePrompt(int verse) async {
-    final TextEditingController textController = TextEditingController();
+    final String key = favouriteAyahKey(_currentChapter, verse);
+    final dynamic existing = QuranBookmarksDB().get(key);
+    final QuranBookmarkEntry? bookmark = existing is QuranBookmarkEntry
+        ? existing
+        : null;
+    final TextEditingController noteController = TextEditingController(
+      text:
+          bookmark?.note ??
+          FavouritesDB().get(key, defaultValue: '').toString(),
+    );
+    final TextEditingController folderController = TextEditingController(
+      text: bookmark == null || bookmark.folder == 'Default'
+          ? ''
+          : bookmark.folder,
+    );
+    final TextEditingController tagsController = TextEditingController(
+      text: bookmark?.tags.join(', ') ?? '',
+    );
+    bool isFavourite =
+        bookmark?.isFavourite ??
+        const QuranBookmarkService().isFavourite(_currentChapter, verse);
     try {
       await _withLowFpsSuppressed(() {
-        return showDialog<void>(
+        return showModalBottomSheet<void>(
           context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          showDragHandle: true,
           builder: (context) {
-            return AlertDialog(
-              title: const Text('Favourite ayah'),
-              content: TextField(
-                maxLength: 80,
-                maxLines: null,
-                controller: textController,
-                decoration: const InputDecoration(hintText: 'Optional note...'),
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('CANCEL'),
-                ),
-                FilledButton(
-                  onPressed: () {
-                    unawaited(
-                      const QuranBookmarkService().saveFavourite(
-                        _currentChapter,
-                        verse,
-                        note: textController.text,
-                      ),
-                    );
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('SAVE'),
-                ),
-              ],
+            return StatefulBuilder(
+              builder: (context, setSheetState) {
+                final ThemeData theme = Theme.of(context);
+                final EquranColors colors = context.equranColors;
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    20,
+                    8,
+                    20,
+                    20 + MediaQuery.viewInsetsOf(context).bottom,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(
+                              AppRadii.medium,
+                            ),
+                            border: Border.all(color: colors.border),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Text(
+                              quranVerseText(_currentChapter, verse),
+                              textDirection: TextDirection.rtl,
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: 'Hafs',
+                                color: colors.textPrimary,
+                                fontSize: 22,
+                                height: 1.6,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Favourite'),
+                          value: isFavourite,
+                          onChanged: (value) => setSheetState(() {
+                            isFavourite = value;
+                          }),
+                        ),
+                        TextField(
+                          controller: noteController,
+                          maxLines: 4,
+                          minLines: 2,
+                          decoration: const InputDecoration(
+                            labelText: 'Private note',
+                            hintText: 'Write a reflection...',
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: folderController,
+                          decoration: const InputDecoration(
+                            labelText: 'Folder',
+                            hintText: 'Default',
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: tagsController,
+                          decoration: const InputDecoration(
+                            labelText: 'Tags',
+                            hintText: 'gratitude, duas',
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Row(
+                          children: <Widget>[
+                            TextButton.icon(
+                              onPressed: () {
+                                unawaited(
+                                  const QuranBookmarkService().deleteBookmark(
+                                    _currentChapter,
+                                    verse,
+                                  ),
+                                );
+                                Navigator.of(context).pop();
+                              },
+                              icon: const Icon(Icons.delete_outline_rounded),
+                              label: const Text('Delete'),
+                            ),
+                            const Spacer(),
+                            FilledButton.icon(
+                              onPressed: () {
+                                unawaited(
+                                  const QuranBookmarkService()
+                                      .saveBookmarkDetails(
+                                        _currentChapter,
+                                        verse,
+                                        isFavourite: isFavourite,
+                                        note: noteController.text,
+                                        folder: folderController.text,
+                                        tags: _parseBookmarkTags(
+                                          tagsController.text,
+                                        ),
+                                      ),
+                                );
+                                Navigator.of(context).pop();
+                              },
+                              icon: const Icon(Icons.check_rounded),
+                              label: const Text('Save'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             );
           },
         );
       });
     } finally {
       await WidgetsBinding.instance.endOfFrame;
-      textController.dispose();
+      noteController.dispose();
+      folderController.dispose();
+      tagsController.dispose();
     }
+  }
+
+  List<String> _parseBookmarkTags(String value) {
+    final Set<String> tags = <String>{};
+    for (final String tag in value.split(',')) {
+      final String cleanTag = tag.trim();
+      if (cleanTag.isNotEmpty) tags.add(cleanTag);
+    }
+    return tags.toList(growable: false)..sort();
   }
 
   void _toggleFavourite(int verse, {required bool isFavourite}) {
@@ -5961,6 +6163,7 @@ class _ShareImageAyahContent extends StatelessWidget {
     required this.showTransliteration,
     required this.arabicFontSize,
     required this.translationFontSize,
+    required this.reference,
   });
 
   final String verseText;
@@ -5970,6 +6173,7 @@ class _ShareImageAyahContent extends StatelessWidget {
   final bool showTransliteration;
   final double arabicFontSize;
   final double translationFontSize;
+  final String reference;
 
   @override
   Widget build(BuildContext context) {
@@ -6045,6 +6249,17 @@ class _ShareImageAyahContent extends StatelessWidget {
                           ),
                         ),
                       ],
+                      const SizedBox(height: 24),
+                      Divider(height: 1, color: colors.divider),
+                      const SizedBox(height: 12),
+                      Text(
+                        reference,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -6100,6 +6315,8 @@ class _ActiveRoutineDayRange {
 
   final int startGlobalAyah;
   final int endGlobalAyah;
+
+  int get totalAyahs => max(1, endGlobalAyah - startGlobalAyah + 1);
 }
 
 String _revelationLabel(int surah) {

@@ -75,6 +75,7 @@ class _LastReadCardState extends State<LastReadCard> {
                 subtitle: 'Ayah ${entry.verse}',
                 actionText: 'Resume ->',
                 trailingAssetPath: equranResumeQuranAsset,
+                trailingRightOffset: -24,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (context) =>
@@ -155,6 +156,7 @@ class EquranResumeImageCard extends StatelessWidget {
     required this.actionText,
     required this.trailingAssetPath,
     required this.onTap,
+    this.trailingRightOffset = 4,
   });
 
   final String primary;
@@ -162,6 +164,7 @@ class EquranResumeImageCard extends StatelessWidget {
   final String actionText;
   final String trailingAssetPath;
   final VoidCallback onTap;
+  final double trailingRightOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -172,7 +175,9 @@ class EquranResumeImageCard extends StatelessWidget {
       builder: (context, constraints) {
         final bool compact = constraints.maxWidth < 340;
         final double artWidth = compact ? 120 : 144;
-        final double textRightPadding = compact ? 102 : 124;
+        final double textRightPadding =
+            (compact ? 102 : 124) +
+            (trailingRightOffset > 0 ? trailingRightOffset * 0.65 : 0);
 
         return Material(
           color: Colors.transparent,
@@ -200,18 +205,15 @@ class EquranResumeImageCard extends StatelessWidget {
               child: Stack(
                 children: <Widget>[
                   Positioned(
-                    right: -16,
+                    right: 3,
                     top: -8,
                     bottom: -8,
                     width: artWidth,
-                    child: Opacity(
-                      opacity: 0.82,
-                      child: Image.asset(
-                        trailingAssetPath,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const SizedBox.shrink(),
-                      ),
+                    child: Image.asset(
+                      trailingAssetPath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox.shrink(),
                     ),
                   ),
                   Padding(

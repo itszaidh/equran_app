@@ -447,19 +447,9 @@ class _MainPageState extends State<MainPage>
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: ValueListenableBuilder(
-            key: const ValueKey<String>('page-list'),
-            valueListenable: FavouritesDB().listener,
-            builder: (BuildContext context, Box<dynamic> box, child) {
-              if (box.length == 0) {
-                return const SizedBox.shrink();
-              } else {
-                return PrimaryScrollController(
-                  controller: _favouritesScrollController,
-                  child: FavouritesList(searchQuery: _searchQuery),
-                );
-              }
-            },
+          child: PrimaryScrollController(
+            controller: _favouritesScrollController,
+            child: FavouritesList(searchQuery: _searchQuery),
           ),
         ),
       ],
@@ -766,6 +756,7 @@ class _QuranLastReadEmptySection extends StatelessWidget {
       subtitle: 'Start reading and your place will appear here.',
       actionText: 'Start reading ->',
       trailingAssetPath: equranResumeQuranAsset,
+      trailingRightOffset: -24,
     );
   }
 }
