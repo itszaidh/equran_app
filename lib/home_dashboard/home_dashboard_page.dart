@@ -738,11 +738,11 @@ class _HomePrayerHeroCard extends StatelessWidget {
             final bool compact = constraints.maxWidth < 360;
             final bool use12HourTime = !settings.use24HourFormat;
             final double artWidth =
-                (constraints.maxWidth * (compact ? 0.62 : 0.66))
-                    .clamp(compact ? 188.0 : 238.0, compact ? 218.0 : 304.0)
+                (constraints.maxWidth * (compact ? 0.72 : 0.76))
+                    .clamp(compact ? 220.0 : 270.0, compact ? 280.0 : 380.0)
                     .toDouble();
-            final double trailingSpace = (artWidth - 12)
-                .clamp(compact ? 166.0 : 210.0, compact ? 202.0 : 286.0)
+            final double trailingSpace = (artWidth * 0.72)
+                .clamp(compact ? 178.0 : 220.0, compact ? 230.0 : 300.0)
                 .toDouble();
             final double timeSize =
                 (constraints.maxWidth * (use12HourTime ? 0.105 : 0.13))
@@ -761,26 +761,30 @@ class _HomePrayerHeroCard extends StatelessWidget {
               onTap: onOpenPrayerTimes,
               padding: EdgeInsets.fromLTRB(
                 compact ? 16 : 20,
-                compact ? 18 : 20,
+                compact ? 14 : 16,
                 compact ? 12 : 16,
-                compact ? 18 : 20,
+                compact ? 14 : 16,
               ),
               child: Stack(
                 clipBehavior: Clip.none,
                 children: <Widget>[
                   Positioned(
-                    right: -12,
-                    top: -4,
-                    bottom: -4,
+                    right: -28,
+                    top: -24,
+                    bottom: -12,
                     width: artWidth,
-                    child: _PrayerHeroDecoration(kind: featuredPrayer.kind),
+                    child: Transform.scale(
+                      scale: compact ? 1.12 : 1.25,
+                      alignment: Alignment.centerRight,
+                      child: _PrayerHeroDecoration(kind: featuredPrayer.kind),
+                    ),
                   ),
                   Row(
                     children: <Widget>[
                       Expanded(
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            minHeight: compact ? 130 : 148,
+                            minHeight: compact ? 148.0 : 168.0,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -796,7 +800,7 @@ class _HomePrayerHeroCard extends StatelessWidget {
                                     color: colors.onPrimary,
                                     fontSize: timeSize,
                                     fontWeight: FontWeight.w900,
-                                    height: 0.98,
+                                    height: 0.94,
                                   ),
                                 ),
                               ),
@@ -906,8 +910,8 @@ class _PrayerHeroDecoration extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: Image.asset(
                   _prayerBannerAsset(kind),
-                  width: constraints.maxWidth - 4,
-                  height: constraints.maxHeight - 2,
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
                   fit: BoxFit.contain,
                   alignment: Alignment.centerRight,
                   errorBuilder: (context, error, stackTrace) {
