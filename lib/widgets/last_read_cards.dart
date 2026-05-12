@@ -76,7 +76,6 @@ class _LastReadCardState extends State<LastReadCard> {
                 subtitle: 'Ayah ${entry.verse}',
                 actionText: 'Resume ->',
                 trailingAssetPath: equranResumeQuranAsset,
-                trailingRightOffset: -24,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (context) =>
@@ -157,7 +156,6 @@ class EquranResumeImageCard extends StatelessWidget {
     required this.actionText,
     required this.trailingAssetPath,
     required this.onTap,
-    this.trailingRightOffset = 4,
   });
 
   final String primary;
@@ -165,7 +163,6 @@ class EquranResumeImageCard extends StatelessWidget {
   final String actionText;
   final String trailingAssetPath;
   final VoidCallback onTap;
-  final double trailingRightOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -179,10 +176,12 @@ class EquranResumeImageCard extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final bool compact = constraints.maxWidth < 340;
-            final double artWidth = compact ? 120 : 144;
+            final double artworkEdgePadding = _artworkEdgePadding(
+              constraints.maxWidth,
+            );
+            final double artWidth = compact ? 108 : 132;
             final double textRightPadding =
-                (compact ? 102 : 124) +
-                (trailingRightOffset > 0 ? trailingRightOffset * 0.65 : 0);
+                (compact ? 94 : 114) + artworkEdgePadding;
 
             return SizedBox(
               width: double.infinity,
@@ -211,24 +210,27 @@ class EquranResumeImageCard extends StatelessWidget {
                     ),
                     child: Stack(
                       children: <Widget>[
-                        Positioned(
-                          right: trailingRightOffset,
-                          top: -8,
-                          bottom: -8,
-                          width: artWidth,
-                          child: Image.asset(
-                            trailingAssetPath,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const SizedBox.shrink(),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: artworkEdgePadding),
+                            child: SizedBox(
+                              width: artWidth,
+                              child: Image.asset(
+                                trailingAssetPath,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const SizedBox.shrink(),
+                              ),
+                            ),
                           ),
                         ),
                         Padding(
                           padding: EdgeInsets.fromLTRB(
                             compact ? 16 : 18,
-                            17,
+                            14,
                             textRightPadding,
-                            16,
+                            13,
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -254,10 +256,9 @@ class EquranResumeImageCard extends StatelessWidget {
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
+                              SizedBox(height: compact ? 6 : 28),
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
+                                padding: const EdgeInsets.only(bottom: 10),
                                 child: SizedBox(
                                   width: 104,
                                   child: Divider(
@@ -288,5 +289,12 @@ class EquranResumeImageCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  double _artworkEdgePadding(double width) {
+    if (width < 340) return 2;
+    if (width < 430) return 6;
+    if (width < 560) return 12;
+    return 18;
   }
 }

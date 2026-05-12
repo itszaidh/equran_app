@@ -756,7 +756,6 @@ class _QuranLastReadEmptySection extends StatelessWidget {
       subtitle: 'Start reading and your place will appear here.',
       actionText: 'Start reading ->',
       trailingAssetPath: equranResumeQuranAsset,
-      trailingRightOffset: -24,
     );
   }
 }

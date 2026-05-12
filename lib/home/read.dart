@@ -4354,7 +4354,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Widget _buildNavigationButtons({bool fixed = false}) {
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final EquranColors colors = context.equranColors;
     final double width = MediaQuery.sizeOf(context).width;
     final double horizontalInset = _viewMode
         ? _readCardHorizontalInset(width)
@@ -4376,7 +4376,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   horizontal: 16,
                 ),
                 minimumSize: const Size(58, 44),
-                foregroundColor: colorScheme.onSurfaceVariant,
+                foregroundColor: colors.onPrimary,
               ),
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 2),
@@ -4391,7 +4391,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   horizontal: 16,
                 ),
                 minimumSize: const Size(58, 44),
-                foregroundColor: colorScheme.onSurfaceVariant,
+                foregroundColor: colors.onPrimary,
               ),
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 2),

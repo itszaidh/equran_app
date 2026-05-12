@@ -2092,7 +2092,6 @@ class _HomeQuranLastReadCard extends StatelessWidget {
         subtitle: 'Your reading history will appear here',
         actionText: 'Start Reading ->',
         trailingAssetPath: _quranAsset,
-        trailingRightOffset: -24,
         onTap: onOpenQuran,
       );
     } else {
@@ -2105,7 +2104,6 @@ class _HomeQuranLastReadCard extends StatelessWidget {
             : 'Ayah $ayah',
         actionText: 'Resume ->',
         trailingAssetPath: _quranAsset,
-        trailingRightOffset: -24,
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (context) => ReadPage(chapter: surah, startVerse: ayah),
