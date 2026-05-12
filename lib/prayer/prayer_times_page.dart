@@ -75,30 +75,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           final PrayerLocation? location = _store.getLocation();
           final PrayerTimeSettings settings = _store.getSettings();
           if (location == null) {
-            return ListView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(
-                EquranSpacing.pagePadding,
-                14,
-                EquranSpacing.pagePadding,
-                28,
-              ),
-              children: <Widget>[
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1040),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        _buildSetupState(context),
-                        const SizedBox(height: 14),
-                        _buildDisclaimer(context),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
+            return _buildSetupState(context);
           }
 
           final DateTime todayDate = _service.calendarDateForInstant(
@@ -235,120 +212,149 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
   Widget _buildSetupState(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+    final EquranColors colors = context.equranColors;
+    final TextStyle? buttonTextStyle = theme.textTheme.titleSmall?.copyWith(
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0,
+    );
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            Color.alphaBlend(
-              colors.primary.withAlpha(isLight ? 28 : 48),
-              colors.surfaceContainerLow,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: colors.mint,
+                            borderRadius: BorderRadius.circular(AppRadii.pill),
+                          ),
+                          child: Icon(
+                            Icons.add_location_alt_outlined,
+                            color: colors.primary,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Prayer times need a location',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Calculate Fajr, Dhuhr, Asr, Maghrib and Isha for your exact location.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.textSecondary,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Your location is only used for prayer time calculation.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colors.textMuted,
+                          fontStyle: FontStyle.italic,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _isLocating ? null : _useCurrentLocation,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: colors.primary,
+                            foregroundColor: colors.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadii.pill,
+                              ),
+                            ),
+                            textStyle: buttonTextStyle,
+                          ),
+                          icon: _isLocating
+                              ? SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.onPrimary,
+                                  ),
+                                )
+                              : const Icon(Icons.my_location_rounded),
+                          label: const Text('Use current location'),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _chooseOnMap(null),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: colors.primary,
+                            side: BorderSide(color: colors.primary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadii.pill,
+                              ),
+                            ),
+                            textStyle: buttonTextStyle,
+                          ),
+                          icon: const Icon(Icons.map_outlined),
+                          label: const Text('Choose on map'),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () => _chooseManually(null),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colors.textMuted,
+                          backgroundColor: Colors.transparent,
+                          textStyle: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.textMuted,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                        child: const Text('Enter coordinates manually'),
+                      ),
+                      const SizedBox(height: 28),
+                      Text(
+                        'Times are calculated locally on your device.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.textMuted,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            colors.surfaceContainerLow,
-          ],
-        ),
-        border: Border.all(color: colors.outlineVariant),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: colors.shadow.withValues(alpha: isLight ? 0.1 : 0.24),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: colors.primaryContainer.withValues(alpha: 0.72),
-                    borderRadius: BorderRadius.circular(AppRadii.medium),
-                  ),
-                  child: Icon(
-                    Icons.add_location_alt_outlined,
-                    color: colors.onPrimaryContainer,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Text(
-              'Prayer times need a location',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Choose where to calculate Fajr, Sunrise, Dhuhr, Asr, Maghrib, and Isha.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-                height: 1.35,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Icon(
-                  Icons.verified_user_outlined,
-                  color: colors.primary,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Your location is used only for local prayer-time calculation.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: <Widget>[
-                FilledButton.icon(
-                  onPressed: _isLocating ? null : _useCurrentLocation,
-                  icon: _isLocating
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.my_location_rounded),
-                  label: const Text('Use current location'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => _chooseOnMap(null),
-                  icon: const Icon(Icons.map_outlined),
-                  label: const Text('Choose on map'),
-                ),
-                TextButton.icon(
-                  onPressed: () => _chooseManually(null),
-                  icon: const Icon(Icons.edit_location_alt_outlined),
-                  label: const Text('Enter coordinates manually'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 

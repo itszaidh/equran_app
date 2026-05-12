@@ -423,11 +423,11 @@ class _DashboardContent extends StatelessWidget {
               ayah: summary.dailyAyah,
               onOpenQuran: actions.onOpenQuran,
             ),
-            const SizedBox(height: 22),
-            _PersonalLibraryPreview(
-              bookmarks: summary.bookmarks,
-              onOpenQuran: actions.onOpenQuran,
-            ),
+            // const SizedBox(height: 22),
+            // _PersonalLibraryPreview(
+            //   bookmarks: summary.bookmarks,
+            //   onOpenQuran: actions.onOpenQuran,
+            // ),
           ],
         );
       },
@@ -822,6 +822,7 @@ class _HomePremiumCard extends StatelessWidget {
     this.assetPath,
     this.assetOpacity = 0.08,
     this.assetWidth = 160,
+    this.borderColor,
   });
 
   final Widget child;
@@ -832,6 +833,7 @@ class _HomePremiumCard extends StatelessWidget {
   final String? assetPath;
   final double assetOpacity;
   final double assetWidth;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -859,7 +861,9 @@ class _HomePremiumCard extends StatelessWidget {
               ],
             ),
             borderRadius: radius,
-            border: Border.all(color: colors.border.withAlpha(190)),
+            border: Border.all(
+              color: borderColor ?? colors.border.withAlpha(190),
+            ),
             boxShadow: <BoxShadow>[
               BoxShadow(
                 color: colors.shadow.withAlpha(
@@ -914,16 +918,20 @@ class _RoutinePlanCta extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 13, 16, 13),
         baseColor: colors.surface,
         accentColor: colors.primary,
+        borderColor: colors.border,
         assetPath: _designAsset,
         assetOpacity: 0.05,
         assetWidth: 112,
         child: Row(
           children: <Widget>[
-            EquranIconBadge(
-              icon: Icons.route_outlined,
-              size: 38,
-              backgroundColor: colors.mint,
-              foregroundColor: colors.primary,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: colors.mint,
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+              ),
+              child: Icon(Icons.auto_stories_rounded, color: colors.primary),
             ),
             const SizedBox(width: 11),
             Expanded(
@@ -934,7 +942,7 @@ class _RoutinePlanCta extends StatelessWidget {
                     'Start a reading routine',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(
+                    style: theme.textTheme.titleMedium?.copyWith(
                       color: colors.textPrimary,
                       fontWeight: FontWeight.w900,
                     ),
@@ -952,11 +960,21 @@ class _RoutinePlanCta extends StatelessWidget {
                 ],
               ),
             ),
-            Text(
-              'Start',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: colors.primary,
-                fontWeight: FontWeight.w900,
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+                border: Border.all(color: colors.primary),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: Text(
+                  'Start',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ),
           ],
@@ -1761,6 +1779,7 @@ class _JourneyPreviewCard extends StatelessWidget {
     final int ayahsRead = activity?.ayahsRead ?? 0;
     final int dailyGoal = _dailyQuranGoalAyahs();
     final double progress = (ayahsRead / dailyGoal).clamp(0.0, 1.0).toDouble();
+    final int progressPercent = (progress * 100).round();
     final ResumeStateEntry? reading = latestReading;
     final int? resumeSurah = reading?.surah;
     final int? resumeAyah = reading?.ayah;
@@ -1818,8 +1837,8 @@ class _JourneyPreviewCard extends StatelessWidget {
             children: <Widget>[
               Text(
                 '$ayahsRead / $dailyGoal',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: colors.primary,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  color: colors.textPrimary,
                   fontWeight: FontWeight.w900,
                   height: 1.0,
                 ),
@@ -1829,8 +1848,8 @@ class _JourneyPreviewCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   'ayahs today',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: colors.textSecondary,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -1838,37 +1857,36 @@ class _JourneyPreviewCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 9),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(EquranRadii.pill),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 7,
-              color: colors.primary,
-              backgroundColor: colors.surface,
-            ),
-          ),
-          const SizedBox(height: 9),
-          Text(
-            progress >= 1
-                ? 'Daily goal complete. May Allah accept it.'
-                : '${math.max(0, dailyGoal - ayahsRead)} ayahs left for today',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
           Row(
             children: <Widget>[
-              _HomeMetricPill(
-                icon: Icons.local_fire_department_outlined,
-                label: '${snapshot.currentStreak} day streak',
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    color: colors.primary,
+                    backgroundColor: colors.surface,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
-              _HomeMetricPill(
-                icon: Icons.done_all_rounded,
+              Text(
+                '$progressPercent%',
+                textAlign: TextAlign.right,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colors.onPrimaryMuted,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: <Widget>[
+              _JourneyMetricChip(label: '${snapshot.currentStreak} day streak'),
+              const SizedBox(width: 8),
+              _JourneyMetricChip(
                 label: '${snapshot.estimatedLettersRead} letters',
               ),
             ],
@@ -1921,6 +1939,7 @@ int _dailyQuranGoalAyahs() {
   return 20;
 }
 
+// ignore: unused_element
 class _HomeMetricPill extends StatelessWidget {
   const _HomeMetricPill({required this.icon, required this.label});
 
@@ -1961,6 +1980,38 @@ class _HomeMetricPill extends StatelessWidget {
   }
 }
 
+class _JourneyMetricChip extends StatelessWidget {
+  const _JourneyMetricChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return Flexible(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surfaceAlt.withValues(alpha: 0.30),
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: colors.onPrimaryMuted,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ignore: unused_element
 class _PersonalLibraryPreview extends StatelessWidget {
   const _PersonalLibraryPreview({
     required this.bookmarks,

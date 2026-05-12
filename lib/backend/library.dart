@@ -17,4 +17,8 @@ export 'surah_timing_repository.dart';
 export 'transliteration_service.dart';
 export 'quran_stream_url.dart';
 export 'daily_guidance_service.dart';
+export 'resource_download_service.dart';
+export 'resource_install_store.dart';
+export 'resource_models.dart';
+export 'resource_repository.dart';
 export 'tafsir_service.dart';

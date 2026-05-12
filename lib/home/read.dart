@@ -24,11 +24,22 @@ import 'package:equran/backend/library.dart'
         ReadingPlanEntry,
         ResumeStateDB,
         ResumeStateEntry,
+        DownloadableResource,
+        ResourceDownloadPhase,
+        ResourceDownloadProgress,
+        ResourceDownloadService,
+        ResourceInstallException,
+        ResourceInstallState,
+        ResourceInstallStore,
+        ResourceManifest,
+        ResourceRepository,
+        ResourceType,
         RoutineDayProgressDB,
         RoutineDayProgressEntry,
         SettingsDB,
+        TafsirVerseResult,
         TafsirService,
-        TafsirSource;
+        prettyBytes;
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/theme/equran_text_styles.dart';
@@ -182,6 +193,7 @@ enum _ReadingOptionsAction {
   deleteCurrentAyah,
   shareCurrentAyah,
   translationLanguage,
+  tafsirSources,
 }
 
 enum _ShareImageMode {
@@ -193,6 +205,50 @@ enum _ShareImageMode {
 
   final String label;
   final Size size;
+}
+
+enum _ShareImageContentTier { compact, medium, long, veryLong }
+
+class _ShareImageContentLayout {
+  const _ShareImageContentLayout({
+    required this.tier,
+    required this.canvasPadding,
+    required this.headerWidth,
+    required this.headerGap,
+    required this.compactHeader,
+    required this.cardWidth,
+    required this.cardHeight,
+    required this.cardPadding,
+    required this.arabicFontSize,
+    required this.translationFontSize,
+    required this.transliterationFontSize,
+    required this.footerFontSize,
+    required this.arabicGap,
+    required this.translationDividerTopGap,
+    required this.translationDividerBottomGap,
+    required this.footerDividerTopGap,
+    required this.footerDividerBottomGap,
+    required this.scaleContentDown,
+  });
+
+  final _ShareImageContentTier tier;
+  final EdgeInsets canvasPadding;
+  final double headerWidth;
+  final double headerGap;
+  final bool compactHeader;
+  final double cardWidth;
+  final double cardHeight;
+  final EdgeInsets cardPadding;
+  final double arabicFontSize;
+  final double translationFontSize;
+  final double transliterationFontSize;
+  final double footerFontSize;
+  final double arabicGap;
+  final double translationDividerTopGap;
+  final double translationDividerBottomGap;
+  final double footerDividerTopGap;
+  final double footerDividerBottomGap;
+  final bool scaleContentDown;
 }
 
 int? _readInt(dynamic value) {
@@ -1549,6 +1605,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                 ),
                               ),
                             _ReadingOptionTile(
+                              icon: Icons.auto_stories_outlined,
+                              title: 'Tafsir sources',
+                              subtitle: 'Choose downloaded explanations',
+                              onTap: () => Navigator.of(
+                                sheetContext,
+                              ).pop(_ReadingOptionsAction.tafsirSources),
+                            ),
+                            _ReadingOptionTile(
                               icon: Icons.ios_share_outlined,
                               title: 'Share current ayah',
                               subtitle: 'Create an image for this ayah',
@@ -1589,6 +1653,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         break;
       case _ReadingOptionsAction.translationLanguage:
         await _openCardTranslationLanguagePicker();
+        break;
+      case _ReadingOptionsAction.tafsirSources:
+        await _showTafsirSourceSelectorSheet();
         break;
     }
   }
@@ -3672,32 +3739,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Widget _buildProgressBar(double marginValue) {
     final EquranColors colors = context.equranColors;
-    final ThemeData theme = Theme.of(context);
     final double progress = _totalVerses <= 0
         ? 0
         : (_currentVerse / _totalVerses).clamp(0.0, 1.0).toDouble();
-    final BorderRadius radius = BorderRadius.circular(999);
+    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(marginValue, 12, marginValue, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: Text(
-              '$_currentVerse / $_totalVerses ayahs',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: colors.textMuted,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0,
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
           LayoutBuilder(
             builder: (context, constraints) {
               return GestureDetector(
@@ -3724,9 +3775,19 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                 borderRadius: radius,
                               ),
                             ),
-                            FractionallySizedBox(
-                              alignment: AlignmentDirectional.centerStart,
-                              widthFactor: progress,
+                            TweenAnimationBuilder<double>(
+                              tween: Tween<double>(end: progress),
+                              duration: _isScrubbingProgress
+                                  ? Duration.zero
+                                  : const Duration(milliseconds: 220),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, animatedProgress, child) {
+                                return FractionallySizedBox(
+                                  alignment: AlignmentDirectional.centerStart,
+                                  widthFactor: animatedProgress,
+                                  child: child,
+                                );
+                              },
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
                                   color: colors.primary,
@@ -4740,18 +4801,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     throw StateError('Unable to render share image: $lastError');
   }
 
-  double _shareArabicFontSize() {
-    return shareArabicFontSizeForText(
-      quranVerseText(_currentChapter, _currentVerse),
-    );
-  }
-
-  double _shareTranslationFontSize() {
-    return shareTranslationFontSizeForText(
-      quranVerseText(_currentChapter, _currentVerse),
-    );
-  }
-
   Widget _buildShareImageWidget() {
     final ThemeData theme = Theme.of(context);
     final Size shareImageSize = _shareImageMode.size;
@@ -4768,23 +4817,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           .Translation
           .values[SettingsDB().get("translation", defaultValue: 0)],
     );
-    final double sidePadding = switch (_shareImageMode) {
-      _ShareImageMode.square => 48,
-      _ShareImageMode.classic => 58,
-      _ShareImageMode.story => 52,
-    };
-    final double contentWidth = shareImageSize.width - (sidePadding * 2);
-    final int textWeight =
-        verseText.runes.length +
-        (showTranslation ? translation.runes.length ~/ 2 : 0);
-    final double cardWidth = _shareCardWidth(
-      contentWidth: contentWidth,
-      textWeight: textWeight,
-    );
-    final bool longShare = textWeight > 620;
-    final double headerGap = _shareImageMode == _ShareImageMode.square
-        ? 14
-        : 20;
+    final String transliteration = _transliterationForVerse(_currentVerse);
 
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -4818,56 +4851,58 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  sidePadding,
-                  sidePadding,
-                  sidePadding,
-                  sidePadding * 0.78,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                      width: cardWidth,
-                      child: _ShareImageHeader(
-                        chapter: _currentChapter,
-                        verse: _currentVerse,
-                        mode: _shareImageMode,
-                      ),
-                    ),
-                    SizedBox(height: headerGap),
-                    Flexible(
-                      fit: longShare ? FlexFit.tight : FlexFit.loose,
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: cardWidth,
-                            maxHeight:
-                                shareImageSize.height - (sidePadding * 2) - 132,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final Size canvasSize = Size(
+                    constraints.maxWidth,
+                    constraints.maxHeight,
+                  );
+                  final layout = _shareImageContentLayout(
+                    theme: theme,
+                    canvasSize: canvasSize,
+                    mode: _shareImageMode,
+                    verseText: verseText,
+                    translation: translation,
+                    transliteration: transliteration,
+                    showTranslation: showTranslation,
+                    showTransliteration: showTransliteration,
+                    reference:
+                        'eQuran • ${quran.getSurahName(_currentChapter)} $_currentVerse',
+                  );
+
+                  return Padding(
+                    padding: layout.canvasPadding,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        SizedBox(
+                          width: layout.headerWidth,
+                          child: _ShareImageHeader(
+                            chapter: _currentChapter,
+                            verse: _currentVerse,
+                            mode: _shareImageMode,
+                            compact: layout.compactHeader,
                           ),
+                        ),
+                        SizedBox(height: layout.headerGap),
+                        SizedBox(
+                          width: layout.cardWidth,
+                          height: layout.cardHeight,
                           child: _ShareImageAyahContent(
                             verseText: verseText,
                             translation: translation,
-                            transliteration: _transliterationForVerse(
-                              _currentVerse,
-                            ),
+                            transliteration: transliteration,
                             showTranslation: showTranslation,
                             showTransliteration: showTransliteration,
-                            arabicFontSize: _shareArabicFontSize(),
-                            translationFontSize: min(
-                              _shareTranslationFontSize(),
-                              shareTranslationFontSizeForText(translation),
-                            ),
                             reference:
                                 'eQuran • ${quran.getSurahName(_currentChapter)} $_currentVerse',
+                            layout: layout,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ),
@@ -4876,21 +4911,480 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  double _shareCardWidth({
-    required double contentWidth,
-    required int textWeight,
+  _ShareImageContentLayout _shareImageContentLayout({
+    required ThemeData theme,
+    required Size canvasSize,
+    required _ShareImageMode mode,
+    required String verseText,
+    required String translation,
+    required String transliteration,
+    required bool showTranslation,
+    required bool showTransliteration,
+    required String reference,
   }) {
-    final double widthFactor = switch (textWeight) {
-      <= 80 => 0.64,
-      <= 180 => 0.74,
-      <= 420 => 0.84,
-      <= 760 => 0.94,
-      _ => 1.0,
+    final double baseCanvasInset = switch (mode) {
+      _ShareImageMode.square => 48,
+      _ShareImageMode.classic => 58,
+      _ShareImageMode.story => 52,
     };
-    final double minWidth = min(contentWidth, 560);
-    return (contentWidth * widthFactor)
-        .clamp(minWidth, contentWidth)
+    final double analysisWidth = max(1, canvasSize.width - baseCanvasInset * 2);
+    final double baseArabicFontSize = shareArabicFontSizeForText(verseText);
+    final double baseTranslationFontSize = min(
+      shareTranslationFontSizeForText(verseText),
+      shareTranslationFontSizeForText(translation),
+    );
+    final int textWeight =
+        verseText.runes.length +
+        (showTranslation ? (translation.runes.length * 0.45).round() : 0) +
+        (showTransliteration
+            ? (transliteration.runes.length * 0.35).round()
+            : 0);
+    final int estimatedLines =
+        _measureShareTextLineCount(
+          verseText,
+          _shareArabicTextStyle(baseArabicFontSize),
+          analysisWidth * 0.86,
+          TextDirection.rtl,
+        ) +
+        (showTranslation
+            ? _measureShareTextLineCount(
+                translation,
+                _shareTranslationTextStyle(theme, baseTranslationFontSize),
+                analysisWidth * 0.86,
+                TextDirection.ltr,
+              )
+            : 0) +
+        (showTransliteration && transliteration.trim().isNotEmpty
+            ? _measureShareTextLineCount(
+                transliteration,
+                _shareTransliterationTextStyle(theme, 22),
+                analysisWidth * 0.86,
+                TextDirection.ltr,
+              )
+            : 0);
+    final _ShareImageContentTier tier = _shareImageTierFor(
+      textWeight: textWeight,
+      lineCount: estimatedLines,
+    );
+
+    final double edgeInset = (baseCanvasInset * _tierCanvasInsetFactor(tier))
+        .clamp(28.0, baseCanvasInset)
         .toDouble();
+    final EdgeInsets canvasPadding = EdgeInsets.fromLTRB(
+      edgeInset,
+      edgeInset,
+      edgeInset,
+      edgeInset * 0.78,
+    );
+    final double safeWidth = max(
+      1,
+      canvasSize.width - canvasPadding.horizontal,
+    );
+    final double safeHeight = max(
+      1,
+      canvasSize.height - canvasPadding.vertical,
+    );
+    final bool compactHeader =
+        tier == _ShareImageContentTier.long ||
+        tier == _ShareImageContentTier.veryLong ||
+        mode == _ShareImageMode.square;
+    final double headerHeight = compactHeader ? 96 : 118;
+    final double headerGap = switch (tier) {
+      _ShareImageContentTier.compact =>
+        mode == _ShareImageMode.square ? 12 : 18,
+      _ShareImageContentTier.medium => mode == _ShareImageMode.square ? 10 : 16,
+      _ShareImageContentTier.long => 12,
+      _ShareImageContentTier.veryLong => 8,
+    };
+    final double maxCardHeight = max(1, safeHeight - headerHeight - headerGap);
+    final double initialCardWidth = _shareCardWidthForTier(
+      safeWidth: safeWidth,
+      tier: tier,
+    );
+
+    double cardWidth = initialCardWidth;
+    double horizontalPadding = _tierHorizontalPadding(tier);
+    double verticalPadding = _tierVerticalPadding(tier);
+    double arabicFontSize = baseArabicFontSize
+        .clamp(_tierMinArabicFontSize(tier), _tierMaxArabicFontSize(tier))
+        .toDouble();
+    double translationFontSize = baseTranslationFontSize
+        .clamp(
+          _tierMinTranslationFontSize(tier),
+          _tierMaxTranslationFontSize(tier),
+        )
+        .toDouble();
+    double transliterationFontSize = _tierTransliterationFontSize(tier);
+    double arabicGap = _tierArabicGap(tier);
+    double translationDividerTopGap = _tierTranslationDividerTopGap(tier);
+    double translationDividerBottomGap = _tierTranslationDividerBottomGap(tier);
+    double footerDividerTopGap = _tierFooterDividerTopGap(tier);
+    double footerDividerBottomGap = _tierFooterDividerBottomGap(tier);
+
+    double requiredHeight = 0;
+    for (int attempt = 0; attempt < 5; attempt++) {
+      final double textWidth = max(1, cardWidth - horizontalPadding * 2);
+      requiredHeight =
+          _measureShareContentHeight(
+            theme: theme,
+            textWidth: textWidth,
+            verseText: verseText,
+            translation: translation,
+            transliteration: transliteration,
+            showTranslation: showTranslation,
+            showTransliteration: showTransliteration,
+            reference: reference,
+            arabicFontSize: arabicFontSize,
+            translationFontSize: translationFontSize,
+            transliterationFontSize: transliterationFontSize,
+            footerFontSize: _tierFooterFontSize(tier),
+            arabicGap: arabicGap,
+            translationDividerTopGap: translationDividerTopGap,
+            translationDividerBottomGap: translationDividerBottomGap,
+            footerDividerTopGap: footerDividerTopGap,
+            footerDividerBottomGap: footerDividerBottomGap,
+          ) +
+          verticalPadding * 2;
+      if (requiredHeight <= maxCardHeight) {
+        break;
+      }
+      cardWidth = min(safeWidth, cardWidth + safeWidth * 0.05);
+      horizontalPadding = max(
+        _tierMinHorizontalPadding(tier),
+        horizontalPadding - 4,
+      );
+      verticalPadding = max(_tierMinVerticalPadding(tier), verticalPadding - 4);
+      arabicFontSize = max(_tierMinArabicFontSize(tier), arabicFontSize - 2);
+      translationFontSize = max(
+        _tierMinTranslationFontSize(tier),
+        translationFontSize - 1,
+      );
+      transliterationFontSize = max(16, transliterationFontSize - 1);
+      arabicGap = max(10, arabicGap - 2);
+      translationDividerTopGap = max(10, translationDividerTopGap - 2);
+      translationDividerBottomGap = max(10, translationDividerBottomGap - 2);
+      footerDividerTopGap = max(8, footerDividerTopGap - 2);
+      footerDividerBottomGap = max(6, footerDividerBottomGap - 1);
+    }
+
+    final double minCardHeight = min(maxCardHeight, _tierMinCardHeight(tier));
+    final double breathingRoom = requiredHeight <= maxCardHeight
+        ? _tierBreathingRoom(tier)
+        : 0;
+    final double cardHeight = (requiredHeight + breathingRoom)
+        .clamp(minCardHeight, maxCardHeight)
+        .toDouble();
+
+    return _ShareImageContentLayout(
+      tier: tier,
+      canvasPadding: canvasPadding,
+      headerWidth: min(cardWidth, safeWidth),
+      headerGap: headerGap,
+      compactHeader: compactHeader,
+      cardWidth: min(cardWidth, safeWidth),
+      cardHeight: cardHeight,
+      cardPadding: EdgeInsets.symmetric(
+        horizontal: horizontalPadding,
+        vertical: verticalPadding,
+      ),
+      arabicFontSize: arabicFontSize,
+      translationFontSize: translationFontSize,
+      transliterationFontSize: transliterationFontSize,
+      footerFontSize: _tierFooterFontSize(tier),
+      arabicGap: arabicGap,
+      translationDividerTopGap: translationDividerTopGap,
+      translationDividerBottomGap: translationDividerBottomGap,
+      footerDividerTopGap: footerDividerTopGap,
+      footerDividerBottomGap: footerDividerBottomGap,
+      scaleContentDown: requiredHeight > maxCardHeight,
+    );
+  }
+
+  _ShareImageContentTier _shareImageTierFor({
+    required int textWeight,
+    required int lineCount,
+  }) {
+    if (textWeight <= 130 && lineCount <= 5) {
+      return _ShareImageContentTier.compact;
+    }
+    if (textWeight <= 340 && lineCount <= 10) {
+      return _ShareImageContentTier.medium;
+    }
+    if (textWeight <= 760 && lineCount <= 18) {
+      return _ShareImageContentTier.long;
+    }
+    return _ShareImageContentTier.veryLong;
+  }
+
+  double _shareCardWidthForTier({
+    required double safeWidth,
+    required _ShareImageContentTier tier,
+  }) {
+    final double widthFactor = switch (tier) {
+      _ShareImageContentTier.compact => 0.68,
+      _ShareImageContentTier.medium => 0.80,
+      _ShareImageContentTier.long => 0.94,
+      _ShareImageContentTier.veryLong => 1.0,
+    };
+    final double minWidth = switch (tier) {
+      _ShareImageContentTier.compact => min(safeWidth, 560),
+      _ShareImageContentTier.medium => min(safeWidth, 680),
+      _ShareImageContentTier.long => min(safeWidth, 820),
+      _ShareImageContentTier.veryLong => min(safeWidth, 920),
+    };
+    return max(
+      minWidth,
+      safeWidth * widthFactor,
+    ).clamp(1.0, safeWidth).toDouble();
+  }
+
+  double _tierCanvasInsetFactor(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 1.0,
+    _ShareImageContentTier.medium => 0.92,
+    _ShareImageContentTier.long => 0.78,
+    _ShareImageContentTier.veryLong => 0.58,
+  };
+
+  double _tierHorizontalPadding(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 36,
+    _ShareImageContentTier.medium => 38,
+    _ShareImageContentTier.long => 32,
+    _ShareImageContentTier.veryLong => 26,
+  };
+
+  double _tierVerticalPadding(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 32,
+    _ShareImageContentTier.medium => 36,
+    _ShareImageContentTier.long => 30,
+    _ShareImageContentTier.veryLong => 24,
+  };
+
+  double _tierMinHorizontalPadding(_ShareImageContentTier tier) =>
+      switch (tier) {
+        _ShareImageContentTier.compact => 28,
+        _ShareImageContentTier.medium => 28,
+        _ShareImageContentTier.long => 24,
+        _ShareImageContentTier.veryLong => 20,
+      };
+
+  double _tierMinVerticalPadding(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 26,
+    _ShareImageContentTier.medium => 26,
+    _ShareImageContentTier.long => 22,
+    _ShareImageContentTier.veryLong => 18,
+  };
+
+  double _tierMinArabicFontSize(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 62,
+    _ShareImageContentTier.medium => 48,
+    _ShareImageContentTier.long => 34,
+    _ShareImageContentTier.veryLong => 28,
+  };
+
+  double _tierMaxArabicFontSize(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 86,
+    _ShareImageContentTier.medium => 74,
+    _ShareImageContentTier.long => 58,
+    _ShareImageContentTier.veryLong => 42,
+  };
+
+  double _tierMinTranslationFontSize(_ShareImageContentTier tier) =>
+      switch (tier) {
+        _ShareImageContentTier.compact => 23,
+        _ShareImageContentTier.medium => 20,
+        _ShareImageContentTier.long => 17,
+        _ShareImageContentTier.veryLong => 16,
+      };
+
+  double _tierMaxTranslationFontSize(_ShareImageContentTier tier) =>
+      switch (tier) {
+        _ShareImageContentTier.compact => 28,
+        _ShareImageContentTier.medium => 25,
+        _ShareImageContentTier.long => 22,
+        _ShareImageContentTier.veryLong => 20,
+      };
+
+  double _tierTransliterationFontSize(_ShareImageContentTier tier) =>
+      switch (tier) {
+        _ShareImageContentTier.compact => 24,
+        _ShareImageContentTier.medium => 22,
+        _ShareImageContentTier.long => 19,
+        _ShareImageContentTier.veryLong => 17,
+      };
+
+  double _tierFooterFontSize(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 17,
+    _ShareImageContentTier.medium => 16,
+    _ShareImageContentTier.long => 15,
+    _ShareImageContentTier.veryLong => 14,
+  };
+
+  double _tierArabicGap(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 22,
+    _ShareImageContentTier.medium => 22,
+    _ShareImageContentTier.long => 16,
+    _ShareImageContentTier.veryLong => 12,
+  };
+
+  double _tierTranslationDividerTopGap(_ShareImageContentTier tier) =>
+      switch (tier) {
+        _ShareImageContentTier.compact => 24,
+        _ShareImageContentTier.medium => 22,
+        _ShareImageContentTier.long => 16,
+        _ShareImageContentTier.veryLong => 12,
+      };
+
+  double _tierTranslationDividerBottomGap(_ShareImageContentTier tier) =>
+      switch (tier) {
+        _ShareImageContentTier.compact => 22,
+        _ShareImageContentTier.medium => 20,
+        _ShareImageContentTier.long => 15,
+        _ShareImageContentTier.veryLong => 12,
+      };
+
+  double _tierFooterDividerTopGap(_ShareImageContentTier tier) =>
+      switch (tier) {
+        _ShareImageContentTier.compact => 24,
+        _ShareImageContentTier.medium => 20,
+        _ShareImageContentTier.long => 14,
+        _ShareImageContentTier.veryLong => 10,
+      };
+
+  double _tierFooterDividerBottomGap(_ShareImageContentTier tier) =>
+      switch (tier) {
+        _ShareImageContentTier.compact => 12,
+        _ShareImageContentTier.medium => 10,
+        _ShareImageContentTier.long => 8,
+        _ShareImageContentTier.veryLong => 7,
+      };
+
+  double _tierMinCardHeight(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 240,
+    _ShareImageContentTier.medium => 330,
+    _ShareImageContentTier.long => 500,
+    _ShareImageContentTier.veryLong => 620,
+  };
+
+  double _tierBreathingRoom(_ShareImageContentTier tier) => switch (tier) {
+    _ShareImageContentTier.compact => 10,
+    _ShareImageContentTier.medium => 16,
+    _ShareImageContentTier.long => 10,
+    _ShareImageContentTier.veryLong => 0,
+  };
+
+  TextStyle _shareArabicTextStyle(double fontSize) {
+    return TextStyle(
+      fontFamily: 'Hafs',
+      fontSize: fontSize,
+      height: 1.82,
+      fontWeight: FontWeight.w400,
+    );
+  }
+
+  TextStyle _shareTranslationTextStyle(ThemeData theme, double fontSize) {
+    return (theme.textTheme.bodyLarge ?? const TextStyle()).copyWith(
+      fontSize: fontSize,
+      height: 1.52,
+      fontWeight: FontWeight.w400,
+    );
+  }
+
+  TextStyle _shareTransliterationTextStyle(ThemeData theme, double fontSize) {
+    return (theme.textTheme.titleLarge ?? const TextStyle()).copyWith(
+      fontSize: fontSize,
+      height: 1.42,
+      fontWeight: FontWeight.w600,
+    );
+  }
+
+  double _measureShareContentHeight({
+    required ThemeData theme,
+    required double textWidth,
+    required String verseText,
+    required String translation,
+    required String transliteration,
+    required bool showTranslation,
+    required bool showTransliteration,
+    required String reference,
+    required double arabicFontSize,
+    required double translationFontSize,
+    required double transliterationFontSize,
+    required double footerFontSize,
+    required double arabicGap,
+    required double translationDividerTopGap,
+    required double translationDividerBottomGap,
+    required double footerDividerTopGap,
+    required double footerDividerBottomGap,
+  }) {
+    double height = _measureShareTextHeight(
+      verseText,
+      _shareArabicTextStyle(arabicFontSize),
+      textWidth,
+      TextDirection.rtl,
+    );
+
+    if (showTransliteration && transliteration.trim().isNotEmpty) {
+      height += arabicGap;
+      height += _measureShareTextHeight(
+        transliteration,
+        _shareTransliterationTextStyle(theme, transliterationFontSize),
+        textWidth,
+        TextDirection.ltr,
+      );
+    }
+
+    if (showTranslation) {
+      height += translationDividerTopGap + 1 + translationDividerBottomGap;
+      height += _measureShareTextHeight(
+        translation,
+        _shareTranslationTextStyle(theme, translationFontSize),
+        textWidth,
+        TextDirection.ltr,
+      );
+    }
+
+    height += footerDividerTopGap + 1 + footerDividerBottomGap;
+    height += _measureShareTextHeight(
+      reference,
+      (theme.textTheme.labelLarge ?? const TextStyle()).copyWith(
+        fontSize: footerFontSize,
+        height: 1.2,
+        fontWeight: FontWeight.w800,
+      ),
+      textWidth,
+      TextDirection.ltr,
+    );
+    return height;
+  }
+
+  double _measureShareTextHeight(
+    String text,
+    TextStyle style,
+    double maxWidth,
+    TextDirection textDirection,
+  ) {
+    final TextPainter painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textAlign: TextAlign.center,
+      textDirection: textDirection,
+      textScaler: TextScaler.noScaling,
+    )..layout(maxWidth: max(1, maxWidth));
+    return painter.height;
+  }
+
+  int _measureShareTextLineCount(
+    String text,
+    TextStyle style,
+    double maxWidth,
+    TextDirection textDirection,
+  ) {
+    final TextPainter painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textAlign: TextAlign.center,
+      textDirection: textDirection,
+      textScaler: TextScaler.noScaling,
+    )..layout(maxWidth: max(1, maxWidth));
+    return painter.computeLineMetrics().length;
   }
 
   Widget _buildSurahIntroCard({required double marginValue}) {
@@ -5731,11 +6225,214 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<void> _showTafsirSheet(int verse) async {
-    const TafsirSource selectedSource = TafsirSource.mukhtasar;
-    final Future<String> tafsirFuture = TafsirService.instance.verseTafsir(
-      source: selectedSource,
-      surah: _currentChapter,
-      ayah: verse,
+    Future<List<TafsirVerseResult>> loadTafsirs() {
+      return TafsirService.instance.selectedVerseTafsirs(
+        surah: _currentChapter,
+        ayah: verse,
+      );
+    }
+
+    Future<List<TafsirVerseResult>> tafsirFuture = loadTafsirs();
+
+    await _withLowFpsSuppressed(() {
+      return showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        showDragHandle: true,
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setSheetState) {
+              return ValueListenableBuilder<
+                Map<String, ResourceDownloadProgress>
+              >(
+                valueListenable: ResourceDownloadService.instance.downloads,
+                builder: (context, downloads, _) {
+                  return FutureBuilder<List<TafsirVerseResult>>(
+                    future: tafsirFuture,
+                    builder: (context, tafsirSnapshot) {
+                      final List<TafsirVerseResult> results =
+                          tafsirSnapshot.data ?? const <TafsirVerseResult>[];
+                      final bool loading =
+                          tafsirSnapshot.connectionState !=
+                          ConnectionState.done;
+
+                      return DraggableScrollableSheet(
+                        expand: false,
+                        initialChildSize: 0.62,
+                        minChildSize: 0.32,
+                        maxChildSize: 0.92,
+                        builder: (context, scrollController) {
+                          final ThemeData theme = Theme.of(context);
+                          return ListView(
+                            controller: scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                            children: <Widget>[
+                              Text(
+                                '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              if (loading)
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 36),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                )
+                              else if (results.isEmpty)
+                                _buildNoTafsirSourcesMessage(context)
+                              else
+                                for (final TafsirVerseResult result
+                                    in results) ...<Widget>[
+                                  _buildTafsirResultCard(
+                                    context: context,
+                                    result: result,
+                                    progress: downloads[result.resource.id],
+                                    onCancel: () =>
+                                        Navigator.of(context).maybePop(),
+                                    onDownload: () async {
+                                      final bool installed =
+                                          await _downloadDownloadableResource(
+                                            result.resource,
+                                          );
+                                      if (!installed || !context.mounted) {
+                                        return;
+                                      }
+                                      TafsirService.instance.clearCache();
+                                      setSheetState(() {
+                                        tafsirFuture = loadTafsirs();
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
+    });
+  }
+
+  Widget _buildNoTafsirSourcesMessage(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.auto_stories_outlined),
+      title: const Text('No Tafsir sources selected'),
+      subtitle: const Text('Choose one or more Tafsir sources first.'),
+      trailing: TextButton(
+        onPressed: () async {
+          await Navigator.of(context).maybePop();
+          await _showTafsirSourceSelectorSheet();
+        },
+        child: const Text('Choose'),
+      ),
+    );
+  }
+
+  Widget _buildTafsirResultCard({
+    required BuildContext context,
+    required TafsirVerseResult result,
+    required ResourceDownloadProgress? progress,
+    required VoidCallback onCancel,
+    required Future<void> Function() onDownload,
+  }) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final ResourceInstallState state = _resourceStateFor(
+      result.resource,
+      progress,
+    );
+    final bool downloading = state == ResourceInstallState.downloading;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              result.resource.name,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (!result.installed)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'This Tafsir needs to be downloaded first. ${prettyBytes(result.resource.sizeBytes)}',
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: <Widget>[
+                      TextButton(
+                        onPressed: onCancel,
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        onPressed: downloading ? null : onDownload,
+                        icon: downloading
+                            ? const SizedBox.square(
+                                dimension: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.download_rounded),
+                        label: Text(
+                          downloading
+                              ? progress?.phase.label ?? 'Downloading'
+                              : 'Download',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            else if (result.error != null)
+              Text(result.error!, style: theme.textTheme.bodyLarge)
+            else
+              Text(
+                result.text.isEmpty
+                    ? 'No tafsir text available for this ayah.'
+                    : result.text,
+                textAlign: TextAlign.start,
+                style: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showTafsirSourceSelectorSheet() async {
+    final ResourceManifest manifest = await ResourceRepository.instance
+        .loadManifest();
+    final List<DownloadableResource> tafsirResources = manifest.resourcesOfType(
+      ResourceType.tafsir,
     );
 
     await _withLowFpsSuppressed(() {
@@ -5746,59 +6443,51 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         showDragHandle: true,
         constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
         builder: (context) {
-          return FutureBuilder<String>(
-            future: tafsirFuture,
-            builder: (context, tafsirSnapshot) {
-              final String tafsirText = tafsirSnapshot.data?.trim() ?? '';
-              return DraggableScrollableSheet(
-                expand: false,
-                initialChildSize: 0.56,
-                minChildSize: 0.28,
-                maxChildSize: 0.92,
-                builder: (context, scrollController) {
-                  return SizedBox(
-                    width: double.infinity,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          return DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.62,
+            minChildSize: 0.32,
+            maxChildSize: 0.88,
+            builder: (context, scrollController) {
+              return ValueListenableBuilder<int>(
+                valueListenable: ResourceInstallStore.instance.changes,
+                builder: (context, _, _) {
+                  return ValueListenableBuilder<
+                    Map<String, ResourceDownloadProgress>
+                  >(
+                    valueListenable: ResourceDownloadService.instance.downloads,
+                    builder: (context, downloads, _) {
+                      final Set<String> selectedIds = ResourceInstallStore
+                          .instance
+                          .selectedTafsirResourceIds(manifest)
+                          .toSet();
+                      return ListView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                         children: <Widget>[
                           Text(
-                            '${quran.getSurahName(_currentChapter)} • Ayah $verse',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            selectedSource.displayName,
-                            style: Theme.of(context).textTheme.labelLarge,
+                            'Tafsir sources',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 12),
-                          Expanded(
-                            child:
-                                tafsirSnapshot.connectionState !=
-                                    ConnectionState.done
-                                ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : SingleChildScrollView(
-                                    controller: scrollController,
-                                    physics: const BouncingScrollPhysics(),
-                                    child: Text(
-                                      tafsirText.isEmpty
-                                          ? 'No tafsir text available for this ayah.'
-                                          : tafsirText,
-                                      textAlign: TextAlign.start,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge
-                                          ?.copyWith(height: 1.6),
-                                    ),
-                                  ),
-                          ),
+                          if (tafsirResources.isEmpty)
+                            const ListTile(
+                              leading: Icon(Icons.error_outline_rounded),
+                              title: Text('No Tafsir resources available'),
+                            )
+                          else
+                            for (final DownloadableResource resource
+                                in tafsirResources)
+                              _buildTafsirSourceRow(
+                                manifest: manifest,
+                                resource: resource,
+                                selected: selectedIds.contains(resource.id),
+                                progress: downloads[resource.id],
+                              ),
                         ],
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               );
@@ -5807,6 +6496,108 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         },
       );
     });
+  }
+
+  Widget _buildTafsirSourceRow({
+    required ResourceManifest manifest,
+    required DownloadableResource resource,
+    required bool selected,
+    required ResourceDownloadProgress? progress,
+  }) {
+    final ResourceInstallState state = _resourceStateFor(resource, progress);
+    final bool downloading = state == ResourceInstallState.downloading;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Checkbox(
+        value: selected,
+        onChanged: (value) => _setTafsirSourceSelected(
+          manifest: manifest,
+          resource: resource,
+          selected: value == true,
+        ),
+      ),
+      title: Text(resource.name),
+      subtitle: Text(
+        '${resource.language?.toUpperCase() ?? resource.typeLabel} • ${state.label} • ${prettyBytes(resource.sizeBytes)}',
+      ),
+      trailing: state == ResourceInstallState.installed
+          ? const Icon(Icons.check_circle_rounded)
+          : IconButton(
+              tooltip: downloading ? progress?.phase.label : 'Download',
+              onPressed: downloading
+                  ? null
+                  : () => _downloadDownloadableResource(resource),
+              icon: downloading
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.download_rounded),
+            ),
+      onTap: () => _setTafsirSourceSelected(
+        manifest: manifest,
+        resource: resource,
+        selected: !selected,
+      ),
+    );
+  }
+
+  Future<void> _setTafsirSourceSelected({
+    required ResourceManifest manifest,
+    required DownloadableResource resource,
+    required bool selected,
+  }) async {
+    final Set<String> selectedIds = ResourceInstallStore.instance
+        .selectedTafsirResourceIds(manifest)
+        .toSet();
+    if (selected) {
+      selectedIds.add(resource.id);
+    } else {
+      selectedIds.remove(resource.id);
+    }
+    await ResourceInstallStore.instance.saveSelectedTafsirResourceIds(
+      selectedIds.toList(growable: false),
+    );
+    if (mounted) setState(() {});
+  }
+
+  ResourceInstallState _resourceStateFor(
+    DownloadableResource resource,
+    ResourceDownloadProgress? progress,
+  ) {
+    if (progress != null &&
+        progress.phase != ResourceDownloadPhase.complete &&
+        progress.phase != ResourceDownloadPhase.failed) {
+      return ResourceInstallState.downloading;
+    }
+    return ResourceInstallStore.instance.installStateFor(resource);
+  }
+
+  Future<bool> _downloadDownloadableResource(
+    DownloadableResource resource,
+  ) async {
+    try {
+      await ResourceDownloadService.instance.downloadAndInstall(resource);
+      if (!mounted) return true;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
+      setState(() {});
+      return true;
+    } on ResourceInstallException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to install this resource.')),
+        );
+      }
+    }
+    return false;
   }
 
   Future<void> _showFavouriteNotePrompt(int verse) async {
@@ -6295,11 +7086,13 @@ class _ShareImageHeader extends StatelessWidget {
     required this.chapter,
     required this.verse,
     required this.mode,
+    required this.compact,
   });
 
   final int chapter;
   final int verse;
   final _ShareImageMode mode;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -6307,7 +7100,10 @@ class _ShareImageHeader extends StatelessWidget {
     final EquranColors colors = context.equranColors;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 20 : 28,
+        vertical: compact ? 16 : 22,
+      ),
       decoration: BoxDecoration(
         gradient: colors.heroGradient,
         borderRadius: BorderRadius.circular(AppRadii.xl),
@@ -6325,7 +7121,11 @@ class _ShareImageHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     color: colors.onPrimary,
-                    fontSize: mode == _ShareImageMode.square ? 33 : 36,
+                    fontSize: compact
+                        ? 30
+                        : mode == _ShareImageMode.square
+                        ? 33
+                        : 36,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -6334,6 +7134,7 @@ class _ShareImageHeader extends StatelessWidget {
                   'Ayah $verse - ${mode.label}',
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: colors.onPrimaryMuted,
+                    fontSize: compact ? 15 : null,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -6347,7 +7148,7 @@ class _ShareImageHeader extends StatelessWidget {
             style: EquranTextStyles.arabicSmall(
               context,
               color: colors.onPrimary,
-            ).copyWith(fontSize: 30),
+            ).copyWith(fontSize: compact ? 25 : 30),
           ),
         ],
       ),
@@ -6362,9 +7163,8 @@ class _ShareImageAyahContent extends StatelessWidget {
     required this.transliteration,
     required this.showTranslation,
     required this.showTransliteration,
-    required this.arabicFontSize,
-    required this.translationFontSize,
     required this.reference,
+    required this.layout,
   });
 
   final String verseText;
@@ -6372,13 +7172,11 @@ class _ShareImageAyahContent extends StatelessWidget {
   final String transliteration;
   final bool showTranslation;
   final bool showTransliteration;
-  final double arabicFontSize;
-  final double translationFontSize;
   final String reference;
+  final _ShareImageContentLayout layout;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
 
     return DecoratedBox(
@@ -6396,79 +7194,120 @@ class _ShareImageAyahContent extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(40, 40, 40, 36),
+        padding: layout.cardPadding,
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final double textWidth = constraints.maxWidth;
-            return Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.center,
-                child: SizedBox(
-                  width: textWidth,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Text(
-                        verseText,
-                        textDirection: TextDirection.rtl,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: colors.textPrimary,
-                          fontFamily: 'Hafs',
-                          fontSize: arabicFontSize,
-                          height: 1.82,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      if (showTransliteration &&
-                          transliteration.isNotEmpty) ...<Widget>[
-                        const SizedBox(height: 22),
-                        Text(
-                          transliteration,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: colors.primary,
-                            height: 1.42,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                      if (showTranslation) ...<Widget>[
-                        const SizedBox(height: 24),
-                        Divider(height: 1, color: colors.divider),
-                        const SizedBox(height: 22),
-                        Text(
-                          translation,
-                          textAlign: TextAlign.justify,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: colors.textSecondary,
-                            fontSize: translationFontSize,
-                            height: 1.52,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      Divider(height: 1, color: colors.divider),
-                      const SizedBox(height: 12),
-                      Text(
-                        reference,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            final Widget content = SizedBox(
+              width: constraints.maxWidth,
+              child: _ShareImageAyahTextColumn(
+                verseText: verseText,
+                translation: translation,
+                transliteration: transliteration,
+                showTranslation: showTranslation,
+                showTransliteration: showTransliteration,
+                reference: reference,
+                layout: layout,
               ),
+            );
+
+            return Center(
+              child: layout.scaleContentDown
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: content,
+                    )
+                  : content,
             );
           },
         ),
       ),
+    );
+  }
+}
+
+class _ShareImageAyahTextColumn extends StatelessWidget {
+  const _ShareImageAyahTextColumn({
+    required this.verseText,
+    required this.translation,
+    required this.transliteration,
+    required this.showTranslation,
+    required this.showTransliteration,
+    required this.reference,
+    required this.layout,
+  });
+
+  final String verseText;
+  final String translation;
+  final String transliteration;
+  final bool showTranslation;
+  final bool showTransliteration;
+  final String reference;
+  final _ShareImageContentLayout layout;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Text(
+          verseText,
+          textDirection: TextDirection.rtl,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: colors.textPrimary,
+            fontFamily: 'Hafs',
+            fontSize: layout.arabicFontSize,
+            height: 1.82,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        if (showTransliteration && transliteration.isNotEmpty) ...<Widget>[
+          SizedBox(height: layout.arabicGap),
+          Text(
+            transliteration,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: colors.primary,
+              fontSize: layout.transliterationFontSize,
+              height: 1.42,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+        if (showTranslation) ...<Widget>[
+          SizedBox(height: layout.translationDividerTopGap),
+          Divider(height: 1, color: colors.divider),
+          SizedBox(height: layout.translationDividerBottomGap),
+          Text(
+            translation,
+            textAlign: TextAlign.justify,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colors.textSecondary,
+              fontSize: layout.translationFontSize,
+              height: 1.52,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+        SizedBox(height: layout.footerDividerTopGap),
+        Divider(height: 1, color: colors.divider),
+        SizedBox(height: layout.footerDividerBottomGap),
+        Text(
+          reference,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: colors.primary,
+            fontSize: layout.footerFontSize,
+            height: 1.2,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 }

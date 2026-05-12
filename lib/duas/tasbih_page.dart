@@ -19,6 +19,7 @@ class _TasbihPageState extends State<TasbihPage> {
   static const String _selectedPresetKey = 'tasbih.selectedPreset';
   static const String _currentCountKey = 'tasbih.currentCount';
   static const String _hapticsKey = 'tasbih.hapticsEnabled';
+  static const Duration _completionInputLockDuration = Duration(seconds: 1);
 
   int _selectedPresetIndex = 0;
   int _count = 0;
@@ -30,6 +31,7 @@ class _TasbihPageState extends State<TasbihPage> {
   int _liveUnsavedRoundsToday = 0;
   String? _completionMessage;
   bool _completionPulse = false;
+  bool _completionInputLocked = false;
 
   _DhikrPreset get _selectedPreset =>
       _DhikrPreset.presets[_selectedPresetIndex];
@@ -49,6 +51,7 @@ class _TasbihPageState extends State<TasbihPage> {
         ? savedIndex.clamp(0, _DhikrPreset.presets.length - 1).toInt()
         : 0;
     _count = savedCount is int ? savedCount.clamp(0, 100000).toInt() : 0;
+    _liveUnsavedCountToday = _count;
     _hapticsEnabled = SettingsDB().get(_hapticsKey, defaultValue: true) == true;
   }
 
@@ -74,7 +77,7 @@ class _TasbihPageState extends State<TasbihPage> {
         actions: <Widget>[
           IconButton(
             tooltip: 'Reset counter',
-            onPressed: _reset,
+            onPressed: _completionInputLocked ? null : _reset,
             icon: const Icon(Icons.refresh_rounded),
           ),
         ],
@@ -87,7 +90,7 @@ class _TasbihPageState extends State<TasbihPage> {
                 ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
           final _TasbihStats stats = _TasbihStats.fromSessions(
             sessions,
-            currentCount: _count,
+            currentCount: 0,
             currentStartedAt: _sessionStartedAt,
             liveUnsavedCount: _liveUnsavedCountToday,
             liveUnsavedRounds: _liveUnsavedRoundsToday,
@@ -115,6 +118,7 @@ class _TasbihPageState extends State<TasbihPage> {
                         selectedIndex: _selectedPresetIndex,
                         onPrevious: _selectPreviousPreset,
                         onNext: _selectNextPreset,
+                        enabled: !_completionInputLocked,
                       ),
                       const SizedBox(height: 18),
                       _CircularCounter(
@@ -122,6 +126,7 @@ class _TasbihPageState extends State<TasbihPage> {
                         count: _count,
                         targetHeight: screenHeight * 0.55,
                         pulse: _completionPulse,
+                        enabled: !_completionInputLocked,
                         onTap: _increment,
                       ),
                       const SizedBox(height: 14),
@@ -153,28 +158,43 @@ class _TasbihPageState extends State<TasbihPage> {
   }
 
   Future<void> _increment() async {
+    if (_completionInputLocked || _count >= _selectedPreset.target) return;
+
     final _DhikrPreset preset = _selectedPreset;
+    final int sequenceIndex = _selectedPresetIndex;
     final int nextCount = _count + 1;
+    final bool completesPreset = nextCount >= preset.target;
     if (_hapticsEnabled) {
       unawaited(HapticFeedback.lightImpact());
     }
     setState(() {
       _count = nextCount;
+      _liveUnsavedCountToday += 1;
+      if (completesPreset) {
+        _completionInputLocked = true;
+        _completionPulse = true;
+        _completionMessage = '${preset.label} complete';
+      }
     });
     _persistCurrentState();
 
-    if (nextCount >= preset.target) {
-      await _completePreset(preset, nextCount);
+    if (completesPreset) {
+      await _completePreset(preset, nextCount, sequenceIndex: sequenceIndex);
     }
   }
 
-  Future<void> _completePreset(_DhikrPreset preset, int completedCount) async {
+  Future<void> _completePreset(
+    _DhikrPreset preset,
+    int completedCount, {
+    required int sequenceIndex,
+  }) async {
     if (_hapticsEnabled) {
       unawaited(HapticFeedback.heavyImpact());
     }
     final bool groupedCompletion = await _recordCompletedPreset(
       preset,
       completedCount,
+      sequenceIndex: sequenceIndex,
     );
     if (!mounted) return;
 
@@ -185,15 +205,16 @@ class _TasbihPageState extends State<TasbihPage> {
       _completionPulse = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    await Future<void>.delayed(_completionInputLockDuration);
     if (!mounted) return;
 
-    final int nextIndex = _nextPresetIndex(_selectedPresetIndex);
+    final int nextIndex = _nextPresetIndex(sequenceIndex);
     setState(() {
       _selectedPresetIndex = nextIndex;
       _count = 0;
       _sessionStartedAt = DateTime.now();
       _completionPulse = false;
+      _completionInputLocked = false;
     });
     _persistCurrentState();
 
@@ -221,6 +242,8 @@ class _TasbihPageState extends State<TasbihPage> {
       _liveUnsavedCountToday = 0;
       _liveUnsavedRoundsToday = 0;
       _completionMessage = null;
+      _completionInputLocked = false;
+      _completionPulse = false;
     });
     _persistCurrentState();
   }
@@ -254,10 +277,14 @@ class _TasbihPageState extends State<TasbihPage> {
       _selectedPresetIndex = index;
       _count = 0;
       _sessionStartedAt = DateTime.now();
+      _liveUnsavedCountToday = 0;
+      _liveUnsavedRoundsToday = 0;
       if (index < 0 || index > 2) {
         _resetPostPrayerSequence();
       }
       _completionMessage = null;
+      _completionInputLocked = false;
+      _completionPulse = false;
     });
     _persistCurrentState();
   }
@@ -299,10 +326,11 @@ class _TasbihPageState extends State<TasbihPage> {
 
   Future<bool> _recordCompletedPreset(
     _DhikrPreset preset,
-    int completedCount,
-  ) async {
-    final int sequenceIndex = _selectedPresetIndex;
-    if (sequenceIndex < 0 || sequenceIndex > 2) {
+    int completedCount, {
+    required int sequenceIndex,
+  }) async {
+    if (!_isPostPrayerSequenceIndex(sequenceIndex)) {
+      _liveUnsavedCountToday = 0;
       await _saveSession(manual: false, completedCount: completedCount);
       return false;
     }
@@ -317,10 +345,7 @@ class _TasbihPageState extends State<TasbihPage> {
         _postPrayerSequenceCounts[1] >= 33 &&
         _postPrayerSequenceCounts[2] >= 34;
     if (!sequenceComplete) {
-      setState(() {
-        _liveUnsavedCountToday += completedCount;
-        _liveUnsavedRoundsToday += 1;
-      });
+      _liveUnsavedRoundsToday += 1;
       return false;
     }
 
@@ -333,12 +358,10 @@ class _TasbihPageState extends State<TasbihPage> {
       startedAt: _postPrayerSequenceStartedAt ?? _sessionStartedAt,
       completedAt: now,
     );
-    await DhikrSessionsDB().put(session.id, session);
     _resetPostPrayerSequence();
-    setState(() {
-      _liveUnsavedCountToday = 0;
-      _liveUnsavedRoundsToday = 0;
-    });
+    _liveUnsavedCountToday = 0;
+    _liveUnsavedRoundsToday = 0;
+    await DhikrSessionsDB().put(session.id, session);
     if (_hapticsEnabled) {
       unawaited(HapticFeedback.heavyImpact());
     }
@@ -352,6 +375,8 @@ class _TasbihPageState extends State<TasbihPage> {
     }
   }
 
+  bool _isPostPrayerSequenceIndex(int index) => index >= 0 && index <= 2;
+
   void _persistCurrentState() {
     unawaited(SettingsDB().put(_selectedPresetKey, _selectedPresetIndex));
     unawaited(SettingsDB().put(_currentCountKey, _count));
@@ -363,11 +388,13 @@ class _PresetSelector extends StatelessWidget {
     required this.selectedIndex,
     required this.onPrevious,
     required this.onNext,
+    required this.enabled,
   });
 
   final int selectedIndex;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -394,7 +421,7 @@ class _PresetSelector extends StatelessWidget {
                 children: <Widget>[
                   IconButton(
                     tooltip: 'Previous dhikr',
-                    onPressed: onPrevious,
+                    onPressed: enabled ? onPrevious : null,
                     color: colors.textSecondary,
                     icon: const Icon(Icons.chevron_left_rounded),
                   ),
@@ -413,7 +440,7 @@ class _PresetSelector extends StatelessWidget {
                   ),
                   IconButton(
                     tooltip: 'Next dhikr',
-                    onPressed: onNext,
+                    onPressed: enabled ? onNext : null,
                     color: colors.textSecondary,
                     icon: const Icon(Icons.chevron_right_rounded),
                   ),
@@ -443,6 +470,7 @@ class _CircularCounter extends StatefulWidget {
     required this.count,
     required this.targetHeight,
     required this.pulse,
+    required this.enabled,
     required this.onTap,
   });
 
@@ -450,6 +478,7 @@ class _CircularCounter extends StatefulWidget {
   final int count;
   final double targetHeight;
   final bool pulse;
+  final bool enabled;
   final VoidCallback onTap;
 
   @override
@@ -477,6 +506,7 @@ class _CircularCounterState extends State<_CircularCounter>
   }
 
   void _handleTap() {
+    if (!widget.enabled) return;
     _bounceController.forward(from: 0).then((_) {
       if (mounted) _bounceController.reverse();
     });
@@ -501,7 +531,7 @@ class _CircularCounterState extends State<_CircularCounter>
           child: Center(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: _handleTap,
+              onTap: widget.enabled ? _handleTap : null,
               child: AnimatedBuilder(
                 animation: _bounceController,
                 builder: (context, child) {

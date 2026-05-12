@@ -8,8 +8,19 @@ import 'package:equran/backend/library.dart'
         QuranBookmarksDB,
         QuranStatsDB,
         ResumeStateDB,
+        DownloadableResource,
+        ResourceDownloadPhase,
+        ResourceDownloadProgress,
+        ResourceDownloadService,
+        ResourceInstallException,
+        ResourceInstallState,
+        ResourceInstallStore,
+        ResourceManifest,
+        ResourceRepository,
+        ResourceType,
         RoutineDayProgressDB,
-        SettingsDB;
+        SettingsDB,
+        prettyBytes;
 import 'package:equran/backend/backup_service.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/utils/app_theme.dart';
@@ -33,6 +44,14 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  late Future<ResourceManifest> _resourceManifestFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _resourceManifestFuture = ResourceRepository.instance.loadManifest();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool cardViewEnabled = SettingsDB().get(
@@ -105,6 +124,13 @@ class _SettingsPageState extends State<SettingsPage> {
               _buildReciterTile(context),
               const PlayBackSlider(),
             ],
+          ),
+          _buildSettingsGroup(
+            context: context,
+            title: "Downloadable Resources",
+            subtitle: "Tafsir and audio timing packs",
+            icon: Icons.cloud_download_outlined,
+            children: <Widget>[_buildDownloadableResourcesSection(context)],
           ),
           _buildSettingsGroup(
             context: context,
@@ -282,6 +308,277 @@ class _SettingsPageState extends State<SettingsPage> {
         }
       },
     );
+  }
+
+  Widget _buildDownloadableResourcesSection(BuildContext context) {
+    return FutureBuilder<ResourceManifest>(
+      future: _resourceManifestFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final ResourceManifest? manifest = snapshot.data;
+        if (manifest == null || manifest.resources.isEmpty) {
+          return Column(
+            children: <Widget>[
+              const ListTile(
+                leading: Icon(Icons.error_outline_rounded),
+                title: Text('Resources unavailable'),
+                subtitle: Text('Unable to load the resource manifest.'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.refresh_rounded),
+                title: const Text('Retry'),
+                onTap: _refreshResourceManifest,
+              ),
+            ],
+          );
+        }
+
+        return ValueListenableBuilder<int>(
+          valueListenable: ResourceInstallStore.instance.changes,
+          builder: (context, _, _) {
+            return ValueListenableBuilder<
+              Map<String, ResourceDownloadProgress>
+            >(
+              valueListenable: ResourceDownloadService.instance.downloads,
+              builder: (context, downloads, _) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    _buildResourceSubsection(
+                      context: context,
+                      manifest: manifest,
+                      title: 'Tafsir',
+                      resources: manifest.resourcesOfType(ResourceType.tafsir),
+                      downloads: downloads,
+                    ),
+                    _buildResourceSubsection(
+                      context: context,
+                      manifest: manifest,
+                      title: 'Audio Timings',
+                      resources: manifest.resourcesOfType(ResourceType.timings),
+                      downloads: downloads,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.refresh_rounded),
+                      title: const Text('Refresh manifest'),
+                      subtitle: const Text('Check GitHub releases for changes'),
+                      onTap: _refreshResourceManifest,
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildResourceSubsection({
+    required BuildContext context,
+    required ResourceManifest manifest,
+    required String title,
+    required List<DownloadableResource> resources,
+    required Map<String, ResourceDownloadProgress> downloads,
+  }) {
+    if (resources.isEmpty) {
+      return ListTile(
+        title: Text(title),
+        subtitle: const Text('No resources listed in the manifest.'),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+        ),
+        for (final DownloadableResource resource in resources)
+          _buildResourceTile(
+            context: context,
+            manifest: manifest,
+            resource: resource,
+            progress: downloads[resource.id],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildResourceTile({
+    required BuildContext context,
+    required ResourceManifest manifest,
+    required DownloadableResource resource,
+    required ResourceDownloadProgress? progress,
+  }) {
+    final ResourceInstallStore store = ResourceInstallStore.instance;
+    final bool isTafsir = resource.type == ResourceType.tafsir;
+    final bool selected =
+        isTafsir &&
+        store.selectedTafsirResourceIds(manifest).contains(resource.id);
+    final ResourceInstallState installState =
+        progress != null &&
+            progress.phase != ResourceDownloadPhase.complete &&
+            progress.phase != ResourceDownloadPhase.failed
+        ? ResourceInstallState.downloading
+        : store.installStateFor(resource);
+    final String status = selected
+        ? '${installState.label} • Selected'
+        : installState.label;
+
+    return ListTile(
+      leading: isTafsir
+          ? Checkbox(
+              value: selected,
+              onChanged: (value) => _toggleTafsirSelection(
+                manifest: manifest,
+                resource: resource,
+                selected: value == true,
+              ),
+            )
+          : const Icon(Icons.graphic_eq_rounded),
+      title: Text(resource.name),
+      subtitle: Text('${_resourceSubtitle(resource)} • $status'),
+      trailing: _buildResourceAction(resource, installState, progress),
+      onTap: isTafsir
+          ? () => _toggleTafsirSelection(
+              manifest: manifest,
+              resource: resource,
+              selected: !selected,
+            )
+          : null,
+    );
+  }
+
+  Widget _buildResourceAction(
+    DownloadableResource resource,
+    ResourceInstallState state,
+    ResourceDownloadProgress? progress,
+  ) {
+    if (state == ResourceInstallState.downloading) {
+      final double? fraction = progress?.fraction;
+      return SizedBox.square(
+        dimension: 32,
+        child: CircularProgressIndicator(strokeWidth: 2.4, value: fraction),
+      );
+    }
+
+    if (state == ResourceInstallState.installed) {
+      return IconButton(
+        tooltip: 'Delete',
+        onPressed: () => _confirmDeleteResource(resource),
+        icon: const Icon(Icons.delete_outline_rounded),
+      );
+    }
+
+    return IconButton(
+      tooltip: state == ResourceInstallState.updateAvailable
+          ? 'Update'
+          : 'Download',
+      onPressed: () => _downloadResource(resource),
+      icon: Icon(
+        state == ResourceInstallState.updateAvailable
+            ? Icons.system_update_alt_rounded
+            : Icons.download_rounded,
+      ),
+    );
+  }
+
+  String _resourceSubtitle(DownloadableResource resource) {
+    final List<String> parts = <String>[
+      if (resource.language != null) resource.language!.toUpperCase(),
+      if (resource.reciterCode != null)
+        AppReciter.fromCode(resource.reciterCode).englishName,
+      'v${resource.version}',
+      prettyBytes(resource.sizeBytes),
+    ];
+    return parts.join(' • ');
+  }
+
+  Future<void> _toggleTafsirSelection({
+    required ResourceManifest manifest,
+    required DownloadableResource resource,
+    required bool selected,
+  }) async {
+    final ResourceInstallStore store = ResourceInstallStore.instance;
+    final Set<String> selectedIds = store
+        .selectedTafsirResourceIds(manifest)
+        .toSet();
+    if (selected) {
+      selectedIds.add(resource.id);
+    } else {
+      selectedIds.remove(resource.id);
+    }
+    await store.saveSelectedTafsirResourceIds(selectedIds.toList());
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _downloadResource(DownloadableResource resource) async {
+    try {
+      await ResourceDownloadService.instance.downloadAndInstall(resource);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
+      setState(() {});
+    } on ResourceInstallException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to install this resource.')),
+      );
+    }
+  }
+
+  Future<void> _confirmDeleteResource(DownloadableResource resource) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete ${resource.name}?'),
+        content: const Text(
+          'This removes the downloaded files from this device.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ResourceDownloadService.instance.uninstall(resource);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Deleted ${resource.name}.')));
+    setState(() {});
+  }
+
+  void _refreshResourceManifest() {
+    setState(() {
+      _resourceManifestFuture = ResourceRepository.instance.refreshManifest();
+    });
   }
 
   Widget _buildThemeColorTile(BuildContext context) {

@@ -9,13 +9,19 @@ import 'package:equran/backend/library.dart'
         AndroidAudioDisplayMode,
         AudioDownloadService,
         DownloadNotifications,
+        DownloadableResource,
+        ResourceDownloadService,
+        ResourceInstallException,
+        ResourceInstallState,
+        ResourceInstallStore,
         QuranAudioService,
         QuranTransliterationService,
         ResumeStateDB,
         ResumeStateEntry,
         SurahTiming,
         SurahTimingRepository,
-        SettingsDB;
+        SettingsDB,
+        prettyBytes;
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/app_slider_theme.dart';
@@ -28,6 +34,7 @@ import 'package:equran/widgets/app_selection_dialog.dart';
 import 'package:equran/widgets/read_quran_card.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart' as ja;
 import 'package:just_audio_background/just_audio_background.dart';
@@ -173,7 +180,8 @@ class _SleepTimerChoice {
   ];
 }
 
-class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
+class _PlayerPageState extends State<PlayerPage>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   static const MethodChannel _playerPageChannel = MethodChannel(
     'com.app.equran/read_page',
   );
@@ -191,8 +199,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   final AudioDownloadService _downloads = AudioDownloadService();
   final SurahTimingRepository _timingRepository = SurahTimingRepository();
   final Random _random = Random();
+  final ValueNotifier<double> _progressNotifier = ValueNotifier<double>(0.0);
+  final ValueNotifier<Duration> _elapsedNotifier = ValueNotifier<Duration>(
+    Duration.zero,
+  );
 
   late final bool _useAudioplayersFallback;
+  late final Ticker _progressVisualTicker;
+  final Stopwatch _progressClock = Stopwatch();
 
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
@@ -232,16 +246,18 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   DateTime? _lastListeningPersistedAt;
   String? _timingReciterCode;
   bool? _selectionTimingSupported;
+  ResourceInstallState? _selectionTimingInstallState;
   SurahTiming? _surahTiming;
   List<String> _surahTransliterationsCache = const <String>[];
 
   double _playbackRate = 1.0;
   Duration _position = Duration.zero;
-  Duration _displayedPosition = Duration.zero;
   Duration _duration = Duration.zero;
   Timer? _progressThumbTimer;
-  Timer? _progressVisualTicker;
   Timer? _sleepTimer;
+  Duration _lastTick = Duration.zero;
+  int _progressTickerGeneration = 0;
+  bool _progressVisualTickerRunning = false;
   DateTime? _sleepTimerEndsAt;
   String? _sleepTimerLabel;
   String? _sleepTimerMode;
@@ -254,6 +270,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     _useAudioplayersFallback =
         !kIsWeb && (Platform.isLinux || Platform.isWindows);
+    _progressVisualTicker = createTicker(_tickProgressVisual);
+    _progressClock.start();
 
     final dynamic rate = SettingsDB().get("playbackRate", defaultValue: 1.0);
     if (rate is num) {
@@ -384,7 +402,6 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     try {
       _safeSetState(() {
         _position = Duration.zero;
-        _displayedPosition = Duration.zero;
         _positionSampledAt = DateTime.now();
         _activeAyah = null;
         _isPlaying = false;
@@ -482,36 +499,51 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     }
 
     if (syncPosition && _shouldRenderProgressVisuals) {
-      _syncDisplayedPosition();
+      _syncProgressNotifier();
     }
   }
 
   void _setAudioPosition(Duration position) {
     if (!mounted) return;
     _position = position;
+    if (!_isPlaying || _isScrubbing) {
+      _syncProgressNotifier();
+    }
     _positionSampledAt = DateTime.now();
     final int? nextAyah = _activeAyahForPosition(position);
     final bool ayahChanged = nextAyah != _activeAyah;
-    _persistListeningResume(force: ayahChanged);
-    if (!ayahChanged) return;
-
-    setState(() {
+    if (ayahChanged) {
       _activeAyah = nextAyah;
-    });
+    }
+    _persistListeningResume(force: ayahChanged);
   }
 
-  void _syncDisplayedPosition() {
+  void _syncProgressNotifier() {
     if (!mounted) return;
-    final Duration position = _estimatedAudioPosition();
-    if (_displayedPosition == position) return;
+    _setProgressVisualValue(_positionForProgress());
+  }
 
-    setState(() {
-      _displayedPosition = position;
-    });
+  void _setProgressVisualValue(Duration position) {
+    final double progress = _progressForPosition(position);
+    final Duration elapsedLabelPosition = Duration(seconds: position.inSeconds);
+    if (_elapsedNotifier.value != elapsedLabelPosition) {
+      _elapsedNotifier.value = elapsedLabelPosition;
+    }
+    if (_progressNotifier.value != progress) {
+      _progressNotifier.value = progress;
+    }
+  }
+
+  double _progressForPosition(Duration position) {
+    if (_duration.inMilliseconds <= 0) return 0.0;
+    return (position.inMilliseconds / _duration.inMilliseconds)
+        .clamp(0.0, 1.0)
+        .toDouble();
   }
 
   void _startProgressVisualTicker() {
-    if (_progressVisualTicker != null) return;
+    if (_progressVisualTickerRunning || _progressVisualTicker.isActive) return;
+    _progressVisualTickerRunning = true;
     _logProgressTicker(
       'started full player progress ticker '
       'interval=${_expandedProgressTickInterval.inMilliseconds}ms '
@@ -521,41 +553,56 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       owner: 'full_player_page',
       interval: _expandedProgressTickInterval,
     );
-    _progressVisualTicker = Timer.periodic(_expandedProgressTickInterval, (_) {
-      _tickProgressVisual();
-    });
+    _progressTickerGeneration++;
+    _progressVisualTicker.start();
   }
 
   void _stopProgressVisualTicker(String reason) {
-    final Timer? ticker = _progressVisualTicker;
-    if (ticker == null) return;
-    ticker.cancel();
-    _progressVisualTicker = null;
+    if (!_progressVisualTickerRunning && !_progressVisualTicker.isActive) {
+      return;
+    }
+    _progressVisualTickerRunning = false;
+    _progressTickerGeneration++;
+    if (_progressVisualTicker.isActive) {
+      _progressVisualTicker.stop();
+    }
     _logProgressTicker(
       'stopped full player progress ticker ($reason) '
       'mode=$_progressVisualMode',
     );
   }
 
-  void _tickProgressVisual() {
+  void _tickProgressVisual(Duration _) {
+    if (_progressVisualTicker.isActive) {
+      _progressVisualTicker.stop();
+    }
     if (!_shouldRunProgressVisualTicker) {
       _stopProgressVisualTicker('tick found inactive');
       return;
     }
 
+    final Duration now = _progressClock.elapsed;
+    if (now - _lastTick < _expandedProgressTickInterval) {
+      _scheduleProgressVisualTick();
+      return;
+    }
     final Duration position = _estimatedAudioPosition();
-    final int? nextAyah = _activeAyahForPosition(position);
-    final bool progressChanged = _displayedPosition != position;
-    final bool ayahChanged = nextAyah != _activeAyah;
-    if (!progressChanged && !ayahChanged) return;
+    _lastTick = now;
+    _setProgressVisualValue(position);
+    _scheduleProgressVisualTick();
+  }
 
-    setState(() {
-      if (progressChanged) {
-        _displayedPosition = position;
+  void _scheduleProgressVisualTick() {
+    final int generation = _progressTickerGeneration;
+    Future<void>.delayed(_expandedProgressTickInterval, () {
+      if (!mounted ||
+          generation != _progressTickerGeneration ||
+          !_progressVisualTickerRunning ||
+          !_shouldRunProgressVisualTicker ||
+          _progressVisualTicker.isActive) {
+        return;
       }
-      if (ayahChanged) {
-        _activeAyah = nextAyah;
-      }
+      _progressVisualTicker.start();
     });
   }
 
@@ -622,8 +669,22 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   void _toggleAyahText() {
+    unawaited(_handleToggleAyahText());
+  }
+
+  Future<void> _handleToggleAyahText() async {
+    if (_showAyahText) {
+      setState(() {
+        _showAyahText = false;
+      });
+      unawaited(_updateKeepScreenOn());
+      return;
+    }
+
+    final bool timingReady = await _ensureTimingReadyForAyahText();
+    if (!timingReady || !mounted) return;
     setState(() {
-      _showAyahText = !_showAyahText;
+      _showAyahText = true;
     });
     unawaited(_updateKeepScreenOn());
   }
@@ -651,10 +712,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     );
     _selectedSurah = surah;
     _position = position;
-    _displayedPosition = position;
     _positionSampledAt = DateTime.now();
     _pendingInitialResumePosition = position > Duration.zero ? position : null;
     _activeAyah = entry.ayah;
+    _syncProgressNotifier();
   }
 
   void _consumeResumeListeningRequest() {
@@ -731,26 +792,38 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _surahTiming = null;
       _activeAyah = null;
       _selectionTimingSupported = null;
+      _selectionTimingInstallState = null;
       _isTimingLoading = true;
     });
 
-    final bool hasTimingSupport =
-        await SurahTimingRepository.hasTimingSupportForReciter(
+    final DownloadableResource? timingResource =
+        await SurahTimingRepository.timingResourceForReciter(
           effectiveReciterCode,
         );
     if (!mounted || generation != _timingLoadGeneration) return;
 
-    if (!hasTimingSupport) {
+    if (timingResource == null) {
       _safeSetState(() {
         _selectionTimingSupported = false;
+        _selectionTimingInstallState = null;
         _isTimingLoading = false;
       });
       return;
     }
 
+    final ResourceInstallState installState = ResourceInstallStore.instance
+        .installStateFor(timingResource);
     _safeSetState(() {
       _selectionTimingSupported = true;
+      _selectionTimingInstallState = installState;
     });
+
+    if (installState == ResourceInstallState.notDownloaded) {
+      _safeSetState(() {
+        _isTimingLoading = false;
+      });
+      return;
+    }
 
     final SurahTiming? timing = await _timingRepository.loadSurahTiming(
       reciterCode: effectiveReciterCode,
@@ -762,8 +835,98 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _surahTiming = timing;
       _activeAyah = _activeAyahForPosition(_position);
       _selectionTimingSupported = true;
+      _selectionTimingInstallState = installState;
       _isTimingLoading = false;
     });
+  }
+
+  Future<bool> _ensureTimingReadyForAyahText() async {
+    final String reciterCode = _selectedReciterCode();
+    final DownloadableResource? timingResource =
+        await SurahTimingRepository.timingResourceForReciter(reciterCode);
+    if (!mounted) return false;
+
+    if (timingResource == null) {
+      _safeSetState(() {
+        _selectionTimingSupported = false;
+        _selectionTimingInstallState = null;
+        _surahTiming = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Timings unavailable for this reciter.')),
+      );
+      return false;
+    }
+
+    if (!ResourceInstallStore.instance.isInstalled(timingResource)) {
+      final bool downloaded = await _promptDownloadTimingResource(
+        timingResource,
+      );
+      if (!downloaded || !mounted) return false;
+    }
+
+    await _loadTimingForSelection(
+      surah: _selectedSurah,
+      reciterCode: reciterCode,
+    );
+    if (!mounted) return false;
+    if (_surahTiming == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Timings unavailable for this surah.')),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> _promptDownloadTimingResource(
+    DownloadableResource resource,
+  ) async {
+    final bool? shouldDownload = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Download timings?'),
+        content: Text(
+          'This reciter needs audio timings before synced ayah text can be shown. ${prettyBytes(resource.sizeBytes)}',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.download_rounded),
+            label: const Text('Download'),
+          ),
+        ],
+      ),
+    );
+    if (shouldDownload != true) return false;
+
+    try {
+      await ResourceDownloadService.instance.downloadAndInstall(resource);
+      _timingRepository.clearCache();
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
+      }
+      return true;
+    } on ResourceInstallException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to install timings.')),
+        );
+      }
+    }
+    return false;
   }
 
   int? _activeAyahForPosition(Duration position) {
@@ -819,10 +982,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _safeSetState(() {
       final Duration currentPosition = _estimatedAudioPosition();
       _position = currentPosition;
-      _displayedPosition = currentPosition;
       _positionSampledAt = DateTime.now();
       _playbackRate = rate;
     });
+    _syncProgressNotifier();
     await SettingsDB().put("playbackRate", rate);
 
     if (_useAudioplayersFallback) {
@@ -850,11 +1013,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     await _stopCurrentTrack();
     _safeSetState(() {
       _position = Duration.zero;
-      _displayedPosition = Duration.zero;
       _positionSampledAt = DateTime.now();
       _duration = Duration.zero;
       _playingFromOffline = false;
     });
+    _syncProgressNotifier();
     unawaited(
       _loadTimingForSelection(surah: _selectedSurah, reciterCode: reciter.code),
     );
@@ -870,11 +1033,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       await _fallbackAudio.stop();
       _safeSetState(() {
         _position = Duration.zero;
-        _displayedPosition = Duration.zero;
         _positionSampledAt = DateTime.now();
         _duration = Duration.zero;
         _activeAyah = null;
       });
+      _syncProgressNotifier();
 
       if (playOffline) {
         final File file = await _surahFile(surah);
@@ -888,9 +1051,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         await _fallbackAudio.seek(initialSeek);
         _safeSetState(() {
           _position = initialSeek;
-          _displayedPosition = initialSeek;
           _positionSampledAt = DateTime.now();
         });
+        _syncProgressNotifier();
       }
       return;
     }
@@ -906,11 +1069,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     _safeSetState(() {
       _position = Duration.zero;
-      _displayedPosition = Duration.zero;
       _positionSampledAt = DateTime.now();
       _duration = Duration.zero;
       _activeAyah = null;
     });
+    _syncProgressNotifier();
 
     await _justAudio.setAudioSource(
       ja.AudioSource.uri(
@@ -929,9 +1092,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       await _justAudio.seek(initialSeek);
       _safeSetState(() {
         _position = initialSeek;
-        _displayedPosition = initialSeek;
         _positionSampledAt = DateTime.now();
       });
+      _syncProgressNotifier();
     }
     unawaited(_justAudio.play());
   }
@@ -1207,7 +1370,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Duration _positionForProgress() {
-    return _scrubPreviewPosition ?? _displayedPosition;
+    return _scrubPreviewPosition ?? _estimatedAudioPosition();
   }
 
   void _revealProgressThumb() {
@@ -1275,7 +1438,6 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           } finally {
             _safeSetState(() {
               _position = Duration(milliseconds: pendingMs);
-              _displayedPosition = Duration(milliseconds: pendingMs);
               _positionSampledAt = DateTime.now();
               _isScrubbing = false;
               _pendingSeekProgress = null;
@@ -1293,6 +1455,15 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           }
         },
       ),
+    );
+  }
+
+  Widget _buildProgressSliderListenable(BuildContext context) {
+    return ValueListenableBuilder<double>(
+      valueListenable: _progressNotifier,
+      builder: (context, progress, _) {
+        return _buildProgressSlider(context: context, progress: progress);
+      },
     );
   }
 
@@ -1876,7 +2047,6 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _loadedReciterCode = null;
         _safeSetState(() {
           _position = Duration.zero;
-          _displayedPosition = Duration.zero;
           _positionSampledAt = DateTime.now();
           _duration = Duration.zero;
           _activeAyah = null;
@@ -1884,6 +2054,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           _isPaused = false;
           _playingFromOffline = false;
         });
+        _syncProgressNotifier();
       }
 
       await _refreshDownloadState();
@@ -1964,6 +2135,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _progressThumbTimer?.cancel();
     _sleepTimer?.cancel();
     _stopProgressVisualTicker('dispose');
+    _progressVisualTicker.dispose();
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
     _stateSubscription?.cancel();
@@ -1974,6 +2146,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     _justAudio.dispose();
     _fallbackAudio.dispose();
+    _progressNotifier.dispose();
+    _elapsedNotifier.dispose();
     super.dispose();
   }
 
@@ -2025,6 +2199,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     if (_surahTiming != null) return null;
     if (_selectionTimingSupported == false) {
       return 'Synced ayah display is unavailable for this reciter';
+    }
+    if (_selectionTimingInstallState == ResourceInstallState.notDownloaded) {
+      return 'Download timings to sync ayahs for this reciter';
     }
     if (_selectionTimingSupported == true) {
       return 'Synced ayah display is unavailable for this surah';
@@ -2381,13 +2558,6 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _syncTimingForCurrentSelection();
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
-    final Duration displayedPosition = _positionForProgress();
-    final double progress = _duration.inMilliseconds > 0
-        ? (displayedPosition.inMilliseconds / _duration.inMilliseconds).clamp(
-            0.0,
-            1.0,
-          )
-        : 0.0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -2467,6 +2637,15 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                 fontWeight: FontWeight.w500,
               ),
             ),
+          );
+        }
+
+        Widget buildElapsedTimeLabel({TextAlign textAlign = TextAlign.left}) {
+          return ValueListenableBuilder<Duration>(
+            valueListenable: _elapsedNotifier,
+            builder: (context, position, _) {
+              return buildTimeLabel(position, textAlign: textAlign);
+            },
           );
         }
 
@@ -2649,12 +2828,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            _buildProgressSlider(context: context, progress: progress),
+            _buildProgressSliderListenable(context),
             const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                buildTimeLabel(displayedPosition),
+                buildElapsedTimeLabel(),
                 buildTimeLabel(_duration, textAlign: TextAlign.right),
               ],
             ),
@@ -2694,13 +2873,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                     const SizedBox(height: 14),
                     Row(
                       children: <Widget>[
-                        buildTimeLabel(displayedPosition),
+                        buildElapsedTimeLabel(),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: _buildProgressSlider(
-                            context: context,
-                            progress: progress,
-                          ),
+                          child: _buildProgressSliderListenable(context),
                         ),
                         const SizedBox(width: 8),
                         buildTimeLabel(_duration, textAlign: TextAlign.right),

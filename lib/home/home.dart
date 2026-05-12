@@ -167,7 +167,9 @@ class _HomePageState extends State<HomePage> {
                 toolbarHeight: ResponsiveNav.toolbarHeight(context),
                 title: Text(_pageDestinations[_selectedIndex].label),
                 centerTitle: true,
-                backgroundColor: equranColors.background,
+                backgroundColor: _selectedIndex == _prayerDestinationIndex
+                    ? Colors.transparent
+                    : equranColors.background,
                 foregroundColor: equranColors.textPrimary,
                 elevation: 0,
                 scrolledUnderElevation: 0,
