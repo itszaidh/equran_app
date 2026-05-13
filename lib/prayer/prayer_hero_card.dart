@@ -5,8 +5,8 @@ import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 
-const String _appAssetBase = 'assets/images/app_assets';
-const String _fallbackPrayerAsset = '$_appAssetBase/prayer_time.png';
+const String _appAssetBase = 'assets/media/images/app';
+const String _fallbackPrayerAsset = '$_appAssetBase/prayer_time.webp';
 
 class PrayerHeroCard extends StatelessWidget {
   const PrayerHeroCard({
@@ -306,12 +306,12 @@ class _PrayerHeroDecoration extends StatelessWidget {
 
 String _prayerBannerAsset(PrayerTimeKind kind) {
   return switch (kind) {
-    PrayerTimeKind.fajr => '$_appAssetBase/fajr_banner.png',
-    PrayerTimeKind.sunrise => '$_appAssetBase/fajr_banner.png',
-    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr_banner.png',
-    PrayerTimeKind.asr => '$_appAssetBase/asr_banner.png',
-    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib_banner.png',
-    PrayerTimeKind.isha => '$_appAssetBase/isha_banner.png',
+    PrayerTimeKind.fajr => '$_appAssetBase/fajr_banner.webp',
+    PrayerTimeKind.sunrise => '$_appAssetBase/fajr_banner.webp',
+    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr_banner.webp',
+    PrayerTimeKind.asr => '$_appAssetBase/asr_banner.webp',
+    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib_banner.webp',
+    PrayerTimeKind.isha => '$_appAssetBase/isha_banner.webp',
   };
 }
 

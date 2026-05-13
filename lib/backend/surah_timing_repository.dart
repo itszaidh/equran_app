@@ -120,11 +120,21 @@ class SurahTimingRepository {
     required int surahNumber,
   }) async {
     final String paddedSurah = surahNumber.toString().padLeft(3, '0');
+    final String separator = Platform.pathSeparator;
+    final List<String> candidateDirectories = <String>[
+      installed.localPath,
+      '${installed.localPath}$separator${installed.id}',
+    ];
+    final List<String> candidateFiles = <String>[
+      '$paddedSurah.txt',
+      '$surahNumber.txt',
+      '$paddedSurah.json',
+      '$surahNumber.json',
+    ];
     final List<String> candidatePaths = <String>[
-      '${installed.localPath}${Platform.pathSeparator}$paddedSurah.txt',
-      '${installed.localPath}${Platform.pathSeparator}$surahNumber.txt',
-      '${installed.localPath}${Platform.pathSeparator}$paddedSurah.json',
-      '${installed.localPath}${Platform.pathSeparator}$surahNumber.json',
+      for (final String directory in candidateDirectories)
+        for (final String fileName in candidateFiles)
+          '$directory$separator$fileName',
     ];
 
     for (final String path in candidatePaths) {
@@ -236,9 +246,12 @@ class SurahTimingRepository {
 
     markers.sort();
 
+    final int leadingMarkerCount = (markers.length - ayahCount)
+        .clamp(0, markers.length - 1)
+        .toInt();
     final List<AyahTiming> ayahs = _looksLikeStartMarkers(markers)
-        ? _timingsFromStartMarkers(markers, ayahCount)
-        : _timingsFromBoundaryMarkers(markers, ayahCount);
+        ? _timingsFromStartMarkers(markers, ayahCount, leadingMarkerCount)
+        : _timingsFromBoundaryMarkers(markers, ayahCount, leadingMarkerCount);
 
     if (ayahs.isEmpty) return null;
 
@@ -249,9 +262,9 @@ class SurahTimingRepository {
       );
     }
 
-    // Most packaged timing files are ayah boundary/end markers: line 1 is the
-    // end of ayah 1, line 2 is the end of ayah 2, and so on. A few legacy files
-    // use start markers, so keep that supported when the first marker is near 0.
+    // Most packaged timing files are ayah boundary/end markers. Some reciters
+    // include a leading basmala/preamble segment, so extra leading markers are
+    // folded into ayah 1 instead of shifting the displayed ayah forward.
     return SurahTiming(
       reciterCode: reciterCode,
       surahNumber: surahNumber,
@@ -267,11 +280,18 @@ class SurahTimingRepository {
   static List<AyahTiming> _timingsFromBoundaryMarkers(
     List<Duration> markers,
     int ayahCount,
+    int leadingMarkerCount,
   ) {
     final List<AyahTiming> ayahs = <AyahTiming>[];
     for (int index = 0; index < ayahCount; index++) {
-      final Duration start = index == 0 ? Duration.zero : markers[index - 1];
-      final Duration end = markers[index];
+      final int endIndex = (index + leadingMarkerCount)
+          .clamp(0, markers.length - 1)
+          .toInt();
+      final int startIndex = (endIndex - 1)
+          .clamp(0, markers.length - 1)
+          .toInt();
+      final Duration start = index == 0 ? Duration.zero : markers[startIndex];
+      final Duration end = markers[endIndex];
       if (end <= start) continue;
       ayahs.add(AyahTiming(ayahNumber: index + 1, start: start, end: end));
     }
@@ -281,12 +301,17 @@ class SurahTimingRepository {
   static List<AyahTiming> _timingsFromStartMarkers(
     List<Duration> markers,
     int ayahCount,
+    int leadingMarkerCount,
   ) {
     final List<AyahTiming> ayahs = <AyahTiming>[];
     for (int index = 0; index < ayahCount; index++) {
-      final Duration start = markers[index];
-      final Duration end = index + 1 < markers.length
-          ? markers[index + 1]
+      final int startIndex = index == 0
+          ? 0
+          : (index + leadingMarkerCount).clamp(0, markers.length - 1).toInt();
+      final int endIndex = index + leadingMarkerCount + 1;
+      final Duration start = markers[startIndex];
+      final Duration end = endIndex < markers.length
+          ? markers[endIndex]
           : const Duration(days: 1);
       if (end <= start) continue;
       ayahs.add(AyahTiming(ayahNumber: index + 1, start: start, end: end));

@@ -102,8 +102,11 @@ class ResourceInstallStore {
 
   Future<Directory> installDirectory(DownloadableResource resource) async {
     final Directory root = await resourcesRootDirectory();
+    final String typeDirectory = resource.type == ResourceType.translation
+        ? 'translations'
+        : _safePathSegment(resource.rawType);
     return Directory(
-      '${root.path}${Platform.pathSeparator}${_safePathSegment(resource.rawType)}${Platform.pathSeparator}${_safePathSegment(resource.id)}',
+      '${root.path}${Platform.pathSeparator}$typeDirectory${Platform.pathSeparator}${_safePathSegment(resource.id)}',
     );
   }
 

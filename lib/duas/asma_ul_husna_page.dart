@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-const String _asmaUlHusnaAssetPath = 'assets/content/asma_al_husna.json';
+const String _asmaUlHusnaAssetPath = 'assets/data/dua/asma_al_husna.json';
 
 class AsmaUlHusnaName {
   const AsmaUlHusnaName({

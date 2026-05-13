@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:quran/quran.dart';
 
-const String equranResumeQuranAsset = 'assets/images/app_assets/quran.png';
-const String equranResumePlayerAsset = 'assets/images/app_assets/player.png';
+const String equranResumeQuranAsset = 'assets/media/images/app/quran.webp';
+const String equranResumePlayerAsset = 'assets/media/images/app/player.webp';
 const double _resumeImageCardMaxWidth = 620;
 const double _resumeImageCardHeight = 150;
 

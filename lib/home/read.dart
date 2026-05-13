@@ -18,6 +18,7 @@ import 'package:equran/backend/library.dart'
         QuranBookmarksDB,
         QuranStatsDB,
         QuranStatsSnapshot,
+        QuranTranslationService,
         QuranTransliterationService,
         QuranAudioService,
         ReadingPlansDB,
@@ -4809,12 +4810,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         SettingsDB().get("enableTranslation", defaultValue: true) == true;
     final Color backgroundColor = theme.scaffoldBackgroundColor;
     final String verseText = quranVerseText(_currentChapter, _currentVerse);
-    final String translation = quran.getVerseTranslation(
-      _currentChapter,
-      _currentVerse,
-      translation: quran
-          .Translation
-          .values[SettingsDB().get("translation", defaultValue: 0)],
+    final String translation = quran.cleanTranslationText(
+      quran.getVerseTranslation(
+        _currentChapter,
+        _currentVerse,
+        translation: quran
+            .Translation
+            .values[SettingsDB().get("translation", defaultValue: 0)],
+      ),
     );
     final String transliteration = _transliterationForVerse(_currentVerse);
 
@@ -5553,14 +5556,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               _currentChapter,
                               _currentVerse,
                             ),
-                            translation: quran.getVerseTranslation(
-                              _currentChapter,
-                              _currentVerse,
-                              translation:
-                                  quran.Translation.values[SettingsDB().get(
-                                    "translation",
-                                    defaultValue: 0,
-                                  )],
+                            translation: quran.cleanTranslationText(
+                              quran.getVerseTranslation(
+                                _currentChapter,
+                                _currentVerse,
+                                translation:
+                                    quran.Translation.values[SettingsDB().get(
+                                      "translation",
+                                      defaultValue: 0,
+                                    )],
+                              ),
                             ),
                             transliteration: _cardTransliterationForVerse(
                               _currentVerse,
@@ -6089,10 +6094,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         builder: (context) {
           return StatefulBuilder(
             builder: (context, setSheetState) {
-              final String translation = quran.getVerseTranslation(
-                _currentChapter,
-                verse,
-                translation: quran.Translation.values[selectedTranslationIndex],
+              final String translation = quran.cleanTranslationText(
+                quran.getVerseTranslation(
+                  _currentChapter,
+                  verse,
+                  translation:
+                      quran.Translation.values[selectedTranslationIndex],
+                ),
               );
 
               Future<void> switchLanguage() async {
@@ -6100,10 +6108,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   selectedTranslationIndex,
                 );
                 if (value == null || !context.mounted) return;
-                await SettingsDB().put("translation", value);
+                final bool ready = await _saveSelectedTranslationIndex(value);
+                if (!ready || !context.mounted) return;
                 setSheetState(() {
                   selectedTranslationIndex = value;
                 });
+                if (mounted) setState(() {});
               }
 
               return DraggableScrollableSheet(
@@ -6176,7 +6186,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     });
   }
 
-  Future<int?> _showTranslationPickerDialog(int selectedTranslation) {
+  Future<int?> _showTranslationPickerDialog(int selectedTranslation) async {
+    final ResourceManifest manifest = await ResourceRepository.instance
+        .loadManifest();
+    if (!mounted) return null;
     return showDialog<int>(
       context: context,
       builder: (context) => AppSelectionDialog<int>(
@@ -6192,7 +6205,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 .map(
                   (entry) => AppSelectionOption<int>(
                     value: entry.key,
-                    title: translationDisplayName(entry.value),
+                    title:
+                        '${translationDisplayName(entry.value)} • '
+                        '${QuranTranslationService.instance.availabilityLabel(entry.value, manifest)}',
                   ),
                 )
                 .toList()
@@ -6206,8 +6221,65 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       () => _showTranslationPickerDialog(_selectedTranslationIndex()),
     );
     if (value == null || !mounted) return;
-    SettingsDB().put("translation", value);
+    final bool ready = await _saveSelectedTranslationIndex(value);
+    if (!ready || !mounted) return;
     setState(() {});
+  }
+
+  Future<bool> _saveSelectedTranslationIndex(int value) async {
+    if (value < 0 || value >= quran.Translation.values.length) return false;
+    final quran.Translation translation = quran.Translation.values[value];
+    final bool ready = await _ensureTranslationReady(translation);
+    if (!ready) return false;
+    await SettingsDB().put("translation", value);
+    await QuranTranslationService.instance.loadInstalledTranslation(
+      translation,
+    );
+    return true;
+  }
+
+  Future<bool> _ensureTranslationReady(quran.Translation translation) async {
+    if (translation.isBundled) return true;
+    final ResourceManifest manifest = await ResourceRepository.instance
+        .loadManifest();
+    final DownloadableResource? resource = QuranTranslationService.instance
+        .resourceForTranslation(translation, manifest);
+    if (resource == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('This translation is not in the resource manifest.'),
+          ),
+        );
+      }
+      return false;
+    }
+    if (ResourceInstallStore.instance.isInstalled(resource)) return true;
+    if (!mounted) return false;
+
+    final bool? download = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Download ${translationDisplayName(translation)}?'),
+        content: Text(
+          'This translation is not installed on this device. '
+          '${prettyBytes(resource.sizeBytes)}',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.download_rounded),
+            label: const Text('Download'),
+          ),
+        ],
+      ),
+    );
+    if (download != true) return false;
+    return _downloadDownloadableResource(resource);
   }
 
   int _selectedTranslationIndex() {
@@ -6577,6 +6649,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   ) async {
     try {
       await ResourceDownloadService.instance.downloadAndInstall(resource);
+      await QuranTranslationService.instance
+          .loadInstalledTranslationForResource(resource);
       if (!mounted) return true;
       ScaffoldMessenger.of(
         context,

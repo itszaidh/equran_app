@@ -3,7 +3,7 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 
-const String _appAssetBase = 'assets/images/app_assets';
+const String _appAssetBase = 'assets/media/images/app';
 
 class PrayerTimeThumbCard extends StatelessWidget {
   const PrayerTimeThumbCard({
@@ -167,12 +167,12 @@ IconData _iconFor(PrayerTimeKind kind) {
 
 String _prayerThumbAsset(PrayerTimeKind kind) {
   return switch (kind) {
-    PrayerTimeKind.fajr => '$_appAssetBase/fajr.png',
-    PrayerTimeKind.sunrise => '$_appAssetBase/fajr.png',
-    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr.png',
-    PrayerTimeKind.asr => '$_appAssetBase/asr.png',
-    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib.png',
-    PrayerTimeKind.isha => '$_appAssetBase/isha.png',
+    PrayerTimeKind.fajr => '$_appAssetBase/fajr.webp',
+    PrayerTimeKind.sunrise => '$_appAssetBase/fajr.webp',
+    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr.webp',
+    PrayerTimeKind.asr => '$_appAssetBase/asr.webp',
+    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib.webp',
+    PrayerTimeKind.isha => '$_appAssetBase/isha.webp',
   };
 }
 

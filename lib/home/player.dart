@@ -157,7 +157,7 @@ const List<String> _surahTransliterations = <String>[
   'An-Nas',
 ];
 
-const String _playerDesignAsset = 'assets/images/app_assets/design.png';
+const String _playerDesignAsset = 'assets/media/images/app/design.webp';
 
 class PlayerPage extends StatefulWidget {
   const PlayerPage({super.key});
@@ -466,7 +466,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   bool get _shouldRunProgressVisualTicker {
     return _shouldRenderProgressVisuals &&
         _isPlaying &&
-        _duration > Duration.zero;
+        (_duration > Duration.zero || (_showAyahText && _surahTiming != null));
   }
 
   bool get _shouldAnimateProgressVisuals {
@@ -507,7 +507,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   void _setAudioPosition(Duration position) {
     if (!mounted) return;
-    _position = position;
+    Duration effectivePosition = position;
+    if (_isPlaying && !_isScrubbing) {
+      final Duration estimatedPosition = _estimatedAudioPosition();
+      if (estimatedPosition - position > const Duration(milliseconds: 120)) {
+        effectivePosition = estimatedPosition;
+      }
+    }
+    _position = effectivePosition;
     _positionSampledAt = DateTime.now();
     if (_isPlaying && !_isScrubbing && _progressVisualTicker != null) {
       _persistListeningResume();
@@ -515,7 +522,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     }
     if (!_isPlaying || _isScrubbing || _shouldRenderProgressVisuals) {
       _syncProgressNotifier();
-      final bool ayahChanged = _setActiveAyahForPosition(position);
+      final bool ayahChanged = _setActiveAyahForPosition(effectivePosition);
       _persistListeningResume(force: ayahChanged);
       return;
     }
@@ -2235,10 +2242,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                 ? quran.basmala
                 : null,
             verse: quranVerseText(_selectedSurah, ayah),
-            translation: quran.getVerseTranslation(
-              _selectedSurah,
-              ayah,
-              translation: quran.Translation.values[_translationIndex()],
+            translation: quran.cleanTranslationText(
+              quran.getVerseTranslation(
+                _selectedSurah,
+                ayah,
+                translation: quran.Translation.values[_translationIndex()],
+              ),
             ),
             transliteration: showTransliteration
                 ? _cardTransliterationForAyah(ayah)

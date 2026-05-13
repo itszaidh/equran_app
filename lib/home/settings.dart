@@ -7,6 +7,7 @@ import 'package:equran/backend/library.dart'
         QuranBookmarkFoldersDB,
         QuranBookmarksDB,
         QuranStatsDB,
+        QuranTranslationService,
         ResumeStateDB,
         DownloadableResource,
         ResourceDownloadPhase,
@@ -34,7 +35,7 @@ import 'package:equran/widgets/library.dart'
         PlayBackSlider,
         SettingsSwitch;
 import 'package:flutter/material.dart';
-import 'package:quran/quran.dart' show Translation;
+import 'package:quran/quran.dart' show Translation, isTranslationLoaded;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -219,6 +220,8 @@ class _SettingsPageState extends State<SettingsPage> {
       title: const Text("Translation"),
       subtitle: Text(_selectedTranslationName()),
       onTap: () async {
+        final ResourceManifest manifest = await _resourceManifestFuture;
+        if (!context.mounted) return;
         final int selected = SettingsDB().get("translation", defaultValue: 0);
         final int? value = await _showSelectionDialog<int>(
           context: context,
@@ -232,14 +235,25 @@ class _SettingsPageState extends State<SettingsPage> {
                   .map(
                     (entry) => AppSelectionOption<int>(
                       value: entry.key,
-                      title: translationDisplayName(entry.value),
+                      title:
+                          '${translationDisplayName(entry.value)} • '
+                          '${QuranTranslationService.instance.availabilityLabel(entry.value, manifest)}',
                     ),
                   )
                   .toList()
                 ..sort((a, b) => a.title.compareTo(b.title)),
         );
         if (value == null) return;
-        SettingsDB().put("translation", value);
+        final Translation translation = Translation.values[value];
+        final bool ready = await _ensureTranslationReadyForSelection(
+          translation: translation,
+          manifest: manifest,
+        );
+        if (!ready) return;
+        await SettingsDB().put("translation", value);
+        await QuranTranslationService.instance.loadInstalledTranslation(
+          translation,
+        );
         if (mounted) {
           setState(() {});
         }
@@ -364,6 +378,15 @@ class _SettingsPageState extends State<SettingsPage> {
                       resources: manifest.resourcesOfType(ResourceType.timings),
                       downloads: downloads,
                     ),
+                    _buildResourceSubsection(
+                      context: context,
+                      manifest: manifest,
+                      title: 'Translations',
+                      resources: manifest.resourcesOfType(
+                        ResourceType.translation,
+                      ),
+                      downloads: downloads,
+                    ),
                     ListTile(
                       leading: const Icon(Icons.refresh_rounded),
                       title: const Text('Refresh manifest'),
@@ -425,9 +448,11 @@ class _SettingsPageState extends State<SettingsPage> {
   }) {
     final ResourceInstallStore store = ResourceInstallStore.instance;
     final bool isTafsir = resource.type == ResourceType.tafsir;
+    final bool isTranslation = resource.type == ResourceType.translation;
     final bool selected =
-        isTafsir &&
-        store.selectedTafsirResourceIds(manifest).contains(resource.id);
+        (isTafsir &&
+            store.selectedTafsirResourceIds(manifest).contains(resource.id)) ||
+        (isTranslation && _selectedTranslationResourceId() == resource.id);
     final ResourceInstallState installState =
         progress != null &&
             progress.phase != ResourceDownloadPhase.complete &&
@@ -448,7 +473,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 selected: value == true,
               ),
             )
-          : const Icon(Icons.graphic_eq_rounded),
+          : Icon(
+              isTranslation
+                  ? selected
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.translate_rounded
+                  : Icons.graphic_eq_rounded,
+            ),
       title: Text(resource.name),
       subtitle: Text('${_resourceSubtitle(resource)} • $status'),
       trailing: _buildResourceAction(resource, installState, progress),
@@ -457,6 +488,11 @@ class _SettingsPageState extends State<SettingsPage> {
               manifest: manifest,
               resource: resource,
               selected: !selected,
+            )
+          : isTranslation
+          ? () => _selectTranslationResource(
+              manifest: manifest,
+              resource: resource,
             )
           : null,
     );
@@ -525,24 +561,120 @@ class _SettingsPageState extends State<SettingsPage> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _downloadResource(DownloadableResource resource) async {
+  String? _selectedTranslationResourceId() {
+    final dynamic saved = SettingsDB().get('translation', defaultValue: 0);
+    if (saved is! int ||
+        saved < 0 ||
+        saved >= Translation.values.length ||
+        Translation.values[saved].isBundled) {
+      return null;
+    }
+    return Translation.values[saved].resourceId;
+  }
+
+  Future<void> _selectTranslationResource({
+    required ResourceManifest manifest,
+    required DownloadableResource resource,
+  }) async {
+    final Translation? translation = _translationForResource(resource);
+    if (translation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This translation is not supported yet.')),
+      );
+      return;
+    }
+
+    final bool ready = await _ensureTranslationReadyForSelection(
+      translation: translation,
+      manifest: manifest,
+    );
+    if (!ready) return;
+
+    await SettingsDB().put(
+      'translation',
+      Translation.values.indexOf(translation),
+    );
+    await QuranTranslationService.instance.loadInstalledTranslation(
+      translation,
+    );
+    if (mounted) setState(() {});
+  }
+
+  Future<bool> _ensureTranslationReadyForSelection({
+    required Translation translation,
+    required ResourceManifest manifest,
+  }) async {
+    if (translation.isBundled) return true;
+
+    final DownloadableResource? resource = QuranTranslationService.instance
+        .resourceForTranslation(translation, manifest);
+    if (resource == null) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This translation is not in the resource manifest.'),
+        ),
+      );
+      return false;
+    }
+
+    if (ResourceInstallStore.instance.isInstalled(resource)) return true;
+
+    final bool? download = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Download ${translationDisplayName(translation)}?'),
+        content: Text(
+          'This translation is not installed on this device. '
+          '${prettyBytes(resource.sizeBytes)}',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.download_rounded),
+            label: const Text('Download'),
+          ),
+        ],
+      ),
+    );
+    if (download != true) return false;
+    return _downloadResource(resource);
+  }
+
+  Translation? _translationForResource(DownloadableResource resource) {
+    for (final Translation translation in Translation.values) {
+      if (translation.resourceId == resource.id) return translation;
+    }
+    return null;
+  }
+
+  Future<bool> _downloadResource(DownloadableResource resource) async {
     try {
       await ResourceDownloadService.instance.downloadAndInstall(resource);
-      if (!mounted) return;
+      await QuranTranslationService.instance
+          .loadInstalledTranslationForResource(resource);
+      if (!mounted) return false;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
       setState(() {});
+      return true;
     } on ResourceInstallException catch (error) {
-      if (!mounted) return;
+      if (!mounted) return false;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(error.message)));
+      return false;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Unable to install this resource.')),
       );
+      return false;
     }
   }
 
@@ -1104,7 +1236,12 @@ class _SettingsPageState extends State<SettingsPage> {
     if (savedTranslation is int &&
         savedTranslation >= 0 &&
         savedTranslation < Translation.values.length) {
-      return translationDisplayName(Translation.values[savedTranslation]);
+      final Translation translation = Translation.values[savedTranslation];
+      final String name = translationDisplayName(translation);
+      if (!translation.isBundled && !isTranslationLoaded(translation)) {
+        return '$name • Not downloaded';
+      }
+      return name;
     }
     return translationDisplayName(Translation.values.first);
   }

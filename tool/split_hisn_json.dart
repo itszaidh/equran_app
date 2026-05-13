@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-const String _defaultSourcePath = 'assets/content/hisn_al_muslim.json';
-const String _fallbackSourcePath = 'assets/contents/hisn_source.json';
-const String _defaultOutputDir = 'assets/contents/hisn';
+const String _defaultSourcePath = 'assets/data/dua/hisn_source.json';
+const String _fallbackSourcePath = 'assets/data/dua/hisn_source.json';
+const String _defaultOutputDir = 'assets/data/dua/hisn';
 
 Future<void> main(List<String> args) async {
   final String sourcePath = args.isNotEmpty

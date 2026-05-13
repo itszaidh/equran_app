@@ -9,7 +9,7 @@ class QuranTransliterationService {
       QuranTransliterationService._();
 
   static const String _assetPath =
-      'assets/transliteration/quran_json_en_transliteration.json';
+      'assets/data/transliteration/quran_en_transliteration.json';
 
   Map<int, List<String>>? _cache;
 

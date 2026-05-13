@@ -3,6 +3,7 @@ import 'dart:convert';
 enum ResourceType {
   tafsir('tafsir'),
   timings('timings'),
+  translation('translation'),
   unknown('unknown');
 
   const ResourceType(this.value);
@@ -108,6 +109,7 @@ class DownloadableResource {
     return switch (type) {
       ResourceType.tafsir => 'Tafsir',
       ResourceType.timings => 'Audio Timings',
+      ResourceType.translation => 'Translation',
       ResourceType.unknown => rawType.isEmpty ? 'Resource' : rawType,
     };
   }

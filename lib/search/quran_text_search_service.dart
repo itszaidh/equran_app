@@ -157,10 +157,12 @@ class QuranTextSearchService {
             surah: hit.surah,
             verse: hit.verse,
             arabicPreview: quranVerseText(hit.surah, hit.verse),
-            translationPreview: quran.getVerseTranslation(
-              hit.surah,
-              hit.verse,
-              translation: translation,
+            translationPreview: quran.cleanTranslationText(
+              quran.getVerseTranslation(
+                hit.surah,
+                hit.verse,
+                translation: translation,
+              ),
             ),
             translationMatch: hit.translationMatch,
           );

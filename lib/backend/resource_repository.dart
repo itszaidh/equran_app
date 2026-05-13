@@ -1,5 +1,6 @@
 import 'package:equran/backend/resource_models.dart';
 import 'package:equran/backend/settings_db.dart';
+import 'package:equran/utils/reciter.dart';
 import 'package:http/http.dart' as http;
 
 class ResourceRepository {
@@ -54,15 +55,33 @@ class ResourceRepository {
   Future<DownloadableResource?> timingResourceForReciter(
     String reciterCode,
   ) async {
-    final String normalized = reciterCode.trim();
-    if (normalized.isEmpty) return null;
+    final String rawCode = reciterCode.trim();
+    if (rawCode.isEmpty) return null;
+    final String normalized = AppReciter.normalizeCode(rawCode);
     final ResourceManifest manifest = await loadManifest();
     for (final DownloadableResource resource in manifest.resourcesOfType(
       ResourceType.timings,
     )) {
-      if (resource.reciterCode == normalized || resource.id == normalized) {
+      final String? rawResourceReciterCode = resource.reciterCode?.trim();
+      final String resourceReciterCode =
+          rawResourceReciterCode == null || rawResourceReciterCode.isEmpty
+          ? ''
+          : AppReciter.normalizeCode(rawResourceReciterCode);
+      if (resourceReciterCode == normalized || resource.id == normalized) {
         return resource;
       }
+    }
+    return null;
+  }
+
+  Future<DownloadableResource?> translationResourceForId(String id) async {
+    final String normalized = id.trim();
+    if (normalized.isEmpty) return null;
+    final ResourceManifest manifest = await loadManifest();
+    for (final DownloadableResource resource in manifest.resourcesOfType(
+      ResourceType.translation,
+    )) {
+      if (resource.id == normalized) return resource;
     }
     return null;
   }
@@ -151,6 +170,126 @@ class ResourceRepository {
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/4.zip',
         'sizeBytes': 35905,
+      },
+      <String, Object?>{
+        'id': 'en_clear_quran',
+        'type': 'translation',
+        'name': 'English Clear Quran',
+        'language': 'en',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/en_clear_quran.zip',
+      },
+      <String, Object?>{
+        'id': 'tr_saheeh',
+        'type': 'translation',
+        'name': 'Turkish Saheeh',
+        'language': 'tr',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/tr_saheeh.zip',
+      },
+      <String, Object?>{
+        'id': 'ml_abdul_hameed',
+        'type': 'translation',
+        'name': 'Malayalam Abdul Hameed',
+        'language': 'ml',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/ml_abdul_hameed.zip',
+      },
+      <String, Object?>{
+        'id': 'fa_hussein_dari',
+        'type': 'translation',
+        'name': 'Persian Hussein Dari',
+        'language': 'fa',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/fa_hussein_dari.zip',
+      },
+      <String, Object?>{
+        'id': 'fr_hamidullah',
+        'type': 'translation',
+        'name': 'French Hamidullah',
+        'language': 'fr',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/fr_hamidullah.zip',
+      },
+      <String, Object?>{
+        'id': 'it_piccardo',
+        'type': 'translation',
+        'name': 'Italian Piccardo',
+        'language': 'it',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/it_piccardo.zip',
+      },
+      <String, Object?>{
+        'id': 'nl_siregar',
+        'type': 'translation',
+        'name': 'Dutch Siregar',
+        'language': 'nl',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/nl_siregar.zip',
+      },
+      <String, Object?>{
+        'id': 'portuguese',
+        'type': 'translation',
+        'name': 'Portuguese',
+        'language': 'pt',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/portuguese.zip',
+      },
+      <String, Object?>{
+        'id': 'ru_kuliev',
+        'type': 'translation',
+        'name': 'Russian Kuliev',
+        'language': 'ru',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/ru_kuliev.zip',
+      },
+      <String, Object?>{
+        'id': 'urdu',
+        'type': 'translation',
+        'name': 'Urdu',
+        'language': 'ur',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/urdu.zip',
+      },
+      <String, Object?>{
+        'id': 'bengali',
+        'type': 'translation',
+        'name': 'Bengali',
+        'language': 'bn',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/bengali.zip',
+      },
+      <String, Object?>{
+        'id': 'chinese',
+        'type': 'translation',
+        'name': 'Chinese',
+        'language': 'zh',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/chinese.zip',
+      },
+      <String, Object?>{
+        'id': 'indonesian',
+        'type': 'translation',
+        'name': 'Indonesian',
+        'language': 'id',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/indonesian.zip',
+      },
+      <String, Object?>{
+        'id': 'spanish',
+        'type': 'translation',
+        'name': 'Spanish',
+        'language': 'es',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/spanish.zip',
+      },
+      <String, Object?>{
+        'id': 'swedish',
+        'type': 'translation',
+        'name': 'Swedish',
+        'language': 'sv',
+        'version': '1.0.0',
+        'url': '$_assetLatestDownloadBase/swedish.zip',
       },
     ],
   };

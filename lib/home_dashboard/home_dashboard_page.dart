@@ -20,17 +20,19 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
 
-const String _appAssetBase = 'assets/images/app_assets';
-const String _quranAsset = '$_appAssetBase/quran.png';
-const String _lastReadAsset = '$_appAssetBase/last_read.png';
-const String _quranReadAsset = '$_appAssetBase/quran_reaad.png';
-const String _prayerTimeAsset = '$_appAssetBase/prayer_time.png';
-const String _qiblaAsset = '$_appAssetBase/qiblah.png';
-const String _playerAsset = '$_appAssetBase/player.png';
-const String _tasbihAsset = '$_appAssetBase/tasbih.png';
-const String _duaAsset = '$_appAssetBase/dua.png';
-const String _downloadAsset = '$_appAssetBase/download.png';
-const String _designAsset = '$_appAssetBase/design.png';
+const String _appAssetBase = 'assets/media/images/app';
+const String _quranAsset = '$_appAssetBase/quran.webp';
+const String _lastReadAsset = '$_appAssetBase/last_read.webp';
+const String _quranReadAsset = '$_appAssetBase/read.webp';
+const String _prayerTimeAsset = '$_appAssetBase/prayer_time.webp';
+const String _qiblaAsset = '$_appAssetBase/qiblah.webp';
+const String _playerAsset = '$_appAssetBase/player.webp';
+const String _tasbihAsset = '$_appAssetBase/tasbih.webp';
+const String _duaAsset = '$_appAssetBase/dua.webp';
+const String _downloadAsset = '$_appAssetBase/download.webp';
+const String _designAsset = '$_appAssetBase/design.webp';
+const String _routineAsset = '$_appAssetBase/routine.webp';
+const String _settingsAsset = '$_appAssetBase/settings.webp';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({
@@ -627,10 +629,12 @@ class _DailyAyah {
       surah: ref.surah,
       verse: ref.verse,
       arabic: quranVerseText(ref.surah, ref.verse),
-      translation: quran.getVerseTranslation(
-        ref.surah,
-        ref.verse,
-        translation: quran.Translation.values[translationIndex],
+      translation: quran.cleanTranslationText(
+        quran.getVerseTranslation(
+          ref.surah,
+          ref.verse,
+          translation: quran.Translation.values[translationIndex],
+        ),
       ),
     );
   }
@@ -925,13 +929,23 @@ class _RoutinePlanCta extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Container(
-              width: 40,
-              height: 40,
+              width: 48,
+              height: 48,
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: colors.mint,
                 borderRadius: BorderRadius.circular(AppRadii.pill),
               ),
-              child: Icon(Icons.auto_stories_rounded, color: colors.primary),
+              child: Image.asset(
+                _routineAsset,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.auto_stories_rounded,
+                    color: colors.primary,
+                  );
+                },
+              ),
             ),
             const SizedBox(width: 11),
             Expanded(
@@ -1007,11 +1021,22 @@ class _RoutinePlanCta extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              EquranIconBadge(
-                icon: Icons.route_outlined,
-                size: 38,
-                backgroundColor: colors.mint,
-                foregroundColor: colors.primary,
+              Container(
+                width: 46,
+                height: 46,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: colors.mint,
+                  borderRadius: BorderRadius.circular(AppRadii.medium),
+                  border: Border.all(color: colors.border.withAlpha(110)),
+                ),
+                child: Image.asset(
+                  _routineAsset,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.route_outlined, color: colors.primary);
+                  },
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1326,7 +1351,7 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
           child: Column(
             children: <Widget>[
               SizedBox(
-                height: 142,
+                height: 166,
                 child: PageView.builder(
                   controller: _pageController,
                   physics: const BouncingScrollPhysics(),
@@ -1346,8 +1371,8 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            mainAxisExtent: 67,
-                            mainAxisSpacing: 8,
+                            mainAxisExtent: 78,
+                            mainAxisSpacing: 10,
                             crossAxisSpacing: 8,
                           ),
                       itemBuilder: (context, index) {
@@ -1411,13 +1436,13 @@ class _DashboardActionTile extends StatelessWidget {
             border: Border.all(color: colors.border.withAlpha(130)),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: <Widget>[
                 Container(
-                  width: 42,
-                  height: 42,
-                  padding: const EdgeInsets.all(3),
+                  width: 52,
+                  height: 52,
+                  padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: colors.mint.withAlpha(135),
                     borderRadius: BorderRadius.circular(AppRadii.medium),
@@ -1430,16 +1455,16 @@ class _DashboardActionTile extends StatelessWidget {
                     ],
                   ),
                   child: assetPath == null
-                      ? Icon(icon, color: colors.primary, size: 27)
+                      ? Icon(icon, color: colors.primary, size: 30)
                       : Image.asset(
                           assetPath!,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) {
-                            return Icon(icon, color: colors.primary, size: 27);
+                            return Icon(icon, color: colors.primary, size: 30);
                           },
                         ),
                 ),
-                const SizedBox(width: 9),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     label,
@@ -1485,15 +1510,31 @@ class _ExploreAllFeaturesRow extends StatelessWidget {
             border: Border.all(color: colors.border.withAlpha(120)),
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(11, 8, 9, 8),
+            padding: const EdgeInsets.fromLTRB(12, 9, 10, 9),
             child: Row(
               children: <Widget>[
-                Icon(
-                  Icons.dashboard_customize_outlined,
-                  color: colors.primary,
-                  size: 18,
+                Container(
+                  width: 38,
+                  height: 38,
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: colors.mint,
+                    borderRadius: BorderRadius.circular(AppRadii.medium),
+                    border: Border.all(color: colors.border.withAlpha(110)),
+                  ),
+                  child: Image.asset(
+                    _settingsAsset,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.dashboard_customize_outlined,
+                        color: colors.primary,
+                        size: 21,
+                      );
+                    },
+                  ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Explore all features',

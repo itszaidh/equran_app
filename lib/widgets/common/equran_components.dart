@@ -223,30 +223,30 @@ class EquranShortcutTile extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(EquranRadii.medium),
       child: SizedBox(
-        height: 80,
+        height: 92,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-              width: 44,
-              height: 44,
-              padding: const EdgeInsets.all(6),
+              width: 54,
+              height: 54,
+              padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
                 color: colors.mint,
                 borderRadius: BorderRadius.circular(EquranRadii.medium),
                 border: Border.all(color: colors.border),
               ),
               child: assetPath == null
-                  ? Icon(icon, color: colors.primary, size: 26)
+                  ? Icon(icon, color: colors.primary, size: 30)
                   : Image.asset(
                       assetPath!,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
-                        return Icon(icon, color: colors.primary, size: 26);
+                        return Icon(icon, color: colors.primary, size: 30);
                       },
                     ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 9),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 3),
               child: Text(

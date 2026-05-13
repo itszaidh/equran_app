@@ -9,6 +9,7 @@ export 'dua_favourites_db.dart';
 export 'favourites_db.dart';
 export 'reading_model.dart';
 export 'quran_bookmark_service.dart';
+export 'quran_translation_service.dart';
 export 'schema_migration_service.dart';
 export 'settings_db.dart';
 export 'surah_db.dart';

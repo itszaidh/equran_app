@@ -108,6 +108,14 @@ class ResourceDownloadService {
   }
 
   Future<void> uninstall(DownloadableResource resource) {
+    if (resource.type == ResourceType.translation) {
+      for (final quran.Translation translation in quran.Translation.values) {
+        if (translation.resourceId == resource.id) {
+          quran.clearRegisteredTranslation(translation);
+          break;
+        }
+      }
+    }
     return ResourceInstallStore.instance.uninstall(resource);
   }
 
@@ -371,6 +379,9 @@ class ResourceDownloadService {
       case ResourceType.timings:
         await _validateTimings(directory);
         return;
+      case ResourceType.translation:
+        await _validateTranslation(directory);
+        return;
       case ResourceType.unknown:
         await _validateGeneric(directory);
         return;
@@ -430,6 +441,39 @@ class ResourceDownloadService {
             'The timing file $fileName contains invalid timestamps.',
           );
         }
+      }
+    }
+  }
+
+  Future<void> _validateTranslation(Directory directory) async {
+    for (int surah = 1; surah <= 114; surah++) {
+      final File file = File(
+        '${directory.path}${Platform.pathSeparator}$surah.json',
+      );
+      if (!await file.exists()) {
+        throw ResourceInstallException(
+          'The translation ZIP is missing $surah.json.',
+        );
+      }
+      final Object? decoded;
+      try {
+        decoded = jsonDecode(await file.readAsString());
+      } catch (_) {
+        throw ResourceInstallException(
+          'The translation file $surah.json contains invalid JSON.',
+        );
+      }
+      if (decoded is! Map || decoded['ayahs'] is! List) {
+        throw ResourceInstallException(
+          'The translation file $surah.json has an unexpected format.',
+        );
+      }
+      final int expectedAyahs = quran.getVerseCount(surah);
+      final List<dynamic> ayahs = decoded['ayahs'] as List<dynamic>;
+      if (ayahs.length < expectedAyahs) {
+        throw ResourceInstallException(
+          'The translation file $surah.json does not include every ayah.',
+        );
       }
     }
   }

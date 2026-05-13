@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
 
-const String _routineDesignAsset = 'assets/images/app_assets/design.png';
+const String _routineDesignAsset = 'assets/media/images/app/design.webp';
 
 class ReadingPlansPage extends StatelessWidget {
   const ReadingPlansPage({super.key});

@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:quran/quran.dart' as quran;
 
 import 'backend/library.dart'
     show
@@ -20,6 +21,7 @@ import 'backend/library.dart'
         registerCompanionStorageAdapters,
         DuaFavouritesDB,
         FavouritesDB,
+        QuranTranslationService,
         ReadingEntryAdapter,
         SchemaMigrationService,
         SettingsDB,
@@ -54,6 +56,8 @@ Future<void> main() async {
   await DuaFavouritesDB().initBox();
   await initCompanionStorageBoxes();
   await SchemaMigrationService.instance.runSafeMigrations();
+  await quran.initializeQuran();
+  await QuranTranslationService.instance.preloadSelectedTranslation();
 
   await PrayerTimezoneService.configureDeviceTimezone();
   final PrayerSettingsStore prayerSettingsStore = PrayerSettingsStore();
