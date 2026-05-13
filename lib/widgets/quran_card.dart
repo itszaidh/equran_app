@@ -81,7 +81,7 @@ class QuranCard extends StatelessWidget {
           ),
           child: Row(
             children: <Widget>[
-              NumberBadge(label: surah.id.toString(), size: compact ? 38 : 42),
+              SurahNumberBadge(number: surah.id, size: compact ? 38 : 42),
               const SizedBox(width: EquranSpacing.l),
               Expanded(
                 child: Column(

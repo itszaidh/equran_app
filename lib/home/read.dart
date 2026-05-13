@@ -1273,7 +1273,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   String _cardVerseText(int chapter, int verse) {
-    if (chapter == 1 && verse == 1) return '';
     return quranVerseText(chapter, verse);
   }
 

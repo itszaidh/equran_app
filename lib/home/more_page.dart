@@ -22,6 +22,7 @@ class MorePage extends StatelessWidget {
     required this.onOpenSearch,
     required this.onOpenReadingPlans,
     required this.onOpenTasbih,
+    required this.onOpenAsmaUlHusna,
     required this.onOpenSettings,
     required this.onOpenStats,
     required this.onToggleTheme,
@@ -33,6 +34,7 @@ class MorePage extends StatelessWidget {
   final VoidCallback onOpenSearch;
   final VoidCallback onOpenReadingPlans;
   final VoidCallback onOpenTasbih;
+  final VoidCallback onOpenAsmaUlHusna;
   final VoidCallback onOpenSettings;
   final VoidCallback onOpenStats;
   final VoidCallback onToggleTheme;
@@ -97,6 +99,12 @@ class MorePage extends StatelessWidget {
                         title: 'Tasbih',
                         subtitle: 'Calm dhikr counter',
                         onTap: onOpenTasbih,
+                      ),
+                      _MoreAction(
+                        icon: Icons.diamond_outlined,
+                        title: 'Asma ul Husna',
+                        subtitle: 'The 99 Beautiful Names',
+                        onTap: onOpenAsmaUlHusna,
                       ),
                       _MoreAction(
                         icon: Icons.insights_outlined,
@@ -305,7 +313,7 @@ class _MoreShortcutsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final int columns = constraints.maxWidth >= 720 ? 2 : 1;
+        final int columns = constraints.maxWidth >= 670 ? 2 : 1;
         return GridView.builder(
           itemCount: items.length,
           shrinkWrap: true,

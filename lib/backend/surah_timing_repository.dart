@@ -236,15 +236,9 @@ class SurahTimingRepository {
 
     markers.sort();
 
-    final List<AyahTiming> ayahs = <AyahTiming>[];
-    for (int index = 0; index < ayahCount; index++) {
-      final Duration start = markers[index];
-      final Duration end = index + 1 < markers.length
-          ? markers[index + 1]
-          : const Duration(days: 1);
-      if (end <= start) continue;
-      ayahs.add(AyahTiming(ayahNumber: index + 1, start: start, end: end));
-    }
+    final List<AyahTiming> ayahs = _looksLikeStartMarkers(markers)
+        ? _timingsFromStartMarkers(markers, ayahCount)
+        : _timingsFromBoundaryMarkers(markers, ayahCount);
 
     if (ayahs.isEmpty) return null;
 
@@ -255,14 +249,49 @@ class SurahTimingRepository {
       );
     }
 
-    // VerseByVerseQuran timing files are millisecond start markers. Some files
-    // include an extra final marker for the end of the last ayah; files without
-    // that final marker keep the last ayah active until playback completes.
+    // Most packaged timing files are ayah boundary/end markers: line 1 is the
+    // end of ayah 1, line 2 is the end of ayah 2, and so on. A few legacy files
+    // use start markers, so keep that supported when the first marker is near 0.
     return SurahTiming(
       reciterCode: reciterCode,
       surahNumber: surahNumber,
       ayahs: List<AyahTiming>.unmodifiable(ayahs),
     );
+  }
+
+  static bool _looksLikeStartMarkers(List<Duration> markers) {
+    return markers.isNotEmpty &&
+        markers.first <= const Duration(milliseconds: 1200);
+  }
+
+  static List<AyahTiming> _timingsFromBoundaryMarkers(
+    List<Duration> markers,
+    int ayahCount,
+  ) {
+    final List<AyahTiming> ayahs = <AyahTiming>[];
+    for (int index = 0; index < ayahCount; index++) {
+      final Duration start = index == 0 ? Duration.zero : markers[index - 1];
+      final Duration end = markers[index];
+      if (end <= start) continue;
+      ayahs.add(AyahTiming(ayahNumber: index + 1, start: start, end: end));
+    }
+    return ayahs;
+  }
+
+  static List<AyahTiming> _timingsFromStartMarkers(
+    List<Duration> markers,
+    int ayahCount,
+  ) {
+    final List<AyahTiming> ayahs = <AyahTiming>[];
+    for (int index = 0; index < ayahCount; index++) {
+      final Duration start = markers[index];
+      final Duration end = index + 1 < markers.length
+          ? markers[index + 1]
+          : const Duration(days: 1);
+      if (end <= start) continue;
+      ayahs.add(AyahTiming(ayahNumber: index + 1, start: start, end: end));
+    }
+    return ayahs;
   }
 
   static int _appendJsonTimingMarkers(Object? value, List<Duration> markers) {

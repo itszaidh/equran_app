@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart'
     show AndroidAudioDisplayMode, SettingsDB;
+import 'package:equran/duas/asma_ul_husna_page.dart';
 import 'package:equran/duas/duas_page.dart';
 import 'package:equran/duas/tasbih_page.dart';
 import 'package:equran/home/downloads.dart';
@@ -116,6 +117,7 @@ class _HomePageState extends State<HomePage> {
           onOpenSearch: _openQuranTextSearch,
           onOpenReadingPlans: _openReadingPlansPage,
           onOpenTasbih: _openTasbihPage,
+          onOpenAsmaUlHusna: _openAsmaUlHusnaPage,
           onOpenSettings: _openSettingsPage,
           onOpenStats: _openQuranStatsPage,
           onToggleTheme: () => unawaited(_toggleQuickTheme()),
@@ -488,6 +490,25 @@ class _HomePageState extends State<HomePage> {
           FrameRatePolicyManager.instance.setRouteTransitionActive(
             false,
             reason: 'tasbih_route_closed',
+          );
+        });
+  }
+
+  void _openAsmaUlHusnaPage() {
+    FrameRatePolicyManager.instance.setRouteTransitionActive(
+      true,
+      reason: 'asma_ul_husna_route_opening',
+    );
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => const AsmaUlHusnaPage(),
+          ),
+        )
+        .whenComplete(() {
+          FrameRatePolicyManager.instance.setRouteTransitionActive(
+            false,
+            reason: 'asma_ul_husna_route_closed',
           );
         });
   }

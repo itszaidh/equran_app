@@ -9,7 +9,7 @@ import 'package:quran/quran.dart';
 const String equranResumeQuranAsset = 'assets/images/app_assets/quran.png';
 const String equranResumePlayerAsset = 'assets/images/app_assets/player.png';
 const double _resumeImageCardMaxWidth = 620;
-const double _resumeImageCardHeight = 158;
+const double _resumeImageCardHeight = 150;
 
 class LastReadCard extends StatefulWidget {
   const LastReadCard({super.key, required this.entries});
@@ -191,6 +191,36 @@ class EquranResumeImageCard extends StatelessWidget {
             final double textRightPadding =
                 ((compact ? 94 : 114) * scale.clamp(0.94, 1.16)) +
                 artworkEdgePadding;
+            final double horizontalPadding = compact ? 16 : 18;
+            final double topPadding = compact ? 13 : 14;
+            final double bottomPadding = compact ? 13 : 13;
+            final double titleSubtitleGap = compact ? 4 : 5;
+            final double subtitleDividerGap = compact ? 14 : 28;
+            final double dividerActionGap = compact ? 8 : 10;
+            final double dividerWidth = compact ? 94 : 104;
+            final TextStyle? titleStyle = compact
+                ? theme.textTheme.titleLarge?.copyWith(
+                    color: colors.onPrimary,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                  )
+                : theme.textTheme.headlineSmall?.copyWith(
+                    color: colors.onPrimary,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                  );
+            final TextStyle? subtitleStyle =
+                (compact
+                        ? theme.textTheme.bodyMedium
+                        : theme.textTheme.titleSmall)
+                    ?.copyWith(
+                      color: colors.onPrimaryMuted,
+                      fontWeight: FontWeight.w800,
+                    );
+            final TextStyle? actionStyle = theme.textTheme.labelLarge?.copyWith(
+              color: colors.onPrimary,
+              fontWeight: FontWeight.w900,
+            );
             final BorderRadius radius = BorderRadius.circular(AppRadii.large);
             final Gradient cardGradient = secondary
                 ? LinearGradient(
@@ -260,10 +290,10 @@ class EquranResumeImageCard extends StatelessWidget {
                         Positioned.fill(
                           child: Padding(
                             padding: EdgeInsets.fromLTRB(
-                              compact ? 16 : 18,
-                              14,
+                              horizontalPadding,
+                              topPadding,
                               textRightPadding,
-                              13,
+                              bottomPadding,
                             ),
                             child: Align(
                               alignment: Alignment.centerLeft,
@@ -275,42 +305,29 @@ class EquranResumeImageCard extends StatelessWidget {
                                     primary,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.headlineSmall
-                                        ?.copyWith(
-                                          color: colors.onPrimary,
-                                          fontWeight: FontWeight.w900,
-                                          height: 1.05,
-                                        ),
+                                    style: titleStyle,
                                   ),
-                                  const SizedBox(height: 5),
+                                  SizedBox(height: titleSubtitleGap),
                                   Text(
                                     subtitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      color: colors.onPrimaryMuted,
-                                      fontWeight: FontWeight.w800,
+                                    style: subtitleStyle,
+                                  ),
+                                  SizedBox(height: subtitleDividerGap),
+                                  SizedBox(
+                                    width: dividerWidth,
+                                    child: Divider(
+                                      height: 1,
+                                      color: colors.onPrimary.withAlpha(52),
                                     ),
                                   ),
-                                  SizedBox(height: compact ? 6 : 28),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: SizedBox(
-                                      width: 104,
-                                      child: Divider(
-                                        height: 1,
-                                        color: colors.onPrimary.withAlpha(52),
-                                      ),
-                                    ),
-                                  ),
+                                  SizedBox(height: dividerActionGap),
                                   Text(
                                     actionText,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.labelLarge?.copyWith(
-                                      color: colors.onPrimary,
-                                      fontWeight: FontWeight.w900,
-                                    ),
+                                    style: actionStyle,
                                   ),
                                 ],
                               ),

@@ -535,16 +535,18 @@ class _ActivityCardState extends State<_ActivityCard>
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Text(
+                                selected.detailLabel,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
                                 '${selected.ayahs} ayahs',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   color: colors.textPrimary,
                                   fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              Text(
-                                selected.topSurahName,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: colors.textSecondary,
                                 ),
                               ),
                             ],
@@ -1024,14 +1026,14 @@ class _StreakHeatmapCard extends StatelessWidget {
                 children: <Widget>[
                   for (final List<DateTime?> week in weeks)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.only(bottom: 8),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           for (final DateTime? day in week)
                             Padding(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 3,
+                                horizontal: 4,
                               ),
                               child: _HeatmapCell(
                                 day: day,
@@ -1075,7 +1077,7 @@ class _HeatmapCell extends StatelessWidget {
       color = colors.primary;
     }
     return SizedBox.square(
-      dimension: 10,
+      dimension: 14,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: color,
@@ -1194,6 +1196,7 @@ class _QuranStatsViewData {
       for (int offset = 6; offset >= 0; offset--)
         _bucketForDates(
           label: labels[now.subtract(Duration(days: offset)).weekday - 1],
+          detailLabel: _monthDayLabel(now.subtract(Duration(days: offset))),
           dates: <DateTime>[now.subtract(Duration(days: offset))],
           current: offset == 0,
         ),
@@ -1206,6 +1209,12 @@ class _QuranStatsViewData {
       for (int offset = 5; offset >= 0; offset--)
         _bucketForDates(
           label: 'W${6 - offset}',
+          detailLabel: _dateRangeLabel(
+            currentWeekStart.subtract(Duration(days: offset * 7)),
+            currentWeekStart
+                .subtract(Duration(days: offset * 7))
+                .add(const Duration(days: 6)),
+          ),
           dates: <DateTime>[
             for (int day = 0; day < 7; day++)
               currentWeekStart
@@ -1226,21 +1235,20 @@ class _QuranStatsViewData {
 
   _ActivityBucket _bucketForDates({
     required String label,
+    required String detailLabel,
     required List<DateTime> dates,
     required bool current,
   }) {
     int ayahs = 0;
-    final List<String> keys = <String>[];
     for (final DateTime date in dates) {
       final QuranActivityDay? day = activityByDate[_dateKey(date)];
       if (day == null) continue;
       ayahs += day.ayahsRead;
-      keys.addAll(day.readAyahKeys);
     }
     return _ActivityBucket(
       label: label,
+      detailLabel: detailLabel,
       ayahs: ayahs,
-      topSurahName: _topSurahNameForKeys(keys),
       isCurrent: current,
     );
   }
@@ -1251,6 +1259,7 @@ class _QuranStatsViewData {
     final bool current = month.year == now.year && month.month == now.month;
     return _bucketForDates(
       label: _shortMonthLabel(month),
+      detailLabel: _monthLabel(month),
       dates: <DateTime>[
         for (int day = 0; day < end.day; day++) start.add(Duration(days: day)),
       ],
@@ -1311,14 +1320,14 @@ class _QuranStatsViewData {
 class _ActivityBucket {
   const _ActivityBucket({
     required this.label,
+    required this.detailLabel,
     required this.ayahs,
-    required this.topSurahName,
     required this.isCurrent,
   });
 
   final String label;
+  final String detailLabel;
   final int ayahs;
-  final String topSurahName;
   final bool isCurrent;
 }
 
@@ -1351,21 +1360,6 @@ Map<int, int> _surahCounts(List<QuranActivityDay> activityDays) {
     }
   }
   return counts;
-}
-
-String _topSurahNameForKeys(List<String> keys) {
-  if (keys.isEmpty) return 'No ayahs read';
-  final Map<int, int> counts = <int, int>{};
-  for (final String key in keys) {
-    final int? surah = int.tryParse(key.split(':').first);
-    if (surah == null || surah < 1 || surah > 114) continue;
-    counts[surah] = (counts[surah] ?? 0) + 1;
-  }
-  if (counts.isEmpty) return 'No ayahs read';
-  final MapEntry<int, int> top = counts.entries.reduce(
-    (a, b) => a.value >= b.value ? a : b,
-  );
-  return quran.getSurahName(top.key);
 }
 
 DateTime _weekStart(DateTime date) {
@@ -1438,6 +1432,19 @@ String _compactNumber(int value) {
 
 String _monthLabel(DateTime date) {
   return '${_shortMonthLabel(date)} ${date.year}';
+}
+
+String _monthDayLabel(DateTime date) {
+  return '${_shortMonthLabel(date)} ${date.day}';
+}
+
+String _dateRangeLabel(DateTime start, DateTime end) {
+  if (start.year == end.year &&
+      start.month == end.month &&
+      start.day == end.day) {
+    return _monthDayLabel(start);
+  }
+  return '${_monthDayLabel(start)} - ${_monthDayLabel(end)}';
 }
 
 String _shortMonthLabel(DateTime date) {
