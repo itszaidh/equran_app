@@ -503,8 +503,8 @@ class _NameCard extends StatelessWidget {
             border: Border.all(color: colors.border),
           ),
           padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
+            fit: StackFit.expand,
             children: <Widget>[
               Align(
                 alignment: AlignmentDirectional.topEnd,
@@ -526,39 +526,54 @@ class _NameCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 6),
-              Expanded(
+              PositionedDirectional(
+                top: 38,
+                start: 0,
+                end: 0,
+                bottom: 58,
                 child: Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: Text(
-                    name.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textDirection: TextDirection.rtl,
-                    textAlign: TextAlign.right,
-                    style: arabicStyle,
+                  alignment: AlignmentDirectional.topEnd,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.topEnd,
+                    child: Text(
+                      name.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textDirection: TextDirection.rtl,
+                      textAlign: TextAlign.right,
+                      style: arabicStyle,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                name.transliteration,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: colors.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Expanded(
-                child: Text(
-                  name.meaning,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.textSecondary,
-                  ),
+              PositionedDirectional(
+                start: 0,
+                end: 0,
+                bottom: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      name.transliteration,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      name.meaning,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
