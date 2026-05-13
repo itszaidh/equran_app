@@ -1,9 +1,11 @@
 import 'dart:async' show unawaited;
 
-import 'package:equran/backend/favourites_db.dart';
 import 'package:equran/backend/android_audio_display_mode.dart';
+import 'package:equran/backend/library.dart'
+    show FavouritesDB, QuranBookmarkService;
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
-import 'package:equran/utils/quran_text.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
 
@@ -70,10 +72,6 @@ class ReadQuranCard extends StatelessWidget {
     this.isDownloaded = false,
   });
 
-  String get _favouriteKey {
-    return favouriteAyahKey(currentChapter, currentVerse);
-  }
-
   Future<bool> _showInputPrompt(BuildContext context) async {
     final TextEditingController textController = TextEditingController();
     bool saved = false;
@@ -101,9 +99,10 @@ class ReadQuranCard extends StatelessWidget {
                 onPressed: () async {
                   final NavigatorState navigator = Navigator.of(context);
                   try {
-                    await FavouritesDB().put(
-                      _favouriteKey,
-                      textController.text.trim(),
+                    await const QuranBookmarkService().saveFavourite(
+                      currentChapter,
+                      currentVerse,
+                      note: textController.text,
                     );
                     saved = true;
                   } catch (_) {
@@ -134,6 +133,7 @@ class ReadQuranCard extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
 
     final TextStyle? mutedStyle =
         (shareImageMode
@@ -156,9 +156,9 @@ class ReadQuranCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
-                  color: colorScheme.primary.withAlpha(14),
-                  borderRadius: BorderRadius.circular(AppRadii.medium),
-                  border: Border.all(color: colorScheme.primary.withAlpha(24)),
+                  color: colors.mint,
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                  border: Border.all(color: colors.border),
                 ),
                 child: Text("Juz' $juzNumber", style: mutedStyle),
               ),
@@ -194,13 +194,15 @@ class ReadQuranCard extends StatelessWidget {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
     final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
     final double actionSize = wideActions ? 38 : 34;
+    final BorderRadius radius = BorderRadius.circular(10);
 
     return Material(
       color: isPrimary ? colorScheme.primary.withAlpha(10) : Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: radius,
         child: Tooltip(
           message: tooltip,
           child: SizedBox(
@@ -218,7 +220,10 @@ class ReadQuranCard extends StatelessWidget {
       valueListenable: FavouritesDB().listener,
       builder: (context, favouritesBox, child) {
         final ColorScheme colorScheme = Theme.of(context).colorScheme;
-        final bool isFavourite = FavouritesDB().contains(_favouriteKey);
+        final bool isFavourite = const QuranBookmarkService().isFavourite(
+          currentChapter,
+          currentVerse,
+        );
         final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
         final double actionGap = wideActions ? 10 : 6;
         final double playIconSize = wideActions ? 23 : 21;
@@ -298,7 +303,10 @@ class ReadQuranCard extends StatelessWidget {
               AndroidAudioDisplayMode.notifyUserActivity();
               try {
                 if (liked) {
-                  await FavouritesDB().delete(_favouriteKey);
+                  await const QuranBookmarkService().removeFavourite(
+                    currentChapter,
+                    currentVerse,
+                  );
                   return false;
                 }
                 return _showInputPrompt(context);
@@ -317,6 +325,7 @@ class ReadQuranCard extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
     final bool isLight = theme.brightness == Brightness.light;
     final Color resolvedCardColor =
         theme.cardTheme.color ??
@@ -328,6 +337,7 @@ class ReadQuranCard extends StatelessWidget {
         showTransliteration && trimmedTransliteration.isNotEmpty;
     final bool hasTranslation =
         showTranslation && translation.trim().isNotEmpty;
+    final bool hasVerse = verse.trim().isNotEmpty;
     final bool compactShareContent =
         shareImageMode && verse.runes.length <= 140;
 
@@ -340,38 +350,31 @@ class ReadQuranCard extends StatelessWidget {
       marginValue = 6.0;
     }
 
+    final BorderRadius radius = BorderRadius.circular(AppRadii.large);
+
     return Card(
-      elevation: isLight ? 3 : 0,
+      elevation: 0,
       color: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.symmetric(horizontal: marginValue, vertical: 10),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: radius,
         side: BorderSide(
-          color: isLight
-              ? colorScheme.primary.withAlpha(28)
-              : colorScheme.outlineVariant.withAlpha(80),
+          color: isLight ? colors.border : colors.border.withAlpha(160),
         ),
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
+          borderRadius: radius,
           color: resolvedCardColor,
-          gradient: isLight
+          gradient: shareImageMode
+              ? colors.softSurfaceGradient
+              : isLight
               ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: <Color>[
-                    Color.alphaBlend(
-                      colorScheme.primary.withAlpha(10),
-                      resolvedCardColor,
-                    ),
-                    Color.alphaBlend(
-                      colorScheme.tertiary.withAlpha(8),
-                      resolvedCardColor,
-                    ),
-                  ],
+                  colors: <Color>[colors.paleGreen, colors.surface],
                 )
               : LinearGradient(
                   begin: Alignment.topLeft,
@@ -389,17 +392,17 @@ class ReadQuranCard extends StatelessWidget {
                 ),
           boxShadow: <BoxShadow>[
             BoxShadow(
-              color: Colors.black.withAlpha(isLight ? 10 : 20),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
+              color: colors.shadow.withAlpha(isLight ? 14 : 36),
+              blurRadius: 22,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(
-            20,
+            EquranSpacing.pagePadding,
             compactShareContent ? 14 : 16,
-            20,
+            EquranSpacing.pagePadding,
             shareImageMode ? (compactShareContent ? 14 : 16) : 20,
           ),
           child: Column(
@@ -425,20 +428,21 @@ class ReadQuranCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Text(
-                  verse,
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(
-                    fontFamily: 'Hafs',
-                    height: 1.78,
-                    fontSize: fontSize,
-                    color: colorScheme.onSurface,
+              if (hasVerse)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: Text(
+                    verse,
+                    textDirection: TextDirection.rtl,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      fontFamily: 'Hafs',
+                      height: 1.78,
+                      fontSize: fontSize,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ),
-              ),
               if (hasTransliteration)
                 Padding(
                   padding: EdgeInsets.only(top: compactShareContent ? 12 : 14),

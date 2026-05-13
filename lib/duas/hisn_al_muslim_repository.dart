@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 
 class HisnAlMuslimRepository {
   HisnAlMuslimRepository({
-    this.indexAssetPath = 'assets/contents/hisn/index.json',
+    this.indexAssetPath = 'assets/data/dua/hisn/index.json',
   });
 
   final String indexAssetPath;
@@ -46,21 +46,23 @@ class HisnAlMuslimRepository {
   }
 
   Future<DuaCategory> loadCategoryByAsset(String assetPath) {
-    return _categoryByAssetFutures.putIfAbsent(assetPath, () async {
+    final String normalizedAssetPath = _normalizeHisnAssetPath(assetPath);
+    return _categoryByAssetFutures.putIfAbsent(normalizedAssetPath, () async {
       final List<DuaCategoryIndex> index = await loadCategoryIndex();
       final int categoryIndex = index.indexWhere(
-        (DuaCategoryIndex entry) => entry.asset == assetPath,
+        (DuaCategoryIndex entry) =>
+            _normalizeHisnAssetPath(entry.asset) == normalizedAssetPath,
       );
       if (categoryIndex < 0) {
         throw FormatException(
-          'Hisn category asset was not found in the index: $assetPath',
+          'Hisn category asset was not found in the index: $normalizedAssetPath',
         );
       }
 
-      final String rawJson = await rootBundle.loadString(assetPath);
+      final String rawJson = await rootBundle.loadString(normalizedAssetPath);
       return compute(_parseCategoryJsonOnWorker, <String, Object?>{
         'rawJson': rawJson,
-        'assetPath': assetPath,
+        'assetPath': normalizedAssetPath,
         'categoryIndex': categoryIndex,
       });
     });
@@ -127,11 +129,18 @@ List<DuaCategoryIndex> _parseIndexJsonOnWorker(String rawJson) {
           title: title,
           duaCount: duaCount,
           footnoteCount: footnoteCount,
-          asset: asset,
+          asset: _normalizeHisnAssetPath(asset),
         );
       })
       .whereType<DuaCategoryIndex>()
       .toList(growable: false);
+}
+
+String _normalizeHisnAssetPath(String assetPath) {
+  return assetPath.trim().replaceFirst(
+    'assets/contents/hisn/categories/',
+    'assets/data/dua/hisn/categories/',
+  );
 }
 
 DuaCategory _parseCategoryJsonOnWorker(Map<String, Object?> message) {

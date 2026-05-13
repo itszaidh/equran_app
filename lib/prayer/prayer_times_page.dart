@@ -4,12 +4,17 @@ import 'package:equran/backend/settings_db.dart';
 import 'package:equran/prayer/manual_prayer_location_page.dart';
 import 'package:equran/prayer/prayer_map_location_page.dart';
 import 'package:equran/prayer/prayer_location_service.dart';
+import 'package:equran/prayer/prayer_hero_card.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
+import 'package:equran/prayer/prayer_time_thumb_card.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 
 class PrayerTimesPage extends StatefulWidget {
@@ -70,25 +75,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           final PrayerLocation? location = _store.getLocation();
           final PrayerTimeSettings settings = _store.getSettings();
           if (location == null) {
-            return ListView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 28),
-              children: <Widget>[
-                Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 720),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        _buildSetupState(context),
-                        const SizedBox(height: 14),
-                        _buildDisclaimer(context),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
+            return _buildSetupState(context);
           }
 
           final DateTime todayDate = _service.calendarDateForInstant(
@@ -113,9 +100,28 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   location: location,
                   settings: settings,
                 );
+          final PrayerDay nextSelectedDay = _service.calculateDay(
+            date: DateTime(
+              selectedDate.year,
+              selectedDate.month,
+              selectedDate.day + 1,
+            ),
+            location: location,
+            settings: settings,
+          );
           final _PrayerHeroTiming heroTiming;
           final PrayerTimeKind? highlightedPrayer;
+          final PrayerTimeEntry featuredPrayer;
           if (isViewingToday) {
+            final PrayerDay yesterday = _service.calculateDay(
+              date: DateTime(
+                todayDate.year,
+                todayDate.month,
+                todayDate.day - 1,
+              ),
+              location: location,
+              settings: settings,
+            );
             final PrayerDay tomorrow = _service.calculateDay(
               date: DateTime(
                 todayDate.year,
@@ -131,29 +137,58 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               now: _now,
             );
             heroTiming = _heroTimingFor(nextPrayer);
-            highlightedPrayer = heroTiming.entry.kind;
+            final PrayerTimeEntry currentPrayer = _currentPrayerPeriod(
+              today: today,
+              yesterday: yesterday,
+              now: _now,
+            );
+            highlightedPrayer = currentPrayer.kind;
+            featuredPrayer = currentPrayer;
           } else {
             heroTiming = _selectedDateHeroTiming(selectedDay);
             highlightedPrayer = null;
+            featuredPrayer = heroTiming.entry;
           }
 
           return ListView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 28),
+            padding: const EdgeInsets.fromLTRB(
+              EquranSpacing.pagePadding,
+              14,
+              EquranSpacing.pagePadding,
+              28,
+            ),
             children: <Widget>[
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 840),
+                  constraints: const BoxConstraints(maxWidth: 1040),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
-                      _buildHeroCard(
+                      PrayerHeroCard(
+                        day: selectedDay,
+                        nextPrayer: NextPrayer(
+                          entry: heroTiming.entry,
+                          countdown: heroTiming.countdown,
+                        ),
+                        currentPrayer: featuredPrayer,
+                        subtitleOverride: isViewingToday
+                            ? null
+                            : _formatDate(selectedDay.date),
+                        onTap: _openPrayerSettings,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildPrayerInfoCard(
                         context,
                         selectedDay,
-                        heroTiming,
-                        settings,
-                        location,
                         isViewingToday,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildNightTimesCard(
+                        context,
+                        selectedDay,
+                        nextSelectedDay,
+                        settings,
                       ),
                       const SizedBox(height: 14),
                       _buildPrayerGrid(
@@ -175,251 +210,251 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     );
   }
 
-  Widget _buildHeroCard(
+  Widget _buildSetupState(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final TextStyle? buttonTextStyle = theme.textTheme.titleSmall?.copyWith(
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0,
+    );
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: colors.mint,
+                            borderRadius: BorderRadius.circular(AppRadii.pill),
+                          ),
+                          child: Icon(
+                            Icons.add_location_alt_outlined,
+                            color: colors.primary,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Prayer times need a location',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Calculate Fajr, Dhuhr, Asr, Maghrib and Isha for your exact location.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.textSecondary,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Your location is only used for prayer time calculation.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: colors.textMuted,
+                          fontStyle: FontStyle.italic,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _isLocating ? null : _useCurrentLocation,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: colors.primary,
+                            foregroundColor: colors.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadii.pill,
+                              ),
+                            ),
+                            textStyle: buttonTextStyle,
+                          ),
+                          icon: _isLocating
+                              ? SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.onPrimary,
+                                  ),
+                                )
+                              : const Icon(Icons.my_location_rounded),
+                          label: const Text('Use current location'),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _chooseOnMap(null),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: colors.primary,
+                            side: BorderSide(color: colors.primary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadii.pill,
+                              ),
+                            ),
+                            textStyle: buttonTextStyle,
+                          ),
+                          icon: const Icon(Icons.map_outlined),
+                          label: const Text('Choose on map'),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () => _chooseManually(null),
+                        style: TextButton.styleFrom(
+                          foregroundColor: colors.textMuted,
+                          backgroundColor: Colors.transparent,
+                          textStyle: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.textMuted,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                        child: const Text('Enter coordinates manually'),
+                      ),
+                      const SizedBox(height: 28),
+                      Text(
+                        'Times are calculated locally on your device.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.textMuted,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPrayerInfoCard(
     BuildContext context,
     PrayerDay day,
-    _PrayerHeroTiming heroTiming,
-    PrayerTimeSettings settings,
-    PrayerLocation location,
     bool isViewingToday,
   ) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
-    final String methodLabel = prayerMethodDisplayLabel(
-      settings: settings,
-      effectiveMethod: day.effectiveMethod,
+    final EquranColors colors = context.equranColors;
+    final String dateLabel = isViewingToday ? 'Today' : _formatDate(day.date);
+    final BorderRadius dateButtonRadius = BorderRadius.circular(
+      AppRadii.medium,
     );
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            Color.alphaBlend(
-              colors.primary.withAlpha(isLight ? 34 : 54),
-              colors.surfaceContainerLow,
+    return EquranSurfaceCard(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      child: Row(
+        children: <Widget>[
+          _PrayerDateArrowButton(
+            icon: Icons.chevron_left_rounded,
+            tooltip: 'Previous day',
+            onPressed: () => _movePrayerDate(day.date, -1),
+          ),
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: dateButtonRadius,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                borderRadius: dateButtonRadius,
+                onTap: () => _selectPrayerDate(day.date),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      dateLabel,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
-            Color.alphaBlend(
-              colors.tertiary.withAlpha(isLight ? 24 : 42),
-              colors.surfaceContainer,
-            ),
-            colors.surfaceContainerLow,
-          ],
-        ),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: isLight ? 0.16 : 0.28),
-        ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: colors.shadow.withValues(alpha: isLight ? 0.12 : 0.28),
-            blurRadius: 26,
-            offset: const Offset(0, 12),
+          ),
+          _PrayerDateArrowButton(
+            icon: Icons.chevron_right_rounded,
+            tooltip: 'Next day',
+            onPressed: () => _movePrayerDate(day.date, 1),
           ),
         ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Text(
-                    isViewingToday ? 'Next prayer' : 'Selected date',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.primary,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Prayer settings',
-                  onPressed: _openPrayerSettings,
-                  icon: const Icon(Icons.tune_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text.rich(
-              key: const Key('next_prayer_title'),
-              TextSpan(
-                children: <InlineSpan>[
-                  TextSpan(text: heroTiming.entry.kind.label),
-                  const TextSpan(text: '  '),
-                  TextSpan(
-                    text: _formatTime(
-                      heroTiming.entry.time,
-                      settings.use24HourFormat,
-                    ),
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                      height: 1.02,
-                    ),
-                  ),
-                ],
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0,
-                height: 1.02,
-              ),
-            ),
-            const SizedBox(height: 15),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: <Widget>[
-                if (isViewingToday)
-                  _InfoPill(
-                    icon: Icons.hourglass_bottom_rounded,
-                    label: formatPrayerCountdownLabel(
-                      heroTiming.countdown,
-                      isNow: heroTiming.isNow,
-                    ),
-                  ),
-                _DateInfoPill(
-                  icon: Icons.calendar_today_rounded,
-                  label: _formatDate(day.date),
-                  tooltip: 'Select date',
-                  onTap: () => _selectPrayerDate(day.date),
-                  onClear: isViewingToday ? null : _returnToToday,
-                ),
-                _InfoPill(icon: Icons.calculate_outlined, label: methodLabel),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _LocationSummaryRow(
-              location: location,
-              onTap: () => _showLocationDetails(location),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildSetupState(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+  Widget _buildNightTimesCard(
+    BuildContext context,
+    PrayerDay day,
+    PrayerDay nextDay,
+    PrayerTimeSettings settings,
+  ) {
+    final EquranColors colors = context.equranColors;
+    final _NightTimes nightTimes = _nightTimesFor(day, nextDay);
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            Color.alphaBlend(
-              colors.primary.withAlpha(isLight ? 28 : 48),
-              colors.surfaceContainerLow,
+    return EquranSurfaceCard(
+      padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+      backgroundColor: colors.paleGreen,
+      borderColor: colors.border,
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: _NightTimeValue(
+              icon: Icons.nights_stay_outlined,
+              label: 'Middle of night',
+              value: _formatTime(nightTimes.middle, settings.use24HourFormat),
             ),
-            colors.surfaceContainerLow,
-          ],
-        ),
-        border: Border.all(color: colors.outlineVariant),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: colors.shadow.withValues(alpha: isLight ? 0.1 : 0.24),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _NightTimeValue(
+              icon: Icons.dark_mode_outlined,
+              label: 'Last third starts',
+              value: _formatTime(
+                nightTimes.lastThirdStart,
+                settings.use24HourFormat,
+              ),
+            ),
           ),
         ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: colors.primaryContainer.withValues(alpha: 0.72),
-                    borderRadius: BorderRadius.circular(AppRadii.medium),
-                  ),
-                  child: Icon(
-                    Icons.add_location_alt_outlined,
-                    color: colors.onPrimaryContainer,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Text(
-              'Prayer times need a location',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Choose where to calculate Fajr, Sunrise, Dhuhr, Asr, Maghrib, and Isha.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-                height: 1.35,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Icon(
-                  Icons.verified_user_outlined,
-                  color: colors.primary,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Your location is used only for local prayer-time calculation.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: <Widget>[
-                FilledButton.icon(
-                  onPressed: _isLocating ? null : _useCurrentLocation,
-                  icon: _isLocating
-                      ? const SizedBox.square(
-                          dimension: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.my_location_rounded),
-                  label: const Text('Use current location'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => _chooseOnMap(null),
-                  icon: const Icon(Icons.map_outlined),
-                  label: const Text('Choose on map'),
-                ),
-                TextButton.icon(
-                  onPressed: () => _chooseManually(null),
-                  icon: const Icon(Icons.edit_location_alt_outlined),
-                  label: const Text('Enter coordinates manually'),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -432,22 +467,23 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   ) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final bool twoColumns = constraints.maxWidth >= 620;
+        final int columns = constraints.maxWidth >= 700 ? 3 : 2;
         return GridView.builder(
           itemCount: day.entries.length,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: twoColumns ? 2 : 1,
+            crossAxisCount: columns,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: twoColumns ? 4.25 : 5.3,
+            mainAxisExtent: columns == 3 ? 146 : 142,
           ),
           itemBuilder: (BuildContext context, int index) {
             final PrayerTimeEntry entry = day.entries[index];
-            return _PrayerTimeCard(
+            return PrayerTimeThumbCard(
               entry: entry,
-              isNext: highlightedKind != null && entry.kind == highlightedKind,
+              isActive:
+                  highlightedKind != null && entry.kind == highlightedKind,
               use24HourFormat: settings.use24HourFormat,
             );
           },
@@ -458,25 +494,25 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
 
   Widget _buildDisclaimer(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
+        color: colors.surface.withAlpha(110),
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: colors.outlineVariant),
+        border: Border.all(color: colors.border.withAlpha(140)),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Icon(Icons.info_outline_rounded, color: colors.primary, size: 20),
-            const SizedBox(width: 10),
+            Icon(Icons.info_outline_rounded, color: colors.textMuted, size: 17),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Calculated locally. Adjust method in settings. Prayer times are currently experimental and may differ from local mosque or official timetables. Verify with your local mosque.',
+                'Prayer times are calculated locally. Verify with your local mosque if needed.',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
+                  color: colors.textMuted,
                   height: 1.35,
                 ),
               ),
@@ -557,6 +593,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     _showMessage('Location saved.');
   }
 
+  // ignore: unused_element
   Future<void> _showLocationDetails(PrayerLocation location) {
     return showModalBottomSheet<void>(
       context: context,
@@ -661,9 +698,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     });
   }
 
-  void _returnToToday() {
+  void _movePrayerDate(DateTime currentDate, int dayDelta) {
     setState(() {
-      _selectedDate = null;
+      _selectedDate = DateTime(
+        currentDate.year,
+        currentDate.month,
+        currentDate.day + dayDelta,
+      );
     });
   }
 
@@ -746,8 +787,51 @@ _PrayerHeroTiming _selectedDateHeroTiming(PrayerDay day) {
   );
 }
 
+class _NightTimes {
+  const _NightTimes({required this.middle, required this.lastThirdStart});
+
+  final DateTime middle;
+  final DateTime lastThirdStart;
+}
+
+_NightTimes _nightTimesFor(PrayerDay day, PrayerDay nextDay) {
+  final DateTime maghrib = day.entryFor(PrayerTimeKind.maghrib).time;
+  DateTime nextFajr = nextDay.entryFor(PrayerTimeKind.fajr).time;
+  if (!nextFajr.isAfter(maghrib)) {
+    nextFajr = nextFajr.add(const Duration(days: 1));
+  }
+  final Duration night = nextFajr.difference(maghrib);
+  return _NightTimes(
+    middle: maghrib.add(Duration(microseconds: night.inMicroseconds ~/ 2)),
+    lastThirdStart: maghrib.add(
+      Duration(microseconds: (night.inMicroseconds * 2) ~/ 3),
+    ),
+  );
+}
+
 bool _isSameCalendarDate(DateTime a, DateTime b) {
   return a.year == b.year && a.month == b.month && a.day == b.day;
+}
+
+PrayerTimeEntry _currentPrayerPeriod({
+  required PrayerDay today,
+  required PrayerDay yesterday,
+  required DateTime now,
+}) {
+  final PrayerTimeEntry fajr = today.entryFor(PrayerTimeKind.fajr);
+  final PrayerTimeEntry sunrise = today.entryFor(PrayerTimeKind.sunrise);
+  final PrayerTimeEntry dhuhr = today.entryFor(PrayerTimeKind.dhuhr);
+  final PrayerTimeEntry asr = today.entryFor(PrayerTimeKind.asr);
+  final PrayerTimeEntry maghrib = today.entryFor(PrayerTimeKind.maghrib);
+  final PrayerTimeEntry isha = today.entryFor(PrayerTimeKind.isha);
+
+  if (now.isBefore(fajr.time)) return yesterday.entryFor(PrayerTimeKind.isha);
+  if (now.isBefore(sunrise.time)) return fajr;
+  if (now.isBefore(dhuhr.time)) return sunrise;
+  if (now.isBefore(asr.time)) return dhuhr;
+  if (now.isBefore(maghrib.time)) return asr;
+  if (now.isBefore(isha.time)) return maghrib;
+  return isha;
 }
 
 class _LocationDetailsSheet extends StatefulWidget {
@@ -1136,16 +1220,18 @@ class _LocationActionRow extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
     final bool enabled = onTap != null;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
     return Material(
       color: colors.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(AppRadii.medium),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: radius,
         onTap: onTap,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.medium),
+            borderRadius: radius,
             border: Border.all(color: colors.outlineVariant),
           ),
           padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
@@ -1200,23 +1286,35 @@ class _LocationActionRow extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _LocationSummaryRow extends StatelessWidget {
-  const _LocationSummaryRow({required this.location, required this.onTap});
+  const _LocationSummaryRow({
+    required this.location,
+    required this.onTap,
+    // ignore: unused_element_parameter
+    this.onHero = false,
+  });
 
   final PrayerLocation location;
   final VoidCallback onTap;
+  final bool onHero;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final EquranColors equranColors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
     return Material(
-      color: colors.surface.withValues(alpha: 0.54),
-      borderRadius: BorderRadius.circular(AppRadii.medium),
+      color: onHero
+          ? equranColors.onPrimary.withAlpha(24)
+          : colors.surface.withValues(alpha: 0.54),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         key: const Key('prayer_location_summary'),
-        borderRadius: BorderRadius.circular(AppRadii.medium),
+        borderRadius: radius,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
@@ -1224,8 +1322,10 @@ class _LocationSummaryRow extends StatelessWidget {
             children: <Widget>[
               Icon(
                 Icons.location_on_outlined,
-                color: colors.onSurfaceVariant,
-                size: 20,
+                color: onHero
+                    ? equranColors.onPrimaryMuted
+                    : colors.onSurfaceVariant,
+                size: 18,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1237,6 +1337,7 @@ class _LocationSummaryRow extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyMedium?.copyWith(
+                        color: onHero ? equranColors.onPrimaryMuted : null,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1246,8 +1347,10 @@ class _LocationSummaryRow extends StatelessWidget {
               const SizedBox(width: 8),
               Icon(
                 Icons.manage_search_rounded,
-                color: colors.onSurfaceVariant,
-                size: 20,
+                color: onHero
+                    ? equranColors.onPrimaryMuted
+                    : colors.onSurfaceVariant,
+                size: 18,
               ),
             ],
           ),
@@ -1257,269 +1360,88 @@ class _LocationSummaryRow extends StatelessWidget {
   }
 }
 
-class _PrayerTimeCard extends StatelessWidget {
-  const _PrayerTimeCard({
-    required this.entry,
-    required this.isNext,
-    required this.use24HourFormat,
+class _PrayerDateArrowButton extends StatelessWidget {
+  const _PrayerDateArrowButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
   });
 
-  final PrayerTimeEntry entry;
-  final bool isNext;
-  final bool use24HourFormat;
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      decoration: BoxDecoration(
-        color: isNext ? null : colors.surfaceContainerLow,
-        gradient: isNext
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: <Color>[
-                  colors.primaryContainer.withValues(
-                    alpha: isLight ? 0.9 : 0.7,
-                  ),
-                  colors.tertiaryContainer.withValues(
-                    alpha: isLight ? 0.78 : 0.54,
-                  ),
-                ],
-              )
-            : null,
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(
-          color: isNext
-              ? colors.primary.withValues(alpha: 0.38)
-              : colors.outlineVariant,
-        ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: colors.shadow.withValues(alpha: isNext ? 0.14 : 0.06),
-            blurRadius: isNext ? 18 : 10,
-            offset: Offset(0, isNext ? 8 : 4),
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: colors.mint.withAlpha(150),
+        borderRadius: radius,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: radius,
+          child: SizedBox.square(
+            dimension: 40,
+            child: Icon(icon, color: colors.primary, size: 24),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: <Widget>[
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color:
-                    (isNext
-                            ? colors.surface.withValues(alpha: 0.52)
-                            : colors.surfaceContainer)
-                        .withValues(alpha: isLight ? 0.88 : 0.74),
-                borderRadius: BorderRadius.circular(AppRadii.small),
-              ),
-              child: Icon(
-                _iconFor(entry.kind),
-                color: isNext ? colors.primary : colors.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    entry.kind.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: isNext ? FontWeight.w900 : FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              _formatTime(entry.time, use24HourFormat),
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-                color: isNext ? colors.onPrimaryContainer : colors.onSurface,
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
-
-  IconData _iconFor(PrayerTimeKind kind) {
-    return switch (kind) {
-      PrayerTimeKind.fajr => Icons.nights_stay_rounded,
-      PrayerTimeKind.sunrise => Icons.wb_twilight_rounded,
-      PrayerTimeKind.dhuhr => Icons.wb_sunny_outlined,
-      PrayerTimeKind.asr => Icons.light_mode_outlined,
-      PrayerTimeKind.maghrib => Icons.wb_twilight_outlined,
-      PrayerTimeKind.isha => Icons.dark_mode_outlined,
-    };
-  }
 }
 
-class _InfoPill extends StatelessWidget {
-  const _InfoPill({required this.icon, required this.label});
+class _NightTimeValue extends StatelessWidget {
+  const _NightTimeValue({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   final IconData icon;
   final String label;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final BorderRadius borderRadius = BorderRadius.circular(AppRadii.small);
-    final Widget pill = DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surface.withValues(alpha: 0.66),
-        borderRadius: borderRadius,
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.7)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: 17, color: colors.primary),
-            const SizedBox(width: 7),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 260),
-              child: Text(
+    final EquranColors colors = context.equranColors;
+
+    return Row(
+      children: <Widget>[
+        Icon(icon, color: colors.primary, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelMedium?.copyWith(
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colors.textMuted,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-    return pill;
-  }
-}
-
-class _DateInfoPill extends StatelessWidget {
-  const _DateInfoPill({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.tooltip,
-    this.onClear,
-  });
-
-  final IconData icon;
-  final String label;
-  final String? tooltip;
-  final VoidCallback onTap;
-  final VoidCallback? onClear;
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final BorderRadius borderRadius = BorderRadius.circular(AppRadii.small);
-    final VoidCallback? onClear = this.onClear;
-
-    return Material(
-      type: MaterialType.transparency,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.surface.withValues(alpha: 0.66),
-          borderRadius: borderRadius,
-          border: Border.all(
-            color: colors.outlineVariant.withValues(alpha: 0.7),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Tooltip(
-              message: tooltip ?? label,
-              child: InkWell(
-                borderRadius: onClear == null
-                    ? borderRadius
-                    : BorderRadius.only(
-                        topLeft: Radius.circular(AppRadii.small),
-                        bottomLeft: Radius.circular(AppRadii.small),
-                      ),
-                onTap: onTap,
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(
-                    11,
-                    8,
-                    onClear == null ? 11 : 7,
-                    8,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Icon(icon, size: 17, color: colors.primary),
-                      const SizedBox(width: 7),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 260),
-                        child: Text(
-                          label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            if (onClear != null) ...<Widget>[
-              SizedBox(
-                height: 22,
-                child: VerticalDivider(
-                  width: 1,
-                  thickness: 1,
-                  color: colors.outlineVariant.withValues(alpha: 0.7),
-                ),
-              ),
-              Tooltip(
-                message: 'Return to today',
-                child: InkWell(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(AppRadii.small),
-                    bottomRight: Radius.circular(AppRadii.small),
-                  ),
-                  onTap: onClear,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 8,
-                    ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 16,
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ],
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

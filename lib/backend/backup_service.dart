@@ -48,9 +48,13 @@ class BackupService {
     'reciter',
     'color',
     'themeMode',
+    'themeScheme',
     'fontSize',
     'fontSizeTranslation',
     'playbackRate',
+    'dailyQuranGoalAyahs',
+    'dailyAyahDate',
+    'dailyAyahGlobalAyah',
     'ayahDelaySeconds',
     'intervalRepeatCount',
     'repeatAyahCount',
@@ -248,6 +252,7 @@ class BackupService {
           max: _themeColorCount - 1,
         ),
         'themeMode' => _requireThemeMode(entry.value),
+        'themeScheme' => _requireThemeScheme(entry.value),
         'reciter' => _requireReciterCode(entry.value),
         'fontSize' => _requireDoubleInRange(
           entry.key,
@@ -265,6 +270,19 @@ class BackupService {
           entry.key,
           entry.value,
           const <double>[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0],
+        ),
+        'dailyQuranGoalAyahs' => _requireIntInRange(
+          entry.key,
+          entry.value,
+          min: 1,
+          max: 1000,
+        ),
+        'dailyAyahDate' => _requireDateKey(entry.key, entry.value),
+        'dailyAyahGlobalAyah' => _requireIntInRange(
+          entry.key,
+          entry.value,
+          min: 1,
+          max: 6236,
         ),
         'ayahDelaySeconds' => _requireIntInRange(
           entry.key,
@@ -338,6 +356,13 @@ class BackupService {
     return value;
   }
 
+  static String _requireDateKey(String key, dynamic value) {
+    if (value is! String || !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
+      throw AppBackupException('Invalid value for "$key".');
+    }
+    return value;
+  }
+
   static double _requireDoubleInRange(
     String key,
     dynamic value, {
@@ -374,6 +399,19 @@ class BackupService {
     if (value is! String ||
         (value != 'light' && value != 'dark' && value != 'auto')) {
       throw AppBackupException('Invalid value for "themeMode".');
+    }
+    return value;
+  }
+
+  static String _requireThemeScheme(dynamic value) {
+    if (value is! String ||
+        (value != 'default' &&
+            value != 'fancyBlue' &&
+            value != 'fancyPurple' &&
+            value != 'sepia' &&
+            value != 'black' &&
+            value != 'red')) {
+      throw AppBackupException('Invalid value for "themeScheme".');
     }
     return value;
   }

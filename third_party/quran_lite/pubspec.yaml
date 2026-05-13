@@ -1,0 +1,12 @@
+name: quran
+description: Slim local Quran data access package for eQuran.
+version: 1.4.1-lite.0
+publish_to: none
+
+environment:
+  sdk: ">=3.11.5 <4.0.0"
+  flutter: ">=3.41.7"
+
+dependencies:
+  flutter:
+    sdk: flutter

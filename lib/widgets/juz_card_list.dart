@@ -1,3 +1,4 @@
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/juz_search.dart';
 import 'package:flutter/material.dart';
@@ -109,33 +110,42 @@ class _JuzSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
+        color: colors.surface,
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: <Color>[
-            colorScheme.primaryContainer.withValues(alpha: 0.9),
-            colorScheme.tertiaryContainer.withValues(alpha: 0.72),
+            Color.alphaBlend(colors.primary.withAlpha(18), colors.surface),
+            colors.surface,
           ],
         ),
-        borderRadius: BorderRadius.circular(AppRadii.small),
-        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.12)),
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         children: <Widget>[
-          Text(
-            "Juz' $juzNumber",
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: colorScheme.onPrimaryContainer,
-              letterSpacing: 0.2,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: colors.mint,
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+              border: Border.all(color: colors.border),
+            ),
+            child: Text(
+              "Juz' $juzNumber",
+              style: theme.textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w900,
+                color: colors.primary,
+                letterSpacing: 0,
+              ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Directionality(
               textDirection: TextDirection.rtl,
@@ -146,19 +156,19 @@ class _JuzSectionHeader extends StatelessWidget {
                 textAlign: TextAlign.right,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontFamily: 'Hafs',
-                  height: 1.28,
+                  height: 1.18,
                   fontWeight: FontWeight.w700,
-                  color: colorScheme.onPrimaryContainer,
+                  color: colors.textPrimary,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Text(
             '$surahCount surahs',
             style: theme.textTheme.labelLarge?.copyWith(
-              color: colorScheme.onPrimaryContainer.withValues(alpha: 0.72),
-              fontWeight: FontWeight.w600,
+              color: colors.textSecondary,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

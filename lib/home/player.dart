@@ -9,11 +9,20 @@ import 'package:equran/backend/library.dart'
         AndroidAudioDisplayMode,
         AudioDownloadService,
         DownloadNotifications,
+        DownloadableResource,
+        ResourceDownloadService,
+        ResourceInstallException,
+        ResourceInstallState,
+        ResourceInstallStore,
         QuranAudioService,
         QuranTransliterationService,
+        ResumeStateDB,
+        ResumeStateEntry,
         SurahTiming,
         SurahTimingRepository,
-        SettingsDB;
+        SettingsDB,
+        prettyBytes;
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/app_slider_theme.dart';
 import 'package:equran/utils/number_formatting.dart';
@@ -22,6 +31,7 @@ import 'package:equran/utils/reciter.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/widgets/app_selection_dialog.dart';
+import 'package:equran/widgets/number_badge.dart';
 import 'package:equran/widgets/read_quran_card.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode, kIsWeb;
 import 'package:flutter/material.dart';
@@ -147,11 +157,27 @@ const List<String> _surahTransliterations = <String>[
   'An-Nas',
 ];
 
+const String _playerDesignAsset = 'assets/media/images/app/design.webp';
+
 class PlayerPage extends StatefulWidget {
   const PlayerPage({super.key});
 
   @override
   State<PlayerPage> createState() => _PlayerPageState();
+}
+
+class _SleepTimerChoice {
+  const _SleepTimerChoice(this.label, this.duration);
+
+  final String label;
+  final Duration duration;
+
+  static const List<_SleepTimerChoice> durationChoices = <_SleepTimerChoice>[
+    _SleepTimerChoice('10 minutes', Duration(minutes: 10)),
+    _SleepTimerChoice('15 minutes', Duration(minutes: 15)),
+    _SleepTimerChoice('30 minutes', Duration(minutes: 30)),
+    _SleepTimerChoice('60 minutes', Duration(minutes: 60)),
+  ];
 }
 
 class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
@@ -161,6 +187,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   static const String _frameRatePolicySource = 'full_player_page';
   static const String _playerPagePointerSource = 'full_player_page_pointer';
   static const String _playerPageSeekSource = 'full_player_page_seek';
+  static const String _sleepTimerDurationMode = 'duration';
+  static const String _sleepTimerEndSurahMode = 'endSurah';
   static const Duration _expandedProgressTickInterval = Duration(
     milliseconds: 33,
   );
@@ -170,9 +198,13 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   final AudioDownloadService _downloads = AudioDownloadService();
   final SurahTimingRepository _timingRepository = SurahTimingRepository();
   final Random _random = Random();
+  final ValueNotifier<double> _progressNotifier = ValueNotifier<double>(0.0);
+  final ValueNotifier<Duration> _elapsedNotifier = ValueNotifier<Duration>(
+    Duration.zero,
+  );
+  final ValueNotifier<int?> _activeAyahNotifier = ValueNotifier<int?>(null);
 
   late final bool _useAudioplayersFallback;
-
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<ja.PlayerState>? _stateSubscription;
@@ -207,17 +239,23 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   int? _transliterationSurah;
   double? _pendingSeekProgress;
   Duration? _scrubPreviewPosition;
+  Duration? _pendingInitialResumePosition;
+  DateTime? _lastListeningPersistedAt;
   String? _timingReciterCode;
   bool? _selectionTimingSupported;
+  ResourceInstallState? _selectionTimingInstallState;
   SurahTiming? _surahTiming;
   List<String> _surahTransliterationsCache = const <String>[];
 
   double _playbackRate = 1.0;
   Duration _position = Duration.zero;
-  Duration _displayedPosition = Duration.zero;
   Duration _duration = Duration.zero;
-  Timer? _progressThumbTimer;
   Timer? _progressVisualTicker;
+  Timer? _progressThumbTimer;
+  Timer? _sleepTimer;
+  DateTime? _sleepTimerEndsAt;
+  String? _sleepTimerLabel;
+  String? _sleepTimerMode;
   DateTime? _positionSampledAt;
 
   @override
@@ -233,9 +271,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _playbackRate = rate.toDouble().clamp(0.5, 2.0);
     }
 
+    _loadListeningResumeState();
     _bindAudioListeners();
     _refreshDownloadState();
     unawaited(_loadTimingForSelection(surah: _selectedSurah));
+    _consumeResumeListeningRequest();
   }
 
   @override
@@ -279,15 +319,21 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _safeSetState(() {
           _duration = duration;
         });
+        _rescheduleEndOfSurahSleepTimer();
         _syncProgressVisualPolicy(syncPosition: true);
       });
 
       _fallbackStateSubscription = _fallbackAudio.onPlayerStateChanged.listen((
         state,
       ) {
+        final Duration currentPosition = _estimatedAudioPosition();
         _safeSetState(() {
           _isPlaying = state == ap.PlayerState.playing;
           _isPaused = state == ap.PlayerState.paused;
+          if (!_isPlaying) {
+            _position = currentPosition;
+            _positionSampledAt = DateTime.now();
+          }
           if (_isLoading) {
             if (_isPlaying) {
               _isLoading = false;
@@ -301,6 +347,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             state == ap.PlayerState.playing,
           ),
         );
+        _persistListeningResume(force: true);
         _syncProgressVisualPolicy(syncPosition: true);
       });
 
@@ -321,16 +368,21 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _safeSetState(() {
         _duration = duration ?? Duration.zero;
       });
+      _rescheduleEndOfSurahSleepTimer();
       _syncProgressVisualPolicy(syncPosition: true);
     });
 
     _stateSubscription = _justAudio.playerStateStream.listen((state) async {
+      final Duration currentPosition = _estimatedAudioPosition();
       _safeSetState(() {
         _isPlaying = state.playing;
         _isPaused =
             !state.playing && state.processingState == ja.ProcessingState.ready;
-        if ((state.playing &&
-                state.processingState == ja.ProcessingState.ready) ||
+        if (!state.playing) {
+          _position = currentPosition;
+          _positionSampledAt = DateTime.now();
+        }
+        if (state.playing ||
             state.processingState == ja.ProcessingState.completed) {
           _isLoading = false;
         }
@@ -339,6 +391,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       if (state.processingState == ja.ProcessingState.completed) {
         await _handleTrackComplete();
       }
+      _persistListeningResume(force: true);
       unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(state.playing));
       _syncProgressVisualPolicy(syncPosition: true);
     });
@@ -351,9 +404,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     try {
       _safeSetState(() {
         _position = Duration.zero;
-        _displayedPosition = Duration.zero;
         _positionSampledAt = DateTime.now();
-        _activeAyah = null;
+        _setActiveAyahValue(null);
         _isPlaying = false;
         _isPaused = false;
       });
@@ -414,7 +466,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   bool get _shouldRunProgressVisualTicker {
     return _shouldRenderProgressVisuals &&
         _isPlaying &&
-        _duration > Duration.zero;
+        (_duration > Duration.zero || (_showAyahText && _surahTiming != null));
   }
 
   bool get _shouldAnimateProgressVisuals {
@@ -449,31 +501,55 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     }
 
     if (syncPosition && _shouldRenderProgressVisuals) {
-      _syncDisplayedPosition();
+      _syncProgressNotifier();
     }
   }
 
   void _setAudioPosition(Duration position) {
     if (!mounted) return;
-    _position = position;
+    Duration effectivePosition = position;
+    if (_isPlaying && !_isScrubbing) {
+      final Duration estimatedPosition = _estimatedAudioPosition();
+      if (estimatedPosition - position > const Duration(milliseconds: 120)) {
+        effectivePosition = estimatedPosition;
+      }
+    }
+    _position = effectivePosition;
     _positionSampledAt = DateTime.now();
-    final int? nextAyah = _activeAyahForPosition(position);
-    final bool ayahChanged = nextAyah != _activeAyah;
-    if (!ayahChanged) return;
-
-    setState(() {
-      _activeAyah = nextAyah;
-    });
+    if (_isPlaying && !_isScrubbing && _progressVisualTicker != null) {
+      _persistListeningResume();
+      return;
+    }
+    if (!_isPlaying || _isScrubbing || _shouldRenderProgressVisuals) {
+      _syncProgressNotifier();
+      final bool ayahChanged = _setActiveAyahForPosition(effectivePosition);
+      _persistListeningResume(force: ayahChanged);
+      return;
+    }
+    _persistListeningResume();
   }
 
-  void _syncDisplayedPosition() {
+  void _syncProgressNotifier() {
     if (!mounted) return;
-    final Duration position = _estimatedAudioPosition();
-    if (_displayedPosition == position) return;
+    _setProgressVisualValue(_positionForProgress());
+  }
 
-    setState(() {
-      _displayedPosition = position;
-    });
+  void _setProgressVisualValue(Duration position) {
+    final double progress = _progressForPosition(position);
+    final Duration elapsedLabelPosition = Duration(seconds: position.inSeconds);
+    if (_elapsedNotifier.value != elapsedLabelPosition) {
+      _elapsedNotifier.value = elapsedLabelPosition;
+    }
+    if (_progressNotifier.value != progress) {
+      _progressNotifier.value = progress;
+    }
+  }
+
+  double _progressForPosition(Duration position) {
+    if (_duration.inMilliseconds <= 0) return 0.0;
+    return (position.inMilliseconds / _duration.inMilliseconds)
+        .clamp(0.0, 1.0)
+        .toDouble();
   }
 
   void _startProgressVisualTicker() {
@@ -487,9 +563,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       owner: 'full_player_page',
       interval: _expandedProgressTickInterval,
     );
-    _progressVisualTicker = Timer.periodic(_expandedProgressTickInterval, (_) {
-      _tickProgressVisual();
-    });
+    _progressVisualTicker = Timer.periodic(
+      _expandedProgressTickInterval,
+      (_) => _tickProgressVisual(),
+    );
   }
 
   void _stopProgressVisualTicker(String reason) {
@@ -510,19 +587,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     }
 
     final Duration position = _estimatedAudioPosition();
-    final int? nextAyah = _activeAyahForPosition(position);
-    final bool progressChanged = _displayedPosition != position;
-    final bool ayahChanged = nextAyah != _activeAyah;
-    if (!progressChanged && !ayahChanged) return;
-
-    setState(() {
-      if (progressChanged) {
-        _displayedPosition = position;
-      }
-      if (ayahChanged) {
-        _activeAyah = nextAyah;
-      }
-    });
+    _setProgressVisualValue(position);
+    final bool ayahChanged = _setActiveAyahForPosition(position);
+    if (ayahChanged) {
+      _persistListeningResume(force: true);
+    }
   }
 
   Duration _estimatedAudioPosition() {
@@ -588,8 +657,22 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   void _toggleAyahText() {
+    unawaited(_handleToggleAyahText());
+  }
+
+  Future<void> _handleToggleAyahText() async {
+    if (_showAyahText) {
+      setState(() {
+        _showAyahText = false;
+      });
+      unawaited(_updateKeepScreenOn());
+      return;
+    }
+
+    final bool timingReady = await _ensureTimingReadyForAyahText();
+    if (!timingReady || !mounted) return;
     setState(() {
-      _showAyahText = !_showAyahText;
+      _showAyahText = true;
     });
     unawaited(_updateKeepScreenOn());
   }
@@ -600,6 +683,66 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   String _selectedReciterName() =>
       QuranAudioService().selectedReciter.englishName;
+
+  void _loadListeningResumeState() {
+    final List<ResumeStateEntry> entries =
+        ResumeStateDB().box.values
+            .whereType<ResumeStateEntry>()
+            .where((entry) => entry.kind == 'listening' && entry.surah != null)
+            .toList(growable: false)
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    if (entries.isEmpty) return;
+
+    final ResumeStateEntry entry = entries.first;
+    final int surah = entry.surah!.clamp(1, 114).toInt();
+    final Duration position = Duration(
+      milliseconds: (entry.positionMillis ?? 0).clamp(0, 1 << 31).toInt(),
+    );
+    _selectedSurah = surah;
+    _position = position;
+    _positionSampledAt = DateTime.now();
+    _pendingInitialResumePosition = position > Duration.zero ? position : null;
+    _setActiveAyahValue(entry.ayah);
+    _syncProgressNotifier();
+  }
+
+  void _consumeResumeListeningRequest() {
+    final dynamic value = SettingsDB().get('resumeListeningRequestAt');
+    if (value == null) return;
+    unawaited(SettingsDB().delete('resumeListeningRequestAt'));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_playSurah(_selectedSurah));
+    });
+  }
+
+  void _persistListeningResume({bool force = false}) {
+    final DateTime now = DateTime.now();
+    if (!force &&
+        _lastListeningPersistedAt != null &&
+        now.difference(_lastListeningPersistedAt!) <
+            const Duration(seconds: 5)) {
+      return;
+    }
+    _lastListeningPersistedAt = now;
+    final Duration position = _estimatedAudioPosition();
+    final int ayah = _displayedAyah(_activeAyahForPosition(position));
+    unawaited(
+      ResumeStateDB().put(
+        'listening:last',
+        ResumeStateEntry(
+          id: 'listening:last',
+          kind: 'listening',
+          surah: _selectedSurah,
+          ayah: ayah,
+          positionMillis: position.inMilliseconds,
+          title: _surahName(_selectedSurah),
+          subtitle: 'Ayah $ayah - ${_selectedReciterName()}',
+          updatedAt: now,
+        ),
+      ),
+    );
+  }
 
   Future<String> _surahStreamUrl(int surah) =>
       QuranAudioService().getSurahUrl(surah);
@@ -635,28 +778,40 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       _timingSurah = surah;
       _timingReciterCode = effectiveReciterCode;
       _surahTiming = null;
-      _activeAyah = null;
+      _setActiveAyahValue(null);
       _selectionTimingSupported = null;
+      _selectionTimingInstallState = null;
       _isTimingLoading = true;
     });
 
-    final bool hasTimingSupport =
-        await SurahTimingRepository.hasTimingSupportForReciter(
+    final DownloadableResource? timingResource =
+        await SurahTimingRepository.timingResourceForReciter(
           effectiveReciterCode,
         );
     if (!mounted || generation != _timingLoadGeneration) return;
 
-    if (!hasTimingSupport) {
+    if (timingResource == null) {
       _safeSetState(() {
         _selectionTimingSupported = false;
+        _selectionTimingInstallState = null;
         _isTimingLoading = false;
       });
       return;
     }
 
+    final ResourceInstallState installState = ResourceInstallStore.instance
+        .installStateFor(timingResource);
     _safeSetState(() {
       _selectionTimingSupported = true;
+      _selectionTimingInstallState = installState;
     });
+
+    if (installState == ResourceInstallState.notDownloaded) {
+      _safeSetState(() {
+        _isTimingLoading = false;
+      });
+      return;
+    }
 
     final SurahTiming? timing = await _timingRepository.loadSurahTiming(
       reciterCode: effectiveReciterCode,
@@ -666,10 +821,100 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     _safeSetState(() {
       _surahTiming = timing;
-      _activeAyah = _activeAyahForPosition(_position);
       _selectionTimingSupported = true;
+      _selectionTimingInstallState = installState;
       _isTimingLoading = false;
     });
+    _setActiveAyahForPosition(_positionForProgress());
+  }
+
+  Future<bool> _ensureTimingReadyForAyahText() async {
+    final String reciterCode = _selectedReciterCode();
+    final DownloadableResource? timingResource =
+        await SurahTimingRepository.timingResourceForReciter(reciterCode);
+    if (!mounted) return false;
+
+    if (timingResource == null) {
+      _safeSetState(() {
+        _selectionTimingSupported = false;
+        _selectionTimingInstallState = null;
+        _surahTiming = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Timings unavailable for this reciter.')),
+      );
+      return false;
+    }
+
+    if (!ResourceInstallStore.instance.isInstalled(timingResource)) {
+      final bool downloaded = await _promptDownloadTimingResource(
+        timingResource,
+      );
+      if (!downloaded || !mounted) return false;
+    }
+
+    await _loadTimingForSelection(
+      surah: _selectedSurah,
+      reciterCode: reciterCode,
+    );
+    if (!mounted) return false;
+    if (_surahTiming == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Timings unavailable for this surah.')),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  Future<bool> _promptDownloadTimingResource(
+    DownloadableResource resource,
+  ) async {
+    final bool? shouldDownload = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Download timings?'),
+        content: Text(
+          'This reciter needs audio timings before synced ayah text can be shown. ${prettyBytes(resource.sizeBytes)}',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.download_rounded),
+            label: const Text('Download'),
+          ),
+        ],
+      ),
+    );
+    if (shouldDownload != true) return false;
+
+    try {
+      await ResourceDownloadService.instance.downloadAndInstall(resource);
+      _timingRepository.clearCache();
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
+      }
+      return true;
+    } on ResourceInstallException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to install timings.')),
+        );
+      }
+    }
+    return false;
   }
 
   int? _activeAyahForPosition(Duration position) {
@@ -683,12 +928,24 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         : timing.ayahs.last.ayahNumber;
   }
 
-  void _updateActiveAyah(Duration position) {
+  bool _setActiveAyahForPosition(Duration position) {
     final int? nextAyah = _activeAyahForPosition(position);
-    if (nextAyah == _activeAyah) return;
-    _safeSetState(() {
-      _activeAyah = nextAyah;
-    });
+    return _setActiveAyahValue(nextAyah);
+  }
+
+  bool _setActiveAyahValue(int? ayah) {
+    if (ayah == _activeAyah && _activeAyahNotifier.value == ayah) {
+      return false;
+    }
+    _activeAyah = ayah;
+    if (_activeAyahNotifier.value != ayah) {
+      _activeAyahNotifier.value = ayah;
+    }
+    return true;
+  }
+
+  void _updateActiveAyah(Duration position) {
+    _setActiveAyahForPosition(position);
   }
 
   int _wrapSurah(int value) {
@@ -725,10 +982,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _safeSetState(() {
       final Duration currentPosition = _estimatedAudioPosition();
       _position = currentPosition;
-      _displayedPosition = currentPosition;
       _positionSampledAt = DateTime.now();
       _playbackRate = rate;
     });
+    _syncProgressNotifier();
     await SettingsDB().put("playbackRate", rate);
 
     if (_useAudioplayersFallback) {
@@ -756,11 +1013,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     await _stopCurrentTrack();
     _safeSetState(() {
       _position = Duration.zero;
-      _displayedPosition = Duration.zero;
       _positionSampledAt = DateTime.now();
       _duration = Duration.zero;
       _playingFromOffline = false;
     });
+    _syncProgressNotifier();
     unawaited(
       _loadTimingForSelection(surah: _selectedSurah, reciterCode: reciter.code),
     );
@@ -770,15 +1027,17 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     required int surah,
     required bool playOffline,
   }) async {
+    final Duration? initialSeek = _pendingInitialResumePosition;
+    _pendingInitialResumePosition = null;
     if (_useAudioplayersFallback) {
       await _fallbackAudio.stop();
       _safeSetState(() {
         _position = Duration.zero;
-        _displayedPosition = Duration.zero;
         _positionSampledAt = DateTime.now();
         _duration = Duration.zero;
-        _activeAyah = null;
+        _setActiveAyahValue(null);
       });
+      _syncProgressNotifier();
 
       if (playOffline) {
         final File file = await _surahFile(surah);
@@ -788,6 +1047,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         await _fallbackAudio.play(ap.UrlSource(url));
       }
       await _fallbackAudio.setPlaybackRate(_playbackRate);
+      if (initialSeek != null && initialSeek > Duration.zero) {
+        await _fallbackAudio.seek(initialSeek);
+        _safeSetState(() {
+          _position = initialSeek;
+          _positionSampledAt = DateTime.now();
+        });
+        _syncProgressNotifier();
+      }
       return;
     }
 
@@ -802,11 +1069,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     _safeSetState(() {
       _position = Duration.zero;
-      _displayedPosition = Duration.zero;
       _positionSampledAt = DateTime.now();
       _duration = Duration.zero;
-      _activeAyah = null;
+      _setActiveAyahValue(null);
     });
+    _syncProgressNotifier();
 
     await _justAudio.setAudioSource(
       ja.AudioSource.uri(
@@ -821,6 +1088,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       ),
     );
     await _justAudio.setSpeed(_playbackRate);
+    if (initialSeek != null && initialSeek > Duration.zero) {
+      await _justAudio.seek(initialSeek);
+      _safeSetState(() {
+        _position = initialSeek;
+        _positionSampledAt = DateTime.now();
+      });
+      _syncProgressNotifier();
+    }
     unawaited(_justAudio.play());
   }
 
@@ -835,17 +1110,21 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Future<void> _pauseCurrentTrack() async {
+    final Duration currentPosition = _estimatedAudioPosition();
     if (_useAudioplayersFallback) {
       await _fallbackAudio.pause();
     } else {
       await _justAudio.pause();
     }
     _safeSetState(() {
+      _position = currentPosition;
+      _positionSampledAt = DateTime.now();
       _isPlaying = false;
       _isPaused = true;
     });
     await AndroidAudioDisplayMode.setAudioPlaybackActive(false);
     _syncProgressVisualPolicy(syncPosition: true);
+    _persistListeningResume(force: true);
   }
 
   Future<void> _stopCurrentTrack() async {
@@ -857,12 +1136,153 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _safeSetState(() {
       _isPlaying = false;
       _isPaused = false;
-      _activeAyah = null;
+      _setActiveAyahValue(null);
       _showAyahText = false;
     });
     await _setKeepScreenOn(false);
     await AndroidAudioDisplayMode.setAudioPlaybackActive(false);
     _syncProgressVisualPolicy();
+    _persistListeningResume(force: true);
+  }
+
+  Future<void> _setSleepTimer(
+    Duration duration,
+    String label, {
+    String mode = _sleepTimerDurationMode,
+    bool startPlayback = true,
+  }) async {
+    if (duration <= Duration.zero) return;
+    _sleepTimer?.cancel();
+    final DateTime endsAt = DateTime.now().add(duration);
+    _sleepTimer = Timer(duration, () async {
+      await _stopCurrentTrack();
+      _safeSetState(() {
+        _sleepTimer = null;
+        _sleepTimerEndsAt = null;
+        _sleepTimerLabel = null;
+        _sleepTimerMode = null;
+      });
+    });
+    _safeSetState(() {
+      _sleepTimerEndsAt = endsAt;
+      _sleepTimerLabel = label;
+      _sleepTimerMode = mode;
+    });
+    if (startPlayback) {
+      await _startOrContinuePlaybackForSleepTimer();
+    }
+  }
+
+  Future<void> _setSleepTimerUntil(
+    Duration target,
+    String label, {
+    required String mode,
+    bool startPlayback = true,
+  }) async {
+    final Duration currentPosition = _estimatedAudioPosition();
+    final Duration remaining = target - currentPosition;
+    await _setSleepTimer(
+      remaining,
+      label,
+      mode: mode,
+      startPlayback: startPlayback,
+    );
+  }
+
+  Future<void> _startOrContinuePlaybackForSleepTimer() async {
+    if (_isPlaying || _isLoading) return;
+    if (_isPaused || _loadedSurah == _selectedSurah) {
+      await _resumeCurrentTrack();
+      return;
+    }
+    await _playSurah(_selectedSurah);
+  }
+
+  void _cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    _safeSetState(() {
+      _sleepTimer = null;
+      _sleepTimerEndsAt = null;
+      _sleepTimerLabel = null;
+      _sleepTimerMode = null;
+    });
+  }
+
+  String _sleepTimerSummary() {
+    final DateTime? endsAt = _sleepTimerEndsAt;
+    if (endsAt == null) return 'Off';
+    final Duration remaining = endsAt.difference(DateTime.now());
+    if (remaining.isNegative) return 'sleeping soon';
+    final int minutes =
+        remaining.inMinutes + (remaining.inSeconds % 60 == 0 ? 0 : 1);
+    return 'sleeping in $minutes ${minutes == 1 ? 'minute' : 'minutes'}';
+  }
+
+  String _sleepTimerOptionsSubtitle() {
+    if (_sleepTimerEndsAt != null) return _sleepTimerSummary();
+    if (_sleepTimerMode == _sleepTimerEndSurahMode) {
+      return '${_sleepTimerLabel ?? 'End of surah'} pending';
+    }
+    return 'Off';
+  }
+
+  void _clearScheduledSleepTimer({bool keepMode = false}) {
+    _sleepTimer?.cancel();
+    _safeSetState(() {
+      _sleepTimer = null;
+      _sleepTimerEndsAt = null;
+      if (!keepMode) {
+        _sleepTimerLabel = null;
+        _sleepTimerMode = null;
+      }
+    });
+  }
+
+  void _rescheduleEndOfSurahSleepTimer() {
+    if (_sleepTimerMode != _sleepTimerEndSurahMode) return;
+    if (_duration <= Duration.zero) return;
+    final Duration remaining = _duration - _estimatedAudioPosition();
+    if (remaining <= Duration.zero) {
+      _cancelSleepTimer();
+      return;
+    }
+    unawaited(
+      _setSleepTimer(
+        remaining,
+        'End of surah',
+        mode: _sleepTimerEndSurahMode,
+        startPlayback: false,
+      ),
+    );
+  }
+
+  Future<void> _applySleepTimerSelection(String value) async {
+    if (value.startsWith('duration:')) {
+      final int? minutes = int.tryParse(value.substring('duration:'.length));
+      if (minutes == null) return;
+      await _setSleepTimer(
+        Duration(minutes: minutes),
+        '$minutes minutes',
+        mode: _sleepTimerDurationMode,
+      );
+      return;
+    }
+
+    if (value == _sleepTimerEndSurahMode) {
+      _safeSetState(() {
+        _sleepTimerLabel = 'End of surah';
+        _sleepTimerMode = _sleepTimerEndSurahMode;
+      });
+      if (_duration > Duration.zero) {
+        await _setSleepTimerUntil(
+          _duration,
+          'End of surah',
+          mode: _sleepTimerEndSurahMode,
+        );
+      } else {
+        await _startOrContinuePlaybackForSleepTimer();
+      }
+    }
   }
 
   Future<void> _seekCurrentTrack(Duration position) async {
@@ -871,15 +1291,25 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     } else {
       await _justAudio.seek(position);
     }
+    _persistListeningResume(force: true);
   }
 
   Future<void> _playSurah(int surah, {bool forceRestart = false}) async {
+    if (forceRestart) {
+      _pendingInitialResumePosition = null;
+    }
+    final int previousSurah = _selectedSurah;
     final String reciterCode = _selectedReciterCode();
     unawaited(_loadTimingForSelection(surah: surah, reciterCode: reciterCode));
     _safeSetState(() {
       _selectedSurah = surah;
       _isLoading = true;
     });
+    if (_sleepTimerMode == _sleepTimerEndSurahMode &&
+        (previousSurah != surah || forceRestart)) {
+      _sleepTimerLabel = 'End of surah';
+      _clearScheduledSleepTimer(keepMode: true);
+    }
 
     try {
       final bool shouldPlayOffline = await _hasOfflineFile(surah);
@@ -943,7 +1373,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Duration _positionForProgress() {
-    return _scrubPreviewPosition ?? _displayedPosition;
+    return _scrubPreviewPosition ?? _estimatedAudioPosition();
   }
 
   void _revealProgressThumb() {
@@ -992,6 +1422,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             _pendingSeekProgress = value;
             final int pendingMs = (_duration.inMilliseconds * value).round();
             _scrubPreviewPosition = Duration(milliseconds: pendingMs);
+            _setActiveAyahForPosition(_scrubPreviewPosition!);
           });
           _syncProgressVisualPolicy();
         },
@@ -1001,6 +1432,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             _pendingSeekProgress = value;
             final int pendingMs = (_duration.inMilliseconds * value).round();
             _scrubPreviewPosition = Duration(milliseconds: pendingMs);
+            _setActiveAyahForPosition(_scrubPreviewPosition!);
           });
         },
         onChangeEnd: (value) async {
@@ -1011,7 +1443,6 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           } finally {
             _safeSetState(() {
               _position = Duration(milliseconds: pendingMs);
-              _displayedPosition = Duration(milliseconds: pendingMs);
               _positionSampledAt = DateTime.now();
               _isScrubbing = false;
               _pendingSeekProgress = null;
@@ -1019,6 +1450,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             });
             _updateActiveAyah(Duration(milliseconds: pendingMs));
             _syncProgressVisualPolicy(syncPosition: true);
+            _persistListeningResume(force: true);
             FrameRatePolicyManager.instance.setUserDragging(
               false,
               source: _playerPageSeekSource,
@@ -1026,6 +1458,17 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             );
             unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
           }
+        },
+      ),
+    );
+  }
+
+  Widget _buildProgressSliderListenable(BuildContext context) {
+    return RepaintBoundary(
+      child: ValueListenableBuilder<double>(
+        valueListenable: _progressNotifier,
+        builder: (context, progress, _) {
+          return _buildProgressSlider(context: context, progress: progress);
         },
       ),
     );
@@ -1071,20 +1514,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             }
             await _selectSurah(surah);
           },
-          leading: CircleAvatar(
-            radius: 16,
-            backgroundColor: isSelected
-                ? colorScheme.secondaryContainer
-                : colorScheme.surfaceContainerLow,
-            child: Text(
-              surah.toString(),
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: isSelected
-                    ? colorScheme.onSecondaryContainer
-                    : colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+          leading: SurahNumberBadge(
+            number: surah,
+            size: 38,
+            active: isSelected,
           ),
           title: Text(_surahName(surah)),
           subtitle: Text('Surah $surah'),
@@ -1374,6 +1807,50 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                         context: context,
                         title: 'Playback',
                         children: <Widget>[
+                          ListTile(
+                            leading: const Icon(Icons.bedtime_outlined),
+                            title: const Text('Sleep timer'),
+                            subtitle: Text(_sleepTimerOptionsSubtitle()),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                if (_sleepTimerEndsAt != null)
+                                  TextButton(
+                                    onPressed: () {
+                                      _cancelSleepTimer();
+                                      setSheetState(() {});
+                                    },
+                                    child: const Text('Cancel'),
+                                  ),
+                                PopupMenuButton<String>(
+                                  tooltip: 'Sleep timer options',
+                                  icon: const Icon(Icons.more_time_rounded),
+                                  onSelected: (value) async {
+                                    await _applySleepTimerSelection(value);
+                                    if (sheetContext.mounted) {
+                                      setSheetState(() {});
+                                    }
+                                  },
+                                  itemBuilder: (context) {
+                                    return <PopupMenuEntry<String>>[
+                                      for (final _SleepTimerChoice choice
+                                          in _SleepTimerChoice.durationChoices)
+                                        PopupMenuItem<String>(
+                                          value:
+                                              'duration:${choice.duration.inMinutes}',
+                                          child: Text(choice.label),
+                                        ),
+                                      const PopupMenuDivider(),
+                                      const PopupMenuItem<String>(
+                                        value: _sleepTimerEndSurahMode,
+                                        child: Text('End of surah'),
+                                      ),
+                                    ];
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                           SwitchListTile(
                             secondary: const Icon(Icons.shuffle_rounded),
                             title: const Text('Shuffle'),
@@ -1567,14 +2044,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _loadedReciterCode = null;
         _safeSetState(() {
           _position = Duration.zero;
-          _displayedPosition = Duration.zero;
           _positionSampledAt = DateTime.now();
           _duration = Duration.zero;
-          _activeAyah = null;
+          _setActiveAyahValue(null);
           _isPlaying = false;
           _isPaused = false;
           _playingFromOffline = false;
         });
+        _syncProgressNotifier();
       }
 
       await _refreshDownloadState();
@@ -1653,6 +2130,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     unawaited(AndroidAudioDisplayMode.setVisualProgressActive(false));
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
     _progressThumbTimer?.cancel();
+    _sleepTimer?.cancel();
     _stopProgressVisualTicker('dispose');
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
@@ -1664,26 +2142,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     _justAudio.dispose();
     _fallbackAudio.dispose();
+    _progressNotifier.dispose();
+    _elapsedNotifier.dispose();
+    _activeAyahNotifier.dispose();
     super.dispose();
   }
 
   void _notifyAudioUserActivity() {
     AndroidAudioDisplayMode.notifyUserActivity();
-  }
-
-  void _openDrawer(BuildContext context) {
-    AndroidAudioDisplayMode.notifyUserActivity();
-    FrameRatePolicyManager.instance.setDrawerOpen(
-      true,
-      reason: 'player_drawer_opening',
-    );
-    unawaited(
-      AndroidAudioDisplayMode.addLowRefreshBlocker(
-        'home.drawerOpenOrAnimating',
-        reason: 'player drawer opening',
-      ),
-    );
-    Scaffold.of(context).openDrawer();
   }
 
   Widget _buildAudioInteractionBoundary({required Widget child}) {
@@ -1731,6 +2197,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     if (_selectionTimingSupported == false) {
       return 'Synced ayah display is unavailable for this reciter';
     }
+    if (_selectionTimingInstallState == ResourceInstallState.notDownloaded) {
+      return 'Download timings to sync ayahs for this reciter';
+    }
     if (_selectionTimingSupported == true) {
       return 'Synced ayah display is unavailable for this surah';
     }
@@ -1740,6 +2209,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Widget _buildActiveAyahCard({
     required ThemeData theme,
     required ColorScheme colorScheme,
+    required int? activeAyah,
   }) {
     final String? statusText = _timingStatusText();
     if (statusText != null) {
@@ -1751,7 +2221,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       );
     }
 
-    final int ayah = _displayedAyah();
+    final int ayah = _displayedAyah(activeAyah);
     final bool showTransliteration =
         SettingsDB().get("showTransliteration", defaultValue: false) == true;
     final bool showTranslation =
@@ -1772,10 +2242,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                 ? quran.basmala
                 : null,
             verse: quranVerseText(_selectedSurah, ayah),
-            translation: quran.getVerseTranslation(
-              _selectedSurah,
-              ayah,
-              translation: quran.Translation.values[_translationIndex()],
+            translation: quran.cleanTranslationText(
+              quran.getVerseTranslation(
+                _selectedSurah,
+                ayah,
+                translation: quran.Translation.values[_translationIndex()],
+              ),
             ),
             transliteration: showTransliteration
                 ? _cardTransliterationForAyah(ayah)
@@ -1791,6 +2263,24 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     );
   }
 
+  Widget _buildActiveAyahCardListenable({
+    required ThemeData theme,
+    required ColorScheme colorScheme,
+  }) {
+    return ValueListenableBuilder<int?>(
+      valueListenable: _activeAyahNotifier,
+      builder: (context, activeAyah, _) {
+        return RepaintBoundary(
+          child: _buildActiveAyahCard(
+            theme: theme,
+            colorScheme: colorScheme,
+            activeAyah: activeAyah,
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildNowPlayingHero({
     required ThemeData theme,
     required ColorScheme colorScheme,
@@ -1799,11 +2289,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     final int ayahCount = quran.getVerseCount(_selectedSurah);
     final bool offlineReady = _playingFromOffline || _isDownloaded;
     final Color artBackground = Color.alphaBlend(
-      colorScheme.primary.withValues(
-        alpha: theme.brightness == Brightness.dark ? 0.18 : 0.12,
+      context.equranColors.primary.withAlpha(
+        theme.brightness == Brightness.dark ? 46 : 30,
       ),
-      colorScheme.surfaceContainerHighest,
+      context.equranColors.mint,
     );
+    final EquranColors equranColors = context.equranColors;
 
     return Center(
       child: SingleChildScrollView(
@@ -1818,14 +2309,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               vertical: isDesktop ? 36 : 30,
             ),
             decoration: BoxDecoration(
-              color: colorScheme.surface.withValues(alpha: 0.88),
+              gradient: equranColors.heroGradient,
               borderRadius: BorderRadius.circular(AppRadii.large),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.36),
-              ),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: colorScheme.shadow.withValues(alpha: 0.16),
+                  color: equranColors.primaryStrong.withAlpha(54),
                   blurRadius: 30,
                   offset: const Offset(0, 14),
                 ),
@@ -1854,12 +2342,27 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       color: colorScheme.outlineVariant.withValues(alpha: 0.36),
                     ),
                   ),
-                  child: Icon(
-                    _isPlaying
-                        ? Icons.graphic_eq_rounded
-                        : Icons.play_arrow_rounded,
-                    size: isDesktop ? 42 : 36,
-                    color: colorScheme.primary,
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: <Widget>[
+                      Positioned.fill(
+                        child: Opacity(
+                          opacity: 0.14,
+                          child: Image.asset(
+                            _playerDesignAsset,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        _isPlaying
+                            ? Icons.graphic_eq_rounded
+                            : Icons.play_arrow_rounded,
+                        size: isDesktop ? 42 : 36,
+                        color: colorScheme.primary,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -1875,7 +2378,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                                 ? theme.textTheme.displaySmall
                                 : theme.textTheme.headlineMedium)
                             ?.copyWith(
-                              color: colorScheme.onSurface,
+                              color: equranColors.onPrimary,
                               fontWeight: FontWeight.w800,
                             ),
                   ),
@@ -1891,7 +2394,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                               ? theme.textTheme.headlineSmall
                               : theme.textTheme.titleLarge)
                           ?.copyWith(
-                            color: colorScheme.onSurface,
+                            color: equranColors.onPrimary,
                             fontWeight: FontWeight.w800,
                           ),
                 ),
@@ -1902,7 +2405,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                    color: equranColors.onPrimaryMuted,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1926,6 +2429,13 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                           : Icons.cloud_rounded,
                       label: offlineReady ? 'Offline ready' : 'Streaming',
                     ),
+                    if (_sleepTimerEndsAt != null)
+                      _buildNowPlayingChip(
+                        theme: theme,
+                        colorScheme: colorScheme,
+                        icon: Icons.bedtime_outlined,
+                        label: _sleepTimerSummary(),
+                      ),
                   ],
                 ),
               ],
@@ -2022,9 +2532,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     );
   }
 
-  int _displayedAyah() {
+  int _displayedAyah([int? activeAyah]) {
     final int ayahCount = quran.getVerseCount(_selectedSurah);
-    return (_activeAyah ?? 1).clamp(1, ayahCount).toInt();
+    return (activeAyah ?? _activeAyah ?? 1).clamp(1, ayahCount).toInt();
   }
 
   int _translationIndex() {
@@ -2066,13 +2576,6 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     _syncTimingForCurrentSelection();
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
-    final Duration displayedPosition = _positionForProgress();
-    final double progress = _duration.inMilliseconds > 0
-        ? (displayedPosition.inMilliseconds / _duration.inMilliseconds).clamp(
-            0.0,
-            1.0,
-          )
-        : 0.0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -2155,18 +2658,29 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           );
         }
 
+        Widget buildElapsedTimeLabel({TextAlign textAlign = TextAlign.left}) {
+          return ValueListenableBuilder<Duration>(
+            valueListenable: _elapsedNotifier,
+            builder: (context, position, _) {
+              return buildTimeLabel(position, textAlign: textAlign);
+            },
+          );
+        }
+
         final header = Padding(
           padding: EdgeInsets.only(bottom: isDesktop ? 14 : 8),
           child: Row(
             children: <Widget>[
-              Builder(
-                builder: (context) => IconButton(
-                  onPressed: () => _openDrawer(context),
-                  style: ResponsiveNav.iconButtonStyle(context),
-                  icon: Icon(
-                    Icons.menu_rounded,
-                    size: ResponsiveNav.iconSize(context),
-                  ),
+              IconButton(
+                onPressed: Navigator.of(context).canPop()
+                    ? () => Navigator.of(context).pop()
+                    : null,
+                style: ResponsiveNav.iconButtonStyle(context),
+                icon: Icon(
+                  Navigator.of(context).canPop()
+                      ? Icons.arrow_back_rounded
+                      : Icons.library_music_outlined,
+                  size: ResponsiveNav.iconSize(context),
                 ),
               ),
               const SizedBox(width: 8),
@@ -2321,7 +2835,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         }
 
         final Widget nowPlayingHero = _showAyahText
-            ? _buildActiveAyahCard(theme: theme, colorScheme: colorScheme)
+            ? _buildActiveAyahCardListenable(
+                theme: theme,
+                colorScheme: colorScheme,
+              )
             : _buildNowPlayingHero(
                 theme: theme,
                 colorScheme: colorScheme,
@@ -2332,12 +2849,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            _buildProgressSlider(context: context, progress: progress),
+            _buildProgressSliderListenable(context),
             const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                buildTimeLabel(displayedPosition),
+                buildElapsedTimeLabel(),
                 buildTimeLabel(_duration, textAlign: TextAlign.right),
               ],
             ),
@@ -2377,13 +2894,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                     const SizedBox(height: 14),
                     Row(
                       children: <Widget>[
-                        buildTimeLabel(displayedPosition),
+                        buildElapsedTimeLabel(),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: _buildProgressSlider(
-                            context: context,
-                            progress: progress,
-                          ),
+                          child: _buildProgressSliderListenable(context),
                         ),
                         const SizedBox(width: 8),
                         buildTimeLabel(_duration, textAlign: TextAlign.right),

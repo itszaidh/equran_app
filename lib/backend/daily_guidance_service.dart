@@ -66,7 +66,7 @@ class DailyGuidanceService {
   DailyGuidanceService._();
 
   static final DailyGuidanceService instance = DailyGuidanceService._();
-  static const String _assetPath = 'assets/content/daily_hadith_duas.json';
+  static const String _assetPath = 'assets/data/dua/daily_hadith_duas.json';
 
   List<DailyGuidanceCategory>? _cache;
 

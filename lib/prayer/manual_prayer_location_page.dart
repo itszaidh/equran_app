@@ -1,4 +1,5 @@
 import 'package:equran/prayer/prayer_models.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 
@@ -67,9 +68,22 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final EquranColors equranColors = context.equranColors;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Choose location manually')),
+      appBar: AppBar(
+        title: const Text('Choose location manually'),
+        backgroundColor: equranColors.background,
+        foregroundColor: equranColors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: theme.textTheme.titleLarge?.copyWith(
+          color: equranColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: equranColors.textSecondary),
+        actionsIconTheme: IconThemeData(color: equranColors.textSecondary),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(

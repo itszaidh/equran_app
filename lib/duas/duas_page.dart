@@ -3,6 +3,8 @@ import 'package:equran/duas/duas_category_page.dart';
 import 'package:equran/duas/duas_favourites_page.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
+import 'package:equran/duas/tasbih_page.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -160,6 +162,8 @@ class _DuasContent extends StatelessWidget {
                       },
                 ),
                 const SizedBox(height: 12),
+                _TasbihEntryCard(onTap: () => _openTasbih(context)),
+                const SizedBox(height: 12),
                 TextField(
                   controller: searchController,
                   textInputAction: TextInputAction.search,
@@ -250,6 +254,16 @@ class _DuasContent extends StatelessWidget {
       ),
     );
   }
+
+  void _openTasbih(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return const TasbihPage();
+        },
+      ),
+    );
+  }
 }
 
 class _DuasHero extends StatelessWidget {
@@ -261,30 +275,19 @@ class _DuasHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colors = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+    final EquranColors colors = context.equranColors;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.large),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            Color.alphaBlend(
-              colors.primary.withAlpha(isLight ? 34 : 54),
-              colors.surfaceContainerLow,
-            ),
-            Color.alphaBlend(
-              colors.tertiary.withAlpha(isLight ? 24 : 42),
-              colors.surfaceContainer,
-            ),
-            colors.surfaceContainerLow,
-          ],
-        ),
-        border: Border.all(
-          color: colors.primary.withValues(alpha: isLight ? 0.16 : 0.28),
-        ),
+        gradient: colors.heroGradient,
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: colors.primaryStrong.withAlpha(42),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
@@ -294,12 +297,12 @@ class _DuasHero extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: colors.primaryContainer.withValues(alpha: 0.72),
+                color: colors.onPrimary.withAlpha(24),
                 borderRadius: BorderRadius.circular(AppRadii.medium),
               ),
               child: Icon(
                 Icons.auto_stories_outlined,
-                color: colors.onPrimaryContainer,
+                color: colors.onPrimary,
               ),
             ),
             const SizedBox(width: 14),
@@ -310,6 +313,7 @@ class _DuasHero extends StatelessWidget {
                   Text(
                     'Hisn al Muslim',
                     style: theme.textTheme.titleLarge?.copyWith(
+                      color: colors.onPrimary,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 0,
                     ),
@@ -318,7 +322,7 @@ class _DuasHero extends StatelessWidget {
                   Text(
                     '$categoryCount Arabic categories - $duaCount duas offline',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onSurfaceVariant,
+                      color: colors.onPrimaryMuted,
                       height: 1.3,
                     ),
                   ),
@@ -385,6 +389,61 @@ class _FavouritesEntryCard extends StatelessWidget {
             ),
           ),
           Icon(Icons.chevron_right_rounded, color: colors.onSurfaceVariant),
+        ],
+      ),
+    );
+  }
+}
+
+class _TasbihEntryCard extends StatelessWidget {
+  const _TasbihEntryCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return _TappablePanel(
+      onTap: onTap,
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: colors.mint,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: Icon(
+              Icons.auto_awesome_outlined,
+              color: colors.primary,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'Tasbih and dhikr',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'A calm counter with daily presets',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: colors.textMuted),
         ],
       ),
     );

@@ -207,7 +207,13 @@ class _FontPreview extends StatelessWidget {
           if (showTranslation) ...<Widget>[
             const SizedBox(height: 12),
             Text(
-              quran.getVerseTranslation(1, 1, translation: selectedTranslation),
+              quran.cleanTranslationText(
+                quran.getVerseTranslation(
+                  1,
+                  1,
+                  translation: selectedTranslation,
+                ),
+              ),
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,

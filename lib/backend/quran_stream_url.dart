@@ -9,7 +9,8 @@ class QuranAudioService {
       <String, Future<Map<String, dynamic>>>{};
 
   AppReciter get selectedReciter {
-    final String savedCode = SettingsDB().get('reciter', defaultValue: '1');
+    final Object? savedValue = SettingsDB().get('reciter', defaultValue: '1');
+    final String savedCode = savedValue?.toString() ?? '1';
     final String normalizedCode = AppReciter.normalizeCode(savedCode);
     if (normalizedCode != savedCode) {
       SettingsDB().put('reciter', normalizedCode);

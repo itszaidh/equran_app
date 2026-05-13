@@ -23,17 +23,17 @@ class QuranJuzTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
-        ),
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: radius),
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
+          borderRadius: radius,
           onTap: () async {
             await Future.delayed(const Duration(milliseconds: 180));
             if (!context.mounted) return;

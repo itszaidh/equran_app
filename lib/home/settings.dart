@@ -1,6 +1,27 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart'
-    show BookmarkDB, FavouritesDB, SettingsDB;
+    show
+        BookmarkDB,
+        FavouritesDB,
+        QuranActivityDB,
+        QuranBookmarkFoldersDB,
+        QuranBookmarksDB,
+        QuranStatsDB,
+        QuranTranslationService,
+        ResumeStateDB,
+        DownloadableResource,
+        ResourceDownloadPhase,
+        ResourceDownloadProgress,
+        ResourceDownloadService,
+        ResourceInstallException,
+        ResourceInstallState,
+        ResourceInstallStore,
+        ResourceManifest,
+        ResourceRepository,
+        ResourceType,
+        RoutineDayProgressDB,
+        SettingsDB,
+        prettyBytes;
 import 'package:equran/backend/backup_service.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/utils/app_theme.dart';
@@ -14,15 +35,7 @@ import 'package:equran/widgets/library.dart'
         PlayBackSlider,
         SettingsSwitch;
 import 'package:flutter/material.dart';
-import 'package:quran/quran.dart' show Translation;
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-const String _appDownloadUrl =
-    'https://f-droid.org/en/packages/com.app.equran/';
-const String _issueReportUrl = 'https://github.com/ya27hw/equran_app/issues';
-const String _contactEmail = 'equran@elbaesy.com';
+import 'package:quran/quran.dart' show Translation, isTranslationLoaded;
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -32,6 +45,14 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  late Future<ResourceManifest> _resourceManifestFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _resourceManifestFuture = ResourceRepository.instance.loadManifest();
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool cardViewEnabled = SettingsDB().get(
@@ -66,21 +87,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 settingsKey: "showLastRead",
                 subtitle: "Shows you up to 7 last read Surahs.",
               ),
-              ListTile(
-                leading: const Icon(Icons.info_outline_rounded),
-                title: const Text('About this app'),
-                onTap: () => _showAboutApp(context),
-              ),
-              ListTile(
-                leading: const Icon(Icons.share_outlined),
-                title: const Text('Share app'),
-                onTap: () => _shareApp(context),
-              ),
-              ListTile(
-                leading: const Icon(Icons.feedback_outlined),
-                title: const Text('Feedback / Contact'),
-                onTap: () => _openFeedbackContactPage(context),
-              ),
             ],
           ),
           _buildSettingsGroup(
@@ -105,6 +111,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   defaultValue: true,
                 ),
               if (cardViewEnabled) _buildTransliterationToggle(),
+              _buildDailyQuranGoalTile(context),
               _buildTranslationTile(context),
               FontSlider(showTranslationControls: showTranslationControls),
             ],
@@ -118,6 +125,13 @@ class _SettingsPageState extends State<SettingsPage> {
               _buildReciterTile(context),
               const PlayBackSlider(),
             ],
+          ),
+          _buildSettingsGroup(
+            context: context,
+            title: "Downloadable Resources",
+            subtitle: "Tafsir and audio timing packs",
+            icon: Icons.cloud_download_outlined,
+            children: <Widget>[_buildDownloadableResourcesSection(context)],
           ),
           _buildSettingsGroup(
             context: context,
@@ -175,17 +189,18 @@ class _SettingsPageState extends State<SettingsPage> {
     bool initiallyExpanded = false,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppRadii.medium),
+          borderRadius: radius,
           border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.medium),
+          borderRadius: radius,
           child: ExpansionTile(
             initiallyExpanded: initiallyExpanded,
             shape: const Border(),
@@ -205,6 +220,8 @@ class _SettingsPageState extends State<SettingsPage> {
       title: const Text("Translation"),
       subtitle: Text(_selectedTranslationName()),
       onTap: () async {
+        final ResourceManifest manifest = await _resourceManifestFuture;
+        if (!context.mounted) return;
         final int selected = SettingsDB().get("translation", defaultValue: 0);
         final int? value = await _showSelectionDialog<int>(
           context: context,
@@ -218,14 +235,25 @@ class _SettingsPageState extends State<SettingsPage> {
                   .map(
                     (entry) => AppSelectionOption<int>(
                       value: entry.key,
-                      title: translationDisplayName(entry.value),
+                      title:
+                          '${translationDisplayName(entry.value)} • '
+                          '${QuranTranslationService.instance.availabilityLabel(entry.value, manifest)}',
                     ),
                   )
                   .toList()
                 ..sort((a, b) => a.title.compareTo(b.title)),
         );
         if (value == null) return;
-        SettingsDB().put("translation", value);
+        final Translation translation = Translation.values[value];
+        final bool ready = await _ensureTranslationReadyForSelection(
+          translation: translation,
+          manifest: manifest,
+        );
+        if (!ready) return;
+        await SettingsDB().put("translation", value);
+        await QuranTranslationService.instance.loadInstalledTranslation(
+          translation,
+        );
         if (mounted) {
           setState(() {});
         }
@@ -296,21 +324,410 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildDownloadableResourcesSection(BuildContext context) {
+    return FutureBuilder<ResourceManifest>(
+      future: _resourceManifestFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final ResourceManifest? manifest = snapshot.data;
+        if (manifest == null || manifest.resources.isEmpty) {
+          return Column(
+            children: <Widget>[
+              const ListTile(
+                leading: Icon(Icons.error_outline_rounded),
+                title: Text('Resources unavailable'),
+                subtitle: Text('Unable to load the resource manifest.'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.refresh_rounded),
+                title: const Text('Retry'),
+                onTap: _refreshResourceManifest,
+              ),
+            ],
+          );
+        }
+
+        return ValueListenableBuilder<int>(
+          valueListenable: ResourceInstallStore.instance.changes,
+          builder: (context, _, _) {
+            return ValueListenableBuilder<
+              Map<String, ResourceDownloadProgress>
+            >(
+              valueListenable: ResourceDownloadService.instance.downloads,
+              builder: (context, downloads, _) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    _buildResourceSubsection(
+                      context: context,
+                      manifest: manifest,
+                      title: 'Tafsir',
+                      resources: manifest.resourcesOfType(ResourceType.tafsir),
+                      downloads: downloads,
+                    ),
+                    _buildResourceSubsection(
+                      context: context,
+                      manifest: manifest,
+                      title: 'Audio Timings',
+                      resources: manifest.resourcesOfType(ResourceType.timings),
+                      downloads: downloads,
+                    ),
+                    _buildResourceSubsection(
+                      context: context,
+                      manifest: manifest,
+                      title: 'Translations',
+                      resources: manifest.resourcesOfType(
+                        ResourceType.translation,
+                      ),
+                      downloads: downloads,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.refresh_rounded),
+                      title: const Text('Refresh manifest'),
+                      subtitle: const Text('Check GitHub releases for changes'),
+                      onTap: _refreshResourceManifest,
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildResourceSubsection({
+    required BuildContext context,
+    required ResourceManifest manifest,
+    required String title,
+    required List<DownloadableResource> resources,
+    required Map<String, ResourceDownloadProgress> downloads,
+  }) {
+    if (resources.isEmpty) {
+      return ListTile(
+        title: Text(title),
+        subtitle: const Text('No resources listed in the manifest.'),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+        ),
+        for (final DownloadableResource resource in resources)
+          _buildResourceTile(
+            context: context,
+            manifest: manifest,
+            resource: resource,
+            progress: downloads[resource.id],
+          ),
+      ],
+    );
+  }
+
+  Widget _buildResourceTile({
+    required BuildContext context,
+    required ResourceManifest manifest,
+    required DownloadableResource resource,
+    required ResourceDownloadProgress? progress,
+  }) {
+    final ResourceInstallStore store = ResourceInstallStore.instance;
+    final bool isTafsir = resource.type == ResourceType.tafsir;
+    final bool isTranslation = resource.type == ResourceType.translation;
+    final bool selected =
+        (isTafsir &&
+            store.selectedTafsirResourceIds(manifest).contains(resource.id)) ||
+        (isTranslation && _selectedTranslationResourceId() == resource.id);
+    final ResourceInstallState installState =
+        progress != null &&
+            progress.phase != ResourceDownloadPhase.complete &&
+            progress.phase != ResourceDownloadPhase.failed
+        ? ResourceInstallState.downloading
+        : store.installStateFor(resource);
+    final String status = selected
+        ? '${installState.label} • Selected'
+        : installState.label;
+
+    return ListTile(
+      leading: isTafsir
+          ? Checkbox(
+              value: selected,
+              onChanged: (value) => _toggleTafsirSelection(
+                manifest: manifest,
+                resource: resource,
+                selected: value == true,
+              ),
+            )
+          : Icon(
+              isTranslation
+                  ? selected
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.translate_rounded
+                  : Icons.graphic_eq_rounded,
+            ),
+      title: Text(resource.name),
+      subtitle: Text('${_resourceSubtitle(resource)} • $status'),
+      trailing: _buildResourceAction(resource, installState, progress),
+      onTap: isTafsir
+          ? () => _toggleTafsirSelection(
+              manifest: manifest,
+              resource: resource,
+              selected: !selected,
+            )
+          : isTranslation
+          ? () => _selectTranslationResource(
+              manifest: manifest,
+              resource: resource,
+            )
+          : null,
+    );
+  }
+
+  Widget _buildResourceAction(
+    DownloadableResource resource,
+    ResourceInstallState state,
+    ResourceDownloadProgress? progress,
+  ) {
+    if (state == ResourceInstallState.downloading) {
+      final double? fraction = progress?.fraction;
+      return SizedBox.square(
+        dimension: 32,
+        child: CircularProgressIndicator(strokeWidth: 2.4, value: fraction),
+      );
+    }
+
+    if (state == ResourceInstallState.installed) {
+      return IconButton(
+        tooltip: 'Delete',
+        onPressed: () => _confirmDeleteResource(resource),
+        icon: const Icon(Icons.delete_outline_rounded),
+      );
+    }
+
+    return IconButton(
+      tooltip: state == ResourceInstallState.updateAvailable
+          ? 'Update'
+          : 'Download',
+      onPressed: () => _downloadResource(resource),
+      icon: Icon(
+        state == ResourceInstallState.updateAvailable
+            ? Icons.system_update_alt_rounded
+            : Icons.download_rounded,
+      ),
+    );
+  }
+
+  String _resourceSubtitle(DownloadableResource resource) {
+    final List<String> parts = <String>[
+      if (resource.language != null) resource.language!.toUpperCase(),
+      if (resource.reciterCode != null)
+        AppReciter.fromCode(resource.reciterCode).englishName,
+      'v${resource.version}',
+      prettyBytes(resource.sizeBytes),
+    ];
+    return parts.join(' • ');
+  }
+
+  Future<void> _toggleTafsirSelection({
+    required ResourceManifest manifest,
+    required DownloadableResource resource,
+    required bool selected,
+  }) async {
+    final ResourceInstallStore store = ResourceInstallStore.instance;
+    final Set<String> selectedIds = store
+        .selectedTafsirResourceIds(manifest)
+        .toSet();
+    if (selected) {
+      selectedIds.add(resource.id);
+    } else {
+      selectedIds.remove(resource.id);
+    }
+    await store.saveSelectedTafsirResourceIds(selectedIds.toList());
+    if (mounted) setState(() {});
+  }
+
+  String? _selectedTranslationResourceId() {
+    final dynamic saved = SettingsDB().get('translation', defaultValue: 0);
+    if (saved is! int ||
+        saved < 0 ||
+        saved >= Translation.values.length ||
+        Translation.values[saved].isBundled) {
+      return null;
+    }
+    return Translation.values[saved].resourceId;
+  }
+
+  Future<void> _selectTranslationResource({
+    required ResourceManifest manifest,
+    required DownloadableResource resource,
+  }) async {
+    final Translation? translation = _translationForResource(resource);
+    if (translation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This translation is not supported yet.')),
+      );
+      return;
+    }
+
+    final bool ready = await _ensureTranslationReadyForSelection(
+      translation: translation,
+      manifest: manifest,
+    );
+    if (!ready) return;
+
+    await SettingsDB().put(
+      'translation',
+      Translation.values.indexOf(translation),
+    );
+    await QuranTranslationService.instance.loadInstalledTranslation(
+      translation,
+    );
+    if (mounted) setState(() {});
+  }
+
+  Future<bool> _ensureTranslationReadyForSelection({
+    required Translation translation,
+    required ResourceManifest manifest,
+  }) async {
+    if (translation.isBundled) return true;
+
+    final DownloadableResource? resource = QuranTranslationService.instance
+        .resourceForTranslation(translation, manifest);
+    if (resource == null) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This translation is not in the resource manifest.'),
+        ),
+      );
+      return false;
+    }
+
+    if (ResourceInstallStore.instance.isInstalled(resource)) return true;
+
+    final bool? download = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Download ${translationDisplayName(translation)}?'),
+        content: Text(
+          'This translation is not installed on this device. '
+          '${prettyBytes(resource.sizeBytes)}',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.download_rounded),
+            label: const Text('Download'),
+          ),
+        ],
+      ),
+    );
+    if (download != true) return false;
+    return _downloadResource(resource);
+  }
+
+  Translation? _translationForResource(DownloadableResource resource) {
+    for (final Translation translation in Translation.values) {
+      if (translation.resourceId == resource.id) return translation;
+    }
+    return null;
+  }
+
+  Future<bool> _downloadResource(DownloadableResource resource) async {
+    try {
+      await ResourceDownloadService.instance.downloadAndInstall(resource);
+      await QuranTranslationService.instance
+          .loadInstalledTranslationForResource(resource);
+      if (!mounted) return false;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
+      setState(() {});
+      return true;
+    } on ResourceInstallException catch (error) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+      return false;
+    } catch (_) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to install this resource.')),
+      );
+      return false;
+    }
+  }
+
+  Future<void> _confirmDeleteResource(DownloadableResource resource) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete ${resource.name}?'),
+        content: const Text(
+          'This removes the downloaded files from this device.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ResourceDownloadService.instance.uninstall(resource);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Deleted ${resource.name}.')));
+    setState(() {});
+  }
+
+  void _refreshResourceManifest() {
+    setState(() {
+      _resourceManifestFuture = ResourceRepository.instance.refreshManifest();
+    });
+  }
+
   Widget _buildThemeColorTile(BuildContext context) {
     return ListTile(
       onTap: () async {
-        final int? selectedColor = await _showColorPickerDialog(context);
-        if (selectedColor == null) return;
-        SettingsDB().put("color", selectedColor);
+        final String? selectedScheme = await _showThemeSchemeDialog(context);
+        if (selectedScheme == null) return;
+        await SettingsDB().put("themeScheme", selectedScheme);
         if (mounted) {
           setState(() {});
         }
 
-        final MaterialColor color = Colors.primaries[selectedColor];
+        final MaterialColor color = _savedMaterialColor();
         if (context.mounted) {
           AdaptiveTheme.of(context).setTheme(
-            light: AppTheme.buildLightTheme(color),
-            dark: AppTheme.buildDarkTheme(color),
+            light: AppTheme.buildLightTheme(color, schemeId: selectedScheme),
+            dark: AppTheme.buildDarkTheme(color, schemeId: selectedScheme),
           );
         }
       },
@@ -319,33 +736,29 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Future<int?> _showColorPickerDialog(BuildContext context) {
-    final dynamic savedColor = SettingsDB().get("color");
-    final int selectedColor =
-        savedColor is int &&
-            savedColor >= 0 &&
-            savedColor < Colors.primaries.length
-        ? savedColor
-        : 7;
+  Future<String?> _showThemeSchemeDialog(BuildContext context) {
+    final String selectedScheme = _selectedThemeScheme();
 
-    return showDialog<int>(
+    return showDialog<String>(
       context: context,
       builder: (context) {
         final ThemeData theme = Theme.of(context);
         final ColorScheme colorScheme = theme.colorScheme;
+        final BorderRadius radius = BorderRadius.circular(AppRadii.large);
         return Dialog(
           insetPadding: const EdgeInsets.symmetric(
             horizontal: 24,
             vertical: 32,
           ),
           backgroundColor: colorScheme.surfaceContainer,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.large),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: radius),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadii.large),
+            borderRadius: radius,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: BoxConstraints(
+                maxWidth: 420,
+                maxHeight: MediaQuery.sizeOf(context).height - 64,
+              ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
                 child: Column(
@@ -374,37 +787,45 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Wrap(
-                      runSpacing: 12,
-                      spacing: 12,
-                      children: List.generate(Colors.primaries.length, (index) {
-                        final MaterialColor color = Colors.primaries[index];
-                        final bool isSelected = index == selectedColor;
-                        return InkWell(
-                          borderRadius: BorderRadius.circular(24),
-                          onTap: () => Navigator.of(context).pop(index),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: color,
-                              border: Border.all(
-                                color: isSelected
-                                    ? colorScheme.onSurface
-                                    : colorScheme.outlineVariant,
-                                width: isSelected ? 3 : 1,
+                    Flexible(
+                      child: Scrollbar(
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          itemCount: _themeSchemeOptions.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final _ThemeSchemeOption option =
+                                _themeSchemeOptions[index];
+                            return ListTile(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.medium,
+                                ),
+                                side: BorderSide(
+                                  color: option.id == selectedScheme
+                                      ? colorScheme.primary
+                                      : colorScheme.outlineVariant,
+                                ),
                               ),
-                            ),
-                            child: isSelected
-                                ? const Icon(
-                                    Icons.check_rounded,
-                                    color: Colors.white,
-                                  )
-                                : null,
-                          ),
-                        );
-                      }),
+                              tileColor: option.id == selectedScheme
+                                  ? colorScheme.primaryContainer.withAlpha(90)
+                                  : colorScheme.surfaceContainerLow,
+                              leading: _ThemeSchemeSwatch(option: option),
+                              title: Text(option.title),
+                              subtitle: Text(option.subtitle),
+                              trailing: option.id == selectedScheme
+                                  ? Icon(
+                                      Icons.check_circle_rounded,
+                                      color: colorScheme.primary,
+                                    )
+                                  : null,
+                              onTap: () => Navigator.of(context).pop(option.id),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -416,16 +837,91 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildDailyQuranGoalTile(BuildContext context) {
+    final int goal = _dailyQuranGoalAyahs();
+    return ListTile(
+      leading: const Icon(Icons.flag_outlined),
+      title: const Text("Daily Quran goal"),
+      subtitle: Text("$goal ayahs per day"),
+      onTap: () async {
+        final int? value = await _showDailyGoalDialog(context, goal);
+        if (value == null) return;
+        await SettingsDB().put("dailyQuranGoalAyahs", value);
+        if (mounted) {
+          setState(() {});
+        }
+      },
+    );
+  }
+
+  Future<int?> _showDailyGoalDialog(BuildContext context, int initialGoal) {
+    final TextEditingController controller = TextEditingController(
+      text: initialGoal.toString(),
+    );
+    String? errorText;
+
+    return showDialog<int>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Daily Quran goal'),
+              content: TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Ayahs per day',
+                  hintText: '20',
+                  errorText: errorText,
+                ),
+                onChanged: (_) {
+                  if (errorText != null) {
+                    setDialogState(() {
+                      errorText = null;
+                    });
+                  }
+                },
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final int? value = int.tryParse(controller.text.trim());
+                    if (value == null || value < 1 || value > 1000) {
+                      setDialogState(() {
+                        errorText = 'Enter a goal from 1 to 1000 ayahs';
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(value);
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).whenComplete(controller.dispose);
+  }
+
   Widget _buildClearReadingHistoryTile(BuildContext context) {
     return ListTile(
       title: const Text("Clear reading history"),
-      subtitle: const Text("Removes all your reading history."),
+      subtitle: const Text(
+        "Removes last read, resume positions, and Quran reading progress.",
+      ),
       onTap: () => _showClearDataDialog(
         context: context,
         title: "Clear reading history",
         message:
-            "WARNING: Are you sure you want to clear your reading history?",
-        onConfirm: () async => BookmarkDB().clear(),
+            "WARNING: This will clear last read, resume positions, Quran stats, and routine day progress.",
+        onConfirm: _clearReadingHistory,
       ),
     );
   }
@@ -496,14 +992,31 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildClearFavouritesTile(BuildContext context) {
     return ListTile(
       title: const Text("Clear Favourites"),
-      subtitle: const Text("Removes all verses you have liked."),
+      subtitle: const Text(
+        "Removes saved ayahs, folders, notes, tags, and favourites.",
+      ),
       onTap: () => _showClearDataDialog(
         context: context,
         title: "Clear Favourites",
-        message: "WARNING: Are you sure you want to clear favourites?",
-        onConfirm: () async => FavouritesDB().clear(),
+        message:
+            "WARNING: This will clear every saved ayah, folder, note, tag, and favourite.",
+        onConfirm: _clearSavedAyahLibrary,
       ),
     );
+  }
+
+  Future<void> _clearReadingHistory() async {
+    await BookmarkDB().clear();
+    await ResumeStateDB().clear();
+    await QuranActivityDB().clear();
+    await QuranStatsDB().clear();
+    await RoutineDayProgressDB().clear();
+  }
+
+  Future<void> _clearSavedAyahLibrary() async {
+    await FavouritesDB().clear();
+    await QuranBookmarksDB().clear();
+    await QuranBookmarkFoldersDB().clear();
   }
 
   void _showClearDataDialog({
@@ -559,14 +1072,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _applyRestoredTheme(BuildContext context) async {
-    final dynamic savedColorIndex = SettingsDB().get("color");
-    final int colorIndex =
-        savedColorIndex is int &&
-            savedColorIndex >= 0 &&
-            savedColorIndex < Colors.primaries.length
-        ? savedColorIndex
-        : 7;
-    final MaterialColor color = Colors.primaries[colorIndex];
+    final MaterialColor color = _savedMaterialColor();
+    final String themeScheme = _selectedThemeScheme();
     final dynamic themeModeValue = SettingsDB().get("themeMode");
     final AdaptiveThemeMode themeMode = switch (themeModeValue) {
       "light" => AdaptiveThemeMode.light,
@@ -576,8 +1083,8 @@ class _SettingsPageState extends State<SettingsPage> {
     };
 
     AdaptiveTheme.of(context).setTheme(
-      light: AppTheme.buildLightTheme(color),
-      dark: AppTheme.buildDarkTheme(color),
+      light: AppTheme.buildLightTheme(color, schemeId: themeScheme),
+      dark: AppTheme.buildDarkTheme(color, schemeId: themeScheme),
     );
     AdaptiveTheme.of(context).setThemeMode(themeMode);
   }
@@ -681,13 +1188,44 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   String _selectedThemeName() {
-    final dynamic savedColor = SettingsDB().get("color");
-    if (savedColor is int &&
-        savedColor >= 0 &&
-        savedColor < _themeColorNames.length) {
-      return _themeColorNames[savedColor];
+    return _themeSchemeOptions
+        .firstWhere(
+          (option) => option.id == _selectedThemeScheme(),
+          orElse: () => _themeSchemeOptions.first,
+        )
+        .title;
+  }
+
+  String _selectedThemeScheme() {
+    final dynamic savedScheme = SettingsDB().get("themeScheme");
+    return switch (savedScheme) {
+      AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
+      AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
+      AppTheme.sepiaScheme => AppTheme.sepiaScheme,
+      AppTheme.blackScheme => AppTheme.blackScheme,
+      AppTheme.redScheme => AppTheme.redScheme,
+      _ => AppTheme.defaultScheme,
+    };
+  }
+
+  MaterialColor _savedMaterialColor() {
+    final dynamic savedColorIndex = SettingsDB().get("color");
+    final int colorIndex =
+        savedColorIndex is int &&
+            savedColorIndex >= 0 &&
+            savedColorIndex < Colors.primaries.length
+        ? savedColorIndex
+        : 7;
+    return Colors.primaries[colorIndex];
+  }
+
+  int _dailyQuranGoalAyahs() {
+    final dynamic saved = SettingsDB().get("dailyQuranGoalAyahs");
+    if (saved is int) return saved.clamp(1, 1000).toInt();
+    if (saved is String) {
+      return (int.tryParse(saved) ?? 20).clamp(1, 1000).toInt();
     }
-    return "Cyan";
+    return 20;
   }
 
   String _selectedTranslationName() {
@@ -698,7 +1236,12 @@ class _SettingsPageState extends State<SettingsPage> {
     if (savedTranslation is int &&
         savedTranslation >= 0 &&
         savedTranslation < Translation.values.length) {
-      return translationDisplayName(Translation.values[savedTranslation]);
+      final Translation translation = Translation.values[savedTranslation];
+      final String name = translationDisplayName(translation);
+      if (!translation.isBundled && !isTranslationLoaded(translation)) {
+        return '$name • Not downloaded';
+      }
+      return name;
     }
     return translationDisplayName(Translation.values.first);
   }
@@ -707,133 +1250,78 @@ class _SettingsPageState extends State<SettingsPage> {
     final dynamic savedReciter = SettingsDB().get("reciter", defaultValue: "1");
     return AppReciter.fromCode(savedReciter?.toString()).englishName;
   }
-
-  Future<void> _showAboutApp(BuildContext context) async {
-    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    if (!context.mounted) return;
-
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    showAboutDialog(
-      context: context,
-      applicationName: 'eQuran',
-      applicationVersion: 'Version ${packageInfo.version}',
-      applicationIcon: Icon(
-        Icons.menu_book_rounded,
-        color: colorScheme.primary,
-        size: 40,
-      ),
-      children: const <Widget>[
-        SizedBox(height: 16),
-        Text(
-          'eQuran is a modern Quran companion designed for focused reading, listening, and daily reflection.',
-        ),
-      ],
-    );
-  }
-
-  Future<void> _shareApp(BuildContext context) async {
-    try {
-      await SharePlus.instance.share(
-        ShareParams(
-          title: 'eQuran',
-          subject: 'Download eQuran',
-          text: 'Download eQuran on F-Droid: $_appDownloadUrl',
-        ),
-      );
-    } catch (_) {
-      if (!context.mounted) return;
-      _showMessage(context, 'Unable to open the share sheet.');
-    }
-  }
-
-  void _openFeedbackContactPage(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const _FeedbackContactPage(),
-      ),
-    );
-  }
 }
 
-class _FeedbackContactPage extends StatelessWidget {
-  const _FeedbackContactPage();
+class _ThemeSchemeOption {
+  const _ThemeSchemeOption({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.colors,
+  });
+
+  final String id;
+  final String title;
+  final String subtitle;
+  final List<Color> colors;
+}
+
+class _ThemeSchemeSwatch extends StatelessWidget {
+  const _ThemeSchemeSwatch({required this.option});
+
+  final _ThemeSchemeOption option;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Feedback / Contact')),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        children: <Widget>[
-          ListTile(
-            leading: const Icon(Icons.bug_report_outlined),
-            title: const Text('Report issues'),
-            subtitle: const Text('Open the GitHub issue tracker.'),
-            trailing: const Icon(Icons.open_in_new_rounded),
-            onTap: () async {
-              final Uri uri = Uri.parse(_issueReportUrl);
-              if (!await launchUrl(uri, mode: LaunchMode.externalApplication) &&
-                  context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Unable to open issue tracker.'),
-                  ),
-                );
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.email_outlined),
-            title: const Text('Email support'),
-            subtitle: Text(_contactEmail),
-            trailing: const Icon(Icons.open_in_new_rounded),
-            onTap: () async {
-              final Uri uri = Uri(
-                scheme: 'mailto',
-                path: _contactEmail,
-                queryParameters: <String, String>{'subject': 'eQuran feedback'},
-              );
-              if (!await launchUrl(uri) && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Unable to open email client.')),
-                );
-              }
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-            child: Text(
-              'We appreciate your feedback and suggestions.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ],
+    return SizedBox(
+      width: 46,
+      height: 46,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(colors: option.colors),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
+        ),
       ),
     );
   }
 }
 
-const List<String> _themeColorNames = <String>[
-  "Red",
-  "Pink",
-  "Purple",
-  "Deep purple",
-  "Indigo",
-  "Blue",
-  "Light blue",
-  "Cyan",
-  "Teal",
-  "Green",
-  "Light green",
-  "Lime",
-  "Yellow",
-  "Amber",
-  "Orange",
-  "Deep orange",
-  "Brown",
-  "Blue grey",
+const List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
+  _ThemeSchemeOption(
+    id: AppTheme.defaultScheme,
+    title: 'Emerald Green',
+    subtitle: 'The original calm eQuran palette.',
+    colors: <Color>[Color(0xFF07110E), Color(0xFF1E7A61)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.fancyBlueScheme,
+    title: 'Sapphire Blue',
+    subtitle: 'Deep navy with sapphire and muted cyan accents.',
+    colors: <Color>[Color(0xFF06101C), Color(0xFF3B8DD6)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.fancyPurpleScheme,
+    title: 'Royal Purple',
+    subtitle: 'Midnight purple with royal violet highlights.',
+    colors: <Color>[Color(0xFF100A19), Color(0xFF9368D0)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.sepiaScheme,
+    title: 'Sepia',
+    subtitle: 'Warm parchment, brown, and soft gold tones.',
+    colors: <Color>[Color(0xFF130E09), Color(0xFFC08A4C)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.blackScheme,
+    title: 'Black',
+    subtitle: 'AMOLED black with restrained teal accents.',
+    colors: <Color>[Color(0xFF000000), Color(0xFF18A28D)],
+  ),
+  _ThemeSchemeOption(
+    id: AppTheme.redScheme,
+    title: 'Ruby Red',
+    subtitle: 'Deep maroon surfaces with elegant ruby highlights.',
+    colors: <Color>[Color(0xFF12070A), Color(0xFFC8475D)],
+  ),
 ];

@@ -1,16 +1,28 @@
-import 'dart:async';
-
 import 'package:equran/backend/library.dart';
+import 'package:equran/home/read.dart';
+import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
-import 'package:equran/utils/responsive_nav.dart';
-import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/widgets/library.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:quran/quran.dart' as quran;
+
+enum QuranSearchMode { surahs, quranText }
+
+class QuranSearchRequest {
+  const QuranSearchRequest({required this.mode, required this.nonce});
+
+  final QuranSearchMode mode;
+  final int nonce;
+}
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({super.key, this.searchRequestListenable});
+
+  final ValueListenable<QuranSearchRequest?>? searchRequestListenable;
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -22,27 +34,45 @@ class _MainPageState extends State<MainPage>
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _surahScrollController = ScrollController();
   final ScrollController _juzScrollController = ScrollController();
+  final ScrollController _pageScrollController = ScrollController();
   final ScrollController _favouritesScrollController = ScrollController();
   late final TabController _tabController;
 
   String _searchQuery = '';
   int _selectedSegment = 0;
+  int _lastHandledSearchRequestNonce = -1;
   bool _showSearch = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_handleTabChanged);
+    widget.searchRequestListenable?.addListener(_handleExternalSearchRequest);
+  }
+
+  @override
+  void didUpdateWidget(covariant MainPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchRequestListenable != widget.searchRequestListenable) {
+      oldWidget.searchRequestListenable?.removeListener(
+        _handleExternalSearchRequest,
+      );
+      widget.searchRequestListenable?.addListener(_handleExternalSearchRequest);
+    }
   }
 
   @override
   void dispose() {
     _debouncer.cancel();
+    widget.searchRequestListenable?.removeListener(
+      _handleExternalSearchRequest,
+    );
     _tabController.removeListener(_handleTabChanged);
     _tabController.dispose();
     _surahScrollController.dispose();
     _juzScrollController.dispose();
+    _pageScrollController.dispose();
     _favouritesScrollController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -51,22 +81,23 @@ class _MainPageState extends State<MainPage>
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
     final double width = MediaQuery.of(context).size.width;
     final double horizontalPadding = width >= 1400
         ? 36
         : width >= 1100
         ? 28
-        : 14;
+        : EquranSpacing.pagePadding;
     return Column(
       children: <Widget>[
         DecoratedBox(
-          decoration: _topBarDecoration(theme),
+          decoration: _topBarDecoration(),
           child: SafeArea(
             bottom: false,
             child: Material(
-              color: Colors.transparent,
+              color: colors.background.withAlpha(0),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
                 child: _buildTopBar(theme),
               ),
             ),
@@ -87,18 +118,10 @@ class _MainPageState extends State<MainPage>
   }
 
   Widget _buildTopBar(ThemeData theme) {
+    final EquranColors colors = context.equranColors;
     return Row(
       children: <Widget>[
-        Builder(
-          builder: (context) => IconButton(
-            onPressed: () => _openDrawer(context),
-            style: ResponsiveNav.iconButtonStyle(context),
-            icon: Icon(
-              Icons.menu_rounded,
-              size: ResponsiveNav.iconSize(context),
-            ),
-          ),
-        ),
+        const SizedBox(width: 48),
         Expanded(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 260),
@@ -135,7 +158,7 @@ class _MainPageState extends State<MainPage>
                     elevation: const WidgetStatePropertyAll(0),
                     shape: WidgetStatePropertyAll(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadii.small),
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
                       ),
                     ),
                   )
@@ -144,11 +167,12 @@ class _MainPageState extends State<MainPage>
                     behavior: HitTestBehavior.opaque,
                     onTap: _scrollToTop,
                     child: Text(
-                      'eQuran',
+                      'Quran',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.titleLarge?.copyWith(
+                        color: colors.onPrimary,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 0.6,
+                        letterSpacing: 0,
                       ),
                     ),
                   ),
@@ -167,7 +191,9 @@ class _MainPageState extends State<MainPage>
                     )
                   : IconButton(
                       key: const ValueKey<String>('search-button'),
+                      tooltip: 'Search Quran',
                       onPressed: _openSearch,
+                      color: colors.onPrimary,
                       icon: const Icon(Icons.search_rounded),
                     ),
             ],
@@ -177,143 +203,186 @@ class _MainPageState extends State<MainPage>
     );
   }
 
-  void _openDrawer(BuildContext context) {
-    AndroidAudioDisplayMode.notifyUserActivity();
-    FrameRatePolicyManager.instance.setDrawerOpen(
-      true,
-      reason: 'main_drawer_opening',
-    );
-    unawaited(
-      AndroidAudioDisplayMode.addLowRefreshBlocker(
-        'home.drawerOpenOrAnimating',
-        reason: 'main drawer opening',
-      ),
-    );
-    Scaffold.of(context).openDrawer();
-  }
-
-  BoxDecoration _topBarDecoration(ThemeData theme) {
-    final ColorScheme colorScheme = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+  BoxDecoration _topBarDecoration() {
+    final EquranColors colors = context.equranColors;
 
     return BoxDecoration(
-      color: isLight ? null : colorScheme.primaryContainer,
-      gradient: isLight
-          ? LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: <Color>[
-                Color.alphaBlend(
-                  colorScheme.primary.withAlpha(28),
-                  colorScheme.surfaceContainerLow,
-                ),
-                Color.alphaBlend(
-                  colorScheme.tertiary.withAlpha(18),
-                  colorScheme.surfaceContainerLow,
-                ),
-              ],
-            )
-          : null,
-      border: Border(
-        bottom: BorderSide(
-          color: isLight
-              ? colorScheme.primary.withAlpha(34)
-              : colorScheme.outlineVariant.withAlpha(120),
-        ),
-      ),
-      boxShadow: <BoxShadow>[
-        BoxShadow(
-          color: colorScheme.shadow.withAlpha(isLight ? 20 : 14),
-          blurRadius: 10,
-          offset: const Offset(0, 2),
-        ),
-      ],
+      color: colors.background.withAlpha(0),
+      border: Border(bottom: BorderSide(color: colors.border.withAlpha(90))),
     );
   }
 
   Widget _buildSectionHeader(ThemeData theme) {
-    final ColorScheme colorScheme = theme.colorScheme;
-    final bool isLight = theme.brightness == Brightness.light;
+    final EquranColors colors = context.equranColors;
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 360),
-        child: DecoratedBox(
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final bool compact = constraints.maxWidth < 390;
+        return DecoratedBox(
           decoration: BoxDecoration(
-            color: isLight
-                ? colorScheme.surfaceContainerLow
-                : colorScheme.surfaceContainerHighest.withAlpha(150),
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-            border: Border.all(color: colorScheme.outlineVariant),
+            color: colors.surface.withAlpha(210),
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(color: colors.border),
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: colorScheme.shadow.withAlpha(18),
+                color: colors.shadow.withAlpha(
+                  theme.brightness == Brightness.light ? 8 : 14,
+                ),
                 blurRadius: 14,
-                offset: const Offset(0, 4),
+                offset: const Offset(0, 5),
               ),
             ],
           ),
           child: Padding(
             padding: const EdgeInsets.all(4),
-            child: TabBar(
-              controller: _tabController,
-              dividerColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicator: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    colorScheme.primaryContainer,
-                    colorScheme.tertiaryContainer,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(AppRadii.small),
-                border: Border.all(color: colorScheme.primary.withAlpha(58)),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: colorScheme.shadow.withAlpha(18),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
+            child: LayoutBuilder(
+              builder: (context, segmentConstraints) {
+                final double segmentWidth = segmentConstraints.maxWidth / 4;
+                final double height = compact ? 38 : 42;
+                return SizedBox(
+                  height: height,
+                  child: Stack(
+                    children: <Widget>[
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        left: segmentWidth * _selectedSegment,
+                        top: 0,
+                        bottom: 0,
+                        width: segmentWidth,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colors.primary,
+                            borderRadius: BorderRadius.circular(AppRadii.pill),
+                            boxShadow: <BoxShadow>[
+                              BoxShadow(
+                                color: colors.primarySoft.withAlpha(38),
+                                blurRadius: 14,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: <Widget>[
+                          _buildSegmentButton(
+                            theme,
+                            index: 0,
+                            icon: Icons.menu_book_rounded,
+                            label: 'Surahs',
+                            tooltip: 'Browse by Surah',
+                            compact: compact,
+                          ),
+                          _buildSegmentButton(
+                            theme,
+                            index: 1,
+                            icon: Icons.format_list_numbered_rtl_rounded,
+                            label: 'Juz',
+                            tooltip: 'Browse by Juz',
+                            compact: compact,
+                          ),
+                          _buildSegmentButton(
+                            theme,
+                            index: 2,
+                            icon: Icons.auto_stories_rounded,
+                            label: 'Pages',
+                            tooltip: 'Browse by page',
+                            compact: compact,
+                          ),
+                          _buildSegmentButton(
+                            theme,
+                            index: 3,
+                            icon: Icons.bookmark_rounded,
+                            label: 'Saved',
+                            tooltip: 'Saved ayahs',
+                            compact: compact,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              labelColor: colorScheme.onPrimaryContainer,
-              unselectedLabelColor: colorScheme.onSurfaceVariant,
-              labelStyle: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: theme.textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
-              overlayColor: WidgetStatePropertyAll(
-                colorScheme.primary.withAlpha(16),
-              ),
-              splashBorderRadius: BorderRadius.circular(AppRadii.small),
-              tabs: <Widget>[
-                _buildTabLabel(Icons.menu_book_outlined, 'Surah'),
-                _buildTabLabel(Icons.layers_outlined, 'Juz'),
-                _buildTabLabel(Icons.favorite_border_rounded, 'Saved'),
-              ],
+                );
+              },
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildTabLabel(IconData icon, String label) {
-    return Tab(
-      height: 42,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(icon, size: 19),
-            const SizedBox(width: 6),
-            Text(label),
-          ],
+  Widget _buildSegmentButton(
+    ThemeData theme, {
+    required int index,
+    required IconData icon,
+    required String label,
+    required String tooltip,
+    required bool compact,
+  }) {
+    final EquranColors colors = context.equranColors;
+    final bool selected = _selectedSegment == index;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
+
+    return Expanded(
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: colors.background.withAlpha(0),
+          borderRadius: radius,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: () {
+              if (_tabController.index != index) {
+                _tabController.animateTo(
+                  index,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                );
+              }
+              if (_selectedSegment != index) {
+                setState(() {
+                  _selectedSegment = index;
+                });
+              }
+            },
+            child: SizedBox(
+              height: compact ? 38 : 42,
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      if (!compact) ...<Widget>[
+                        Icon(
+                          icon,
+                          size: 17,
+                          color: selected
+                              ? colors.onPrimary
+                              : colors.textSecondary,
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        label,
+                        maxLines: 1,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: selected
+                              ? colors.onPrimary
+                              : colors.textSecondary,
+                          fontSize: compact ? 12.5 : null,
+                          fontWeight: selected
+                              ? FontWeight.w900
+                              : FontWeight.w700,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -347,19 +416,16 @@ class _MainPageState extends State<MainPage>
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: ValueListenableBuilder(
-            key: const ValueKey<String>('page-list'),
-            valueListenable: FavouritesDB().listener,
-            builder: (BuildContext context, Box<dynamic> box, child) {
-              if (box.length == 0) {
-                return const SizedBox.shrink();
-              } else {
-                return PrimaryScrollController(
-                  controller: _favouritesScrollController,
-                  child: FavouritesList(searchQuery: _searchQuery),
-                );
-              }
-            },
+          child: PrimaryScrollController(
+            controller: _pageScrollController,
+            child: _QuranPageList(searchQuery: _searchQuery),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+          child: PrimaryScrollController(
+            controller: _favouritesScrollController,
+            child: FavouritesList(searchQuery: _searchQuery),
           ),
         ),
       ],
@@ -397,9 +463,32 @@ class _MainPageState extends State<MainPage>
     });
   }
 
+  void _handleExternalSearchRequest() {
+    final QuranSearchRequest? request = widget.searchRequestListenable?.value;
+    if (request == null || request.nonce == _lastHandledSearchRequestNonce) {
+      return;
+    }
+    _lastHandledSearchRequestNonce = request.nonce;
+    final int targetIndex = switch (request.mode) {
+      QuranSearchMode.surahs => 0,
+      QuranSearchMode.quranText => 0,
+    };
+
+    if (_tabController.index != targetIndex) {
+      _tabController.animateTo(targetIndex);
+    }
+    setState(() {
+      _selectedSegment = targetIndex;
+      _showSearch = true;
+      _searchQuery = '';
+      _searchController.clear();
+    });
+  }
+
   String get _searchHint => switch (_selectedSegment) {
     1 => "Juz number or surah name...",
-    2 => "Saved ayah, surah, note, or number...",
+    2 => "Page number, surah, or juz...",
+    3 => "Saved ayah, surah, note, or number...",
     _ => "Surah name or number...",
   };
 
@@ -412,16 +501,14 @@ class _MainPageState extends State<MainPage>
       valueListenable: BookmarkDB().listener,
       builder: (BuildContext context, Box<dynamic> box, child) {
         final entries = LastReadCard.displayReadingHistory(box.values);
-        Widget currentChild = const SizedBox.shrink(
-          key: ValueKey<String>('last-read-empty'),
-        );
-
-        if (entries.isNotEmpty) {
-          currentChild = LastReadCard(
-            key: const ValueKey<String>('last-read-card'),
-            entries: entries,
-          );
-        }
+        final Widget currentChild = entries.isEmpty
+            ? const _QuranLastReadEmptySection(
+                key: ValueKey<String>('last-read-empty'),
+              )
+            : _QuranLastReadSection(
+                key: const ValueKey<String>('last-read-card'),
+                entries: entries,
+              );
 
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
@@ -440,6 +527,7 @@ class _MainPageState extends State<MainPage>
     final ScrollController scrollController = switch (_selectedSegment) {
       0 => _surahScrollController,
       1 => _juzScrollController,
+      2 => _pageScrollController,
       _ => _favouritesScrollController,
     };
     if (!scrollController.hasClients) return;
@@ -448,6 +536,202 @@ class _MainPageState extends State<MainPage>
       0,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeOutCubic,
+    );
+  }
+}
+
+class _QuranPageList extends StatelessWidget {
+  const _QuranPageList({required this.searchQuery});
+
+  final String searchQuery;
+
+  @override
+  Widget build(BuildContext context) {
+    final String query = searchQuery.trim().toLowerCase();
+    final List<int> pages =
+        List<int>.generate(quran.totalPagesCount, (index) {
+              return index + 1;
+            })
+            .where((page) {
+              if (query.isEmpty) return true;
+              final _PageSummary summary = _pageSummary(page);
+              return page.toString().contains(query) ||
+                  summary.primarySurah.toLowerCase().contains(query) ||
+                  summary.juzLabel.toLowerCase().contains(query);
+            })
+            .toList(growable: false);
+
+    return GridView.builder(
+      key: const PageStorageKey<String>('quran-page-grid'),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 28),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 220,
+        mainAxisExtent: 118,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
+      ),
+      itemCount: pages.length,
+      itemBuilder: (context, index) {
+        final int page = pages[index];
+        return _QuranPageTile(page: page, summary: _pageSummary(page));
+      },
+    );
+  }
+}
+
+class _QuranPageTile extends StatelessWidget {
+  const _QuranPageTile({required this.page, required this.summary});
+
+  final int page;
+  final _PageSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return Material(
+      color: colors.background.withAlpha(0),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => ReadPage(
+              chapter: summary.startSurah,
+              startVerse: summary.startVerse,
+            ),
+          ),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(AppRadii.large),
+            border: Border.all(color: colors.border),
+          ),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Container(
+                    width: 38,
+                    height: 38,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: colors.mint,
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                    ),
+                    child: Text(
+                      page.toString(),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colors.primary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    summary.juzLabel,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.textMuted,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                summary.primarySurah,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                summary.rangeLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PageSummary {
+  const _PageSummary({
+    required this.startSurah,
+    required this.startVerse,
+    required this.primarySurah,
+    required this.rangeLabel,
+    required this.juzLabel,
+  });
+
+  final int startSurah;
+  final int startVerse;
+  final String primarySurah;
+  final String rangeLabel;
+  final String juzLabel;
+}
+
+_PageSummary _pageSummary(int page) {
+  final List<dynamic> data = quran.getPageData(page);
+  final Map<dynamic, dynamic> first = data.first as Map<dynamic, dynamic>;
+  final Map<dynamic, dynamic> last = data.last as Map<dynamic, dynamic>;
+  final int startSurah = first['surah'] as int;
+  final int startVerse = first['start'] as int;
+  final int endSurah = last['surah'] as int;
+  final int endVerse = last['end'] as int;
+  final int juz = quran.getJuzNumber(startSurah, startVerse);
+  final String primarySurah = quran.getSurahName(startSurah);
+  final String rangeLabel = startSurah == endSurah
+      ? 'Ayah $startVerse-$endVerse'
+      : '$primarySurah $startVerse - ${quran.getSurahName(endSurah)} $endVerse';
+  return _PageSummary(
+    startSurah: startSurah,
+    startVerse: startVerse,
+    primarySurah: primarySurah,
+    rangeLabel: rangeLabel,
+    juzLabel: 'Juz $juz',
+  );
+}
+
+class _QuranLastReadSection extends StatelessWidget {
+  const _QuranLastReadSection({super.key, required this.entries});
+
+  final List<ReadingEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    return LastReadCard(entries: entries);
+  }
+}
+
+class _QuranLastReadEmptySection extends StatelessWidget {
+  const _QuranLastReadEmptySection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return EquranResumeImageCard(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) => const ReadPage(chapter: 1, startVerse: 1),
+        ),
+      ),
+      primary: 'Begin with the Quran',
+      subtitle: 'Start reading and your place will appear here.',
+      actionText: 'Start reading ->',
+      trailingAssetPath: equranResumeQuranAsset,
     );
   }
 }

@@ -31,6 +31,7 @@ class MainActivity : AudioServiceActivity() {
     private val prayerNotificationPermissionRequestCode = 4201
     private var pendingPrayerNotificationPermissionResult: MethodChannel.Result? = null
     private var lastRequestedPreferredRefreshRate = 0f
+    private var lastRequestedPreferredDisplayModeId = 0
     private var powerSavingsBalancedRequested = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -139,21 +140,51 @@ class MainActivity : AudioServiceActivity() {
 
     private fun applyPreferredRefreshRateHint(preferredRefreshRate: Float) {
         val layoutParams = window.attributes
-        layoutParams.preferredRefreshRate = preferredRefreshRate.coerceAtLeast(0f)
+        val requestedRefreshRate = preferredRefreshRate.coerceAtLeast(0f)
+        layoutParams.preferredRefreshRate = requestedRefreshRate
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            layoutParams.preferredDisplayModeId = preferredDisplayModeIdFor(requestedRefreshRate)
+        }
         window.attributes = layoutParams
-        lastRequestedPreferredRefreshRate = preferredRefreshRate.coerceAtLeast(0f)
+        lastRequestedPreferredRefreshRate = requestedRefreshRate
+        lastRequestedPreferredDisplayModeId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            layoutParams.preferredDisplayModeId
+        } else {
+            0
+        }
         Log.d(
             refreshRateLogTag,
-            "Window preferredRefreshRate hint set to ${lastRequestedPreferredRefreshRate}Hz"
+            "Window preferredRefreshRate hint set to ${lastRequestedPreferredRefreshRate}Hz " +
+                "displayModeId=$lastRequestedPreferredDisplayModeId"
         )
     }
 
     private fun clearPreferredRefreshRateHint() {
         val layoutParams = window.attributes
         layoutParams.preferredRefreshRate = 0f
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            layoutParams.preferredDisplayModeId = 0
+        }
         window.attributes = layoutParams
         lastRequestedPreferredRefreshRate = 0f
+        lastRequestedPreferredDisplayModeId = 0
         Log.d(refreshRateLogTag, "Window preferredRefreshRate hint cleared")
+    }
+
+    @Suppress("DEPRECATION")
+    private fun preferredDisplayModeIdFor(preferredRefreshRate: Float): Int {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || preferredRefreshRate <= 0f) return 0
+
+        val modes = windowManager.defaultDisplay.supportedModes
+        if (modes.isNullOrEmpty()) return 0
+
+        return modes
+            .minWithOrNull(
+                compareBy<android.view.Display.Mode> {
+                    kotlin.math.abs(it.refreshRate - preferredRefreshRate)
+                }.thenBy { it.refreshRate }
+            )
+            ?.modeId ?: 0
     }
 
     private fun setPowerSavingsBalancedIfAvailable(): Boolean {
@@ -203,7 +234,13 @@ class MainActivity : AudioServiceActivity() {
             "sdkInt" to Build.VERSION.SDK_INT,
             "requestedPreferredRefreshRate" to requestedPreferredRefreshRate,
             "windowPreferredRefreshRate" to window.attributes.preferredRefreshRate,
+            "windowPreferredDisplayModeId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                window.attributes.preferredDisplayModeId
+            } else {
+                0
+            },
             "lastRequestedPreferredRefreshRate" to lastRequestedPreferredRefreshRate,
+            "lastRequestedPreferredDisplayModeId" to lastRequestedPreferredDisplayModeId,
             "powerSavingsBalancedRequested" to powerSavingsBalancedRequested
         )
     }

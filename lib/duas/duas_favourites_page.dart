@@ -3,6 +3,7 @@ import 'package:equran/duas/duas_category_page.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/widgets/dua_card.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -19,8 +20,21 @@ class DuasFavouritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
     return Scaffold(
-      appBar: AppBar(title: const Text('Favourite duas')),
+      appBar: AppBar(
+        title: const Text('Favourite duas'),
+        backgroundColor: colors.background,
+        foregroundColor: colors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: colors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: colors.textSecondary),
+        actionsIconTheme: IconThemeData(color: colors.textSecondary),
+      ),
       body: ValueListenableBuilder<Box<dynamic>>(
         valueListenable: DuaFavouritesDB().listener,
         builder: (BuildContext context, Box<dynamic> box, Widget? child) {

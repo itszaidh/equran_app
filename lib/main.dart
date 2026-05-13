@@ -12,13 +12,18 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:quran/quran.dart' as quran;
 
 import 'backend/library.dart'
     show
         BookmarkDB,
+        initCompanionStorageBoxes,
+        registerCompanionStorageAdapters,
         DuaFavouritesDB,
         FavouritesDB,
+        QuranTranslationService,
         ReadingEntryAdapter,
+        SchemaMigrationService,
         SettingsDB,
         SurahAdapter,
         SurahDB;
@@ -40,6 +45,7 @@ Future<void> main() async {
 
   Hive.registerAdapter(SurahAdapter());
   Hive.registerAdapter(ReadingEntryAdapter());
+  registerCompanionStorageAdapters();
 
   // Hive.deleteBoxFromDisk("bookmarks");
 
@@ -48,6 +54,10 @@ Future<void> main() async {
   await SurahDB().initBox();
   await FavouritesDB().initBox();
   await DuaFavouritesDB().initBox();
+  await initCompanionStorageBoxes();
+  await SchemaMigrationService.instance.runSafeMigrations();
+  await quran.initializeQuran();
+  await QuranTranslationService.instance.preloadSelectedTranslation();
 
   await PrayerTimezoneService.configureDeviceTimezone();
   final PrayerSettingsStore prayerSettingsStore = PrayerSettingsStore();
@@ -80,10 +90,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final AdaptiveThemeMode? savedThemeMode = _getSavedThemeMode();
     final MaterialColor seedColor = _getPrimaryColor();
+    final String themeScheme = _getThemeScheme();
 
     return AdaptiveTheme(
-      light: AppTheme.buildLightTheme(seedColor),
-      dark: AppTheme.buildDarkTheme(seedColor),
+      light: AppTheme.buildLightTheme(seedColor, schemeId: themeScheme),
+      dark: AppTheme.buildDarkTheme(seedColor, schemeId: themeScheme),
       initial: savedThemeMode ?? AdaptiveThemeMode.dark,
       overrideMode: savedThemeMode,
       builder: (theme, darkTheme) => MaterialApp(
@@ -138,6 +149,18 @@ class MyApp extends StatelessWidget {
       "dark" => AdaptiveThemeMode.dark,
       "auto" => AdaptiveThemeMode.system,
       _ => null,
+    };
+  }
+
+  static String _getThemeScheme() {
+    final dynamic scheme = SettingsDB().get("themeScheme");
+    return switch (scheme) {
+      AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
+      AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
+      AppTheme.sepiaScheme => AppTheme.sepiaScheme,
+      AppTheme.blackScheme => AppTheme.blackScheme,
+      AppTheme.redScheme => AppTheme.redScheme,
+      _ => AppTheme.defaultScheme,
     };
   }
 }
