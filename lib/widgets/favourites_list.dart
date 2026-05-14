@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
@@ -10,6 +12,69 @@ import 'package:like_button/like_button.dart';
 import 'package:quran/quran.dart' as quran;
 
 enum _SavedAyahFilter { all, favourites, notes }
+
+class _IslamicPatternPainter extends CustomPainter {
+  const _IslamicPatternPainter({required this.color, this.opacity = 0.06});
+
+  final Color color;
+  final double opacity;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color.withAlpha((255 * opacity.clamp(0.0, 1.0)).round())
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    const double tileSize = 80;
+
+    for (double x = 0; x < size.width + tileSize; x += tileSize) {
+      for (double y = 0; y < size.height + tileSize; y += tileSize) {
+        _drawStar(
+          canvas,
+          paint,
+          Offset(x + tileSize / 2, y + tileSize / 2),
+          36,
+        );
+        _drawStar(
+          canvas,
+          paint,
+          Offset(x + tileSize / 2, y + tileSize / 2),
+          22,
+        );
+      }
+    }
+  }
+
+  void _drawStar(Canvas canvas, Paint paint, Offset center, double radius) {
+    final Path path = Path();
+    for (int i = 0; i < 8; i++) {
+      final double angle = (i * 45 - 90) * (math.pi / 180);
+      final double innerAngle = angle + (22.5 * math.pi / 180);
+      final Offset outerPoint = Offset(
+        center.dx + radius * math.cos(angle),
+        center.dy + radius * math.sin(angle),
+      );
+      final Offset innerPoint = Offset(
+        center.dx + (radius * 0.5) * math.cos(innerAngle),
+        center.dy + (radius * 0.5) * math.sin(innerAngle),
+      );
+      if (i == 0) {
+        path.moveTo(outerPoint.dx, outerPoint.dy);
+      } else {
+        path.lineTo(outerPoint.dx, outerPoint.dy);
+      }
+      path.lineTo(innerPoint.dx, innerPoint.dy);
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _IslamicPatternPainter oldDelegate) {
+    return oldDelegate.color != color || oldDelegate.opacity != opacity;
+  }
+}
 
 class FavouritesList extends StatefulWidget {
   const FavouritesList({super.key, required this.searchQuery});
@@ -239,17 +304,16 @@ class _BookmarkLibraryHeader extends StatelessWidget {
         child: Stack(
           children: <Widget>[
             Positioned(
-              right: -10,
-              top: 44,
+              right: -38,
+              top: -18,
+              width: 190,
+              height: 190,
               child: IgnorePointer(
-                child: Text(
-                  'بِسْمِ ٱللّٰهِ ٱلرَّحْمٰنِ ٱلرَّحِيمِ',
-                  textDirection: TextDirection.rtl,
-                  style: const TextStyle(
-                    fontFamily: 'Hafs',
-                    fontSize: 50,
-                    height: 1,
-                  ).copyWith(color: colors.onPrimary.withAlpha(15)),
+                child: CustomPaint(
+                  painter: _IslamicPatternPainter(
+                    color: colors.onPrimary,
+                    opacity: 0.05,
+                  ),
                 ),
               ),
             ),
