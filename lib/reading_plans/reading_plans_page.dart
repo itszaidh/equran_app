@@ -1,10 +1,8 @@
-import 'dart:math' as math;
-
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/reading_plans/routine_progress.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
-import 'package:equran/utils/quran_text.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -237,7 +235,7 @@ class _ActivitySummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool done = plan != null && _todayRange(plan!).isDone;
+    final bool done = plan != null && routineProgressSummary(plan!).isTodayDone;
     final List<_SummaryPillData> items = <_SummaryPillData>[
       _SummaryPillData('All', plan == null ? 0 : 1),
       _SummaryPillData('Done', done ? 1 : 0),
@@ -335,28 +333,14 @@ class _TodayTaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    final _TodayRange range = _todayRange(plan);
-    final _AyahRef start = _ayahRefFromGlobalIndex(range.startGlobalAyah);
-    final _AyahRef end = _ayahRefFromGlobalIndex(range.endGlobalAyah);
-    final RoutineDayProgressEntry? savedProgress = RoutineDayProgressDB()
-        .progressFor(plan.id, _dateKey(DateTime.now()));
-    final int legacyCompleted =
-        (plan.lastCompletedGlobalAyah - range.startGlobalAyah + 1)
-            .clamp(0, range.totalAyahs)
-            .toInt();
-    final int completedToday = math
-        .max(
-          savedProgress?.completedAyahCount ?? legacyCompleted,
-          range.isDone ? range.totalAyahs : 0,
-        )
-        .clamp(0, range.totalAyahs)
-        .toInt();
-    final bool done = completedToday >= range.totalAyahs;
-    final double dailyFraction = range.totalAyahs <= 0
-        ? 0
-        : (completedToday / range.totalAyahs).clamp(0.0, 1.0).toDouble();
+    final RoutineProgressSummary progress = routineProgressSummary(plan);
+    final _AyahRef start = _ayahRefFromGlobalIndex(
+      progress.todayStartGlobalAyah,
+    );
+    final _AyahRef end = _ayahRefFromGlobalIndex(progress.todayEndGlobalAyah);
+    final bool done = progress.isTodayDone;
+    final double dailyFraction = progress.todayFraction;
     final int percentComplete = (dailyFraction * 100).round();
-    final int percentLeft = 100 - percentComplete;
 
     return EquranSurfaceCard(
       backgroundColor: done ? null : colors.surface,
@@ -377,7 +361,11 @@ class _TodayTaskCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      done ? 'Today completed' : 'Today\'s reading',
+                      progress.isRoutineDone
+                          ? 'Routine complete'
+                          : done
+                          ? 'Today completed'
+                          : 'Today\'s reading',
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: colors.textPrimary,
                         fontWeight: FontWeight.w900,
@@ -385,11 +373,32 @@ class _TodayTaskCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${range.totalAyahs} ayahs - ${_refLabel(start)} to ${_refLabel(end)}',
+                      progress.isRoutineDone
+                          ? 'All ${progress.totalAyahs} ayahs completed'
+                          : 'Today\'s portion: ${progress.todayPortionAyahs} ayahs',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.textSecondary,
                       ),
                     ),
+                    if (!progress.isRoutineDone &&
+                        progress.catchUpAyahs > 0) ...<Widget>[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Includes ${progress.catchUpAyahs} catch-up ayahs',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ] else if (!progress.isRoutineDone) ...<Widget>[
+                      const SizedBox(height: 2),
+                      Text(
+                        '${_refLabel(start)} to ${_refLabel(end)}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -408,57 +417,29 @@ class _TodayTaskCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             done
-                ? '100% complete'
-                : '$percentComplete% complete • $percentLeft% left today',
+                ? 'Today\'s portion complete'
+                : '$percentComplete% complete • ${progress.todayRemainingAyahs} ayahs remaining today',
             style: theme.textTheme.bodySmall?.copyWith(
               color: colors.textSecondary,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _openContinue(context, range),
-                  icon: const Icon(Icons.play_arrow_rounded),
-                  label: const Text('Resume'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: done ? null : () => _markDone(context, range),
-                  icon: const Icon(Icons.check_circle_outline_rounded),
-                  label: const Text('Complete'),
-                ),
-              ),
-            ],
+          FilledButton.icon(
+            onPressed: progress.isRoutineDone
+                ? null
+                : () => _openContinue(context),
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: Text(progress.isRoutineDone ? 'Routine complete' : 'Resume'),
           ),
         ],
       ),
     );
   }
 
-  void _openContinue(BuildContext context, _TodayRange range) {
-    int resumeGlobalAyah = range.startGlobalAyah;
-    final RoutineDayProgressEntry? savedProgress = RoutineDayProgressDB()
-        .progressFor(plan.id, _dateKey(DateTime.now()));
-    if (savedProgress != null) {
-      final int savedGlobalAyah = _globalAyahIndex(
-        savedProgress.lastOpenedSurah,
-        savedProgress.lastOpenedAyah,
-      );
-      if (savedGlobalAyah >= range.startGlobalAyah &&
-          savedGlobalAyah <= plan.targetGlobalAyah) {
-        resumeGlobalAyah = savedGlobalAyah;
-      }
-    } else if (plan.lastCompletedGlobalAyah >= range.startGlobalAyah) {
-      resumeGlobalAyah = math.min(
-        plan.lastCompletedGlobalAyah + 1,
-        plan.targetGlobalAyah,
-      );
-    }
+  void _openContinue(BuildContext context) {
+    final RoutineProgressSummary progress = routineProgressSummary(plan);
+    final int resumeGlobalAyah = progress.nextUnreadGlobalAyah;
     final _AyahRef resume = _ayahRefFromGlobalIndex(resumeGlobalAyah);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -466,118 +447,10 @@ class _TodayTaskCard extends StatelessWidget {
           return ReadPage(
             chapter: resume.surah,
             startVerse: resume.verse,
+            mode: ReadPageMode.routine,
             routineId: plan.id,
           );
         },
-      ),
-    );
-  }
-
-  Future<void> _markDone(BuildContext context, _TodayRange range) async {
-    final bool confirmed = await _confirmRoutineAction(
-      context: context,
-      title: 'Mark today complete?',
-      message: 'Mark today\'s reading as complete?',
-      confirmLabel: 'Mark Done',
-    );
-    if (!confirmed) return;
-
-    final ReadingPlanEntry updated = ReadingPlanEntry(
-      id: plan.id,
-      type: plan.type,
-      title: plan.title,
-      startedAt: plan.startedAt,
-      finishBy: plan.finishBy,
-      startGlobalAyah: plan.startGlobalAyah,
-      targetGlobalAyah: plan.targetGlobalAyah,
-      lastCompletedGlobalAyah: math.max(
-        plan.lastCompletedGlobalAyah,
-        range.endGlobalAyah,
-      ),
-      active: plan.active,
-      schemaVersion: plan.schemaVersion,
-    );
-    await ReadingPlansDB().put(updated.id, updated);
-    final _AyahRef endRef = _ayahRefFromGlobalIndex(range.endGlobalAyah);
-    await RoutineDayProgressDB().saveProgress(
-      RoutineDayProgressEntry(
-        routineId: plan.id,
-        dateKey: _dateKey(DateTime.now()),
-        currentSurah: endRef.surah,
-        currentAyah: endRef.verse,
-        completedAyahCount: range.totalAyahs,
-        lastOpenedSurah: endRef.surah,
-        lastOpenedAyah: endRef.verse,
-        updatedAt: DateTime.now(),
-        completedGlobalAyahs: <int>[
-          for (
-            int ayah = range.startGlobalAyah;
-            ayah <= range.endGlobalAyah;
-            ayah++
-          )
-            ayah,
-        ],
-      ),
-    );
-    await _recordManualGoalCompletion(range);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Today\'s reading marked complete')),
-    );
-  }
-
-  Future<void> _recordManualGoalCompletion(_TodayRange range) async {
-    final DateTime now = DateTime.now();
-    final String todayKey = _dateKey(now);
-    final dynamic existingActivity = QuranActivityDB().get(todayKey);
-    final QuranActivityDay activity = existingActivity is QuranActivityDay
-        ? existingActivity
-        : QuranActivityDay(dateKey: todayKey, updatedAt: now);
-    final Set<String> readKeys = activity.readAyahKeys.toSet();
-    int added = 0;
-    int addedLetters = 0;
-
-    for (
-      int global = range.startGlobalAyah;
-      global <= range.endGlobalAyah;
-      global++
-    ) {
-      final _AyahRef ref = _ayahRefFromGlobalIndex(global);
-      final String key = '${ref.surah}:${ref.verse}';
-      if (readKeys.add(key)) {
-        added++;
-        addedLetters += _estimatedArabicLetters(ref);
-      }
-    }
-    if (added == 0) return;
-
-    await QuranActivityDB().put(
-      todayKey,
-      QuranActivityDay(
-        dateKey: todayKey,
-        ayahsRead: activity.ayahsRead + added,
-        pagesRead: activity.pagesRead,
-        listeningSeconds: activity.listeningSeconds,
-        readAyahKeys: readKeys.toList()..sort(),
-        updatedAt: now,
-        schemaVersion: activity.schemaVersion,
-      ),
-    );
-
-    final dynamic existingStats = QuranStatsDB().get('summary');
-    final QuranStatsSnapshot stats = existingStats is QuranStatsSnapshot
-        ? existingStats
-        : QuranStatsSnapshot(id: 'summary', updatedAt: now);
-    await QuranStatsDB().put(
-      'summary',
-      QuranStatsSnapshot(
-        id: 'summary',
-        totalAyahsRead: stats.totalAyahsRead + added,
-        estimatedLettersRead: stats.estimatedLettersRead + addedLetters,
-        listeningSeconds: stats.listeningSeconds,
-        currentStreak: _readingStreakIncluding(todayKey),
-        updatedAt: now,
-        schemaVersion: stats.schemaVersion,
       ),
     );
   }
@@ -889,20 +762,6 @@ class _PlanProgress {
   }
 }
 
-class _TodayRange {
-  const _TodayRange({
-    required this.startGlobalAyah,
-    required this.endGlobalAyah,
-    required this.isDone,
-  });
-
-  final int startGlobalAyah;
-  final int endGlobalAyah;
-  final bool isDone;
-
-  int get totalAyahs => math.max(1, endGlobalAyah - startGlobalAyah + 1);
-}
-
 class _AyahRef {
   const _AyahRef({required this.surah, required this.verse});
 
@@ -911,45 +770,10 @@ class _AyahRef {
 }
 
 _PlanProgress _planProgress(ReadingPlanEntry plan) {
-  final int total = math.max(
-    1,
-    plan.targetGlobalAyah - plan.startGlobalAyah + 1,
-  );
-  final int completed = math
-      .max(0, plan.lastCompletedGlobalAyah - plan.startGlobalAyah + 1)
-      .clamp(0, total)
-      .toInt();
-  return _PlanProgress(completedAyahs: completed, totalAyahs: total);
-}
-
-_TodayRange _todayRange(ReadingPlanEntry plan) {
-  final DateTime now = DateTime.now();
-  final DateTime today = DateTime(now.year, now.month, now.day);
-  final DateTime start = DateTime(
-    plan.startedAt.year,
-    plan.startedAt.month,
-    plan.startedAt.day,
-  );
-  final int totalAyahs = math.max(
-    1,
-    plan.targetGlobalAyah - plan.startGlobalAyah + 1,
-  );
-  final int totalDays = math.max(1, plan.finishBy.difference(start).inDays + 1);
-  final int elapsedDays = today
-      .difference(start)
-      .inDays
-      .clamp(0, totalDays - 1)
-      .toInt();
-  final int perDay = (totalAyahs / totalDays).ceil();
-  final int startAyah = math.min(
-    plan.targetGlobalAyah,
-    plan.startGlobalAyah + (elapsedDays * perDay),
-  );
-  final int endAyah = math.min(plan.targetGlobalAyah, startAyah + perDay - 1);
-  return _TodayRange(
-    startGlobalAyah: startAyah,
-    endGlobalAyah: endAyah,
-    isDone: plan.lastCompletedGlobalAyah >= endAyah,
+  final RoutineProgressSummary progress = routineProgressSummary(plan);
+  return _PlanProgress(
+    completedAyahs: progress.completedAyahs,
+    totalAyahs: progress.totalAyahs,
   );
 }
 
@@ -963,14 +787,6 @@ _AyahRef _ayahRefFromGlobalIndex(int globalAyah) {
     remaining -= verseCount;
   }
   return const _AyahRef(surah: 114, verse: 6);
-}
-
-int _globalAyahIndex(int surah, int verse) {
-  int index = verse.clamp(1, quran.getVerseCount(surah)).toInt();
-  for (int currentSurah = 1; currentSurah < surah; currentSurah++) {
-    index += quran.getVerseCount(currentSurah);
-  }
-  return index.clamp(1, quran.totalVerseCount).toInt();
 }
 
 String _refLabel(_AyahRef ref) {
@@ -993,31 +809,4 @@ String _shortDate(DateTime date) {
     'Dec',
   ];
   return '${months[(date.month - 1).clamp(0, 11).toInt()]} ${date.day}, ${date.year}';
-}
-
-String _dateKey(DateTime date) {
-  return '${date.year.toString().padLeft(4, '0')}-'
-      '${date.month.toString().padLeft(2, '0')}-'
-      '${date.day.toString().padLeft(2, '0')}';
-}
-
-int _estimatedArabicLetters(_AyahRef ref) {
-  return quranVerseArabicLetterCount(ref.surah, ref.verse);
-}
-
-int _readingStreakIncluding(String todayKey) {
-  final Set<String> activeDays = QuranActivityDB().box.values
-      .whereType<QuranActivityDay>()
-      .where((day) => day.ayahsRead > 0 || day.readAyahKeys.isNotEmpty)
-      .map((day) => day.dateKey)
-      .toSet();
-  activeDays.add(todayKey);
-
-  DateTime cursor = DateTime.now();
-  int streak = 0;
-  while (activeDays.contains(_dateKey(cursor))) {
-    streak++;
-    cursor = cursor.subtract(const Duration(days: 1));
-  }
-  return streak;
 }

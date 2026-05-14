@@ -44,6 +44,7 @@ import 'package:equran/backend/library.dart'
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/theme/equran_text_styles.dart';
+import 'package:equran/reading_plans/routine_progress.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/utils/reciter.dart';
@@ -260,10 +261,13 @@ int? _readInt(dynamic value) {
   return null;
 }
 
+enum ReadPageMode { normal, routine }
+
 class ReadPage extends StatefulWidget {
   final int chapter;
   final bool juzMode;
   final int? startVerse;
+  final ReadPageMode mode;
   final String? routineId;
 
   const ReadPage({
@@ -271,8 +275,11 @@ class ReadPage extends StatefulWidget {
     required this.chapter,
     this.startVerse,
     this.juzMode = false,
+    this.mode = ReadPageMode.normal,
     this.routineId,
-  });
+  }) : assert(
+         mode != ReadPageMode.routine || (routineId != null && routineId != ''),
+       );
 
   @override
   State<ReadPage> createState() => _ReadPageState();
@@ -293,7 +300,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const double _cardSwipeAssistDistance = 46;
   static const double _cardSwipeAxisLockRatio = 1.18;
   static const double _playerBarMinimizeDistance = 44;
-  bool get _isRoutineReading => widget.routineId?.isNotEmpty == true;
+  bool get _isRoutineReading =>
+      widget.mode == ReadPageMode.routine &&
+      widget.routineId?.isNotEmpty == true;
   static const double _playerBarExpandDistance = 34;
   static const double _playerBarDismissDistance = 52;
   static const double _playerBarMinVelocity = 220;
@@ -305,6 +314,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const Duration _expandedPlayerProgressTickInterval = Duration(
     milliseconds: 33,
   );
+  static const Duration _readingTimeFlushInterval = Duration(seconds: 20);
   static const Duration _lowRefreshIdleDelay = Duration(milliseconds: 900);
   static const Duration _playerSettleAnimationDelay = Duration(
     milliseconds: 280,
@@ -364,6 +374,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Timer? _lowRefreshIdleTimer;
   Timer? _playerSettleTimer;
   Timer? _bottomPlayerProgressTicker;
+  Timer? _readingTimeFlushTimer;
+  DateTime? _readingTimeActiveSince;
+  Future<void> _readingTimeWriteChain = Future<void>.value();
   DateTime? _playerPositionSampledAt;
   final GlobalKey _pageViewViewportKey = GlobalKey();
   final GlobalKey _inlineSurahTextKey = GlobalKey();
@@ -416,6 +429,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _getTotalVerses();
     unawaited(_loadChapterTransliterations());
     _bindVersePlayer();
+    _startReadingTimeTracking();
     if (!_viewMode && _currentVerse > 1) {
       unawaited(
         _scrollToInlineVerse(_currentVerse, animate: false, highlight: true),
@@ -426,10 +440,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _pauseReadingTimeTracking(flush: true);
     if (!_hasSavedOnExit) {
       _syncCurrentVerseWithVisibleText();
       if (_isRoutineReading) {
-        _recordReadingProgress(_currentChapter, _currentVerse);
+        unawaited(_refreshCurrentAyahDownloadState());
       } else {
         BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
       }
@@ -438,6 +453,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _lowRefreshIdleTimer?.cancel();
     _playerSettleTimer?.cancel();
     _stopBottomPlayerProgressTicker('dispose');
+    _readingTimeFlushTimer?.cancel();
     FrameRatePolicyManager.instance.setPlayerDisposed(
       true,
       reason: 'read_player_disposed',
@@ -499,6 +515,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _isReadPageForeground = true;
+      _syncReadingTimeTracking();
       FrameRatePolicyManager.instance.setAppLifecyclePaused(
         false,
         reason: 'read_page_resumed',
@@ -513,6 +530,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     }
 
     _isReadPageForeground = false;
+    _pauseReadingTimeTracking(flush: true);
     FrameRatePolicyManager.instance.setAppLifecyclePaused(
       true,
       reason: 'read_page_lifecycle_paused',
@@ -567,6 +585,102 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       expandedPlayerVisible: expandedPlayerVisible,
       miniPlayerVisible: miniPlayerVisible,
       reason: reason,
+    );
+  }
+
+  void _startReadingTimeTracking() {
+    _readingTimeFlushTimer ??= Timer.periodic(
+      _readingTimeFlushInterval,
+      (_) => _syncReadingTimeTracking(flush: true),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncReadingTimeTracking();
+    });
+  }
+
+  bool get _shouldTrackReadingTime {
+    final ModalRoute<dynamic>? route = ModalRoute.of(context);
+    return mounted &&
+        _isReadPageForeground &&
+        (route?.isCurrent ?? true) &&
+        !_isVersePlaying &&
+        !_isVerseLoading;
+  }
+
+  void _syncReadingTimeTracking({bool flush = false}) {
+    final DateTime now = DateTime.now();
+    if (!_shouldTrackReadingTime) {
+      _pauseReadingTimeTracking(flush: true, now: now);
+      return;
+    }
+
+    _readingTimeActiveSince ??= now;
+    if (flush) {
+      _flushReadingTime(now: now);
+    }
+  }
+
+  void _pauseReadingTimeTracking({required bool flush, DateTime? now}) {
+    if (flush) {
+      _flushReadingTime(now: now ?? DateTime.now());
+    }
+    _readingTimeActiveSince = null;
+  }
+
+  void _flushReadingTime({DateTime? now}) {
+    final DateTime effectiveNow = now ?? DateTime.now();
+    final DateTime? activeSince = _readingTimeActiveSince;
+    if (activeSince == null) return;
+
+    final int seconds = effectiveNow.difference(activeSince).inSeconds;
+    _readingTimeActiveSince = effectiveNow;
+    if (seconds <= 0) return;
+
+    _readingTimeWriteChain = _readingTimeWriteChain.then(
+      (_) => _recordReadingTime(seconds, now: effectiveNow),
+    );
+    unawaited(_readingTimeWriteChain);
+  }
+
+  Future<void> _recordReadingTime(int seconds, {required DateTime now}) async {
+    if (seconds <= 0) return;
+
+    final String todayKey = _readingDateKey(now);
+    final dynamic existingActivity = QuranActivityDB().get(todayKey);
+    final QuranActivityDay activity = existingActivity is QuranActivityDay
+        ? existingActivity
+        : QuranActivityDay(dateKey: todayKey, updatedAt: now);
+
+    await QuranActivityDB().put(
+      todayKey,
+      QuranActivityDay(
+        dateKey: todayKey,
+        ayahsRead: activity.ayahsRead,
+        pagesRead: activity.pagesRead,
+        listeningSeconds: activity.listeningSeconds,
+        readingSeconds: activity.readingSeconds + seconds,
+        readAyahKeys: activity.readAyahKeys,
+        updatedAt: now,
+        schemaVersion: activity.schemaVersion,
+      ),
+    );
+
+    final dynamic existingStats = QuranStatsDB().get('summary');
+    final QuranStatsSnapshot stats = existingStats is QuranStatsSnapshot
+        ? existingStats
+        : QuranStatsSnapshot(id: 'summary', updatedAt: now);
+    await QuranStatsDB().put(
+      'summary',
+      QuranStatsSnapshot(
+        id: 'summary',
+        totalAyahsRead: stats.totalAyahsRead,
+        estimatedLettersRead: stats.estimatedLettersRead,
+        listeningSeconds: stats.listeningSeconds,
+        totalReadingSeconds: stats.totalReadingSeconds + seconds,
+        currentStreak: stats.currentStreak,
+        updatedAt: now,
+        schemaVersion: stats.schemaVersion,
+      ),
     );
   }
 
@@ -1680,6 +1794,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 _isVerseLoading = false;
               }
             });
+            _syncReadingTimeTracking();
             unawaited(_updateKeepScreenOn());
             unawaited(
               AndroidAudioDisplayMode.setAudioPlaybackActive(_isVersePlaying),
@@ -1723,6 +1838,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           _isVerseLoading = false;
         }
       });
+      _syncReadingTimeTracking();
       unawaited(_updateKeepScreenOn());
       unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(state.playing));
       _syncBottomPlayerProgressPolicy(syncPosition: true);
@@ -1910,9 +2026,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     if (_hasSavedOnExit) return;
 
     _hasSavedOnExit = true;
+    _pauseReadingTimeTracking(flush: true);
     _syncCurrentVerseWithVisibleText();
     if (_isRoutineReading) {
-      _recordReadingProgress(_currentChapter, _currentVerse);
+      unawaited(_refreshCurrentAyahDownloadState());
       return;
     }
     await BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
@@ -1959,6 +2076,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }) async {
     if (_isVerseLoading) return;
 
+    _pauseReadingTimeTracking(flush: true);
     final int requestId = ++_playbackRequestId;
     final bool chapterChanged = surah != _currentChapter;
     final int safeSurah = surah.clamp(1, 114).toInt();
@@ -2062,6 +2180,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         setState(() {
           _isVerseLoading = false;
         });
+        _syncReadingTimeTracking();
       }
       if (lowFpsSuppressed) {
         unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(false));
@@ -2446,6 +2565,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         _isVerseLoading = false;
       }
     });
+    _syncReadingTimeTracking();
     _syncBottomPlayerProgressPolicy(syncPosition: true);
     unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(isPlaying));
   }
@@ -2856,6 +2976,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _setPlayerPosition(Duration.zero);
       _setPlayerDuration(Duration.zero);
     });
+    _syncReadingTimeTracking();
     _syncBottomPlayerProgressPolicy();
     await _stopCurrentVerseAudio();
     await _setKeepScreenOn(false);
@@ -3320,6 +3441,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void _increase() {
     _vibrate();
     _scrollUp();
+    unawaited(_markCurrentRoutineAyahRead());
     if (!_viewMode) {
       _goToNextSurah();
       return;
@@ -3480,9 +3602,18 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   void _updateDB() {
     if (!_isRoutineReading) {
       BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
+      _recordReadingProgress(_currentChapter, _currentVerse);
     }
-    _recordReadingProgress(_currentChapter, _currentVerse);
     unawaited(_refreshCurrentAyahDownloadState());
+  }
+
+  Future<void> _markCurrentRoutineAyahRead() async {
+    if (!_isRoutineReading) return;
+    final int chapter = _currentChapter;
+    final int verse = _currentVerse;
+    await _recordRoutineReadingProgress(chapter, verse);
+    if (!mounted) return;
+    setState(() {});
   }
 
   void _recordReadingProgress(int surah, int verse) {
@@ -3494,12 +3625,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final String todayKey = _readingDateKey(now);
 
     if (_isRoutineReading) {
-      _advanceActiveReadingPlans(
-        safeSurah,
-        safeVerse,
-        routineId: widget.routineId!,
-      );
-      _recordAyahStats(safeSurah, safeVerse, now: now, todayKey: todayKey);
+      unawaited(_recordRoutineReadingProgress(safeSurah, safeVerse));
       return;
     }
 
@@ -3518,6 +3644,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       ),
     );
 
+    _recordAyahStats(safeSurah, safeVerse, now: now, todayKey: todayKey);
+  }
+
+  Future<void> _recordRoutineReadingProgress(int surah, int verse) async {
+    final int safeSurah = surah.clamp(1, 114).toInt();
+    final int safeVerse = verse
+        .clamp(1, quran.getVerseCount(safeSurah))
+        .toInt();
+    final DateTime now = DateTime.now();
+    final String todayKey = _readingDateKey(now);
+    await _advanceActiveReadingPlans(
+      safeSurah,
+      safeVerse,
+      routineId: widget.routineId!,
+    );
     _recordAyahStats(safeSurah, safeVerse, now: now, todayKey: todayKey);
   }
 
@@ -3542,6 +3683,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       ayahsRead: activity.ayahsRead + 1,
       pagesRead: activity.pagesRead,
       listeningSeconds: activity.listeningSeconds,
+      readingSeconds: activity.readingSeconds,
       readAyahKeys: readKeys.toList()..sort(),
       updatedAt: now,
       schemaVersion: activity.schemaVersion,
@@ -3562,6 +3704,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               stats.estimatedLettersRead +
               _estimatedArabicLetters(safeSurah, safeVerse),
           listeningSeconds: stats.listeningSeconds,
+          totalReadingSeconds: stats.totalReadingSeconds,
           currentStreak: _readingStreakIncluding(todayKey),
           updatedAt: now,
           schemaVersion: stats.schemaVersion,
@@ -3570,114 +3713,79 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  void _advanceActiveReadingPlans(
+  Future<void> _advanceActiveReadingPlans(
     int surah,
     int verse, {
     required String routineId,
-  }) {
+  }) async {
     final int globalAyah = _globalAyahIndex(surah, verse);
     final DateTime now = DateTime.now();
     final String todayKey = _readingDateKey(now);
     for (final ReadingPlanEntry plan
         in ReadingPlansDB().box.values.whereType<ReadingPlanEntry>()) {
-      final _ActiveRoutineDayRange todayRange = _activeRoutineDayRange(plan);
       if (!plan.active ||
           plan.id != routineId ||
-          globalAyah < todayRange.startGlobalAyah ||
+          globalAyah < plan.startGlobalAyah ||
           globalAyah > plan.targetGlobalAyah) {
         continue;
       }
       final RoutineDayProgressEntry? existingProgress = RoutineDayProgressDB()
           .progressFor(plan.id, todayKey);
-      final Set<int> completedGlobalAyahs =
+      final Set<int> completedTodayGlobalAyahs =
           (existingProgress?.completedGlobalAyahs ?? const <int>[])
               .where(
                 (int ayah) =>
-                    ayah >= todayRange.startGlobalAyah &&
+                    ayah >= plan.startGlobalAyah &&
                     ayah <= plan.targetGlobalAyah,
               )
               .toSet()
             ..add(globalAyah);
-      final int completedWithinToday = completedGlobalAyahs
-          .where(
-            (int ayah) =>
-                ayah >= todayRange.startGlobalAyah &&
-                ayah <= todayRange.endGlobalAyah,
-          )
-          .length;
-      final bool overflowedToday = globalAyah > todayRange.endGlobalAyah;
-      final int completedToday = max(
-        existingProgress?.completedAyahCount ?? 0,
-        overflowedToday ? todayRange.totalAyahs : completedWithinToday,
-      ).clamp(0, todayRange.totalAyahs).toInt();
-      unawaited(
-        RoutineDayProgressDB().saveProgress(
-          RoutineDayProgressEntry(
-            routineId: plan.id,
-            dateKey: todayKey,
-            currentSurah: surah,
-            currentAyah: verse,
-            completedAyahCount: completedToday,
-            lastOpenedSurah: surah,
-            lastOpenedAyah: verse,
-            updatedAt: now,
-            completedGlobalAyahs: completedGlobalAyahs.toList()..sort(),
-          ),
+      final Set<int> completedGlobalAyahs = routineProgressSummary(
+        plan,
+      ).completedGlobalAyahs..addAll(completedTodayGlobalAyahs);
+      final RoutineProgressSummary updatedProgress = routineProgressSummary(
+        plan,
+      );
+      final int completedToday = updatedProgress.todayRequiredGlobalAyahs
+          .where(completedGlobalAyahs.contains)
+          .length
+          .clamp(0, updatedProgress.todayPortionAyahs)
+          .toInt();
+      await RoutineDayProgressDB().saveProgress(
+        RoutineDayProgressEntry(
+          routineId: plan.id,
+          dateKey: todayKey,
+          currentSurah: surah,
+          currentAyah: verse,
+          completedAyahCount: completedToday,
+          lastOpenedSurah: surah,
+          lastOpenedAyah: verse,
+          updatedAt: now,
+          completedGlobalAyahs: completedGlobalAyahs.toList()..sort(),
         ),
       );
-      if (globalAyah > plan.lastCompletedGlobalAyah) {
-        final int updatedLastCompleted = globalAyah
-            .clamp(plan.startGlobalAyah, plan.targetGlobalAyah)
-            .toInt();
-        unawaited(
-          ReadingPlansDB().put(
-            plan.id,
-            ReadingPlanEntry(
-              id: plan.id,
-              type: plan.type,
-              title: plan.title,
-              startedAt: plan.startedAt,
-              finishBy: plan.finishBy,
-              startGlobalAyah: plan.startGlobalAyah,
-              targetGlobalAyah: plan.targetGlobalAyah,
-              lastCompletedGlobalAyah: updatedLastCompleted,
-              active: plan.active,
-              schemaVersion: plan.schemaVersion,
-            ),
+      final int updatedLastCompleted = routineContiguousCompletedGlobalAyah(
+        plan,
+        completedGlobalAyahs,
+      );
+      if (updatedLastCompleted != plan.lastCompletedGlobalAyah) {
+        await ReadingPlansDB().put(
+          plan.id,
+          ReadingPlanEntry(
+            id: plan.id,
+            type: plan.type,
+            title: plan.title,
+            startedAt: plan.startedAt,
+            finishBy: plan.finishBy,
+            startGlobalAyah: plan.startGlobalAyah,
+            targetGlobalAyah: plan.targetGlobalAyah,
+            lastCompletedGlobalAyah: updatedLastCompleted,
+            active: plan.active,
+            schemaVersion: plan.schemaVersion,
           ),
         );
       }
     }
-  }
-
-  _ActiveRoutineDayRange _activeRoutineDayRange(ReadingPlanEntry plan) {
-    final DateTime now = DateTime.now();
-    final DateTime today = DateTime(now.year, now.month, now.day);
-    final DateTime start = DateTime(
-      plan.startedAt.year,
-      plan.startedAt.month,
-      plan.startedAt.day,
-    );
-    final int totalAyahs = max(
-      1,
-      plan.targetGlobalAyah - plan.startGlobalAyah + 1,
-    );
-    final int totalDays = max(1, plan.finishBy.difference(start).inDays + 1);
-    final int elapsedDays = today
-        .difference(start)
-        .inDays
-        .clamp(0, totalDays - 1)
-        .toInt();
-    final int perDay = (totalAyahs / totalDays).ceil();
-    final int startAyah = min(
-      plan.targetGlobalAyah,
-      plan.startGlobalAyah + (elapsedDays * perDay),
-    );
-    final int endAyah = min(plan.targetGlobalAyah, startAyah + perDay - 1);
-    return _ActiveRoutineDayRange(
-      startGlobalAyah: startAyah,
-      endGlobalAyah: endAyah,
-    );
   }
 
   void _updateVerseFromProgress({
@@ -3733,6 +3841,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Widget _buildProgressBar(double marginValue) {
+    if (_isRoutineReading) {
+      return _buildRoutineProgressBar(marginValue);
+    }
+
     final EquranColors colors = context.equranColors;
     final double progress = _totalVerses <= 0
         ? 0
@@ -3802,6 +3914,133 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ],
       ),
     );
+  }
+
+  Widget _buildRoutineProgressBar(double marginValue) {
+    final EquranColors colors = context.equranColors;
+    final ThemeData theme = Theme.of(context);
+    final ReadingPlanEntry? plan = _routinePlanForPage();
+    if (plan == null) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(marginValue, 12, marginValue, 8),
+        child: const SizedBox.shrink(),
+      );
+    }
+
+    final RoutineProgressSummary progress = routineProgressSummary(plan);
+    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
+    final int completedToday = progress.todayCompletedAyahs.clamp(
+      0,
+      progress.todayPortionAyahs,
+    );
+    final int todayQuota = progress.todayPortionAyahs;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(marginValue, 10, marginValue, 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surface.withAlpha(230),
+          borderRadius: BorderRadius.circular(AppRadii.medium),
+          border: Border.all(color: colors.border.withAlpha(150)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Wrap(
+                spacing: 8,
+                runSpacing: 5,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'Reading Routine',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    '$completedToday / $todayQuota ayahs today',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.textSecondary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  if (progress.catchUpAyahs > 0)
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors.mint,
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        child: Text(
+                          'Includes ${progress.catchUpAyahs} catch-up ayahs',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: colors.primary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 7),
+              ClipRRect(
+                borderRadius: radius,
+                child: SizedBox(
+                  height: 4,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colors.border,
+                          borderRadius: radius,
+                        ),
+                      ),
+                      TweenAnimationBuilder<double>(
+                        tween: Tween<double>(end: progress.todayFraction),
+                        duration: const Duration(milliseconds: 220),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, animatedProgress, child) {
+                          return FractionallySizedBox(
+                            alignment: AlignmentDirectional.centerStart,
+                            widthFactor: animatedProgress.clamp(0.0, 1.0),
+                            child: child,
+                          );
+                        },
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: colors.primary,
+                            borderRadius: radius,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  ReadingPlanEntry? _routinePlanForPage() {
+    final String? routineId = widget.routineId;
+    if (routineId == null || routineId.isEmpty) return null;
+    for (final ReadingPlanEntry plan
+        in ReadingPlansDB().box.values.whereType<ReadingPlanEntry>()) {
+      if (plan.id == routineId && plan.active) return plan;
+    }
+    return null;
   }
 
   void _handleProgressScrubStart(LongPressStartDetails details, double width) {
@@ -5601,6 +5840,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                 : null,
                             onNext: _currentVerse < _totalVerses
                                 ? () {
+                                    unawaited(_markCurrentRoutineAyahRead());
                                     _setVerse(_currentVerse + 1);
                                     _scrollUp();
                                     _updateDB();
@@ -7416,18 +7656,6 @@ int _globalAyahIndex(int surah, int verse) {
     index += quran.getVerseCount(currentSurah);
   }
   return index.clamp(1, quran.totalVerseCount).toInt();
-}
-
-class _ActiveRoutineDayRange {
-  const _ActiveRoutineDayRange({
-    required this.startGlobalAyah,
-    required this.endGlobalAyah,
-  });
-
-  final int startGlobalAyah;
-  final int endGlobalAyah;
-
-  int get totalAyahs => max(1, endGlobalAyah - startGlobalAyah + 1);
 }
 
 class _SurahIntroOrnamentPainter extends CustomPainter {

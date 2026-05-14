@@ -122,6 +122,12 @@ class _QuranStatsPageState extends State<QuranStatsPage> {
                                             _startGoalEdit(data.dailyGoal),
                                         onSaveGoal: _saveGoal,
                                       ),
+                                      if (data.currentStreak > 0) ...<Widget>[
+                                        const SizedBox(height: 14),
+                                        _StreakBanner(
+                                          streak: data.currentStreak,
+                                        ),
+                                      ],
                                       const SizedBox(height: 20),
                                       _ActivityCard(
                                         buckets: buckets,
@@ -184,6 +190,8 @@ class _StatsHeaderCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.xl);
+    final String motivation = _dailyGoalMotivation(data.dailyGoalProgress);
+    final int displayedToday = data.ayahsTodayForGoal;
 
     return Material(
       color: Colors.transparent,
@@ -208,71 +216,246 @@ class _StatsHeaderCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      'Quran Stats',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: colors.onPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  _HeaderIconButton(onPressed: onEditGoal),
-                ],
+        child: Stack(
+          children: <Widget>[
+            Positioned(
+              top: -36,
+              right: -28,
+              width: 178,
+              height: 178,
+              child: CustomPaint(
+                painter: IslamicPatternPainter(
+                  color: colors.onPrimary,
+                  opacity: 0.10,
+                ),
               ),
-              const SizedBox(height: 14),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 180),
-                child: editingGoal
-                    ? _GoalEditor(
-                        key: const ValueKey<String>('goal-editor'),
-                        controller: goalController,
-                        focusNode: goalFocusNode,
-                        onSave: onSaveGoal,
-                      )
-                    : GestureDetector(
-                        key: const ValueKey<String>('goal-progress'),
-                        behavior: HitTestBehavior.opaque,
-                        onTap: onEditGoal,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            Row(
+            ),
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          'Quran Stats',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: colors.onPrimary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      _HeaderIconButton(onPressed: onEditGoal),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: editingGoal
+                        ? _GoalEditor(
+                            key: const ValueKey<String>('goal-editor'),
+                            controller: goalController,
+                            focusNode: goalFocusNode,
+                            onSave: onSaveGoal,
+                          )
+                        : GestureDetector(
+                            key: const ValueKey<String>('goal-progress'),
+                            behavior: HitTestBehavior.opaque,
+                            onTap: onEditGoal,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: <Widget>[
-                                Expanded(
-                                  child: Text(
-                                    '${data.ayahsToday} / ${data.dailyGoal} ayahs today',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: colors.onPrimaryMuted,
-                                      fontWeight: FontWeight.w600,
+                                Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Text(
+                                        '$displayedToday / ${data.dailyGoal} ayahs today',
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              color: colors.onPrimaryMuted,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
                                     ),
-                                  ),
+                                    Text(
+                                      '${(data.dailyGoalProgress * 100).round()}%',
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: colors.onPrimaryMuted,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ],
                                 ),
+                                const SizedBox(height: 9),
+                                _AnimatedProgressBar(
+                                  progress: data.dailyGoalProgress,
+                                ),
+                                const SizedBox(height: 8),
                                 Text(
-                                  '${(data.dailyGoalProgress * 100).round()}%',
-                                  style: theme.textTheme.bodySmall?.copyWith(
+                                  motivation,
+                                  style: theme.textTheme.labelMedium?.copyWith(
                                     color: colors.onPrimaryMuted,
+                                    fontStyle: FontStyle.italic,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 9),
-                            _AnimatedProgressBar(
-                              progress: data.dailyGoalProgress,
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
+                  ),
+                ],
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _dailyGoalMotivation(double progress) {
+    if (progress >= 1) return 'Mashallah! Daily goal complete';
+    if (progress >= 0.5) return 'Great progress, keep going';
+    if (progress > 0) return 'Every ayah counts, keep reading';
+    return 'Start your reading for today';
+  }
+}
+
+class IslamicPatternPainter extends CustomPainter {
+  IslamicPatternPainter({required this.color, this.opacity = 0.06});
+
+  final Color color;
+  final double opacity;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color.withAlpha((opacity.clamp(0.0, 1.0) * 255).round())
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    const double tileSize = 80;
+
+    for (double x = 0; x < size.width + tileSize; x += tileSize) {
+      for (double y = 0; y < size.height + tileSize; y += tileSize) {
+        _drawStar(
+          canvas,
+          paint,
+          Offset(x + tileSize / 2, y + tileSize / 2),
+          36,
+        );
+        _drawStar(
+          canvas,
+          paint,
+          Offset(x + tileSize / 2, y + tileSize / 2),
+          22,
+        );
+      }
+    }
+  }
+
+  void _drawStar(Canvas canvas, Paint paint, Offset center, double radius) {
+    final Path path = Path();
+    for (int i = 0; i < 8; i++) {
+      final double angle = (i * 45 - 90) * (math.pi / 180);
+      final double innerAngle = angle + (22.5 * math.pi / 180);
+      final Offset outerPoint = Offset(
+        center.dx + radius * math.cos(angle),
+        center.dy + radius * math.sin(angle),
+      );
+      final Offset innerPoint = Offset(
+        center.dx + (radius * 0.5) * math.cos(innerAngle),
+        center.dy + (radius * 0.5) * math.sin(innerAngle),
+      );
+
+      if (i == 0) {
+        path.moveTo(outerPoint.dx, outerPoint.dy);
+      } else {
+        path.lineTo(outerPoint.dx, outerPoint.dy);
+      }
+      path.lineTo(innerPoint.dx, innerPoint.dy);
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _StreakBanner extends StatefulWidget {
+  const _StreakBanner({required this.streak});
+
+  final int streak;
+
+  @override
+  State<_StreakBanner> createState() => _StreakBannerState();
+}
+
+class _StreakBannerState extends State<_StreakBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    );
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.18),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(
+        position: _slide,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.goldSoft,
+            borderRadius: BorderRadius.circular(AppRadii.large),
+            border: Border.all(color: colors.accentGold.withAlpha(102)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  Icons.local_fire_department_rounded,
+                  color: colors.accentGold,
+                  size: 22,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${widget.streak} day streak — keep it going!',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: colors.warning,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -290,7 +473,7 @@ class _HeaderIconButton extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
     return Material(
-      color: colors.surface,
+      color: colors.onPrimary.withAlpha(38),
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -298,7 +481,7 @@ class _HeaderIconButton extends StatelessWidget {
         borderRadius: radius,
         child: SizedBox.square(
           dimension: 42,
-          child: Icon(Icons.edit_rounded, color: colors.primary),
+          child: Icon(Icons.edit_rounded, color: colors.onPrimary),
         ),
       ),
     );
@@ -390,19 +573,10 @@ class _AnimatedProgressBar extends StatelessWidget {
             color: colors.onPrimary.withAlpha(51),
             borderRadius: radius,
           ),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0, end: progress),
-            duration: const Duration(milliseconds: 420),
+          child: _AnimatedFractionallySizedBox(
+            widthFactor: progress,
+            duration: const Duration(milliseconds: 800),
             curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: FractionallySizedBox(
-                  widthFactor: value.clamp(0.0, 1.0).toDouble(),
-                  child: child,
-                ),
-              );
-            },
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: colors.onPrimary,
@@ -412,6 +586,36 @@ class _AnimatedProgressBar extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AnimatedFractionallySizedBox extends StatelessWidget {
+  const _AnimatedFractionallySizedBox({
+    required this.widthFactor,
+    required this.duration,
+    required this.curve,
+    required this.child,
+  });
+
+  final double widthFactor;
+  final Duration duration;
+  final Curve curve;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: widthFactor.clamp(0.0, 1.0)),
+      duration: duration,
+      curve: curve,
+      builder: (context, value, child) {
+        return Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: FractionallySizedBox(widthFactor: value, child: child),
+        );
+      },
+      child: child,
     );
   }
 }
@@ -497,7 +701,7 @@ class _ActivityCardState extends State<_ActivityCard>
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  const Expanded(child: _SectionLabel('Weekly activity')),
+                  const Expanded(child: _SectionLabel('activity')),
                   _RangeToggle(
                     selected: widget.range,
                     onChanged: widget.onRangeChanged,
@@ -795,6 +999,18 @@ class _StatsGrid extends StatelessWidget {
               icon: Icons.done_all_rounded,
               value: '${data.totalAyahsRead}',
               label: 'Total ayahs',
+            ),
+            _StatCard(
+              width: tileWidth,
+              icon: Icons.schedule_rounded,
+              value: data.readingTimeTodayLabel,
+              label: 'Reading time',
+            ),
+            _StatCard(
+              width: tileWidth,
+              icon: Icons.av_timer_rounded,
+              value: data.totalReadingTimeLabel,
+              label: 'Total time',
             ),
             _StatCard(
               width: tileWidth,
@@ -1153,6 +1369,8 @@ class _QuranStatsViewData {
     required this.ayahsToday,
     required this.ayahsThisWeek,
     required this.totalAyahsRead,
+    required this.readingSecondsToday,
+    required this.totalReadingSeconds,
     required this.currentStreak,
     required this.longestStreak,
     required this.dailyGoal,
@@ -1167,6 +1385,8 @@ class _QuranStatsViewData {
   final int ayahsToday;
   final int ayahsThisWeek;
   final int totalAyahsRead;
+  final int readingSecondsToday;
+  final int totalReadingSeconds;
   final int currentStreak;
   final int longestStreak;
   final int dailyGoal;
@@ -1180,7 +1400,15 @@ class _QuranStatsViewData {
   double get dailyGoalProgress =>
       dailyGoal <= 0 ? 0 : (ayahsToday / dailyGoal).clamp(0.0, 1.0).toDouble();
 
+  int get ayahsTodayForGoal => ayahsToday.clamp(0, dailyGoal).toInt();
+
   int ayahsForDate(String dateKey) => activityByDate[dateKey]?.ayahsRead ?? 0;
+
+  String get readingTimeTodayLabel =>
+      _formatReadingDuration(readingSecondsToday);
+
+  String get totalReadingTimeLabel =>
+      _formatReadingDuration(totalReadingSeconds);
 
   List<_ActivityBucket> bucketsFor(_StatsRange range) {
     return switch (range) {
@@ -1300,6 +1528,8 @@ class _QuranStatsViewData {
       ayahsToday: byDate[todayKey]?.ayahsRead ?? 0,
       ayahsThisWeek: ayahsThisWeek,
       totalAyahsRead: snapshot.totalAyahsRead,
+      readingSecondsToday: byDate[todayKey]?.readingSeconds ?? 0,
+      totalReadingSeconds: snapshot.totalReadingSeconds,
       currentStreak: snapshot.currentStreak,
       longestStreak: _longestReadingStreak(activityDays),
       dailyGoal: _dailyGoal(),
@@ -1348,6 +1578,17 @@ int _dailyGoal() {
     return (int.tryParse(saved) ?? 20).clamp(1, 1000).toInt();
   }
   return 20;
+}
+
+String _formatReadingDuration(int seconds) {
+  if (seconds <= 0) return '0 min';
+  final int totalMinutes = (seconds / 60).ceil();
+  if (totalMinutes < 60) return '$totalMinutes min';
+
+  final int hours = totalMinutes ~/ 60;
+  final int minutes = totalMinutes % 60;
+  if (minutes == 0) return '${hours}h';
+  return '${hours}h ${minutes}m';
 }
 
 Map<int, int> _surahCounts(List<QuranActivityDay> activityDays) {

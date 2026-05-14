@@ -108,6 +108,7 @@ class QuranActivityDay {
     this.ayahsRead = 0,
     this.pagesRead = 0,
     this.listeningSeconds = 0,
+    this.readingSeconds = 0,
     this.readAyahKeys = const <String>[],
     this.schemaVersion = companionStorageSchemaVersion,
   });
@@ -116,6 +117,7 @@ class QuranActivityDay {
   final int ayahsRead;
   final int pagesRead;
   final int listeningSeconds;
+  final int readingSeconds;
   final List<String> readAyahKeys;
   final DateTime updatedAt;
   final int schemaVersion;
@@ -281,6 +283,7 @@ class QuranStatsSnapshot {
     this.totalAyahsRead = 0,
     this.estimatedLettersRead = 0,
     this.listeningSeconds = 0,
+    this.totalReadingSeconds = 0,
     this.currentStreak = 0,
     this.schemaVersion = companionStorageSchemaVersion,
   });
@@ -289,6 +292,7 @@ class QuranStatsSnapshot {
   final int totalAyahsRead;
   final int estimatedLettersRead;
   final int listeningSeconds;
+  final int totalReadingSeconds;
   final int currentStreak;
   final DateTime updatedAt;
   final int schemaVersion;
@@ -423,13 +427,14 @@ class QuranActivityDayAdapter extends TypeAdapter<QuranActivityDay> {
       updatedAt:
           fields[5] as DateTime? ?? DateTime.fromMillisecondsSinceEpoch(0),
       schemaVersion: fields[6] as int? ?? 1,
+      readingSeconds: fields[7] as int? ?? 0,
     );
   }
 
   @override
   void write(BinaryWriter writer, QuranActivityDay obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.dateKey)
       ..writeByte(1)
@@ -443,7 +448,9 @@ class QuranActivityDayAdapter extends TypeAdapter<QuranActivityDay> {
       ..writeByte(5)
       ..write(obj.updatedAt)
       ..writeByte(6)
-      ..write(obj.schemaVersion);
+      ..write(obj.schemaVersion)
+      ..writeByte(7)
+      ..write(obj.readingSeconds);
   }
 }
 
@@ -638,13 +645,14 @@ class QuranStatsSnapshotAdapter extends TypeAdapter<QuranStatsSnapshot> {
       updatedAt:
           fields[5] as DateTime? ?? DateTime.fromMillisecondsSinceEpoch(0),
       schemaVersion: fields[6] as int? ?? 1,
+      totalReadingSeconds: fields[7] as int? ?? 0,
     );
   }
 
   @override
   void write(BinaryWriter writer, QuranStatsSnapshot obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -658,7 +666,9 @@ class QuranStatsSnapshotAdapter extends TypeAdapter<QuranStatsSnapshot> {
       ..writeByte(5)
       ..write(obj.updatedAt)
       ..writeByte(6)
-      ..write(obj.schemaVersion);
+      ..write(obj.schemaVersion)
+      ..writeByte(7)
+      ..write(obj.totalReadingSeconds);
   }
 }
 

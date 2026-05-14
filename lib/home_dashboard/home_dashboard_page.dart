@@ -9,6 +9,7 @@ import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_time_thumb_card.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
+import 'package:equran/reading_plans/routine_progress.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/theme/equran_text_styles.dart';
@@ -997,7 +998,6 @@ class _RoutinePlanCta extends StatelessWidget {
     }
 
     final _RoutineDayProgress dayProgress = _routineDayProgress(activePlan);
-    final int percent = (dayProgress.fraction * 100).round();
     final _AyahRef continueRef = _routineContinueRef(activePlan);
 
     return _HomePremiumCard(
@@ -1006,6 +1006,7 @@ class _RoutinePlanCta extends StatelessWidget {
           builder: (context) => ReadPage(
             chapter: continueRef.surah,
             startVerse: continueRef.verse,
+            mode: ReadPageMode.routine,
             routineId: activePlan.id,
           ),
         ),
@@ -1080,7 +1081,7 @@ class _RoutinePlanCta extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  '$percent% complete today',
+                  dayProgress.statusLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelMedium?.copyWith(
@@ -1928,7 +1929,7 @@ class _JourneyPreviewCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: <Widget>[
-              _JourneyMetricChip(label: '${snapshot.currentStreak} day streak'),
+              _JourneyStreakChip(streak: snapshot.currentStreak),
               const SizedBox(width: 8),
               _JourneyMetricChip(
                 label: '${snapshot.estimatedLettersRead} letters',
@@ -1985,6 +1986,51 @@ class _HomeMetricPill extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _JourneyStreakChip extends StatelessWidget {
+  const _JourneyStreakChip({required this.streak});
+
+  final int streak;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return Flexible(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.goldSoft,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          border: Border.all(color: colors.accentGold.withAlpha(102)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                Icons.local_fire_department_rounded,
+                color: colors.accentGold,
+                size: 15,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  '$streak day streak',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: colors.warning,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -2524,14 +2570,9 @@ class _ReadingPlanCard extends StatelessWidget {
       );
     }
 
-    final int total = (activePlan.targetGlobalAyah - activePlan.startGlobalAyah)
-        .abs()
-        .clamp(1, quran.totalVerseCount)
-        .toInt();
-    final int done =
-        (activePlan.lastCompletedGlobalAyah - activePlan.startGlobalAyah)
-            .clamp(0, total)
-            .toInt();
+    final RoutineProgressSummary progress = routineProgressSummary(activePlan);
+    final int total = progress.totalAyahs;
+    final int done = progress.completedAyahs;
 
     return _DashboardCard(
       child: Column(
@@ -3085,104 +3126,33 @@ class _AyahRef {
 class _RoutineDayProgress {
   const _RoutineDayProgress({
     required this.portionLabel,
+    required this.statusLabel,
     required this.fraction,
   });
 
   final String portionLabel;
+  final String statusLabel;
   final double fraction;
 }
 
 _RoutineDayProgress _routineDayProgress(ReadingPlanEntry plan) {
-  final _RoutineTodayRange range = _routineTodayRange(plan);
-  final _AyahRef start = _ayahRefFromGlobalIndex(range.startGlobalAyah);
-  final _AyahRef end = _ayahRefFromGlobalIndex(range.endGlobalAyah);
-  final RoutineDayProgressEntry? savedProgress = RoutineDayProgressDB()
-      .progressFor(plan.id, _dateKey(DateTime.now()));
-  final int legacyCompleted =
-      (plan.lastCompletedGlobalAyah - range.startGlobalAyah + 1)
-          .clamp(0, range.totalAyahs)
-          .toInt();
-  final int completed = (savedProgress?.completedAyahCount ?? legacyCompleted)
-      .clamp(0, range.totalAyahs)
-      .toInt();
-  final double fraction = range.totalAyahs <= 0
-      ? 0
-      : (completed / range.totalAyahs).clamp(0.0, 1.0).toDouble();
+  final RoutineProgressSummary progress = routineProgressSummary(plan);
+  final String statusLabel = progress.isTodayDone
+      ? 'Today\'s portion complete'
+      : progress.catchUpAyahs > 0
+      ? 'Includes ${progress.catchUpAyahs} catch-up ayahs'
+      : '${progress.todayRemainingAyahs} ayahs remaining today';
   return _RoutineDayProgress(
-    portionLabel: 'Today: ${_ayahRangeLabel(start, end)}',
-    fraction: fraction,
+    portionLabel: 'Today\'s portion: ${progress.todayPortionAyahs} ayahs',
+    statusLabel: statusLabel,
+    fraction: progress.todayFraction,
   );
 }
 
 _AyahRef _routineContinueRef(ReadingPlanEntry plan) {
-  final _RoutineTodayRange range = _routineTodayRange(plan);
-  final RoutineDayProgressEntry? savedProgress = RoutineDayProgressDB()
-      .progressFor(plan.id, _dateKey(DateTime.now()));
-  if (savedProgress != null) {
-    final int savedGlobalAyah = _globalAyahIndex(
-      savedProgress.lastOpenedSurah,
-      savedProgress.lastOpenedAyah,
-    );
-    if (savedGlobalAyah >= range.startGlobalAyah &&
-        savedGlobalAyah <= plan.targetGlobalAyah) {
-      return _AyahRef(
-        surah: savedProgress.lastOpenedSurah,
-        verse: savedProgress.lastOpenedAyah,
-      );
-    }
-  }
-  final int nextGlobalAyah =
-      plan.lastCompletedGlobalAyah < range.startGlobalAyah
-      ? range.startGlobalAyah
-      : math.min(plan.lastCompletedGlobalAyah + 1, plan.targetGlobalAyah);
-  return _ayahRefFromGlobalIndex(nextGlobalAyah);
-}
-
-class _RoutineTodayRange {
-  const _RoutineTodayRange({
-    required this.startGlobalAyah,
-    required this.endGlobalAyah,
-  });
-
-  final int startGlobalAyah;
-  final int endGlobalAyah;
-
-  int get totalAyahs => math.max(1, endGlobalAyah - startGlobalAyah + 1);
-}
-
-_RoutineTodayRange _routineTodayRange(ReadingPlanEntry plan) {
-  final DateTime now = DateTime.now();
-  final DateTime today = DateTime(now.year, now.month, now.day);
-  final DateTime start = DateTime(
-    plan.startedAt.year,
-    plan.startedAt.month,
-    plan.startedAt.day,
+  return _ayahRefFromGlobalIndex(
+    routineProgressSummary(plan).nextUnreadGlobalAyah,
   );
-  final int totalAyahs = math.max(
-    1,
-    plan.targetGlobalAyah - plan.startGlobalAyah + 1,
-  );
-  final int totalDays = math.max(1, plan.finishBy.difference(start).inDays + 1);
-  final int elapsedDays = today
-      .difference(start)
-      .inDays
-      .clamp(0, totalDays - 1)
-      .toInt();
-  final int perDay = (totalAyahs / totalDays).ceil();
-  final int startAyah = math.min(
-    plan.targetGlobalAyah,
-    plan.startGlobalAyah + (elapsedDays * perDay),
-  );
-  final int endAyah = math.min(plan.targetGlobalAyah, startAyah + perDay - 1);
-  return _RoutineTodayRange(startGlobalAyah: startAyah, endGlobalAyah: endAyah);
-}
-
-String _ayahRangeLabel(_AyahRef start, _AyahRef end) {
-  if (start.surah == end.surah) {
-    return '${quran.getSurahName(start.surah)} ${start.verse}-${end.verse}';
-  }
-  return '${quran.getSurahName(start.surah)} ${start.verse} - '
-      '${quran.getSurahName(end.surah)} ${end.verse}';
 }
 
 _AyahRef _ayahRefFromGlobalIndex(int globalAyah) {
@@ -3195,14 +3165,6 @@ _AyahRef _ayahRefFromGlobalIndex(int globalAyah) {
     remaining -= verseCount;
   }
   return const _AyahRef(surah: 114, verse: 6);
-}
-
-int _globalAyahIndex(int surah, int verse) {
-  int index = verse.clamp(1, quran.getVerseCount(surah)).toInt();
-  for (int currentSurah = 1; currentSurah < surah; currentSurah++) {
-    index += quran.getVerseCount(currentSurah);
-  }
-  return index.clamp(1, quran.totalVerseCount).toInt();
 }
 
 int _translationIndex() {

@@ -62,6 +62,14 @@ class RoutineDayProgressDB extends BaseDB {
     return RoutineDayProgressEntry.fromStored(value);
   }
 
+  List<RoutineDayProgressEntry> progressEntriesForRoutine(String routineId) {
+    return box.values
+        .map(RoutineDayProgressEntry.fromStored)
+        .whereType<RoutineDayProgressEntry>()
+        .where((RoutineDayProgressEntry entry) => entry.routineId == routineId)
+        .toList(growable: false);
+  }
+
   Future<void> saveProgress(RoutineDayProgressEntry progress) async {
     await put(
       progressKey(progress.routineId, progress.dateKey),
