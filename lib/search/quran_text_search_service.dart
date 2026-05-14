@@ -26,8 +26,13 @@ class QuranTextSearchResult {
 class QuranTextSearchService {
   const QuranTextSearchService();
 
+  static List<_SearchEntry>? _arabicIndex;
+  static final Map<quran.Translation, List<_SearchEntry>> _translationIndexes =
+      <quran.Translation, List<_SearchEntry>>{};
+
   Future<List<QuranTextSearchResult>> search(String query, {int limit = 80}) {
-    final String normalizedQuery = query.trim();
+    final String trimmedQuery = query.trim();
+    final String normalizedQuery = _normalizeSearchText(trimmedQuery);
     if (normalizedQuery.length < 2) {
       return Future<List<QuranTextSearchResult>>.value(
         const <QuranTextSearchResult>[],
@@ -70,77 +75,59 @@ class QuranTextSearchService {
     return entries;
   }
 
-  List<QuranTextSearchResult> _searchSync(String query, {required int limit}) {
+  List<QuranTextSearchResult> _searchSync(
+    String normalizedQuery, {
+    required int limit,
+  }) {
     final quran.Translation translation = _selectedTranslation();
-    final List<String> words = _splitWords(query);
     final Map<String, _SearchHit> hits = <String, _SearchHit>{};
 
-    void addHit(int? surah, int? verse, {required bool translationMatch}) {
-      if (surah == null || verse == null) return;
-      if (surah < 1 || surah > 114) return;
-      if (verse < 1 || verse > quran.getVerseCount(surah)) return;
-      final String id = '$surah:$verse';
+    void addHit(_SearchEntry entry, {required bool translationMatch}) {
+      final String id = entry.id;
       hits[id] = _SearchHit(
-        surah: surah,
-        verse: verse,
+        surah: entry.surah,
+        verse: entry.verse,
         translationMatch:
             (hits[id]?.translationMatch ?? false) || translationMatch,
       );
     }
 
-    if (words.isNotEmpty) {
-      try {
-        _collectPackageResults(
-          quran.searchWords(words),
-          (surah, verse) => addHit(surah, verse, translationMatch: false),
-        );
-      } catch (error, stackTrace) {
-        debugPrint('Quran Arabic search failed: $error');
-        FlutterError.reportError(
-          FlutterErrorDetails(
-            exception: error,
-            stack: stackTrace,
-            library: 'quran_text_search_service',
-            context: ErrorDescription('while searching Arabic Quran text'),
-          ),
-        );
-      }
-
-      try {
-        _collectPackageResults(
-          quran.searchWordsInTranslation(words, translation: translation),
-          (surah, verse) => addHit(surah, verse, translationMatch: true),
-        );
-      } catch (error, stackTrace) {
-        debugPrint('Quran translation search failed: $error');
-        FlutterError.reportError(
-          FlutterErrorDetails(
-            exception: error,
-            stack: stackTrace,
-            library: 'quran_text_search_service',
-            context: ErrorDescription('while searching Quran translation'),
-          ),
-        );
-      }
-    }
-
-    if (_containsArabic(query)) {
-      final String normalizedNeedle = _normalizeArabic(query);
-      if (normalizedNeedle.length >= 2) {
-        for (int surah = 1; surah <= 114 && hits.length < limit; surah++) {
-          final int verseCount = quran.getVerseCount(surah);
-          for (
-            int verse = 1;
-            verse <= verseCount && hits.length < limit;
-            verse++
-          ) {
-            final String text = quranVerseText(surah, verse);
-            if (_normalizeArabic(text).contains(normalizedNeedle)) {
-              addHit(surah, verse, translationMatch: false);
-            }
-          }
+    try {
+      for (final _SearchEntry entry in _arabicEntries()) {
+        if (entry.normalizedArabic.contains(normalizedQuery)) {
+          addHit(entry, translationMatch: false);
+          if (hits.length >= limit) break;
         }
       }
+    } catch (error, stackTrace) {
+      debugPrint('Quran Arabic search failed: $error');
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'quran_text_search_service',
+          context: ErrorDescription('while searching Arabic Quran text'),
+        ),
+      );
+    }
+
+    try {
+      for (final _SearchEntry entry in _translationEntries(translation)) {
+        if (entry.normalizedTranslation.contains(normalizedQuery)) {
+          addHit(entry, translationMatch: true);
+          if (hits.length >= limit) break;
+        }
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Quran translation search failed: $error');
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'quran_text_search_service',
+          context: ErrorDescription('while searching Quran translation'),
+        ),
+      );
     }
 
     final List<_SearchHit> orderedHits = hits.values.toList()
@@ -157,37 +144,14 @@ class QuranTextSearchService {
             surah: hit.surah,
             verse: hit.verse,
             arabicPreview: quranVerseText(hit.surah, hit.verse),
-            translationPreview: quran.cleanTranslationText(
-              quran.getVerseTranslation(
-                hit.surah,
-                hit.verse,
-                translation: translation,
-              ),
+            translationPreview: _translationText(
+              hit.surah,
+              hit.verse,
+              translation,
             ),
             translationMatch: hit.translationMatch,
           );
         })
-        .toList(growable: false);
-  }
-
-  void _collectPackageResults(
-    Map<dynamic, dynamic> response,
-    void Function(int? surah, int? verse) add,
-  ) {
-    final dynamic rawResults = response['result'];
-    if (rawResults is! Iterable) return;
-
-    for (final dynamic rawResult in rawResults) {
-      if (rawResult is! Map) continue;
-      add(_readInt(rawResult['surah']), _readInt(rawResult['verse']));
-    }
-  }
-
-  List<String> _splitWords(String query) {
-    return query
-        .split(RegExp(r'\s+'))
-        .map((String word) => word.trim())
-        .where((String word) => word.isNotEmpty)
         .toList(growable: false);
   }
 
@@ -199,14 +163,60 @@ class QuranTextSearchService {
     return quran.Translation.enSaheeh;
   }
 
-  bool _containsArabic(String value) {
-    return RegExp(r'[\u0600-\u06FF]').hasMatch(value);
+  List<_SearchEntry> _arabicEntries() {
+    return _arabicIndex ??= _buildIndex();
+  }
+
+  List<_SearchEntry> _translationEntries(quran.Translation translation) {
+    return _translationIndexes[translation] ??= _buildIndex(
+      translation: translation,
+    );
+  }
+
+  List<_SearchEntry> _buildIndex({quran.Translation? translation}) {
+    final List<_SearchEntry> entries = <_SearchEntry>[];
+    for (int surah = 1; surah <= quran.totalSurahCount; surah++) {
+      final int verseCount = quran.getVerseCount(surah);
+      for (int verse = 1; verse <= verseCount; verse++) {
+        final String arabic = quranVerseText(surah, verse);
+        final String translationText = translation == null
+            ? ''
+            : _translationText(surah, verse, translation);
+        entries.add(
+          _SearchEntry(
+            surah: surah,
+            verse: verse,
+            normalizedArabic: _normalizeSearchText(arabic),
+            normalizedTranslation: _normalizeSearchText(translationText),
+          ),
+        );
+      }
+    }
+    return List<_SearchEntry>.unmodifiable(entries);
+  }
+
+  String _translationText(int surah, int verse, quran.Translation translation) {
+    try {
+      return quran.cleanTranslationText(
+        quran.getVerseTranslation(surah, verse, translation: translation),
+      );
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String _normalizeSearchText(String value) {
+    final String withoutArabicMarks = _normalizeArabic(value);
+    return withoutArabicMarks
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   String _normalizeArabic(String value) {
     return value
         .replaceAll(
-          RegExp(r'[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]'),
+          RegExp(r'[\u0610-\u061A\u0640\u064B-\u065F\u0670\u06D6-\u06ED]'),
           '',
         )
         .replaceAll(RegExp('[أإآٱ]'), 'ا')
@@ -215,13 +225,6 @@ class QuranTextSearchService {
         .replaceAll('ؤ', 'و')
         .replaceAll('ئ', 'ي')
         .trim();
-  }
-
-  int? _readInt(dynamic value) {
-    if (value is int) return value;
-    if (value is double) return value.round();
-    if (value is String) return int.tryParse(value);
-    return null;
   }
 }
 
@@ -235,4 +238,20 @@ class _SearchHit {
   final int surah;
   final int verse;
   final bool translationMatch;
+}
+
+class _SearchEntry {
+  const _SearchEntry({
+    required this.surah,
+    required this.verse,
+    required this.normalizedArabic,
+    required this.normalizedTranslation,
+  });
+
+  final int surah;
+  final int verse;
+  final String normalizedArabic;
+  final String normalizedTranslation;
+
+  String get id => '$surah:$verse';
 }

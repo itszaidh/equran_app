@@ -159,6 +159,7 @@ class EquranResumeImageCard extends StatelessWidget {
     required this.onTap,
     this.secondary = false,
     this.artworkScale = 1,
+    this.artworkOffsetX = -2,
     this.maxWidth = _resumeImageCardMaxWidth,
   });
 
@@ -169,6 +170,7 @@ class EquranResumeImageCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool secondary;
   final double artworkScale;
+  final double artworkOffsetX;
   final double maxWidth;
 
   @override
@@ -276,13 +278,21 @@ class EquranResumeImageCard extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: Padding(
                             padding: EdgeInsets.only(right: artworkEdgePadding),
-                            child: SizedBox(
-                              width: artWidth,
-                              child: Image.asset(
-                                trailingAssetPath,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const SizedBox.shrink(),
+                            child: Transform.translate(
+                              offset: Offset(
+                                compact
+                                    ? artworkOffsetX.clamp(0, 8).toDouble()
+                                    : artworkOffsetX.clamp(0, 22).toDouble(),
+                                0,
+                              ),
+                              child: SizedBox(
+                                width: artWidth,
+                                child: Image.asset(
+                                  trailingAssetPath,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const SizedBox.shrink(),
+                                ),
                               ),
                             ),
                           ),

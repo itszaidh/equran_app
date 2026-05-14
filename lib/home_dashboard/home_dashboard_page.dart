@@ -2445,6 +2445,7 @@ class _ContinueListeningCard extends StatelessWidget {
         trailingAssetPath: _playerAsset,
         secondary: true,
         artworkScale: 1.18,
+        artworkOffsetX: 18,
         onTap: onOpenPlayer,
       );
     } else {
@@ -2462,6 +2463,7 @@ class _ContinueListeningCard extends StatelessWidget {
         trailingAssetPath: _playerAsset,
         secondary: true,
         artworkScale: 1.18,
+        artworkOffsetX: 16,
         onTap: () {
           unawaited(
             SettingsDB().put(
