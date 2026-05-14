@@ -2423,7 +2423,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       fallback: RepeatChoice.infinite,
     );
     _repeatAyahChoice = RepeatChoice.fromStorage(
-      SettingsDB().get(
+      (
         _repeatAyahSettingsKey,
         defaultValue: RepeatChoice.one.storageValue,
       ),

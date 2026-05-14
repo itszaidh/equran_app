@@ -1,4 +1,5 @@
 import 'package:equran/backend/dua_favourites_db.dart';
+import 'package:equran/backend/settings_db.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
@@ -101,11 +102,12 @@ class DuaCard extends StatelessWidget {
                     Text(
                       dua.text,
                       textDirection: TextDirection.rtl,
-                      textAlign: TextAlign.right,
-                      style: theme.textTheme.headlineSmall?.copyWith(
+                      textAlign: TextAlign.justify,
+                      style: TextStyle(
                         fontFamily: 'Hafs',
+                        
                         height: 1.95,
-                        fontWeight: FontWeight.w600,
+                        fontSize: SettingsDB().get("fontSize") - 2.0,
                         letterSpacing: 0,
                         color: colors.onSurface,
                       ),
