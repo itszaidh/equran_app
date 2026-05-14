@@ -3,7 +3,7 @@ description: "Application for reading the Holy Quran"
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 3.0.0-beta.8+80
+version: 3.0.0-beta.9+81
 environment:
   sdk: ">=3.11.5 <4.0.0"
   flutter: ">=3.41.7"
@@ -44,6 +44,13 @@ dependencies:
   timezone: ^0.11.0
   flutter_timezone: ^5.0.2
   flutter_compass: ^0.8.1
+
+dependency_overrides:
+  geolocator_android:
+    git:
+      url: https://github.com/Zverik/flutter-geolocator.git
+      ref: floss
+      path: geolocator_android
 
 dev_dependencies:
   flutter_test:
