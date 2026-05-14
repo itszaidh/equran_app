@@ -227,53 +227,61 @@ class _MoreHero extends StatelessWidget {
     return EquranGradientCard(
       onTap: onOpenReadingPlans,
       padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-      child: Stack(
-        children: <Widget>[
-          const Positioned.fill(child: _MoreHeroArtwork()),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final double copyWidth = constraints.maxWidth < 560
+              ? (constraints.maxWidth * 0.58).clamp(220.0, 420.0).toDouble()
+              : 420;
+
+          return Stack(
             children: <Widget>[
-              Text(
-                'Your Islamic Companion',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  color: colors.onPrimary,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: 420,
-                child: Text(
-                  'Qibla, downloads, settings, plans, and tools gathered in one quiet place.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onPrimaryMuted,
-                    height: 1.4,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisSize: MainAxisSize.min,
+              const Positioned.fill(child: _MoreHeroArtwork()),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Open routine',
-                    style: theme.textTheme.labelLarge?.copyWith(
+                    'Your Islamic Companion',
+                    style: theme.textTheme.headlineSmall?.copyWith(
                       color: colors.onPrimary,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  const SizedBox(width: 5),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: colors.onPrimary,
-                    size: 19,
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: copyWidth,
+                    child: Text(
+                      'Qibla, downloads, settings, plans, and tools gathered in one quiet place.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onPrimaryMuted,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        'Open routine',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: colors.onPrimary,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: colors.onPrimary,
+                        size: 19,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -290,22 +298,43 @@ class _MoreHeroArtwork extends StatelessWidget {
         final double artworkEdgePadding = _artworkEdgePadding(
           constraints.maxWidth,
         );
-        final double artWidth = compact ? 154 : 204;
+        final double artWidth = (constraints.maxWidth * 0.92)
+            .clamp(compact ? 340.0 : 460.0, 820.0)
+            .toDouble();
+        final double artworkScale = compact ? 1.55 : 1.7;
+        final double artworkTransparentRightInset =
+            artWidth * artworkScale * 0.26;
+        final double artworkOffsetY = compact ? -5.0 : -5.0;
 
         return IgnorePointer(
           child: Align(
             alignment: Alignment.centerRight,
             child: Padding(
               padding: EdgeInsets.only(right: artworkEdgePadding),
-              child: Opacity(
-                opacity: 0.18,
-                child: SizedBox(
-                  width: artWidth,
-                  child: Image.asset(
-                    _routineAsset,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const SizedBox.shrink(),
+              child: OverflowBox(
+                alignment: Alignment.centerRight,
+                minWidth: 0,
+                maxWidth: double.infinity,
+                child: Transform.scale(
+                  scale: artworkScale,
+                  alignment: Alignment.centerRight,
+                  child: Transform.translate(
+                    offset: Offset(
+                      artworkTransparentRightInset,
+                      artworkOffsetY,
+                    ),
+                    child: Opacity(
+                      opacity: 0.18,
+                      child: SizedBox(
+                        width: artWidth,
+                        child: Image.asset(
+                          _routineAsset,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -317,10 +346,9 @@ class _MoreHeroArtwork extends StatelessWidget {
   }
 
   double _artworkEdgePadding(double width) {
-    if (width < 340) return 2;
+    if (width < 340) return 4;
     if (width < 430) return 6;
-    if (width < 560) return 12;
-    return 18;
+    return 8;
   }
 }
 

@@ -240,14 +240,14 @@ class _BookmarkLibraryHeader extends StatelessWidget {
           children: <Widget>[
             Positioned(
               right: -10,
-              top: 28,
+              top: 44,
               child: IgnorePointer(
                 child: Text(
-                  'بِسْمِ اللَّه',
+                  'بِسْمِ ٱللّٰهِ ٱلرَّحْمٰنِ ٱلرَّحِيمِ',
                   textDirection: TextDirection.rtl,
                   style: const TextStyle(
                     fontFamily: 'Hafs',
-                    fontSize: 58,
+                    fontSize: 50,
                     height: 1,
                   ).copyWith(color: colors.onPrimary.withAlpha(15)),
                 ),

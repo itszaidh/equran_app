@@ -168,7 +168,7 @@ IconData _iconFor(PrayerTimeKind kind) {
 String _prayerThumbAsset(PrayerTimeKind kind) {
   return switch (kind) {
     PrayerTimeKind.fajr => '$_appAssetBase/fajr.webp',
-    PrayerTimeKind.sunrise => '$_appAssetBase/fajr.webp',
+    PrayerTimeKind.sunrise => '$_appAssetBase/sunrise.webp',
     PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr.webp',
     PrayerTimeKind.asr => '$_appAssetBase/asr.webp',
     PrayerTimeKind.maghrib => '$_appAssetBase/maghrib.webp',

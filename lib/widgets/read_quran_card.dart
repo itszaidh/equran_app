@@ -11,6 +11,12 @@ import 'package:like_button/like_button.dart';
 
 const int _favouriteNoteMaxLength = 80;
 
+double readQuranCardHorizontalMarginForWidth(double width) {
+  if (width > 1200) return 120.0;
+  if (width > 700) return 40.0;
+  return 6.0;
+}
+
 class ReadQuranCard extends StatelessWidget {
   final int currentChapter;
   final int currentVerse;
@@ -341,14 +347,9 @@ class ReadQuranCard extends StatelessWidget {
     final bool compactShareContent =
         shareImageMode && verse.runes.length <= 140;
 
-    double marginValue;
-    if (screenSize.width > 1200) {
-      marginValue = 120.0;
-    } else if (screenSize.width > 700) {
-      marginValue = 40.0;
-    } else {
-      marginValue = 6.0;
-    }
+    final double marginValue = readQuranCardHorizontalMarginForWidth(
+      screenSize.width,
+    );
 
     final BorderRadius radius = BorderRadius.circular(AppRadii.large);
 

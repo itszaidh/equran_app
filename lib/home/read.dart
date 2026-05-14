@@ -55,6 +55,7 @@ import 'package:equran/widgets/library.dart'
         AppSelectionDialog,
         AppSelectionOption,
         ReadQuranCard,
+        readQuranCardHorizontalMarginForWidth,
         ReadVersePlayerBar;
 import 'package:flutter/foundation.dart'
     show TargetPlatform, debugPrint, defaultTargetPlatform, kDebugMode, kIsWeb;
@@ -1275,12 +1276,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   String _cardVerseText(int chapter, int verse) {
     return quranVerseText(chapter, verse);
-  }
-
-  double _readQuranCardHorizontalMarginForWidth(double width) {
-    if (width > 1200) return 120.0;
-    if (width > 700) return 40.0;
-    return 6.0;
   }
 
   @override
@@ -5401,103 +5396,106 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final BorderRadius radius = BorderRadius.circular(20);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: <Color>[
-                colors.primaryGradientStart,
-                colors.primaryGradientEnd,
-              ],
-            ),
-            border: Border.all(color: colors.accentGold.withAlpha(115)),
-          ),
-          child: CustomPaint(
-            painter: _SurahIntroOrnamentPainter(
-              color: colors.accentGold.withAlpha(153),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                EquranSpacing.pagePadding,
-                20,
-                EquranSpacing.pagePadding,
-                24,
+      padding: EdgeInsets.fromLTRB(marginValue, 8, marginValue, 10),
+      child: SizedBox(
+        width: double.infinity,
+        child: ClipRRect(
+          borderRadius: radius,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: <Color>[
+                  colors.primaryGradientStart,
+                  colors.primaryGradientEnd,
+                ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      surahName,
-                      maxLines: 1,
-                      textDirection: TextDirection.rtl,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.amiri(
-                        textStyle: theme.textTheme.displaySmall,
-                        color: colors.onPrimary,
-                        fontSize: 44,
-                        fontWeight: FontWeight.bold,
-                        height: 1.08,
+              border: Border.all(color: colors.accentGold.withAlpha(115)),
+            ),
+            child: CustomPaint(
+              painter: _SurahIntroOrnamentPainter(
+                color: colors.accentGold.withAlpha(153),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  EquranSpacing.pagePadding,
+                  20,
+                  EquranSpacing.pagePadding,
+                  24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        surahName,
+                        maxLines: 1,
+                        textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.amiri(
+                          textStyle: theme.textTheme.displaySmall,
+                          color: colors.onPrimary,
+                          fontSize: 44,
+                          fontWeight: FontWeight.bold,
+                          height: 1.08,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    englishName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colors.onPrimaryMuted,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.5,
+                    const SizedBox(height: 8),
+                    Text(
+                      englishName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.onPrimaryMuted,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: 100,
-                    child: Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: colors.accentGold.withAlpha(89),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: 100,
+                      child: Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: colors.accentGold.withAlpha(89),
+                      ),
                     ),
-                  ),
-                  if (showBasmala) ...<Widget>[
+                    if (showBasmala) ...<Widget>[
+                      const SizedBox(height: 20),
+                      Text(
+                        quranBasmalaText,
+                        textDirection: TextDirection.rtl,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.amiri(
+                          textStyle: theme.textTheme.headlineSmall,
+                          color: colors.onPrimary,
+                          fontSize: 36,
+                          fontWeight: FontWeight.w400,
+                          height: 2.0,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 20),
                     Text(
-                      quranBasmalaText,
-                      textDirection: TextDirection.rtl,
+                      '$revelation · $verseCount VERSES · JUZ\' $juzNumber',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.amiri(
-                        textStyle: theme.textTheme.headlineSmall,
-                        color: colors.onPrimary,
-                        fontSize: 36,
-                        fontWeight: FontWeight.w400,
-                        height: 2.0,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: colors.accentGold.withAlpha(191),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ],
-                  const SizedBox(height: 20),
-                  Text(
-                    '$revelation · $verseCount VERSES · JUZ\' $juzNumber',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: colors.accentGold.withAlpha(191),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -5508,7 +5506,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Widget cardView({required double marginValue}) {
     final bool compactPlayerLayout = MediaQuery.sizeOf(context).width < 700;
-    final double quranCardMargin = _readQuranCardHorizontalMarginForWidth(
+    final double quranCardMargin = readQuranCardHorizontalMarginForWidth(
       MediaQuery.sizeOf(context).width,
     );
     final double expandedSpacer = compactPlayerLayout ? 392 : 304;

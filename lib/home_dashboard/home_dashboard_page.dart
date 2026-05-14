@@ -882,7 +882,7 @@ class _HomePremiumCard extends StatelessWidget {
             children: <Widget>[
               if (assetPath != null)
                 Positioned(
-                  right: -34,
+                  right: -30,
                   top: -18,
                   bottom: -18,
                   width: assetWidth,
@@ -1015,7 +1015,7 @@ class _RoutinePlanCta extends StatelessWidget {
       accentColor: colors.primary,
       assetPath: _designAsset,
       assetOpacity: 0.045,
-      assetWidth: 132,
+      assetWidth: 185,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -1024,18 +1024,21 @@ class _RoutinePlanCta extends StatelessWidget {
               Container(
                 width: 46,
                 height: 46,
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   color: colors.mint,
                   borderRadius: BorderRadius.circular(AppRadii.medium),
                   border: Border.all(color: colors.border.withAlpha(110)),
                 ),
-                child: Image.asset(
-                  _routineAsset,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.route_outlined, color: colors.primary);
-                  },
+                child: Transform.scale(
+                  scale: 1.25,
+                  child: Image.asset(
+                    _routineAsset,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.route_outlined, color: colors.primary);
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
@@ -1932,39 +1935,6 @@ class _JourneyPreviewCard extends StatelessWidget {
               ),
             ],
           ),
-          // const SizedBox(height: 11),
-          // DecoratedBox(
-          //   decoration: BoxDecoration(
-          //     color: colors.surface.withAlpha(220),
-          //     borderRadius: BorderRadius.circular(EquranRadii.medium),
-          //     border: Border.all(color: colors.border),
-          //   ),
-          //   child: Padding(
-          //     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-          //     child: Row(
-          //       mainAxisSize: MainAxisSize.min,
-          //       children: <Widget>[
-          //         Icon(
-          //           Icons.menu_book_rounded,
-          //           color: colors.primary,
-          //           size: 18,
-          //         ),
-          //         const SizedBox(width: 7),
-          //         Flexible(
-          //           child: Text(
-          //             canResume ? 'Continue Reading ->' : 'Start Reading ->',
-          //             maxLines: 1,
-          //             overflow: TextOverflow.ellipsis,
-          //             style: theme.textTheme.labelLarge?.copyWith(
-          //               color: colors.primary,
-          //               fontWeight: FontWeight.w900,
-          //             ),
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );
@@ -2444,7 +2414,7 @@ class _ContinueListeningCard extends StatelessWidget {
         actionText: 'Open Player ->',
         trailingAssetPath: _playerAsset,
         secondary: true,
-        artworkScale: 1.18,
+        artworkScale: 1.3,
         artworkOffsetX: 18,
         onTap: onOpenPlayer,
       );

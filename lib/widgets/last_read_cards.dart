@@ -281,7 +281,7 @@ class EquranResumeImageCard extends StatelessWidget {
                             child: Transform.translate(
                               offset: Offset(
                                 compact
-                                    ? artworkOffsetX.clamp(0, 8).toDouble()
+                                    ? artworkOffsetX.clamp(0, 15).toDouble()
                                     : artworkOffsetX.clamp(0, 22).toDouble(),
                                 0,
                               ),
@@ -320,7 +320,7 @@ class EquranResumeImageCard extends StatelessWidget {
                                   SizedBox(height: titleSubtitleGap),
                                   Text(
                                     subtitle,
-                                    maxLines: 1,
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: subtitleStyle,
                                   ),
