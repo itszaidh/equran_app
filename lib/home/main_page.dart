@@ -1,5 +1,6 @@
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/search/quran_text_search_results.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -39,6 +40,7 @@ class _MainPageState extends State<MainPage>
   late final TabController _tabController;
 
   String _searchQuery = '';
+  QuranSearchMode _activeSearchMode = QuranSearchMode.surahs;
   int _selectedSegment = 0;
   int _lastHandledSearchRequestNonce = -1;
   bool _showSearch = false;
@@ -339,9 +341,11 @@ class _MainPageState extends State<MainPage>
                   curve: Curves.easeOutCubic,
                 );
               }
-              if (_selectedSegment != index) {
+              if (_selectedSegment != index ||
+                  _activeSearchMode != QuranSearchMode.surahs) {
                 setState(() {
                   _selectedSegment = index;
+                  _activeSearchMode = QuranSearchMode.surahs;
                 });
               }
             },
@@ -389,6 +393,11 @@ class _MainPageState extends State<MainPage>
   }
 
   Widget _buildSegmentPager(double horizontalPadding) {
+    final bool showQuranTextSearch =
+        _showSearch &&
+        _activeSearchMode == QuranSearchMode.quranText &&
+        _selectedSegment == 0;
+
     return TabBarView(
       controller: _tabController,
       physics: const BouncingScrollPhysics(),
@@ -397,11 +406,17 @@ class _MainPageState extends State<MainPage>
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: PrimaryScrollController(
             controller: _surahScrollController,
-            child: QuranCardList(
-              key: const ValueKey<String>('surah-list'),
-              searchQuery: _searchQuery,
-              header: _buildLastReadCard(),
-            ),
+            child: showQuranTextSearch
+                ? QuranTextSearchResults(
+                    key: const ValueKey<String>('quran-text-search'),
+                    searchQuery: _searchQuery,
+                    onSearchSelected: _selectRecentQuranTextSearch,
+                  )
+                : QuranCardList(
+                    key: const ValueKey<String>('surah-list'),
+                    searchQuery: _searchQuery,
+                    header: _buildLastReadCard(),
+                  ),
           ),
         ),
         Padding(
@@ -443,6 +458,7 @@ class _MainPageState extends State<MainPage>
 
   void _openSearch() {
     setState(() {
+      _activeSearchMode = QuranSearchMode.surahs;
       _showSearch = true;
     });
   }
@@ -451,6 +467,7 @@ class _MainPageState extends State<MainPage>
     _debouncer.cancel();
     setState(() {
       _showSearch = false;
+      _activeSearchMode = QuranSearchMode.surahs;
       _searchController.clear();
       _searchQuery = '';
     });
@@ -460,6 +477,9 @@ class _MainPageState extends State<MainPage>
     if (_selectedSegment == _tabController.index) return;
     setState(() {
       _selectedSegment = _tabController.index;
+      if (_selectedSegment != 0) {
+        _activeSearchMode = QuranSearchMode.surahs;
+      }
     });
   }
 
@@ -479,9 +499,20 @@ class _MainPageState extends State<MainPage>
     }
     setState(() {
       _selectedSegment = targetIndex;
+      _activeSearchMode = request.mode;
       _showSearch = true;
       _searchQuery = '';
       _searchController.clear();
+    });
+  }
+
+  void _selectRecentQuranTextSearch(String query) {
+    _debouncer.cancel();
+    _searchController.text = query;
+    setState(() {
+      _activeSearchMode = QuranSearchMode.quranText;
+      _showSearch = true;
+      _searchQuery = query;
     });
   }
 
@@ -489,7 +520,10 @@ class _MainPageState extends State<MainPage>
     1 => "Juz number or surah name...",
     2 => "Page number, surah, or juz...",
     3 => "Saved ayah, surah, note, or number...",
-    _ => "Surah name or number...",
+    _ =>
+      _activeSearchMode == QuranSearchMode.quranText
+          ? "Search Quran Arabic or translation..."
+          : "Surah name or number...",
   };
 
   Widget? _buildLastReadCard() {

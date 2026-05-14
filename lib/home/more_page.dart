@@ -1,8 +1,6 @@
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/widgets/common/equran_components.dart';
-import 'package:equran/widgets/last_read_cards.dart'
-    show equranResumeQuranAsset;
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -12,6 +10,18 @@ const String _appDownloadUrl =
     'https://f-droid.org/en/packages/com.app.equran/';
 const String _issueReportUrl = 'https://github.com/ya27hw/equran_app/issues';
 const String _contactEmail = 'equran@elbaesy.com';
+const String _appAssetBase = 'assets/media/images/app';
+const String _playerAsset = '$_appAssetBase/player.webp';
+const String _qiblaAsset = '$_appAssetBase/qiblah.webp';
+const String _downloadAsset = '$_appAssetBase/download.webp';
+const String _quranAsset = '$_appAssetBase/quran.webp';
+const String _routineAsset = '$_appAssetBase/routine.webp';
+const String _tasbihAsset = '$_appAssetBase/tasbih.webp';
+const String _duaAsset = '$_appAssetBase/dua.webp';
+const String _lastReadAsset = '$_appAssetBase/last_read.webp';
+const String _settingsAsset = '$_appAssetBase/settings.webp';
+const String _designAsset = '$_appAssetBase/design.webp';
+const String _mosqueAsset = '$_appAssetBase/mosque.webp';
 
 class MorePage extends StatelessWidget {
   const MorePage({
@@ -66,60 +76,70 @@ class MorePage extends StatelessWidget {
                     items: <_MoreAction>[
                       _MoreAction(
                         icon: Icons.library_music_outlined,
+                        assetPath: _playerAsset,
                         title: 'Player',
                         subtitle: 'Recitations and audio controls',
                         onTap: onOpenPlayer,
                       ),
                       _MoreAction(
                         icon: Icons.explore_outlined,
+                        assetPath: _qiblaAsset,
                         title: 'Qibla',
                         subtitle: 'Compass and direction',
                         onTap: onOpenQibla,
                       ),
                       _MoreAction(
                         icon: Icons.download_outlined,
+                        assetPath: _downloadAsset,
                         title: 'Downloads',
                         subtitle: 'Offline audio and cleanup',
                         onTap: onOpenDownloads,
                       ),
                       _MoreAction(
                         icon: Icons.travel_explore_rounded,
+                        assetPath: _quranAsset,
                         title: 'Quran Search',
                         subtitle: 'Search Arabic and translation',
                         onTap: onOpenSearch,
                       ),
                       _MoreAction(
                         icon: Icons.route_outlined,
+                        assetPath: _routineAsset,
                         title: 'Reading Routine',
                         subtitle: 'Plans, goals, and progress',
                         onTap: onOpenReadingPlans,
                       ),
                       _MoreAction(
                         icon: Icons.auto_awesome_outlined,
+                        assetPath: _tasbihAsset,
                         title: 'Tasbih',
                         subtitle: 'Calm dhikr counter',
                         onTap: onOpenTasbih,
                       ),
                       _MoreAction(
                         icon: Icons.diamond_outlined,
+                        assetPath: _duaAsset,
                         title: 'Asma ul Husna',
                         subtitle: 'The 99 Beautiful Names',
                         onTap: onOpenAsmaUlHusna,
                       ),
                       _MoreAction(
                         icon: Icons.insights_outlined,
+                        assetPath: _lastReadAsset,
                         title: 'Quran Stats',
                         subtitle: 'Streaks, goals, and weekly reading',
                         onTap: onOpenStats,
                       ),
                       _MoreAction(
                         icon: Icons.settings_outlined,
+                        assetPath: _settingsAsset,
                         title: 'Settings',
                         subtitle: 'Fonts, reciter, app behavior',
                         onTap: onOpenSettings,
                       ),
                       _MoreAction(
                         icon: Icons.brightness_6_outlined,
+                        assetPath: _designAsset,
                         title: 'Theme',
                         subtitle: 'Switch light or night mode',
                         onTap: onToggleTheme,
@@ -270,7 +290,7 @@ class _MoreHeroArtwork extends StatelessWidget {
         final double artworkEdgePadding = _artworkEdgePadding(
           constraints.maxWidth,
         );
-        final double artWidth = compact ? 120 : 144;
+        final double artWidth = compact ? 154 : 204;
 
         return IgnorePointer(
           child: Align(
@@ -282,7 +302,7 @@ class _MoreHeroArtwork extends StatelessWidget {
                 child: SizedBox(
                   width: artWidth,
                   child: Image.asset(
-                    equranResumeQuranAsset,
+                    _routineAsset,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) =>
                         const SizedBox.shrink(),
@@ -348,7 +368,7 @@ class _MoreActionTile extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Row(
         children: <Widget>[
-          EquranIconBadge(icon: action.icon),
+          _MoreActionArtwork(icon: action.icon, assetPath: action.assetPath),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -383,6 +403,37 @@ class _MoreActionTile extends StatelessWidget {
   }
 }
 
+class _MoreActionArtwork extends StatelessWidget {
+  const _MoreActionArtwork({required this.icon, this.assetPath});
+
+  final IconData icon;
+  final String? assetPath;
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+
+    return Container(
+      width: 46,
+      height: 46,
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: colors.mint,
+        borderRadius: BorderRadius.circular(EquranRadii.medium),
+      ),
+      child: assetPath == null
+          ? Icon(icon, color: colors.primary, size: 23)
+          : Image.asset(
+              assetPath!,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(icon, color: colors.primary, size: 23);
+              },
+            ),
+    );
+  }
+}
+
 class _MoreSupportSection extends StatelessWidget {
   const _MoreSupportSection({
     required this.onAbout,
@@ -396,55 +447,39 @@ class _MoreSupportSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EquranSurfaceCard(
-      padding: EdgeInsets.zero,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          _MoreSupportTile(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _MoreActionTile(
+          action: _MoreAction(
             icon: Icons.info_outline_rounded,
+            assetPath: _mosqueAsset,
             title: 'About this app',
+            subtitle: 'App details and version',
             onTap: onAbout,
           ),
-          const Divider(height: 1),
-          _MoreSupportTile(
+        ),
+        const SizedBox(height: 12),
+        _MoreActionTile(
+          action: _MoreAction(
             icon: Icons.share_outlined,
+            assetPath: _quranAsset,
             title: 'Share app',
+            subtitle: 'Send eQuran to others',
             onTap: onShare,
           ),
-          const Divider(height: 1),
-          _MoreSupportTile(
+        ),
+        const SizedBox(height: 12),
+        _MoreActionTile(
+          action: _MoreAction(
             icon: Icons.feedback_outlined,
+            assetPath: _designAsset,
             title: 'Feedback / Contact',
+            subtitle: 'Report issues or email support',
             onTap: onFeedback,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MoreSupportTile extends StatelessWidget {
-  const _MoreSupportTile({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final EquranColors colors = context.equranColors;
-
-    return ListTile(
-      dense: true,
-      leading: Icon(icon, color: colors.primary),
-      title: Text(title),
-      trailing: Icon(Icons.chevron_right_rounded, color: colors.textMuted),
-      onTap: onTap,
+        ),
+      ],
     );
   }
 }
@@ -530,10 +565,12 @@ class _MoreAction {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.assetPath,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final String? assetPath;
 }
