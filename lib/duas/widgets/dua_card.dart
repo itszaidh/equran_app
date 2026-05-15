@@ -107,7 +107,7 @@ class DuaCard extends StatelessWidget {
                         fontFamily: 'Hafs',
                         
                         height: 1.95,
-                        fontSize: SettingsDB().get("fontSize") - 2.0,
+                        fontSize: SettingsDB().get("fontSize", defaultValue: 31.0),
                         letterSpacing: 0,
                         color: colors.onSurface,
                       ),
