@@ -1869,7 +1869,7 @@ class _JourneyPreviewCard extends StatelessWidget {
               ),
               const SizedBox(width: 7),
               IconButton(
-                tooltip: 'Quran stats',
+                tooltip: 'Statistics',
                 onPressed: onOpenStats,
                 icon: const Icon(Icons.insights_rounded),
                 color: colors.primary,
@@ -2733,7 +2733,7 @@ class _StatsPreviewCard extends StatelessWidget {
         children: <Widget>[
           const _SectionLabel(
             icon: Icons.insights_outlined,
-            label: 'Quran stats',
+            label: 'Statistics',
           ),
           const SizedBox(height: 14),
           _MetricRow(label: 'Today', value: '$today ayahs'),

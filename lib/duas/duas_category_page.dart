@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:equran/backend/library.dart' show DuaInteractionsDB;
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/widgets/dua_card.dart';
@@ -92,16 +95,36 @@ class _DuasCategoryPageState extends State<DuasCategoryPage> {
   }
 }
 
-class _CategoryContent extends StatelessWidget {
+class _CategoryContent extends StatefulWidget {
   const _CategoryContent({required this.category, this.focusDuaId});
 
   final DuaCategory category;
   final String? focusDuaId;
 
   @override
+  State<_CategoryContent> createState() => _CategoryContentState();
+}
+
+class _CategoryContentState extends State<_CategoryContent> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(
+        DuaInteractionsDB().recordCategoryView(
+          categoryId: widget.category.id,
+          categoryTitle: widget.category.title,
+          duaCount: widget.category.duas.length,
+        ),
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final DuaCategory category = widget.category;
 
     return ListView(
       physics: const BouncingScrollPhysics(),
@@ -154,9 +177,9 @@ class _CategoryContent extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(AppRadii.medium),
                         border:
-                            category.duas[index].id == focusDuaId ||
+                            category.duas[index].id == widget.focusDuaId ||
                                 category.duas[index].legacyFavouriteId ==
-                                    focusDuaId
+                                    widget.focusDuaId
                             ? Border.all(color: colors.primary, width: 2)
                             : null,
                       ),

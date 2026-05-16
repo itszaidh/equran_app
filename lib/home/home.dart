@@ -85,7 +85,7 @@ class _HomePageState extends State<HomePage> {
           onOpenReadingPlans: _openReadingPlansPage,
           onOpenDownloads: _openDownloadsPage,
           onOpenSearch: _openQuranTextSearch,
-          onOpenStats: _openQuranStatsPage,
+          onOpenStats: _openStatisticsPage,
         ),
       ),
       Destinations(
@@ -119,7 +119,7 @@ class _HomePageState extends State<HomePage> {
           onOpenTasbih: _openTasbihPage,
           onOpenAsmaUlHusna: _openAsmaUlHusnaPage,
           onOpenSettings: _openSettingsPage,
-          onOpenStats: _openQuranStatsPage,
+          onOpenStats: _openStatisticsPage,
           onToggleTheme: () => unawaited(_toggleQuickTheme()),
         ),
       ),
@@ -448,11 +448,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _openQuranStatsPage() {
+  void _openStatisticsPage() {
     _pushSecondaryPage(
-      label: 'Quran Stats',
-      page: const QuranStatsPage(),
-      reason: 'quran_stats_route',
+      label: 'Statistics',
+      page: const StatisticsPage(),
+      reason: 'statistics_route',
     );
   }
 

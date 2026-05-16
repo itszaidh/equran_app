@@ -2,6 +2,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/backend/library.dart'
     show
         BookmarkDB,
+        DuaInteractionsDB,
         FavouritesDB,
         QuranActivityDB,
         QuranBookmarkFoldersDB,
@@ -920,7 +921,7 @@ class _SettingsPageState extends State<SettingsPage> {
         context: context,
         title: "Clear reading history",
         message:
-            "WARNING: This will clear last read, resume positions, Quran stats, and routine day progress.",
+            "WARNING: This will clear last read, resume positions, statistics, and routine day progress.",
         onConfirm: _clearReadingHistory,
       ),
     );
@@ -1010,6 +1011,7 @@ class _SettingsPageState extends State<SettingsPage> {
     await ResumeStateDB().clear();
     await QuranActivityDB().clear();
     await QuranStatsDB().clear();
+    await DuaInteractionsDB().clear();
     await RoutineDayProgressDB().clear();
   }
 

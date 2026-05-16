@@ -120,6 +120,51 @@ class DhikrSessionsDB extends BaseDB {
   factory DhikrSessionsDB() => _instance;
 }
 
+class DuaInteractionsDB extends BaseDB {
+  DuaInteractionsDB._privateConstructor() : super('dua_interactions');
+
+  static final DuaInteractionsDB _instance =
+      DuaInteractionsDB._privateConstructor();
+
+  factory DuaInteractionsDB() => _instance;
+
+  Future<void> recordCategoryView({
+    required String categoryId,
+    required String categoryTitle,
+    required int duaCount,
+    DateTime? viewedAt,
+  }) async {
+    final DateTime now = viewedAt ?? DateTime.now();
+    final String dateKey = _dateKey(now);
+    final String key = 'category:$dateKey:$categoryId';
+    final Object? existing = get(key);
+    final int existingCount = existing is Map
+        ? _intValue(existing['count'])
+        : 0;
+    await put(key, <String, Object?>{
+      'id': key,
+      'dateKey': dateKey,
+      'categoryId': categoryId,
+      'categoryTitle': categoryTitle,
+      'count': existingCount + duaCount.clamp(0, 10000).toInt(),
+      'updatedAt': now.toIso8601String(),
+    });
+  }
+
+  static String _dateKey(DateTime date) {
+    return '${date.year.toString().padLeft(4, '0')}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
+  }
+
+  static int _intValue(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value.trim()) ?? 0;
+    return 0;
+  }
+}
+
 class QuranStatsDB extends BaseDB {
   QuranStatsDB._privateConstructor() : super('quran_stats');
 
@@ -147,6 +192,7 @@ Future<void> initCompanionStorageBoxes() async {
   await ResumeStateDB().initBox();
   await RecentSearchesDB().initBox();
   await DhikrSessionsDB().initBox();
+  await DuaInteractionsDB().initBox();
   await QuranStatsDB().initBox();
   await DownloadMetadataDB().initBox();
 }

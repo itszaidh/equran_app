@@ -126,8 +126,8 @@ class MorePage extends StatelessWidget {
                       _MoreAction(
                         icon: Icons.insights_outlined,
                         assetPath: _lastReadAsset,
-                        title: 'Quran Stats',
-                        subtitle: 'Streaks, goals, and weekly reading',
+                        title: 'Statistics',
+                        subtitle: 'Worship trends and streaks',
                         onTap: onOpenStats,
                       ),
                       _MoreAction(
