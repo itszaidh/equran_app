@@ -16,6 +16,7 @@ class PrayerHeroCard extends StatelessWidget {
     required this.onTap,
     this.currentPrayer,
     this.exactAlarmPermission,
+    this.titleOverride,
     this.subtitleOverride,
   });
 
@@ -23,6 +24,7 @@ class PrayerHeroCard extends StatelessWidget {
   final NextPrayer? nextPrayer;
   final PrayerTimeEntry? currentPrayer;
   final PrayerExactAlarmPermissionStatus? exactAlarmPermission;
+  final String? titleOverride;
   final String? subtitleOverride;
   final VoidCallback onTap;
 
@@ -98,9 +100,11 @@ class PrayerHeroCard extends StatelessWidget {
     final String countdown = _formatCountdown(next.countdown);
     final bool exactAlarmDenied =
         exactAlarmPermission == PrayerExactAlarmPermissionStatus.denied;
-    final String title = featuredPrayer.kind == PrayerTimeKind.sunrise
-        ? 'Sunrise Time'
-        : '${featuredPrayer.kind.label} Time';
+    final String title =
+        titleOverride ??
+        (featuredPrayer.kind == PrayerTimeKind.sunrise
+            ? 'Sunrise'
+            : '${featuredPrayer.kind.label} Time');
     final String subtitle =
         subtitleOverride ?? '${next.entry.kind.label} begins in $countdown';
 

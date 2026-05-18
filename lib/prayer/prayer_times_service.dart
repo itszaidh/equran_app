@@ -213,6 +213,66 @@ class PrayerTimesService {
     );
   }
 
+  PrayerCurrentPeriod currentPrayerPeriod({
+    required PrayerDay today,
+    required PrayerDay yesterday,
+    required DateTime now,
+  }) {
+    final PrayerTimeEntry fajr = today.entryFor(PrayerTimeKind.fajr);
+    final PrayerTimeEntry sunrise = today.entryFor(PrayerTimeKind.sunrise);
+    final PrayerTimeEntry dhuhr = today.entryFor(PrayerTimeKind.dhuhr);
+    final PrayerTimeEntry asr = today.entryFor(PrayerTimeKind.asr);
+    final PrayerTimeEntry maghrib = today.entryFor(PrayerTimeKind.maghrib);
+    final PrayerTimeEntry isha = today.entryFor(PrayerTimeKind.isha);
+
+    if (now.isBefore(fajr.time)) {
+      return _normalPrayerPeriod(
+        entry: yesterday.entryFor(PrayerTimeKind.isha),
+        endsAt: fajr.time,
+      );
+    }
+    if (now.isBefore(sunrise.time)) {
+      return _normalPrayerPeriod(entry: fajr, endsAt: sunrise.time);
+    }
+
+    final int sunriseProhibitedDurationMinutes =
+        today.settings.sunriseProhibitedDurationMinutes;
+    final DateTime sunriseProhibitedEnd = sunrise.time.add(
+      Duration(minutes: sunriseProhibitedDurationMinutes),
+    );
+    if (sunriseProhibitedDurationMinutes > 0 &&
+        now.isBefore(dhuhr.time) &&
+        now.isBefore(sunriseProhibitedEnd)) {
+      return PrayerCurrentPeriod(
+        type: PrayerCurrentPeriodType.sunriseProhibited,
+        featuredEntry: sunrise,
+        endsAt: _earlierOf(sunriseProhibitedEnd, dhuhr.time),
+        highlightedKind: PrayerTimeKind.sunrise,
+      );
+    }
+
+    if (now.isBefore(dhuhr.time)) {
+      return PrayerCurrentPeriod(
+        type: PrayerCurrentPeriodType.beforeDhuhr,
+        featuredEntry: dhuhr,
+        endsAt: dhuhr.time,
+      );
+    }
+    if (now.isBefore(asr.time)) {
+      return _normalPrayerPeriod(entry: dhuhr, endsAt: asr.time);
+    }
+    if (now.isBefore(maghrib.time)) {
+      return _normalPrayerPeriod(entry: asr, endsAt: maghrib.time);
+    }
+    if (now.isBefore(isha.time)) {
+      return _normalPrayerPeriod(entry: maghrib, endsAt: isha.time);
+    }
+    return _normalPrayerPeriod(
+      entry: isha,
+      endsAt: fajr.time.add(const Duration(days: 1)),
+    );
+  }
+
   NextPrayer calculateNextPrayer({
     required DateTime now,
     required PrayerLocation location,
@@ -402,6 +462,22 @@ class PrayerTimesService {
   DateTime _withOffset(DateTime time, int minutes) {
     if (minutes == 0) return time;
     return time.add(Duration(minutes: minutes));
+  }
+
+  PrayerCurrentPeriod _normalPrayerPeriod({
+    required PrayerTimeEntry entry,
+    required DateTime endsAt,
+  }) {
+    return PrayerCurrentPeriod(
+      type: PrayerCurrentPeriodType.normalPrayer,
+      featuredEntry: entry,
+      endsAt: endsAt,
+      highlightedKind: entry.kind,
+    );
+  }
+
+  DateTime _earlierOf(DateTime a, DateTime b) {
+    return a.isBefore(b) ? a : b;
   }
 
   DateTime _floorToMinute(DateTime time) {

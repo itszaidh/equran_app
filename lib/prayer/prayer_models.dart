@@ -448,6 +448,7 @@ class PrayerTimeSettings {
     this.offsets = const PrayerOffsets(),
     this.use24HourFormat = false,
     this.useLocationTimezone = true,
+    this.sunriseProhibitedDurationMinutes = 20,
     this.reminderSettings = const PrayerReminderSettings(),
   });
 
@@ -489,6 +490,9 @@ class PrayerTimeSettings {
       offsets: PrayerOffsets.fromJson(json['offsets'] as Map?),
       use24HourFormat: json['use24HourFormat'] == true,
       useLocationTimezone: json['useLocationTimezone'] != false,
+      sunriseProhibitedDurationMinutes: _readProhibitedDurationMinutes(
+        json['sunriseProhibitedDurationMinutes'],
+      ),
       reminderSettings: PrayerReminderSettings.fromJson(
         json['reminderSettings'] as Map?,
       ),
@@ -510,6 +514,7 @@ class PrayerTimeSettings {
   final PrayerOffsets offsets;
   final bool use24HourFormat;
   final bool useLocationTimezone;
+  final int sunriseProhibitedDurationMinutes;
   final PrayerReminderSettings reminderSettings;
 
   PrayerTimeSettings copyWith({
@@ -528,6 +533,7 @@ class PrayerTimeSettings {
     PrayerOffsets? offsets,
     bool? use24HourFormat,
     bool? useLocationTimezone,
+    int? sunriseProhibitedDurationMinutes,
     PrayerReminderSettings? reminderSettings,
   }) {
     return PrayerTimeSettings(
@@ -557,6 +563,9 @@ class PrayerTimeSettings {
       offsets: offsets ?? this.offsets,
       use24HourFormat: use24HourFormat ?? this.use24HourFormat,
       useLocationTimezone: useLocationTimezone ?? this.useLocationTimezone,
+      sunriseProhibitedDurationMinutes:
+          sunriseProhibitedDurationMinutes?.clamp(0, 120).toInt() ??
+          this.sunriseProhibitedDurationMinutes,
       reminderSettings: reminderSettings ?? this.reminderSettings,
     );
   }
@@ -578,6 +587,7 @@ class PrayerTimeSettings {
       'offsets': offsets.toJson(),
       'use24HourFormat': use24HourFormat,
       'useLocationTimezone': useLocationTimezone,
+      'sunriseProhibitedDurationMinutes': sunriseProhibitedDurationMinutes,
       'reminderSettings': reminderSettings.toJson(),
     };
   }
@@ -619,6 +629,30 @@ class PrayerDay {
   }
 }
 
+enum PrayerCurrentPeriodType { normalPrayer, sunriseProhibited, beforeDhuhr }
+
+class PrayerCurrentPeriod {
+  const PrayerCurrentPeriod({
+    required this.type,
+    required this.featuredEntry,
+    required this.endsAt,
+    this.highlightedKind,
+  });
+
+  final PrayerCurrentPeriodType type;
+  final PrayerTimeEntry featuredEntry;
+  final DateTime endsAt;
+  final PrayerTimeKind? highlightedKind;
+
+  PrayerTimeEntry? get currentPrayer {
+    return switch (type) {
+      PrayerCurrentPeriodType.normalPrayer ||
+      PrayerCurrentPeriodType.sunriseProhibited => featuredEntry,
+      PrayerCurrentPeriodType.beforeDhuhr => null,
+    };
+  }
+}
+
 class NextPrayer {
   const NextPrayer({required this.entry, required this.countdown});
 
@@ -651,6 +685,10 @@ double? _readOptionalAngle(dynamic value) {
 
 int? _readOptionalMinutes(dynamic value) {
   return _readNullableInt(value)?.clamp(0, 240).toInt();
+}
+
+int _readProhibitedDurationMinutes(dynamic value) {
+  return _readInt(value, defaultValue: 20).clamp(0, 120).toInt();
 }
 
 int _readClockHour(dynamic value, {required int defaultValue}) {

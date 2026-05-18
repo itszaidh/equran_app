@@ -204,6 +204,7 @@ void main() {
         ),
         use24HourFormat: true,
         useLocationTimezone: false,
+        sunriseProhibitedDurationMinutes: 25,
         reminderSettings: PrayerReminderSettings(remindersEnabled: true),
       );
 
@@ -220,6 +221,7 @@ void main() {
       expect(restored.offsets.asr, 4);
       expect(restored.use24HourFormat, true);
       expect(restored.useLocationTimezone, false);
+      expect(restored.sunriseProhibitedDurationMinutes, 25);
       expect(restored.reminderSettings.remindersEnabled, true);
     });
 
@@ -427,6 +429,70 @@ void main() {
       expect(next.entry.time, DateTime(2026, 5, 5, 4, 40));
       expect(next.countdown, const Duration(hours: 6, minutes: 40));
     });
+
+    test('limits Sunrise current period to the prohibited window', () {
+      final PrayerDay yesterday = _fakeDay(DateTime(2026, 5, 3));
+      final PrayerDay today = _fakeDay(DateTime(2026, 5, 4));
+
+      final PrayerCurrentPeriod beforeSunrise = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 5, 59),
+      );
+      expect(beforeSunrise.type, PrayerCurrentPeriodType.normalPrayer);
+      expect(beforeSunrise.featuredEntry.kind, PrayerTimeKind.fajr);
+      expect(beforeSunrise.highlightedKind, PrayerTimeKind.fajr);
+
+      final PrayerCurrentPeriod duringSunrise = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 6, 10),
+      );
+      expect(duringSunrise.type, PrayerCurrentPeriodType.sunriseProhibited);
+      expect(duringSunrise.featuredEntry.kind, PrayerTimeKind.sunrise);
+      expect(duringSunrise.highlightedKind, PrayerTimeKind.sunrise);
+      expect(duringSunrise.endsAt, DateTime(2026, 5, 4, 6, 20));
+
+      final PrayerCurrentPeriod afterSunriseWindow = service
+          .currentPrayerPeriod(
+            today: today,
+            yesterday: yesterday,
+            now: DateTime(2026, 5, 4, 6, 20),
+          );
+      expect(afterSunriseWindow.type, PrayerCurrentPeriodType.beforeDhuhr);
+      expect(afterSunriseWindow.featuredEntry.kind, PrayerTimeKind.dhuhr);
+      expect(afterSunriseWindow.highlightedKind, isNull);
+      expect(afterSunriseWindow.currentPrayer, isNull);
+    });
+
+    test('uses configured Sunrise prohibited duration', () {
+      final PrayerTimeSettings settings = PrayerTimeSettings.defaults()
+          .copyWith(sunriseProhibitedDurationMinutes: 5);
+      final PrayerDay yesterday = _fakeDay(
+        DateTime(2026, 5, 3),
+        settings: settings,
+      );
+      final PrayerDay today = _fakeDay(
+        DateTime(2026, 5, 4),
+        settings: settings,
+      );
+
+      final PrayerCurrentPeriod duringSunrise = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 6, 4),
+      );
+      final PrayerCurrentPeriod afterSunriseWindow = service
+          .currentPrayerPeriod(
+            today: today,
+            yesterday: yesterday,
+            now: DateTime(2026, 5, 4, 6, 5),
+          );
+
+      expect(duringSunrise.type, PrayerCurrentPeriodType.sunriseProhibited);
+      expect(duringSunrise.endsAt, DateTime(2026, 5, 4, 6, 5));
+      expect(afterSunriseWindow.type, PrayerCurrentPeriodType.beforeDhuhr);
+    });
   });
 
   group('PrayerSettingsStore', () {
@@ -454,7 +520,7 @@ void main() {
   });
 }
 
-PrayerDay _fakeDay(DateTime date) {
+PrayerDay _fakeDay(DateTime date, {PrayerTimeSettings? settings}) {
   final DateTime baseDate = DateTime(date.year, date.month, date.day);
   return PrayerDay(
     date: baseDate,
@@ -464,7 +530,7 @@ PrayerDay _fakeDay(DateTime date) {
       label: 'Test location',
       mode: PrayerLocationMode.manual,
     ),
-    settings: PrayerTimeSettings.defaults(),
+    settings: settings ?? PrayerTimeSettings.defaults(),
     effectiveMethod: PrayerCalculationMethod.muslimWorldLeague,
     timezoneId: null,
     usesLocationTimezone: false,

@@ -386,6 +386,8 @@ class _DashboardContent extends StatelessWidget {
               day: summary.prayerSummary.day,
               nextPrayer: summary.prayerSummary.nextPrayer,
               currentPrayer: summary.prayerSummary.currentPrayer,
+              titleOverride: summary.prayerSummary.heroTitleOverride,
+              subtitleOverride: summary.prayerSummary.heroSubtitleOverride,
               exactAlarmPermission: exactAlarmPermission,
               onTap: actions.onOpenPrayerTimes,
             ),
@@ -537,14 +539,20 @@ class _PrayerSummary {
   const _PrayerSummary({
     required this.location,
     required this.day,
-    required this.currentPrayer,
+    required this.currentPeriod,
     required this.nextPrayer,
+    required this.heroTitleOverride,
+    required this.heroSubtitleOverride,
   });
 
   final PrayerLocation? location;
   final PrayerDay? day;
-  final PrayerTimeEntry? currentPrayer;
+  final PrayerCurrentPeriod? currentPeriod;
   final NextPrayer? nextPrayer;
+  final String? heroTitleOverride;
+  final String? heroSubtitleOverride;
+
+  PrayerTimeEntry? get currentPrayer => currentPeriod?.currentPrayer;
 
   static _PrayerSummary load({
     required DateTime now,
@@ -556,8 +564,10 @@ class _PrayerSummary {
       return const _PrayerSummary(
         location: null,
         day: null,
-        currentPrayer: null,
+        currentPeriod: null,
         nextPrayer: null,
+        heroTitleOverride: null,
+        heroSubtitleOverride: null,
       );
     }
 
@@ -582,15 +592,27 @@ class _PrayerSummary {
       location: location,
       settings: settings,
     );
+    final PrayerCurrentPeriod currentPeriod = service.currentPrayerPeriod(
+      today: today,
+      yesterday: yesterday,
+      now: now,
+    );
+    final NextPrayer nextPrayer = service.nextPrayer(
+      day: today,
+      tomorrow: tomorrow,
+      now: now,
+    );
     return _PrayerSummary(
       location: location,
       day: today,
-      currentPrayer: _currentPrayerPeriod(
-        today: today,
-        yesterday: yesterday,
+      currentPeriod: currentPeriod,
+      nextPrayer: nextPrayer,
+      heroTitleOverride: _heroTitleOverrideFor(currentPeriod),
+      heroSubtitleOverride: _heroSubtitleOverrideFor(
+        currentPeriod: currentPeriod,
+        nextPrayer: nextPrayer,
         now: now,
       ),
-      nextPrayer: service.nextPrayer(day: today, tomorrow: tomorrow, now: now),
     );
   }
 }
@@ -655,7 +677,8 @@ class _PrayerThumbCarousel extends StatelessWidget {
     final PrayerDay? day = prayerSummary.day;
     if (day == null) return const SizedBox.shrink();
 
-    final PrayerTimeKind? activeKind = prayerSummary.currentPrayer?.kind;
+    final PrayerTimeKind? activeKind =
+        prayerSummary.currentPeriod?.highlightedKind;
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool compact = constraints.maxWidth < 380;
@@ -3208,25 +3231,34 @@ String _formatDashboardDate(DateTime now) {
   return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
 }
 
-PrayerTimeEntry _currentPrayerPeriod({
-  required PrayerDay today,
-  required PrayerDay yesterday,
+String? _heroTitleOverrideFor(PrayerCurrentPeriod period) {
+  return switch (period.type) {
+    PrayerCurrentPeriodType.sunriseProhibited => 'Sunrise',
+    PrayerCurrentPeriodType.beforeDhuhr => 'Morning',
+    PrayerCurrentPeriodType.normalPrayer => null,
+  };
+}
+
+String? _heroSubtitleOverrideFor({
+  required PrayerCurrentPeriod currentPeriod,
+  required NextPrayer nextPrayer,
   required DateTime now,
 }) {
-  final PrayerTimeEntry fajr = today.entryFor(PrayerTimeKind.fajr);
-  final PrayerTimeEntry sunrise = today.entryFor(PrayerTimeKind.sunrise);
-  final PrayerTimeEntry dhuhr = today.entryFor(PrayerTimeKind.dhuhr);
-  final PrayerTimeEntry asr = today.entryFor(PrayerTimeKind.asr);
-  final PrayerTimeEntry maghrib = today.entryFor(PrayerTimeKind.maghrib);
-  final PrayerTimeEntry isha = today.entryFor(PrayerTimeKind.isha);
+  return switch (currentPeriod.type) {
+    PrayerCurrentPeriodType.sunriseProhibited =>
+      'Prohibited time ends in ${_formatHeroCountdown(currentPeriod.endsAt.difference(now))}',
+    PrayerCurrentPeriodType.beforeDhuhr =>
+      '${nextPrayer.entry.kind.label} begins in ${_formatHeroCountdown(nextPrayer.countdown)}',
+    PrayerCurrentPeriodType.normalPrayer => null,
+  };
+}
 
-  if (now.isBefore(fajr.time)) return yesterday.entryFor(PrayerTimeKind.isha);
-  if (now.isBefore(sunrise.time)) return fajr;
-  if (now.isBefore(dhuhr.time)) return sunrise;
-  if (now.isBefore(asr.time)) return dhuhr;
-  if (now.isBefore(maghrib.time)) return asr;
-  if (now.isBefore(isha.time)) return maghrib;
-  return isha;
+String _formatHeroCountdown(Duration duration) {
+  final Duration normalized = duration.isNegative ? Duration.zero : duration;
+  final int hours = normalized.inHours;
+  final int minutes = normalized.inMinutes.remainder(60);
+  if (hours <= 0) return '$minutes min';
+  return '${hours}h ${minutes}m';
 }
 
 String _formatTime(DateTime time, bool use24HourFormat) {

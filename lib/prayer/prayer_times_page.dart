@@ -111,7 +111,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           );
           final _PrayerHeroTiming heroTiming;
           final PrayerTimeKind? highlightedPrayer;
-          final PrayerTimeEntry featuredPrayer;
+          PrayerTimeEntry? heroCurrentPrayer;
+          String? heroTitleOverride;
+          String? heroSubtitleOverride;
           if (isViewingToday) {
             final PrayerDay yesterday = _service.calculateDay(
               date: DateTime(
@@ -137,17 +139,23 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               now: _now,
             );
             heroTiming = _heroTimingFor(nextPrayer);
-            final PrayerTimeEntry currentPrayer = _currentPrayerPeriod(
-              today: today,
-              yesterday: yesterday,
+            final PrayerCurrentPeriod currentPeriod = _service
+                .currentPrayerPeriod(
+                  today: today,
+                  yesterday: yesterday,
+                  now: _now,
+                );
+            highlightedPrayer = currentPeriod.highlightedKind;
+            heroCurrentPrayer = currentPeriod.currentPrayer;
+            heroTitleOverride = _heroTitleOverrideFor(currentPeriod);
+            heroSubtitleOverride = _heroSubtitleOverrideFor(
+              currentPeriod: currentPeriod,
+              nextPrayer: nextPrayer,
               now: _now,
             );
-            highlightedPrayer = currentPrayer.kind;
-            featuredPrayer = currentPrayer;
           } else {
             heroTiming = _selectedDateHeroTiming(selectedDay);
             highlightedPrayer = null;
-            featuredPrayer = heroTiming.entry;
           }
 
           return ListView(
@@ -171,10 +179,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                           entry: heroTiming.entry,
                           countdown: heroTiming.countdown,
                         ),
-                        currentPrayer: featuredPrayer,
-                        subtitleOverride: isViewingToday
-                            ? null
-                            : _formatDate(selectedDay.date),
+                        currentPrayer: heroCurrentPrayer,
+                        titleOverride: heroTitleOverride,
+                        subtitleOverride:
+                            heroSubtitleOverride ??
+                            (isViewingToday
+                                ? null
+                                : _formatDate(selectedDay.date)),
                         onTap: _openPrayerSettings,
                       ),
                       const SizedBox(height: 14),
@@ -787,6 +798,36 @@ _PrayerHeroTiming _selectedDateHeroTiming(PrayerDay day) {
   );
 }
 
+String? _heroTitleOverrideFor(PrayerCurrentPeriod period) {
+  return switch (period.type) {
+    PrayerCurrentPeriodType.sunriseProhibited => 'Sunrise',
+    PrayerCurrentPeriodType.beforeDhuhr => 'Morning',
+    PrayerCurrentPeriodType.normalPrayer => null,
+  };
+}
+
+String? _heroSubtitleOverrideFor({
+  required PrayerCurrentPeriod currentPeriod,
+  required NextPrayer nextPrayer,
+  required DateTime now,
+}) {
+  return switch (currentPeriod.type) {
+    PrayerCurrentPeriodType.sunriseProhibited =>
+      'Prohibited time ends in ${_formatHeroCountdown(currentPeriod.endsAt.difference(now))}',
+    PrayerCurrentPeriodType.beforeDhuhr =>
+      '${nextPrayer.entry.kind.label} begins in ${_formatHeroCountdown(nextPrayer.countdown)}',
+    PrayerCurrentPeriodType.normalPrayer => null,
+  };
+}
+
+String _formatHeroCountdown(Duration duration) {
+  final Duration normalized = duration.isNegative ? Duration.zero : duration;
+  final int hours = normalized.inHours;
+  final int minutes = normalized.inMinutes.remainder(60);
+  if (hours <= 0) return '$minutes min';
+  return '${hours}h ${minutes}m';
+}
+
 class _NightTimes {
   const _NightTimes({required this.middle, required this.lastThirdStart});
 
@@ -811,27 +852,6 @@ _NightTimes _nightTimesFor(PrayerDay day, PrayerDay nextDay) {
 
 bool _isSameCalendarDate(DateTime a, DateTime b) {
   return a.year == b.year && a.month == b.month && a.day == b.day;
-}
-
-PrayerTimeEntry _currentPrayerPeriod({
-  required PrayerDay today,
-  required PrayerDay yesterday,
-  required DateTime now,
-}) {
-  final PrayerTimeEntry fajr = today.entryFor(PrayerTimeKind.fajr);
-  final PrayerTimeEntry sunrise = today.entryFor(PrayerTimeKind.sunrise);
-  final PrayerTimeEntry dhuhr = today.entryFor(PrayerTimeKind.dhuhr);
-  final PrayerTimeEntry asr = today.entryFor(PrayerTimeKind.asr);
-  final PrayerTimeEntry maghrib = today.entryFor(PrayerTimeKind.maghrib);
-  final PrayerTimeEntry isha = today.entryFor(PrayerTimeKind.isha);
-
-  if (now.isBefore(fajr.time)) return yesterday.entryFor(PrayerTimeKind.isha);
-  if (now.isBefore(sunrise.time)) return fajr;
-  if (now.isBefore(dhuhr.time)) return sunrise;
-  if (now.isBefore(asr.time)) return dhuhr;
-  if (now.isBefore(maghrib.time)) return asr;
-  if (now.isBefore(isha.time)) return maghrib;
-  return isha;
 }
 
 class _LocationDetailsSheet extends StatefulWidget {

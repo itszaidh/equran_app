@@ -2023,6 +2023,7 @@ extension PrayerCustomSettingsUpdate on PrayerTimeSettings {
       offsets: offsets,
       use24HourFormat: use24HourFormat,
       useLocationTimezone: useLocationTimezone,
+      sunriseProhibitedDurationMinutes: sunriseProhibitedDurationMinutes,
       reminderSettings: reminderSettings,
     );
   }
@@ -2044,6 +2045,7 @@ extension PrayerCustomSettingsUpdate on PrayerTimeSettings {
       offsets: offsets,
       use24HourFormat: use24HourFormat,
       useLocationTimezone: useLocationTimezone,
+      sunriseProhibitedDurationMinutes: sunriseProhibitedDurationMinutes,
       reminderSettings: reminderSettings,
     );
   }
