@@ -801,6 +801,8 @@ _PrayerHeroTiming _selectedDateHeroTiming(PrayerDay day) {
 String? _heroTitleOverrideFor(PrayerCurrentPeriod period) {
   return switch (period.type) {
     PrayerCurrentPeriodType.sunriseProhibited => 'Sunrise',
+    PrayerCurrentPeriodType.dhuhrProhibited => 'Zawal',
+    PrayerCurrentPeriodType.sunsetProhibited => 'Sunset',
     PrayerCurrentPeriodType.beforeDhuhr => 'Morning',
     PrayerCurrentPeriodType.normalPrayer => null,
   };
@@ -813,6 +815,9 @@ String? _heroSubtitleOverrideFor({
 }) {
   return switch (currentPeriod.type) {
     PrayerCurrentPeriodType.sunriseProhibited =>
+      'Prohibited time ends in ${_formatHeroCountdown(currentPeriod.endsAt.difference(now))}',
+    PrayerCurrentPeriodType.dhuhrProhibited ||
+    PrayerCurrentPeriodType.sunsetProhibited =>
       'Prohibited time ends in ${_formatHeroCountdown(currentPeriod.endsAt.difference(now))}',
     PrayerCurrentPeriodType.beforeDhuhr =>
       '${nextPrayer.entry.kind.label} begins in ${_formatHeroCountdown(nextPrayer.countdown)}',

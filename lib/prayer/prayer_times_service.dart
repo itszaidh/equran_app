@@ -240,14 +240,23 @@ class PrayerTimesService {
     final DateTime sunriseProhibitedEnd = sunrise.time.add(
       Duration(minutes: sunriseProhibitedDurationMinutes),
     );
-    if (sunriseProhibitedDurationMinutes > 0 &&
-        now.isBefore(dhuhr.time) &&
-        now.isBefore(sunriseProhibitedEnd)) {
+    if (now.isBefore(dhuhr.time) && now.isBefore(sunriseProhibitedEnd)) {
       return PrayerCurrentPeriod(
         type: PrayerCurrentPeriodType.sunriseProhibited,
         featuredEntry: sunrise,
         endsAt: _earlierOf(sunriseProhibitedEnd, dhuhr.time),
         highlightedKind: PrayerTimeKind.sunrise,
+      );
+    }
+
+    final DateTime dhuhrProhibitedStart = dhuhr.time.subtract(
+      Duration(minutes: today.settings.dhuhrProhibitedDurationMinutes),
+    );
+    if (now.isBefore(dhuhr.time) && !now.isBefore(dhuhrProhibitedStart)) {
+      return PrayerCurrentPeriod(
+        type: PrayerCurrentPeriodType.dhuhrProhibited,
+        featuredEntry: dhuhr,
+        endsAt: dhuhr.time,
       );
     }
 
@@ -262,7 +271,17 @@ class PrayerTimesService {
       return _normalPrayerPeriod(entry: dhuhr, endsAt: asr.time);
     }
     if (now.isBefore(maghrib.time)) {
-      return _normalPrayerPeriod(entry: asr, endsAt: maghrib.time);
+      final DateTime sunsetProhibitedStart = maghrib.time.subtract(
+        Duration(minutes: today.settings.sunsetProhibitedDurationMinutes),
+      );
+      if (!now.isBefore(sunsetProhibitedStart)) {
+        return PrayerCurrentPeriod(
+          type: PrayerCurrentPeriodType.sunsetProhibited,
+          featuredEntry: maghrib,
+          endsAt: maghrib.time,
+        );
+      }
+      return _normalPrayerPeriod(entry: asr, endsAt: sunsetProhibitedStart);
     }
     if (now.isBefore(isha.time)) {
       return _normalPrayerPeriod(entry: maghrib, endsAt: isha.time);

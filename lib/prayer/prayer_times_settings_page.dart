@@ -178,6 +178,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                 _buildCustomMethodCard(theme),
             ],
           ),
+          _buildProhibitedTimesSection(context),
           _buildSettingsGroup(
             context: context,
             title: 'Manual Offsets',
@@ -239,6 +240,62 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProhibitedTimesSection(BuildContext context) {
+    return _buildSettingsGroup(
+      context: context,
+      title: 'Prohibited Times',
+      subtitle: 'Sunrise, Zawal and Sunset windows',
+      icon: Icons.block_outlined,
+      children: <Widget>[
+        ListTile(
+          title: const Text('Sunrise prohibited time'),
+          subtitle: Text(
+            '${_settings.sunriseProhibitedDurationMinutes} minutes after Sunrise',
+          ),
+          onTap: () => _editProhibitedDuration(
+            title: 'Sunrise prohibited time',
+            currentValue: _settings.sunriseProhibitedDurationMinutes,
+            min: minSunriseProhibitedDurationMinutes,
+            max: maxSunriseProhibitedDurationMinutes,
+            onChanged: (int value) => _saveSettings(
+              _settings.copyWith(sunriseProhibitedDurationMinutes: value),
+            ),
+          ),
+        ),
+        ListTile(
+          title: const Text('Zawal prohibited time'),
+          subtitle: Text(
+            '${_settings.dhuhrProhibitedDurationMinutes} minutes before Dhuhr',
+          ),
+          onTap: () => _editProhibitedDuration(
+            title: 'Zawal prohibited time',
+            currentValue: _settings.dhuhrProhibitedDurationMinutes,
+            min: minDhuhrProhibitedDurationMinutes,
+            max: maxDhuhrProhibitedDurationMinutes,
+            onChanged: (int value) => _saveSettings(
+              _settings.copyWith(dhuhrProhibitedDurationMinutes: value),
+            ),
+          ),
+        ),
+        ListTile(
+          title: const Text('Sunset prohibited time'),
+          subtitle: Text(
+            '${_settings.sunsetProhibitedDurationMinutes} minutes before Maghrib',
+          ),
+          onTap: () => _editProhibitedDuration(
+            title: 'Sunset prohibited time',
+            currentValue: _settings.sunsetProhibitedDurationMinutes,
+            min: minSunsetProhibitedDurationMinutes,
+            max: maxSunsetProhibitedDurationMinutes,
+            onChanged: (int value) => _saveSettings(
+              _settings.copyWith(sunsetProhibitedDurationMinutes: value),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1170,6 +1227,23 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     onChanged(value);
   }
 
+  Future<void> _editProhibitedDuration({
+    required String title,
+    required int currentValue,
+    required int min,
+    required int max,
+    required ValueChanged<int> onChanged,
+  }) {
+    return _editIntSetting(
+      title: title,
+      currentValue: currentValue,
+      min: min,
+      max: max,
+      suffix: 'minutes',
+      onChanged: onChanged,
+    );
+  }
+
   Future<void> _editCustomIshaClockTime({
     required String title,
     required int initialHour,
@@ -2024,6 +2098,8 @@ extension PrayerCustomSettingsUpdate on PrayerTimeSettings {
       use24HourFormat: use24HourFormat,
       useLocationTimezone: useLocationTimezone,
       sunriseProhibitedDurationMinutes: sunriseProhibitedDurationMinutes,
+      dhuhrProhibitedDurationMinutes: dhuhrProhibitedDurationMinutes,
+      sunsetProhibitedDurationMinutes: sunsetProhibitedDurationMinutes,
       reminderSettings: reminderSettings,
     );
   }
@@ -2046,6 +2122,8 @@ extension PrayerCustomSettingsUpdate on PrayerTimeSettings {
       use24HourFormat: use24HourFormat,
       useLocationTimezone: useLocationTimezone,
       sunriseProhibitedDurationMinutes: sunriseProhibitedDurationMinutes,
+      dhuhrProhibitedDurationMinutes: dhuhrProhibitedDurationMinutes,
+      sunsetProhibitedDurationMinutes: sunsetProhibitedDurationMinutes,
       reminderSettings: reminderSettings,
     );
   }

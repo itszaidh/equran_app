@@ -204,7 +204,9 @@ void main() {
         ),
         use24HourFormat: true,
         useLocationTimezone: false,
-        sunriseProhibitedDurationMinutes: 25,
+        sunriseProhibitedDurationMinutes: 15,
+        dhuhrProhibitedDurationMinutes: 7,
+        sunsetProhibitedDurationMinutes: 19,
         reminderSettings: PrayerReminderSettings(remindersEnabled: true),
       );
 
@@ -221,8 +223,32 @@ void main() {
       expect(restored.offsets.asr, 4);
       expect(restored.use24HourFormat, true);
       expect(restored.useLocationTimezone, false);
-      expect(restored.sunriseProhibitedDurationMinutes, 25);
+      expect(restored.sunriseProhibitedDurationMinutes, 15);
+      expect(restored.dhuhrProhibitedDurationMinutes, 7);
+      expect(restored.sunsetProhibitedDurationMinutes, 19);
       expect(restored.reminderSettings.remindersEnabled, true);
+    });
+
+    test('bounds prohibited time settings to supported ranges', () {
+      final PrayerTimeSettings fromJson =
+          PrayerTimeSettings.fromJson(<String, dynamic>{
+            'sunriseProhibitedDurationMinutes': 14,
+            'dhuhrProhibitedDurationMinutes': 15,
+            'sunsetProhibitedDurationMinutes': 25,
+          });
+      final PrayerTimeSettings fromCopy = PrayerTimeSettings.defaults()
+          .copyWith(
+            sunriseProhibitedDurationMinutes: 25,
+            dhuhrProhibitedDurationMinutes: 4,
+            sunsetProhibitedDurationMinutes: 14,
+          );
+
+      expect(fromJson.sunriseProhibitedDurationMinutes, 15);
+      expect(fromJson.dhuhrProhibitedDurationMinutes, 10);
+      expect(fromJson.sunsetProhibitedDurationMinutes, 20);
+      expect(fromCopy.sunriseProhibitedDurationMinutes, 20);
+      expect(fromCopy.dhuhrProhibitedDurationMinutes, 5);
+      expect(fromCopy.sunsetProhibitedDurationMinutes, 15);
     });
 
     test('default notification and timezone settings are safe', () {
@@ -467,7 +493,7 @@ void main() {
 
     test('uses configured Sunrise prohibited duration', () {
       final PrayerTimeSettings settings = PrayerTimeSettings.defaults()
-          .copyWith(sunriseProhibitedDurationMinutes: 5);
+          .copyWith(sunriseProhibitedDurationMinutes: 15);
       final PrayerDay yesterday = _fakeDay(
         DateTime(2026, 5, 3),
         settings: settings,
@@ -480,18 +506,79 @@ void main() {
       final PrayerCurrentPeriod duringSunrise = service.currentPrayerPeriod(
         today: today,
         yesterday: yesterday,
-        now: DateTime(2026, 5, 4, 6, 4),
+        now: DateTime(2026, 5, 4, 6, 14),
       );
       final PrayerCurrentPeriod afterSunriseWindow = service
           .currentPrayerPeriod(
             today: today,
             yesterday: yesterday,
-            now: DateTime(2026, 5, 4, 6, 5),
+            now: DateTime(2026, 5, 4, 6, 15),
           );
 
       expect(duringSunrise.type, PrayerCurrentPeriodType.sunriseProhibited);
-      expect(duringSunrise.endsAt, DateTime(2026, 5, 4, 6, 5));
+      expect(duringSunrise.endsAt, DateTime(2026, 5, 4, 6, 15));
       expect(afterSunriseWindow.type, PrayerCurrentPeriodType.beforeDhuhr);
+    });
+
+    test('shows Zawal before Dhuhr without highlighting Dhuhr', () {
+      final PrayerDay yesterday = _fakeDay(DateTime(2026, 5, 3));
+      final PrayerDay today = _fakeDay(DateTime(2026, 5, 4));
+
+      final PrayerCurrentPeriod beforeZawal = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 11, 59),
+      );
+      final PrayerCurrentPeriod duringZawal = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 12, 5),
+      );
+      final PrayerCurrentPeriod atDhuhr = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 12, 10),
+      );
+
+      expect(beforeZawal.type, PrayerCurrentPeriodType.beforeDhuhr);
+      expect(duringZawal.type, PrayerCurrentPeriodType.dhuhrProhibited);
+      expect(duringZawal.featuredEntry.kind, PrayerTimeKind.dhuhr);
+      expect(duringZawal.endsAt, DateTime(2026, 5, 4, 12, 10));
+      expect(duringZawal.highlightedKind, isNull);
+      expect(duringZawal.currentPrayer, isNull);
+      expect(atDhuhr.type, PrayerCurrentPeriodType.normalPrayer);
+      expect(atDhuhr.featuredEntry.kind, PrayerTimeKind.dhuhr);
+    });
+
+    test('shows Sunset before Maghrib without highlighting Maghrib', () {
+      final PrayerDay yesterday = _fakeDay(DateTime(2026, 5, 3));
+      final PrayerDay today = _fakeDay(DateTime(2026, 5, 4));
+
+      final PrayerCurrentPeriod beforeSunset = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 18, 24),
+      );
+      final PrayerCurrentPeriod duringSunset = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 18, 30),
+      );
+      final PrayerCurrentPeriod atMaghrib = service.currentPrayerPeriod(
+        today: today,
+        yesterday: yesterday,
+        now: DateTime(2026, 5, 4, 18, 40),
+      );
+
+      expect(beforeSunset.type, PrayerCurrentPeriodType.normalPrayer);
+      expect(beforeSunset.featuredEntry.kind, PrayerTimeKind.asr);
+      expect(duringSunset.type, PrayerCurrentPeriodType.sunsetProhibited);
+      expect(duringSunset.featuredEntry.kind, PrayerTimeKind.maghrib);
+      expect(duringSunset.endsAt, DateTime(2026, 5, 4, 18, 40));
+      expect(duringSunset.highlightedKind, isNull);
+      expect(duringSunset.currentPrayer, isNull);
+      expect(atMaghrib.type, PrayerCurrentPeriodType.normalPrayer);
+      expect(atMaghrib.featuredEntry.kind, PrayerTimeKind.maghrib);
     });
   });
 

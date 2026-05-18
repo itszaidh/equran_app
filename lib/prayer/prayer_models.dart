@@ -44,6 +44,18 @@ enum PrayerTimeKind {
   }
 }
 
+const int minSunriseProhibitedDurationMinutes = 15;
+const int maxSunriseProhibitedDurationMinutes = 20;
+const int defaultSunriseProhibitedDurationMinutes = 20;
+
+const int minDhuhrProhibitedDurationMinutes = 5;
+const int maxDhuhrProhibitedDurationMinutes = 10;
+const int defaultDhuhrProhibitedDurationMinutes = 10;
+
+const int minSunsetProhibitedDurationMinutes = 15;
+const int maxSunsetProhibitedDurationMinutes = 20;
+const int defaultSunsetProhibitedDurationMinutes = 15;
+
 enum PrayerCalculationMethod {
   auto('auto', 'Best for location'),
   muslimWorldLeague('muslimWorldLeague', 'Muslim World League'),
@@ -448,9 +460,29 @@ class PrayerTimeSettings {
     this.offsets = const PrayerOffsets(),
     this.use24HourFormat = false,
     this.useLocationTimezone = true,
-    this.sunriseProhibitedDurationMinutes = 20,
+    this.sunriseProhibitedDurationMinutes =
+        defaultSunriseProhibitedDurationMinutes,
+    this.dhuhrProhibitedDurationMinutes = defaultDhuhrProhibitedDurationMinutes,
+    this.sunsetProhibitedDurationMinutes =
+        defaultSunsetProhibitedDurationMinutes,
     this.reminderSettings = const PrayerReminderSettings(),
-  });
+  }) : assert(
+         sunriseProhibitedDurationMinutes >=
+                 minSunriseProhibitedDurationMinutes &&
+             sunriseProhibitedDurationMinutes <=
+                 maxSunriseProhibitedDurationMinutes,
+       ),
+       assert(
+         dhuhrProhibitedDurationMinutes >= minDhuhrProhibitedDurationMinutes &&
+             dhuhrProhibitedDurationMinutes <=
+                 maxDhuhrProhibitedDurationMinutes,
+       ),
+       assert(
+         sunsetProhibitedDurationMinutes >=
+                 minSunsetProhibitedDurationMinutes &&
+             sunsetProhibitedDurationMinutes <=
+                 maxSunsetProhibitedDurationMinutes,
+       );
 
   factory PrayerTimeSettings.defaults() {
     return const PrayerTimeSettings();
@@ -490,8 +522,23 @@ class PrayerTimeSettings {
       offsets: PrayerOffsets.fromJson(json['offsets'] as Map?),
       use24HourFormat: json['use24HourFormat'] == true,
       useLocationTimezone: json['useLocationTimezone'] != false,
-      sunriseProhibitedDurationMinutes: _readProhibitedDurationMinutes(
+      sunriseProhibitedDurationMinutes: _readBoundedMinutes(
         json['sunriseProhibitedDurationMinutes'],
+        defaultValue: defaultSunriseProhibitedDurationMinutes,
+        min: minSunriseProhibitedDurationMinutes,
+        max: maxSunriseProhibitedDurationMinutes,
+      ),
+      dhuhrProhibitedDurationMinutes: _readBoundedMinutes(
+        json['dhuhrProhibitedDurationMinutes'],
+        defaultValue: defaultDhuhrProhibitedDurationMinutes,
+        min: minDhuhrProhibitedDurationMinutes,
+        max: maxDhuhrProhibitedDurationMinutes,
+      ),
+      sunsetProhibitedDurationMinutes: _readBoundedMinutes(
+        json['sunsetProhibitedDurationMinutes'],
+        defaultValue: defaultSunsetProhibitedDurationMinutes,
+        min: minSunsetProhibitedDurationMinutes,
+        max: maxSunsetProhibitedDurationMinutes,
       ),
       reminderSettings: PrayerReminderSettings.fromJson(
         json['reminderSettings'] as Map?,
@@ -515,6 +562,8 @@ class PrayerTimeSettings {
   final bool use24HourFormat;
   final bool useLocationTimezone;
   final int sunriseProhibitedDurationMinutes;
+  final int dhuhrProhibitedDurationMinutes;
+  final int sunsetProhibitedDurationMinutes;
   final PrayerReminderSettings reminderSettings;
 
   PrayerTimeSettings copyWith({
@@ -534,6 +583,8 @@ class PrayerTimeSettings {
     bool? use24HourFormat,
     bool? useLocationTimezone,
     int? sunriseProhibitedDurationMinutes,
+    int? dhuhrProhibitedDurationMinutes,
+    int? sunsetProhibitedDurationMinutes,
     PrayerReminderSettings? reminderSettings,
   }) {
     return PrayerTimeSettings(
@@ -563,9 +614,22 @@ class PrayerTimeSettings {
       offsets: offsets ?? this.offsets,
       use24HourFormat: use24HourFormat ?? this.use24HourFormat,
       useLocationTimezone: useLocationTimezone ?? this.useLocationTimezone,
-      sunriseProhibitedDurationMinutes:
-          sunriseProhibitedDurationMinutes?.clamp(0, 120).toInt() ??
-          this.sunriseProhibitedDurationMinutes,
+      sunriseProhibitedDurationMinutes: _clampMinutes(
+        sunriseProhibitedDurationMinutes ??
+            this.sunriseProhibitedDurationMinutes,
+        min: minSunriseProhibitedDurationMinutes,
+        max: maxSunriseProhibitedDurationMinutes,
+      ),
+      dhuhrProhibitedDurationMinutes: _clampMinutes(
+        dhuhrProhibitedDurationMinutes ?? this.dhuhrProhibitedDurationMinutes,
+        min: minDhuhrProhibitedDurationMinutes,
+        max: maxDhuhrProhibitedDurationMinutes,
+      ),
+      sunsetProhibitedDurationMinutes: _clampMinutes(
+        sunsetProhibitedDurationMinutes ?? this.sunsetProhibitedDurationMinutes,
+        min: minSunsetProhibitedDurationMinutes,
+        max: maxSunsetProhibitedDurationMinutes,
+      ),
       reminderSettings: reminderSettings ?? this.reminderSettings,
     );
   }
@@ -588,6 +652,8 @@ class PrayerTimeSettings {
       'use24HourFormat': use24HourFormat,
       'useLocationTimezone': useLocationTimezone,
       'sunriseProhibitedDurationMinutes': sunriseProhibitedDurationMinutes,
+      'dhuhrProhibitedDurationMinutes': dhuhrProhibitedDurationMinutes,
+      'sunsetProhibitedDurationMinutes': sunsetProhibitedDurationMinutes,
       'reminderSettings': reminderSettings.toJson(),
     };
   }
@@ -629,7 +695,13 @@ class PrayerDay {
   }
 }
 
-enum PrayerCurrentPeriodType { normalPrayer, sunriseProhibited, beforeDhuhr }
+enum PrayerCurrentPeriodType {
+  normalPrayer,
+  sunriseProhibited,
+  dhuhrProhibited,
+  sunsetProhibited,
+  beforeDhuhr,
+}
 
 class PrayerCurrentPeriod {
   const PrayerCurrentPeriod({
@@ -648,6 +720,8 @@ class PrayerCurrentPeriod {
     return switch (type) {
       PrayerCurrentPeriodType.normalPrayer ||
       PrayerCurrentPeriodType.sunriseProhibited => featuredEntry,
+      PrayerCurrentPeriodType.dhuhrProhibited ||
+      PrayerCurrentPeriodType.sunsetProhibited ||
       PrayerCurrentPeriodType.beforeDhuhr => null,
     };
   }
@@ -687,8 +761,21 @@ int? _readOptionalMinutes(dynamic value) {
   return _readNullableInt(value)?.clamp(0, 240).toInt();
 }
 
-int _readProhibitedDurationMinutes(dynamic value) {
-  return _readInt(value, defaultValue: 20).clamp(0, 120).toInt();
+int _readBoundedMinutes(
+  dynamic value, {
+  required int defaultValue,
+  required int min,
+  required int max,
+}) {
+  return _clampMinutes(
+    _readInt(value, defaultValue: defaultValue),
+    min: min,
+    max: max,
+  );
+}
+
+int _clampMinutes(int value, {required int min, required int max}) {
+  return value.clamp(min, max).toInt();
 }
 
 int _readClockHour(dynamic value, {required int defaultValue}) {
