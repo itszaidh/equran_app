@@ -17,6 +17,8 @@ const int _surahCellAnimationMs = 300;
 const int _surahCellStaggerMs = 8;
 const int _surahGridAnimationMs =
     _surahCellAnimationMs + ((_totalSurahs - 1) * _surahCellStaggerMs);
+const int _salahRingAnimationMs = 700;
+const int _salahRingStaggerMs = 100;
 
 final Map<String, int> _letterCountCache = <String, int>{};
 
@@ -29,6 +31,63 @@ enum StatRange {
   const StatRange(this.label);
 
   final String label;
+}
+
+enum SalahStatus {
+  onTime('onTime', 'On time'),
+  late('late', 'Late'),
+  notPrayed('notPrayed', 'Not prayed'),
+  unlogged('unlogged', 'Log');
+
+  const SalahStatus(this.storageValue, this.label);
+
+  final String storageValue;
+  final String label;
+
+  bool get countsAsPrayer =>
+      this == SalahStatus.onTime || this == SalahStatus.late;
+
+  static SalahStatus fromValue(String value) {
+    return switch (value) {
+      'onTime' => SalahStatus.onTime,
+      'late' => SalahStatus.late,
+      'notPrayed' => SalahStatus.notPrayed,
+      _ => SalahStatus.unlogged,
+    };
+  }
+}
+
+enum SalahPrayer {
+  fajr('fajr', 'Fajr'),
+  dhuhr('dhuhr', 'Dhuhr'),
+  asr('asr', 'Asr'),
+  maghrib('maghrib', 'Maghrib'),
+  isha('isha', 'Isha');
+
+  const SalahPrayer(this.key, this.label);
+
+  final String key;
+  final String label;
+
+  SalahStatus statusFor(SalahLogEntry entry) {
+    return SalahStatus.fromValue(switch (this) {
+      SalahPrayer.fajr => entry.fajr,
+      SalahPrayer.dhuhr => entry.dhuhr,
+      SalahPrayer.asr => entry.asr,
+      SalahPrayer.maghrib => entry.maghrib,
+      SalahPrayer.isha => entry.isha,
+    });
+  }
+
+  SalahLogEntry updateEntry(SalahLogEntry entry, SalahStatus status) {
+    return switch (this) {
+      SalahPrayer.fajr => entry.copyWith(fajr: status.storageValue),
+      SalahPrayer.dhuhr => entry.copyWith(dhuhr: status.storageValue),
+      SalahPrayer.asr => entry.copyWith(asr: status.storageValue),
+      SalahPrayer.maghrib => entry.copyWith(maghrib: status.storageValue),
+      SalahPrayer.isha => entry.copyWith(isha: status.storageValue),
+    };
+  }
 }
 
 class StatisticsPage extends StatefulWidget {
@@ -50,8 +109,10 @@ class _StatisticsPageState extends State<StatisticsPage>
   late final ValueListenable<Box<dynamic>> _duasListener;
   late final ValueListenable<Box<dynamic>> _favouritesListener;
   late final ValueListenable<Box<dynamic>> _settingsListener;
+  late final ValueListenable<Box<dynamic>> _salahListener;
   final GlobalKey _surahProgressKey = GlobalKey();
   bool _surahGridExpanded = false;
+  bool _prayerTrackingOptInDismissed = false;
 
   @override
   void initState() {
@@ -69,6 +130,7 @@ class _StatisticsPageState extends State<StatisticsPage>
     _duasListener = DuaInteractionsDB().listener;
     _favouritesListener = DuaFavouritesDB().listener;
     _settingsListener = SettingsDB().listener;
+    _salahListener = SalahLogDB().listener;
     for (final ValueListenable<Box<dynamic>> listener
         in <ValueListenable<Box<dynamic>>>[
           _quranListener,
@@ -76,6 +138,7 @@ class _StatisticsPageState extends State<StatisticsPage>
           _duasListener,
           _favouritesListener,
           _settingsListener,
+          _salahListener,
         ]) {
       listener.addListener(_handleDataChanged);
     }
@@ -90,6 +153,7 @@ class _StatisticsPageState extends State<StatisticsPage>
           _duasListener,
           _favouritesListener,
           _settingsListener,
+          _salahListener,
         ]) {
       listener.removeListener(_handleDataChanged);
     }
@@ -104,6 +168,19 @@ class _StatisticsPageState extends State<StatisticsPage>
   void _handleDataChanged() {
     _repository.clearCache();
     _refreshNotifier.value++;
+  }
+
+  Future<void> _enablePrayerTracking() async {
+    await SettingsDB().put('prayerTrackingEnabled', true);
+    if (!mounted) return;
+    _repository.clearCache();
+    _refreshNotifier.value++;
+  }
+
+  void _dismissPrayerTrackingOptIn() {
+    setState(() {
+      _prayerTrackingOptInDismissed = true;
+    });
   }
 
   void _openSurah(int surah) {
@@ -182,6 +259,22 @@ class _StatisticsPageState extends State<StatisticsPage>
                 _PageContentSliver(
                   child: _RangeToggle(rangeListenable: _rangeNotifier),
                 ),
+                const _StickySectionHeader(label: 'Salah'),
+                _PageContentSliver(
+                  child: _RangeAwareSection<SalahSectionData>(
+                    refreshToken: refreshToken,
+                    rangeListenable: _rangeNotifier,
+                    load: _repository.getSalahData,
+                    placeholderHeight: 360,
+                    builder: (context, data) => _SalahSectionHost(
+                      data: data,
+                      optInDismissed: _prayerTrackingOptInDismissed,
+                      onEnable: _enablePrayerTracking,
+                      onMaybeLater: _dismissPrayerTrackingOptIn,
+                      onLogSaved: _handleDataChanged,
+                    ),
+                  ),
+                ),
                 const _StickySectionHeader(label: 'Quran'),
                 _PageContentSliver(
                   child: _RangeAwareSection<QuranStatsData>(
@@ -259,6 +352,8 @@ class StatisticsRepository {
       <StatRange, Future<TasbihStatsData>>{};
   final Map<StatRange, Future<DuasStatsData>> _duasCache =
       <StatRange, Future<DuasStatsData>>{};
+  final Map<StatRange, Future<SalahSectionData>> _salahCache =
+      <StatRange, Future<SalahSectionData>>{};
   final Map<StatRange, Future<HeatmapData>> _heatmapCache =
       <StatRange, Future<HeatmapData>>{};
   final Map<StatRange, Future<StreakStats>> _streakCache =
@@ -269,6 +364,7 @@ class StatisticsRepository {
     _quranCache.clear();
     _tasbihCache.clear();
     _duasCache.clear();
+    _salahCache.clear();
     _heatmapCache.clear();
     _streakCache.clear();
   }
@@ -280,6 +376,11 @@ class StatisticsRepository {
       final Map<String, QuranActivityDay> quranDays = _quranDaysByDate();
       final List<DhikrSessionEntry> sessions = _dhikrSessions();
       final List<DuaInteractionEntry> duaViews = _duaInteractions();
+      final List<SalahLogEntry> salahLogs = _salahLogs();
+      final bool prayerTrackingEnabled = _prayerTrackingEnabled();
+      final SalahLogEntry todaySalah =
+          await SalahLogDB().getEntry(todayKey) ??
+          SalahLogEntry(date: todayKey);
       final int quranAyahs = _dayAyahCount(quranDays[todayKey]);
       final int tasbihCount = sessions
           .where((entry) => _dateKey(_dhikrDate(entry)) == todayKey)
@@ -287,22 +388,32 @@ class StatisticsRepository {
       final int duasViewed = duaViews
           .where((entry) => entry.dateKey == todayKey)
           .fold<int>(0, (sum, entry) => sum + entry.count);
+      final int salahPrayersToday = prayerTrackingEnabled
+          ? _loggedPrayerCount(todaySalah)
+          : 0;
       final int dailyGoal = _dailyGoal();
+      final List<double> progressParts = <double>[
+        (quranAyahs / dailyGoal).clamp(0.0, 1.0),
+        (tasbihCount / 100).clamp(0.0, 1.0),
+        duasViewed > 0 ? 1.0 : 0.0,
+        if (prayerTrackingEnabled) (salahPrayersToday / 5).clamp(0.0, 1.0),
+      ];
       final double progress =
-          ((quranAyahs / dailyGoal).clamp(0.0, 1.0) +
-              (tasbihCount / 100).clamp(0.0, 1.0) +
-              (duasViewed > 0 ? 1.0 : 0.0)) /
-          3;
+          progressParts.fold<double>(0, (sum, value) => sum + value) /
+          progressParts.length;
       final StreakStats streakStats = _buildStreaks(
         quranDays.values.toList(growable: false),
         sessions,
         duaViews,
+        salahLogs,
         now,
       );
       return OverviewStats(
         quranAyahs: quranAyahs,
         tasbihCount: tasbihCount,
         duasViewed: duasViewed,
+        prayerTrackingEnabled: prayerTrackingEnabled,
+        salahPrayersToday: salahPrayersToday,
         progress: progress,
         motivation: _worshipMotivation(progress),
         highestStreak: streakStats.highest,
@@ -432,6 +543,53 @@ class StatisticsRepository {
     });
   }
 
+  Future<SalahSectionData> getSalahData(StatRange range) {
+    return _salahCache.putIfAbsent(range, () async {
+      final DateTime now = DateTime.now();
+      final String todayKey = _dateKey(now);
+      final bool enabled = _prayerTrackingEnabled();
+      final SalahLogEntry todayEntry =
+          await SalahLogDB().getEntry(todayKey) ??
+          SalahLogEntry(date: todayKey);
+      if (!enabled) {
+        return SalahSectionData.disabled(todayEntry: todayEntry);
+      }
+
+      final List<SalahLogEntry> allLogs = _salahLogs();
+      final DateTime rangeStart = _salahRangeStart(range, now, allLogs);
+      final List<SalahLogEntry> rangeLogs = await SalahLogDB().getRange(
+        rangeStart,
+        now,
+      );
+      final DateTime weekStart = _weekStart(now);
+      final List<SalahLogEntry> weekLogs = await SalahLogDB().getRange(
+        weekStart,
+        now,
+      );
+      final List<SalahPrayerStats> prayerStats = <SalahPrayerStats>[
+        for (final SalahPrayer prayer in SalahPrayer.values)
+          _salahPrayerStats(prayer, rangeLogs),
+      ];
+      final List<SalahPrayerStats> loggedStats = prayerStats
+          .where((stats) => stats.loggedCount > 0)
+          .toList(growable: false);
+      final SalahPrayerStats? bestPrayer = loggedStats.isEmpty
+          ? null
+          : loggedStats.reduce((a, b) => a.onTimeRate >= b.onTimeRate ? a : b);
+
+      return SalahSectionData(
+        enabled: true,
+        todayEntry: todayEntry,
+        prayedToday: _loggedPrayerCount(todayEntry),
+        onTimeThisWeek: _salahStatusTotal(weekLogs, SalahStatus.onTime),
+        lateThisWeek: _salahStatusTotal(weekLogs, SalahStatus.late),
+        bestPrayerName: bestPrayer?.prayer.label ?? 'No prayer yet',
+        fajrStreak: _fajrOnTimeStreak(allLogs, now),
+        prayerStats: prayerStats,
+      );
+    });
+  }
+
   Future<HeatmapData> heatmap(StatRange range) {
     return _heatmapCache.putIfAbsent(range, () async {
       final DateTime now = DateTime.now();
@@ -444,6 +602,7 @@ class StatisticsRepository {
         _dhikrSessions(),
       );
       final Map<String, int> duasByDate = _duaCountsByDate(_duaInteractions());
+      final Map<String, int> salahByDate = _salahCountsByDate(_salahLogs());
       final List<HeatmapWeek> weeks = <HeatmapWeek>[];
       for (int week = 0; week < 53; week++) {
         final DateTime weekStart = firstWeekStart.add(Duration(days: week * 7));
@@ -457,6 +616,7 @@ class StatisticsRepository {
                   quranDays,
                   tasbihByDate,
                   duasByDate,
+                  salahByDate,
                 ),
             ],
           ),
@@ -472,6 +632,7 @@ class StatisticsRepository {
         _quranDays(),
         _dhikrSessions(),
         _duaInteractions(),
+        _salahLogs(),
         DateTime.now(),
       );
     });
@@ -499,6 +660,13 @@ class StatisticsRepository {
     return DuaInteractionsDB().box.values
         .map(DuaInteractionEntry.fromStored)
         .whereType<DuaInteractionEntry>()
+        .toList(growable: false);
+  }
+
+  List<SalahLogEntry> _salahLogs() {
+    return SalahLogDB().box.values
+        .map(SalahLogEntry.fromStored)
+        .whereType<SalahLogEntry>()
         .toList(growable: false);
   }
 }
@@ -855,6 +1023,10 @@ class _OverviewHeaderCard extends StatelessWidget {
                       _OverviewPill(label: 'Quran: ${data.quranAyahs} ayahs'),
                       _OverviewPill(label: 'Tasbih: ${data.tasbihCount} dhikr'),
                       _OverviewPill(label: 'Duas: ${data.duasViewed} duas'),
+                      if (data.prayerTrackingEnabled)
+                        _OverviewPill(
+                          label: 'Salah: ${data.salahPrayersToday}/5 today',
+                        ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -1008,6 +1180,969 @@ class _RangePill extends StatelessWidget {
             style: theme.textTheme.labelMedium?.copyWith(
               color: selected ? colors.onPrimary : colors.textSecondary,
               fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SalahSectionHost extends StatelessWidget {
+  const _SalahSectionHost({
+    required this.data,
+    required this.optInDismissed,
+    required this.onEnable,
+    required this.onMaybeLater,
+    required this.onLogSaved,
+  });
+
+  final SalahSectionData data;
+  final bool optInDismissed;
+  final Future<void> Function() onEnable;
+  final VoidCallback onMaybeLater;
+  final VoidCallback onLogSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      child: data.enabled
+          ? _SalahSection(
+              key: const ValueKey<String>('salah-section'),
+              data: data,
+              onLogSaved: onLogSaved,
+            )
+          : optInDismissed
+          ? _PrayerTrackingMiniEnable(
+              key: const ValueKey<String>('salah-mini-enable'),
+              onEnable: onEnable,
+            )
+          : _PrayerTrackingOptInCard(
+              key: const ValueKey<String>('salah-opt-in'),
+              onEnable: onEnable,
+              onMaybeLater: onMaybeLater,
+            ),
+    );
+  }
+}
+
+class _PrayerTrackingOptInCard extends StatelessWidget {
+  const _PrayerTrackingOptInCard({
+    super.key,
+    required this.onEnable,
+    required this.onMaybeLater,
+  });
+
+  final Future<void> Function() onEnable;
+  final VoidCallback onMaybeLater;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        border: Border.all(color: colors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: colors.mint,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.mosque_rounded,
+                  color: colors.primary,
+                  size: 32,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Track your daily prayers',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Log each prayer privately on your device. Your data never leaves your phone.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.textSecondary,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 18),
+            _PrimaryPillButton(
+              label: 'Enable prayer tracking',
+              onPressed: onEnable,
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: onMaybeLater,
+              style: TextButton.styleFrom(
+                foregroundColor: colors.textMuted,
+                textStyle: theme.textTheme.bodySmall,
+              ),
+              child: const Text('Maybe later'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PrayerTrackingMiniEnable extends StatelessWidget {
+  const _PrayerTrackingMiniEnable({super.key, required this.onEnable});
+
+  final Future<void> Function() onEnable;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    return Center(
+      child: TextButton(
+        onPressed: onEnable,
+        style: TextButton.styleFrom(
+          foregroundColor: colors.textMuted,
+          textStyle: theme.textTheme.bodySmall?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        child: const Text('Enable prayer tracking →'),
+      ),
+    );
+  }
+}
+
+class _PrimaryPillButton extends StatelessWidget {
+  const _PrimaryPillButton({required this.label, required this.onPressed});
+
+  final String label;
+  final Future<void> Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
+    return SizedBox(
+      width: double.infinity,
+      child: Material(
+        color: colors.primary,
+        borderRadius: radius,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: radius,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: colors.onPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SalahSection extends StatelessWidget {
+  const _SalahSection({
+    super.key,
+    required this.data,
+    required this.onLogSaved,
+  });
+
+  final SalahSectionData data;
+  final VoidCallback onLogSaved;
+
+  Future<void> _openLogSheet(
+    BuildContext context,
+    SalahPrayer initialPrayer,
+  ) async {
+    final bool? saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => _SalahLogSheet(
+        initialEntry: data.todayEntry,
+        initialPrayer: initialPrayer,
+        onSave: (entry) async {
+          await SalahLogDB().saveEntry(entry);
+          onLogSaved();
+        },
+      ),
+    );
+    if (saved != true || !context.mounted) return;
+    final EquranColors colors = context.equranColors;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: colors.primary,
+        content: Row(
+          children: <Widget>[
+            Icon(Icons.check_circle_rounded, color: colors.onPrimary, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              'Prayer log saved',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colors.onPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _PrayerChipsRow(
+          entry: data.todayEntry,
+          onPrayerTap: (prayer) => _openLogSheet(context, prayer),
+        ),
+        const SizedBox(height: 16),
+        _SalahWeeklyStatsGrid(data: data),
+        const SizedBox(height: 16),
+        _SalahRingStats(stats: data.prayerStats),
+        const SizedBox(height: 16),
+        _FajrConsistencyCallout(data: data),
+      ],
+    );
+  }
+}
+
+class _PrayerChipsRow extends StatelessWidget {
+  const _PrayerChipsRow({required this.entry, required this.onPrayerTap});
+
+  final SalahLogEntry entry;
+  final ValueChanged<SalahPrayer> onPrayerTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        for (final SalahPrayer prayer in SalahPrayer.values) ...<Widget>[
+          if (prayer.index > 0) const SizedBox(width: 8),
+          Expanded(
+            child: _PrayerChip(
+              prayer: prayer,
+              status: prayer.statusFor(entry),
+              onTap: () => onPrayerTap(prayer),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _PrayerChip extends StatelessWidget {
+  const _PrayerChip({
+    required this.prayer,
+    required this.status,
+    required this.onTap,
+  });
+
+  final SalahPrayer prayer;
+  final SalahStatus status;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
+    final IconData? icon = _salahStatusIcon(status);
+    final Color statusColor = _salahStatusColor(colors, status);
+    return Material(
+      color: _salahStatusBackground(colors, status),
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            border: Border.all(color: colors.border),
+          ),
+          child: SizedBox(
+            height: 56,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  SizedBox(
+                    height: 14,
+                    child: icon == null
+                        ? const SizedBox.shrink()
+                        : Icon(icon, size: 14, color: statusColor),
+                  ),
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      prayer.label,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colors.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      status.label,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: status == SalahStatus.unlogged
+                            ? colors.textMuted
+                            : statusColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SalahWeeklyStatsGrid extends StatelessWidget {
+  const _SalahWeeklyStatsGrid({required this.data});
+
+  final SalahSectionData data;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double gap = constraints.maxWidth >= 720 ? 12 : 10;
+        return Column(
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: _StatCard(
+                    icon: Icons.check_circle_rounded,
+                    value: '${data.onTimeThisWeek}',
+                    label: 'On time this week',
+                  ),
+                ),
+                SizedBox(width: gap),
+                Expanded(
+                  child: _StatCard(
+                    icon: Icons.schedule_rounded,
+                    value: '${data.lateThisWeek}',
+                    label: 'Late this week',
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: gap),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: _StatCard(
+                    icon: Icons.star_rounded,
+                    value: data.bestPrayerName,
+                    label: 'Best prayer',
+                  ),
+                ),
+                SizedBox(width: gap),
+                Expanded(
+                  child: _StatCard(
+                    icon: Icons.wb_twilight_rounded,
+                    value: '${data.fajrStreak}',
+                    label: 'Current Fajr streak',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SalahRingStats extends StatefulWidget {
+  const _SalahRingStats({required this.stats});
+
+  final List<SalahPrayerStats> stats;
+
+  @override
+  State<_SalahRingStats> createState() => _SalahRingStatsState();
+}
+
+class _SalahRingStatsState extends State<_SalahRingStats>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(
+        milliseconds:
+            _salahRingAnimationMs +
+            ((SalahPrayer.values.length - 1) * _salahRingStaggerMs),
+      ),
+    )..forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SalahRingStats oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.stats != widget.stats) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final int totalMs =
+            _salahRingAnimationMs +
+            ((SalahPrayer.values.length - 1) * _salahRingStaggerMs);
+        return Row(
+          children: <Widget>[
+            for (
+              int index = 0;
+              index < widget.stats.length;
+              index++
+            ) ...<Widget>[
+              if (index > 0) const SizedBox(width: 8),
+              Expanded(
+                child: _SalahRingIndicator(
+                  stats: widget.stats[index],
+                  animationProgress: Curves.easeOutCubic.transform(
+                    (((_controller.value * totalMs) -
+                                (index * _salahRingStaggerMs)) /
+                            _salahRingAnimationMs)
+                        .clamp(0.0, 1.0),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SalahRingIndicator extends StatelessWidget {
+  const _SalahRingIndicator({
+    required this.stats,
+    required this.animationProgress,
+  });
+
+  final SalahPrayerStats stats;
+  final double animationProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double ringSize = math.min(52, constraints.maxWidth);
+        return Column(
+          children: <Widget>[
+            SizedBox.square(
+              dimension: ringSize,
+              child: CustomPaint(
+                painter: _SalahRingPainter(
+                  onTimeRate: stats.onTimeRate,
+                  lateRate: stats.lateRate,
+                  progress: animationProgress.clamp(0.0, 1.0),
+                  trackColor: colors.surfaceAlt,
+                  onTimeColor: colors.primary,
+                  lateColor: colors.accentGold,
+                ),
+                child: Center(
+                  child: Text(
+                    '${(stats.onTimeRate * 100).round()}%',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              stats.prayer.label,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SalahRingPainter extends CustomPainter {
+  const _SalahRingPainter({
+    required this.onTimeRate,
+    required this.lateRate,
+    required this.progress,
+    required this.trackColor,
+    required this.onTimeColor,
+    required this.lateColor,
+  });
+
+  final double onTimeRate;
+  final double lateRate;
+  final double progress;
+  final Color trackColor;
+  final Color onTimeColor;
+  final Color lateColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double stroke = 4;
+    final Offset center = size.center(Offset.zero);
+    final double radius = (size.shortestSide - stroke) / 2;
+    final Rect rect = Rect.fromCircle(center: center, radius: radius);
+    final Paint paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, paint..color = trackColor);
+    final double onTimeSweep = math.pi * 2 * onTimeRate * progress;
+    final double lateSweep = math.pi * 2 * lateRate * progress;
+    const double startAngle = -math.pi / 2;
+    if (onTimeSweep > 0) {
+      canvas.drawArc(
+        rect,
+        startAngle,
+        onTimeSweep,
+        false,
+        paint..color = onTimeColor,
+      );
+    }
+    if (lateSweep > 0) {
+      canvas.drawArc(
+        rect,
+        startAngle + onTimeSweep,
+        lateSweep,
+        false,
+        paint..color = lateColor,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SalahRingPainter oldDelegate) {
+    return onTimeRate != oldDelegate.onTimeRate ||
+        lateRate != oldDelegate.lateRate ||
+        progress != oldDelegate.progress ||
+        trackColor != oldDelegate.trackColor ||
+        onTimeColor != oldDelegate.onTimeColor ||
+        lateColor != oldDelegate.lateColor;
+  }
+}
+
+class _FajrConsistencyCallout extends StatelessWidget {
+  const _FajrConsistencyCallout({required this.data});
+
+  final SalahSectionData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final SalahPrayerStats fajrStats = data.prayerStats.firstWhere(
+      (stats) => stats.prayer == SalahPrayer.fajr,
+      orElse: () => SalahPrayerStats.empty(SalahPrayer.fajr),
+    );
+    final double rate = fajrStats.onTimeRate;
+    final String body = rate >= 0.8
+        ? 'Mashallah — your Fajr is very consistent'
+        : rate >= 0.5
+        ? 'Good effort — Fajr is improving'
+        : rate > 0
+        ? 'Fajr is a challenge — keep going'
+        : 'Start logging Fajr to see your progress';
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadii.large),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.large),
+          border: Border.all(color: colors.accentGold.withAlpha(77)),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            children: <Widget>[
+              ColoredBox(
+                color: colors.accentGold,
+                child: const SizedBox(width: 3),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Fajr consistency',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: colors.textPrimary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        body,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.textSecondary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SalahLogSheet extends StatefulWidget {
+  const _SalahLogSheet({
+    required this.initialEntry,
+    required this.initialPrayer,
+    required this.onSave,
+  });
+
+  final SalahLogEntry initialEntry;
+  final SalahPrayer initialPrayer;
+  final Future<void> Function(SalahLogEntry entry) onSave;
+
+  @override
+  State<_SalahLogSheet> createState() => _SalahLogSheetState();
+}
+
+class _SalahLogSheetState extends State<_SalahLogSheet> {
+  late final ScrollController _scrollController;
+  late final Map<SalahPrayer, SalahStatus> _statuses;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _statuses = <SalahPrayer, SalahStatus>{
+      for (final SalahPrayer prayer in SalahPrayer.values)
+        prayer: prayer.statusFor(widget.initialEntry),
+    };
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        widget.initialPrayer.index * 68,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    SalahLogEntry entry = SalahLogEntry(date: widget.initialEntry.date);
+    for (final SalahPrayer prayer in SalahPrayer.values) {
+      entry = prayer.updateEntry(
+        entry,
+        _statuses[prayer] ?? SalahStatus.unlogged,
+      );
+    }
+    await widget.onSave(entry);
+    if (!mounted) return;
+    Navigator.of(context).pop(true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = const BorderRadius.vertical(
+      top: Radius.circular(AppRadii.xl),
+    );
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: radius,
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  const SizedBox(height: 10),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: colors.surfaceAlt,
+                      borderRadius: BorderRadius.circular(AppRadii.pill),
+                    ),
+                    child: const SizedBox(width: 32, height: 4),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Today's Prayers",
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _dateChipLabel(DateTime.parse(widget.initialEntry.date)),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Flexible(
+                    child: ListView.separated(
+                      controller: _scrollController,
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: SalahPrayer.values.length,
+                      separatorBuilder: (context, index) => Divider(
+                        color: colors.divider,
+                        height: 1,
+                        thickness: 0.5,
+                      ),
+                      itemBuilder: (context, index) {
+                        final SalahPrayer prayer = SalahPrayer.values[index];
+                        return _SalahLogPrayerRow(
+                          prayer: prayer,
+                          selectedStatus:
+                              _statuses[prayer] ?? SalahStatus.unlogged,
+                          highlighted: prayer == widget.initialPrayer,
+                          onSelected: (status) {
+                            setState(() => _statuses[prayer] = status);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    child: _PrimaryPillButton(
+                      label: _saving ? 'Saving' : 'Save',
+                      onPressed: _save,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SalahLogPrayerRow extends StatelessWidget {
+  const _SalahLogPrayerRow({
+    required this.prayer,
+    required this.selectedStatus,
+    required this.highlighted,
+    required this.onSelected,
+  });
+
+  final SalahPrayer prayer;
+  final SalahStatus selectedStatus;
+  final bool highlighted;
+  final ValueChanged<SalahStatus> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        color: highlighted ? colors.mint.withAlpha(128) : Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+      ),
+      child: Row(
+        children: <Widget>[
+          SizedBox(
+            width: 78,
+            child: Text(
+              prayer.label,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                for (final SalahStatus status in const <SalahStatus>[
+                  SalahStatus.onTime,
+                  SalahStatus.late,
+                  SalahStatus.notPrayed,
+                ]) ...<Widget>[
+                  if (status != SalahStatus.onTime) const SizedBox(width: 6),
+                  Flexible(
+                    child: _SalahStatusButton(
+                      status: status,
+                      selected: selectedStatus == status,
+                      onTap: () => onSelected(status),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SalahStatusButton extends StatelessWidget {
+  const _SalahStatusButton({
+    required this.status,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final SalahStatus status;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
+    final Color background = selected
+        ? switch (status) {
+            SalahStatus.onTime => colors.primary,
+            SalahStatus.late => colors.goldSoft,
+            SalahStatus.notPrayed => colors.surfaceAlt,
+            SalahStatus.unlogged => colors.surfaceAlt,
+          }
+        : colors.surfaceAlt;
+    final Color foreground = selected
+        ? switch (status) {
+            SalahStatus.onTime => colors.onPrimary,
+            SalahStatus.late => colors.warning,
+            SalahStatus.notPrayed => colors.textSecondary,
+            SalahStatus.unlogged => colors.textMuted,
+          }
+        : colors.textMuted;
+    final Color? borderColor = selected
+        ? switch (status) {
+            SalahStatus.late => colors.accentGold,
+            SalahStatus.notPrayed => colors.border,
+            _ => null,
+          }
+        : null;
+    return Material(
+      color: background,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            border: borderColor == null ? null : Border.all(color: borderColor),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                status.label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
           ),
         ),
@@ -2172,7 +3307,7 @@ class _HeatmapCell extends StatelessWidget {
     return Tooltip(
       triggerMode: TooltipTriggerMode.tap,
       message:
-          '${_dateChipLabel(day.date)}\nQuran: ${day.quran} ayahs\nTasbih: ${day.tasbih} dhikr\nDuas: ${day.duas} duas',
+          '${_dateChipLabel(day.date)}\nQuran: ${day.quran} ayahs\nTasbih: ${day.tasbih} dhikr\nDuas: ${day.duas} duas\nSalah: ${day.salah} prayers',
       child: SizedBox.square(
         dimension: 10,
         child: DecoratedBox(
@@ -2491,6 +3626,8 @@ class OverviewStats {
     required this.quranAyahs,
     required this.tasbihCount,
     required this.duasViewed,
+    required this.prayerTrackingEnabled,
+    required this.salahPrayersToday,
     required this.progress,
     required this.motivation,
     required this.highestStreak,
@@ -2499,6 +3636,8 @@ class OverviewStats {
   final int quranAyahs;
   final int tasbihCount;
   final int duasViewed;
+  final bool prayerTrackingEnabled;
+  final int salahPrayersToday;
   final double progress;
   final String motivation;
   final int highestStreak;
@@ -2564,6 +3703,73 @@ class DuasStatsData {
   final int mostViewedCategoryCount;
 }
 
+class SalahSectionData {
+  const SalahSectionData({
+    required this.enabled,
+    required this.todayEntry,
+    required this.prayedToday,
+    required this.onTimeThisWeek,
+    required this.lateThisWeek,
+    required this.bestPrayerName,
+    required this.fajrStreak,
+    required this.prayerStats,
+  });
+
+  factory SalahSectionData.disabled({required SalahLogEntry todayEntry}) {
+    return SalahSectionData(
+      enabled: false,
+      todayEntry: todayEntry,
+      prayedToday: 0,
+      onTimeThisWeek: 0,
+      lateThisWeek: 0,
+      bestPrayerName: 'No prayer yet',
+      fajrStreak: 0,
+      prayerStats: <SalahPrayerStats>[
+        for (final SalahPrayer prayer in SalahPrayer.values)
+          SalahPrayerStats.empty(prayer),
+      ],
+    );
+  }
+
+  final bool enabled;
+  final SalahLogEntry todayEntry;
+  final int prayedToday;
+  final int onTimeThisWeek;
+  final int lateThisWeek;
+  final String bestPrayerName;
+  final int fajrStreak;
+  final List<SalahPrayerStats> prayerStats;
+}
+
+class SalahPrayerStats {
+  const SalahPrayerStats({
+    required this.prayer,
+    required this.onTimeCount,
+    required this.lateCount,
+    required this.notPrayedCount,
+  });
+
+  factory SalahPrayerStats.empty(SalahPrayer prayer) {
+    return SalahPrayerStats(
+      prayer: prayer,
+      onTimeCount: 0,
+      lateCount: 0,
+      notPrayedCount: 0,
+    );
+  }
+
+  final SalahPrayer prayer;
+  final int onTimeCount;
+  final int lateCount;
+  final int notPrayedCount;
+
+  int get loggedCount => onTimeCount + lateCount + notPrayedCount;
+
+  double get onTimeRate => loggedCount == 0 ? 0 : onTimeCount / loggedCount;
+
+  double get lateRate => loggedCount == 0 ? 0 : lateCount / loggedCount;
+}
+
 class StreakStats {
   const StreakStats({
     required this.quran,
@@ -2597,14 +3803,16 @@ class HeatmapDay {
     required this.quran,
     required this.tasbih,
     required this.duas,
+    required this.salah,
   });
 
   final DateTime date;
   final int quran;
   final int tasbih;
   final int duas;
+  final int salah;
 
-  int get total => quran + tasbih + duas;
+  int get total => quran + tasbih + duas + salah;
 }
 
 class ActivityBucket {
@@ -2696,6 +3904,7 @@ HeatmapDay _heatmapDay(
   Map<String, QuranActivityDay> quranDays,
   Map<String, int> tasbihByDate,
   Map<String, int> duasByDate,
+  Map<String, int> salahByDate,
 ) {
   final String key = _dateKey(date);
   return HeatmapDay(
@@ -2703,6 +3912,7 @@ HeatmapDay _heatmapDay(
     quran: _dayAyahCount(quranDays[key]),
     tasbih: tasbihByDate[key] ?? 0,
     duas: duasByDate[key] ?? 0,
+    salah: salahByDate[key] ?? 0,
   );
 }
 
@@ -2724,10 +3934,21 @@ Map<String, int> _duaCountsByDate(List<DuaInteractionEntry> interactions) {
   return counts;
 }
 
+Map<String, int> _salahCountsByDate(List<SalahLogEntry> entries) {
+  final Map<String, int> counts = <String, int>{};
+  for (final SalahLogEntry entry in entries) {
+    final int count = _loggedPrayerCount(entry);
+    if (count <= 0) continue;
+    counts[entry.date] = (counts[entry.date] ?? 0) + count;
+  }
+  return counts;
+}
+
 StreakStats _buildStreaks(
   List<QuranActivityDay> quranDays,
   List<DhikrSessionEntry> sessions,
   List<DuaInteractionEntry> duaViews,
+  List<SalahLogEntry> salahLogs,
   DateTime now,
 ) {
   final Set<String> quranActiveDays = quranDays
@@ -2742,6 +3963,10 @@ StreakStats _buildStreaks(
       .where((entry) => entry.count > 0)
       .map((entry) => entry.dateKey)
       .toSet();
+  final Set<String> salahActiveDays = salahLogs
+      .where((entry) => _loggedPrayerCount(entry) > 0)
+      .map((entry) => entry.date)
+      .toSet();
   return StreakStats(
     quran: _currentStreak(quranActiveDays, now),
     tasbih: _currentStreak(tasbihActiveDays, now),
@@ -2749,6 +3974,7 @@ StreakStats _buildStreaks(
       ...quranActiveDays,
       ...tasbihActiveDays,
       ...duaActiveDays,
+      ...salahActiveDays,
     }, now),
   );
 }
@@ -2907,6 +4133,119 @@ bool _inRange(DateTime date, StatRange range, DateTime now) {
           !day.isAfter(today),
     StatRange.year => day.year == today.year,
     StatRange.allTime => true,
+  };
+}
+
+DateTime _salahRangeStart(
+  StatRange range,
+  DateTime now,
+  List<SalahLogEntry> entries,
+) {
+  final DateTime today = DateTime(now.year, now.month, now.day);
+  return switch (range) {
+    StatRange.week => today.subtract(const Duration(days: 6)),
+    StatRange.month => today.subtract(const Duration(days: 29)),
+    StatRange.year => DateTime(today.year),
+    StatRange.allTime =>
+      entries.isEmpty
+          ? today
+          : entries
+                .map((entry) => DateTime.parse(entry.date))
+                .reduce((a, b) => a.isBefore(b) ? a : b),
+  };
+}
+
+bool _prayerTrackingEnabled() {
+  return SettingsDB().get('prayerTrackingEnabled', defaultValue: false) == true;
+}
+
+SalahPrayerStats _salahPrayerStats(
+  SalahPrayer prayer,
+  List<SalahLogEntry> entries,
+) {
+  int onTime = 0;
+  int late = 0;
+  int notPrayed = 0;
+  for (final SalahLogEntry entry in entries) {
+    switch (prayer.statusFor(entry)) {
+      case SalahStatus.onTime:
+        onTime++;
+        break;
+      case SalahStatus.late:
+        late++;
+        break;
+      case SalahStatus.notPrayed:
+        notPrayed++;
+        break;
+      case SalahStatus.unlogged:
+        break;
+    }
+  }
+  return SalahPrayerStats(
+    prayer: prayer,
+    onTimeCount: onTime,
+    lateCount: late,
+    notPrayedCount: notPrayed,
+  );
+}
+
+int _salahStatusTotal(List<SalahLogEntry> entries, SalahStatus status) {
+  int total = 0;
+  for (final SalahLogEntry entry in entries) {
+    for (final SalahPrayer prayer in SalahPrayer.values) {
+      if (prayer.statusFor(entry) == status) total++;
+    }
+  }
+  return total;
+}
+
+int _loggedPrayerCount(SalahLogEntry? entry) {
+  if (entry == null) return 0;
+  int total = 0;
+  for (final SalahPrayer prayer in SalahPrayer.values) {
+    if (prayer.statusFor(entry).countsAsPrayer) total++;
+  }
+  return total;
+}
+
+int _fajrOnTimeStreak(List<SalahLogEntry> entries, DateTime now) {
+  final Map<String, SalahLogEntry> byDate = <String, SalahLogEntry>{
+    for (final SalahLogEntry entry in entries) entry.date: entry,
+  };
+  int streak = 0;
+  DateTime cursor = DateTime(now.year, now.month, now.day);
+  while (SalahPrayer.fajr.statusFor(
+        byDate[_dateKey(cursor)] ?? SalahLogEntry(date: _dateKey(cursor)),
+      ) ==
+      SalahStatus.onTime) {
+    streak++;
+    cursor = cursor.subtract(const Duration(days: 1));
+  }
+  return streak;
+}
+
+IconData? _salahStatusIcon(SalahStatus status) {
+  return switch (status) {
+    SalahStatus.onTime => Icons.check_circle_rounded,
+    SalahStatus.late => Icons.schedule_rounded,
+    SalahStatus.notPrayed => Icons.radio_button_unchecked_rounded,
+    SalahStatus.unlogged => null,
+  };
+}
+
+Color _salahStatusColor(EquranColors colors, SalahStatus status) {
+  return switch (status) {
+    SalahStatus.onTime => colors.primary,
+    SalahStatus.late => colors.accentGold,
+    SalahStatus.notPrayed || SalahStatus.unlogged => colors.textMuted,
+  };
+}
+
+Color _salahStatusBackground(EquranColors colors, SalahStatus status) {
+  return switch (status) {
+    SalahStatus.onTime => colors.primary.withAlpha(38),
+    SalahStatus.late => colors.accentGold.withAlpha(38),
+    SalahStatus.notPrayed || SalahStatus.unlogged => colors.surfaceAlt,
   };
 }
 

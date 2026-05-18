@@ -276,6 +276,80 @@ class DhikrSessionEntry {
   final int schemaVersion;
 }
 
+class SalahLogEntry {
+  const SalahLogEntry({
+    required this.date,
+    this.fajr = 'unlogged',
+    this.dhuhr = 'unlogged',
+    this.asr = 'unlogged',
+    this.maghrib = 'unlogged',
+    this.isha = 'unlogged',
+    this.schemaVersion = companionStorageSchemaVersion,
+  });
+
+  final String date;
+  final String fajr;
+  final String dhuhr;
+  final String asr;
+  final String maghrib;
+  final String isha;
+  final int schemaVersion;
+
+  Map<String, Object?> toMap() => <String, Object?>{
+    'date': date,
+    'fajr': fajr,
+    'dhuhr': dhuhr,
+    'asr': asr,
+    'maghrib': maghrib,
+    'isha': isha,
+    'schemaVersion': schemaVersion,
+  };
+
+  SalahLogEntry copyWith({
+    String? fajr,
+    String? dhuhr,
+    String? asr,
+    String? maghrib,
+    String? isha,
+  }) {
+    return SalahLogEntry(
+      date: date,
+      fajr: fajr ?? this.fajr,
+      dhuhr: dhuhr ?? this.dhuhr,
+      asr: asr ?? this.asr,
+      maghrib: maghrib ?? this.maghrib,
+      isha: isha ?? this.isha,
+      schemaVersion: schemaVersion,
+    );
+  }
+
+  static SalahLogEntry? fromStored(dynamic value) {
+    if (value is SalahLogEntry) return value;
+    if (value is! Map) return null;
+    final String date = value['date'] as String? ?? '';
+    if (DateTime.tryParse(date) == null) return null;
+    return SalahLogEntry(
+      date: date,
+      fajr: _salahStatus(value['fajr']),
+      dhuhr: _salahStatus(value['dhuhr']),
+      asr: _salahStatus(value['asr']),
+      maghrib: _salahStatus(value['maghrib']),
+      isha: _salahStatus(value['isha']),
+      schemaVersion:
+          value['schemaVersion'] as int? ?? companionStorageSchemaVersion,
+    );
+  }
+
+  static String _salahStatus(dynamic value) {
+    return switch (value) {
+      'onTime' => 'onTime',
+      'late' => 'late',
+      'notPrayed' => 'notPrayed',
+      _ => 'unlogged',
+    };
+  }
+}
+
 class QuranStatsSnapshot {
   const QuranStatsSnapshot({
     required this.id,
