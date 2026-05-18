@@ -38,6 +38,8 @@ class PrayerTimesPage extends StatefulWidget {
 }
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
+  static const Duration _prayerSnackBarDuration = Duration(seconds: 4);
+
   final PrayerTimesService _service = const PrayerTimesService();
   final PrayerSettingsStore _store = PrayerSettingsStore();
   late final PrayerLocationService _locationService;
@@ -46,6 +48,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   late DateTime _now;
   DateTime? _selectedDate;
   bool _isLocating = false;
+  String? _activePrayerSnackBarMessage;
 
   @override
   void initState() {
@@ -720,9 +723,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    _showPrayerSnackBar(message);
   }
 
   void _showLocationError(PrayerLocationResult result) {
@@ -743,9 +744,32 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       ),
       _ => null,
     };
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), action: action));
+    _showPrayerSnackBar(message, action: action);
+  }
+
+  void _showPrayerSnackBar(String message, {SnackBarAction? action}) {
+    if (!mounted) return;
+    if (_activePrayerSnackBarMessage == message) return;
+
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    _activePrayerSnackBarMessage = message;
+
+    final ScaffoldFeatureController<SnackBar, SnackBarClosedReason> controller =
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            action: action,
+            duration: _prayerSnackBarDuration,
+          ),
+        );
+    unawaited(
+      controller.closed.then((_) {
+        if (_activePrayerSnackBarMessage == message) {
+          _activePrayerSnackBarMessage = null;
+        }
+      }),
+    );
   }
 
   void _scheduleNextRefresh() {
