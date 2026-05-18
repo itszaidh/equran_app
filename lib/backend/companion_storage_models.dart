@@ -123,6 +123,49 @@ class QuranActivityDay {
   final int schemaVersion;
 }
 
+bool hasQuranReadingActivity(QuranActivityDay day) {
+  return day.ayahsRead > 0 ||
+      day.readAyahKeys.isNotEmpty ||
+      day.pagesRead > 0 ||
+      day.readingSeconds > 0;
+}
+
+DateTime quranActivityLocalDate(QuranActivityDay day) {
+  final DateTime? parsed = DateTime.tryParse(day.dateKey);
+  if (parsed != null) {
+    return DateTime(parsed.year, parsed.month, parsed.day);
+  }
+  return DateTime(day.updatedAt.year, day.updatedAt.month, day.updatedAt.day);
+}
+
+DateTime? latestQuranReadingActivityDate(Iterable<QuranActivityDay> days) {
+  DateTime? latestDate;
+  for (final QuranActivityDay day in days) {
+    if (!hasQuranReadingActivity(day)) continue;
+    final DateTime activityDate = quranActivityLocalDate(day);
+    if (latestDate == null || activityDate.isAfter(latestDate)) {
+      latestDate = activityDate;
+    }
+  }
+  return latestDate;
+}
+
+bool shouldShowJourneyStreak({
+  required int currentStreak,
+  required DateTime? lastReadingActivityDate,
+  required DateTime now,
+}) {
+  if (currentStreak <= 0 || lastReadingActivityDate == null) return false;
+  final DateTime today = DateTime(now.year, now.month, now.day);
+  final DateTime lastActivity = DateTime(
+    lastReadingActivityDate.year,
+    lastReadingActivityDate.month,
+    lastReadingActivityDate.day,
+  );
+  if (lastActivity.isAfter(today)) return true;
+  return today.difference(lastActivity).inDays <= 2;
+}
+
 class ReadingPlanEntry {
   const ReadingPlanEntry({
     required this.id,

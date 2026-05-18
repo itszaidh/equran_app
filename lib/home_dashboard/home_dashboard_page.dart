@@ -402,8 +402,7 @@ class _DashboardContent extends StatelessWidget {
             _JourneyPreviewCard(
               stats: summary.stats,
               activity: summary.todayActivity,
-              latestReading: summary.latestReading,
-              onOpenQuran: actions.onOpenQuran,
+              latestReadingActivityDate: summary.latestReadingActivityDate,
               onOpenStats: actions.onOpenStats,
             ),
             if (summary.activePlan != null) ...<Widget>[
@@ -449,6 +448,7 @@ class _DashboardSummary {
     required this.activePlan,
     required this.dailyAyah,
     required this.stats,
+    required this.latestReadingActivityDate,
     required this.bookmarks,
   });
 
@@ -459,6 +459,7 @@ class _DashboardSummary {
   final ReadingPlanEntry? activePlan;
   final _DailyAyah dailyAyah;
   final QuranStatsSnapshot? stats;
+  final DateTime? latestReadingActivityDate;
   final List<QuranBookmarkEntry> bookmarks;
 
   static _DashboardSummary load({
@@ -484,6 +485,9 @@ class _DashboardSummary {
     final String todayKey = _dateKey(now);
     final dynamic activityValue = QuranActivityDB().get(todayKey);
     final dynamic statsValue = QuranStatsDB().get('summary');
+    final DateTime? latestReadingActivityDate = latestQuranReadingActivityDate(
+      QuranActivityDB().box.values.whereType<QuranActivityDay>(),
+    );
 
     return _DashboardSummary(
       latestReading: latestReading,
@@ -497,6 +501,7 @@ class _DashboardSummary {
       activePlan: plans.isEmpty ? null : plans.first,
       dailyAyah: _DailyAyah.forDate(now),
       stats: statsValue is QuranStatsSnapshot ? statsValue : null,
+      latestReadingActivityDate: latestReadingActivityDate,
       bookmarks: const QuranBookmarkService()
           .bookmarkEntriesWithLegacyFallback()
           .take(3)
@@ -1827,15 +1832,13 @@ class _JourneyPreviewCard extends StatelessWidget {
   const _JourneyPreviewCard({
     required this.stats,
     required this.activity,
-    required this.latestReading,
-    required this.onOpenQuran,
+    required this.latestReadingActivityDate,
     required this.onOpenStats,
   });
 
   final QuranStatsSnapshot? stats;
   final QuranActivityDay? activity;
-  final ResumeStateEntry? latestReading;
-  final VoidCallback onOpenQuran;
+  final DateTime? latestReadingActivityDate;
   final VoidCallback onOpenStats;
 
   @override
@@ -1848,20 +1851,14 @@ class _JourneyPreviewCard extends StatelessWidget {
     final int dailyGoal = _dailyQuranGoalAyahs();
     final double progress = (ayahsRead / dailyGoal).clamp(0.0, 1.0).toDouble();
     final int progressPercent = (progress * 100).round();
-    final ResumeStateEntry? reading = latestReading;
-    final int? resumeSurah = reading?.surah;
-    final int? resumeAyah = reading?.ayah;
-    final bool canResume = resumeSurah != null && resumeAyah != null;
+    final bool showStreak = shouldShowJourneyStreak(
+      currentStreak: snapshot.currentStreak,
+      lastReadingActivityDate: latestReadingActivityDate,
+      now: DateTime.now(),
+    );
 
     return _HomePremiumCard(
-      onTap: canResume
-          ? () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) =>
-                    ReadPage(chapter: resumeSurah, startVerse: resumeAyah),
-              ),
-            )
-          : onOpenQuran,
+      onTap: onOpenStats,
       baseColor: colors.paleGreen,
       accentColor: colors.primary,
       assetPath: _designAsset,
@@ -1889,13 +1886,6 @@ class _JourneyPreviewCard extends StatelessWidget {
                 size: 36,
                 backgroundColor: colors.mint,
                 foregroundColor: colors.primary,
-              ),
-              const SizedBox(width: 7),
-              IconButton(
-                tooltip: 'Statistics',
-                onPressed: onOpenStats,
-                icon: const Icon(Icons.insights_rounded),
-                color: colors.primary,
               ),
             ],
           ),
@@ -1952,8 +1942,10 @@ class _JourneyPreviewCard extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: <Widget>[
-              _JourneyStreakChip(streak: snapshot.currentStreak),
-              const SizedBox(width: 8),
+              if (showStreak) ...<Widget>[
+                _JourneyStreakChip(streak: snapshot.currentStreak),
+                const SizedBox(width: 8),
+              ],
               _JourneyMetricChip(
                 label: '${snapshot.estimatedLettersRead} letters',
               ),

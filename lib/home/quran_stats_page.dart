@@ -2,6 +2,9 @@ import 'dart:math' as math;
 
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/prayer/prayer_models.dart' as prayer_models;
+import 'package:equran/prayer/prayer_settings_store.dart';
+import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -19,6 +22,7 @@ const int _surahGridAnimationMs =
     _surahCellAnimationMs + ((_totalSurahs - 1) * _surahCellStaggerMs);
 const int _salahRingAnimationMs = 700;
 const int _salahRingStaggerMs = 100;
+const double _statCardMinHeight = 130;
 
 final Map<String, int> _letterCountCache = <String, int>{};
 
@@ -414,6 +418,8 @@ class StatisticsRepository {
         duasViewed: duasViewed,
         prayerTrackingEnabled: prayerTrackingEnabled,
         salahPrayersToday: salahPrayersToday,
+        todaySalahEntry: todaySalah,
+        quranGoalProgress: (quranAyahs / dailyGoal).clamp(0.0, 1.0),
         progress: progress,
         motivation: _worshipMotivation(progress),
         highestStreak: streakStats.highest,
@@ -453,7 +459,7 @@ class StatisticsRepository {
         buckets: _quranBuckets(range, byDate, now),
         totalAyahs: totalAyahs,
         totalLetters: totalLetters,
-        activeDays: activityDays.where(_hasReadingActivity).length,
+        activeDays: activityDays.where(hasQuranReadingActivity).length,
         mostActiveDayName: mostActiveWeekday == null
             ? 'No day yet'
             : _weekdayName(mostActiveWeekday),
@@ -955,16 +961,71 @@ class _LoadingOverlay extends StatelessWidget {
   }
 }
 
-class _OverviewHeaderCard extends StatelessWidget {
+class _OverviewHeaderCard extends StatefulWidget {
   const _OverviewHeaderCard({required this.data});
 
   final OverviewStats data;
 
   @override
+  State<_OverviewHeaderCard> createState() => _OverviewHeaderCardState();
+}
+
+class _OverviewHeaderCardState extends State<_OverviewHeaderCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    final CurvedAnimation curved = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+    _fadeAnimation = curved;
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.04),
+      end: Offset.zero,
+    ).animate(curved);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: _OverviewHeroContent(data: widget.data),
+      ),
+    );
+  }
+}
+
+class _OverviewHeroContent extends StatelessWidget {
+  const _OverviewHeroContent({required this.data});
+
+  final OverviewStats data;
+
+  @override
+  Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.xl);
+    final DateTime now = DateTime.now();
+    final _SalahLogAvailability? salahAvailability = data.prayerTrackingEnabled
+        ? _salahLogAvailabilityForNow(now: now)
+        : null;
 
     return Material(
       color: Colors.transparent,
@@ -992,14 +1053,21 @@ class _OverviewHeaderCard extends StatelessWidget {
         child: Stack(
           children: <Widget>[
             Positioned(
-              top: -40,
-              right: -32,
-              width: 190,
-              height: 190,
+              top: 0,
+              right: 0,
+              width: 160,
+              height: 160,
               child: CustomPaint(
                 painter: IslamicPatternPainter(
                   color: colors.onPrimary,
-                  opacity: 0.05,
+                  opacity: 0.07,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _HeroCornerOrnamentsPainter(
+                  color: colors.accentGold.withAlpha(128),
                 ),
               ),
             ),
@@ -1008,36 +1076,27 @@ class _OverviewHeaderCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Text(
-                    "Today's Worship",
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: colors.onPrimary,
-                      fontWeight: FontWeight.w800,
+                  _HeroTopRow(dateLabel: _heroDateLabel(now)),
+                  const SizedBox(height: 4),
+                  _HeroGreeting(streak: data.highestStreak),
+                  const _HeroGoldDivider(),
+                  _HeroMetricsRow(data: data),
+                  const SizedBox(height: 16),
+                  _DailyQuranGoalProgress(progress: data.quranGoalProgress),
+                  if (salahAvailability != null) ...<Widget>[
+                    const SizedBox(height: 12),
+                    _HeroMiniSalahRow(
+                      entry: data.todaySalahEntry,
+                      availability: salahAvailability,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: <Widget>[
-                      _OverviewPill(label: 'Quran: ${data.quranAyahs} ayahs'),
-                      _OverviewPill(label: 'Tasbih: ${data.tasbihCount} dhikr'),
-                      _OverviewPill(label: 'Duas: ${data.duasViewed} duas'),
-                      if (data.prayerTrackingEnabled)
-                        _OverviewPill(
-                          label: 'Salah: ${data.salahPrayersToday}/5 today',
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _AnimatedWorshipProgress(progress: data.progress),
-                  const SizedBox(height: 8),
+                  ],
+                  const SizedBox(height: 10),
                   Text(
-                    data.motivation,
-                    style: theme.textTheme.labelMedium?.copyWith(
+                    _dailyHeroQuote(now),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: colors.onPrimaryMuted,
                       fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -1050,9 +1109,169 @@ class _OverviewHeaderCard extends StatelessWidget {
   }
 }
 
-class _OverviewPill extends StatelessWidget {
-  const _OverviewPill({required this.label});
+class _HeroTopRow extends StatelessWidget {
+  const _HeroTopRow({required this.dateLabel});
 
+  final String dateLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Text(
+            "TODAY'S WORSHIP",
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colors.onPrimary.withAlpha(179),
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.onPrimary.withAlpha(31),
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            child: Text(
+              dateLabel,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.onPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroGreeting extends StatelessWidget {
+  const _HeroGreeting({required this.streak});
+
+  final int streak;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final String line = streak > 0
+        ? "You're on a $streak-day streak — keep going"
+        : 'Continue your journey today';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Assalamu Alaikum',
+          style: theme.textTheme.headlineMedium?.copyWith(
+            color: colors.onPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          line,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colors.onPrimaryMuted,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroGoldDivider extends StatelessWidget {
+  const _HeroGoldDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    final EquranColors colors = context.equranColors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: SizedBox(
+        height: 1,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: <Color>[
+                colors.accentGold.withAlpha(153),
+                colors.accentGold.withAlpha(0),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroMetricsRow extends StatelessWidget {
+  const _HeroMetricsRow({required this.data});
+
+  final OverviewStats data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: _HeroMetricCard(
+            icon: Icons.menu_book_rounded,
+            value: _compactNumber(data.quranAyahs),
+            label: 'Ayahs',
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _HeroMetricCard(
+            icon: Icons.radio_button_checked_rounded,
+            value: _compactNumber(data.tasbihCount),
+            label: 'Dhikr',
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _HeroMetricCard(
+            icon: Icons.volunteer_activism_rounded,
+            value: _compactNumber(data.duasViewed),
+            label: 'Duas',
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: data.prayerTrackingEnabled
+              ? _HeroMetricCard(
+                  icon: Icons.mosque_rounded,
+                  value: '${data.salahPrayersToday}/5',
+                  label: 'Salah',
+                )
+              : _HeroMetricCard(
+                  icon: Icons.local_fire_department_rounded,
+                  value: _compactNumber(data.highestStreak),
+                  label: 'Day streak',
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroMetricCard extends StatelessWidget {
+  const _HeroMetricCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String value;
   final String label;
 
   @override
@@ -1061,16 +1280,227 @@ class _OverviewPill extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.onPrimary.withAlpha(38),
-        borderRadius: BorderRadius.circular(AppRadii.pill),
+        color: colors.onPrimary.withAlpha(20),
+        border: Border.all(color: colors.onPrimary.withAlpha(20)),
+        borderRadius: BorderRadius.circular(AppRadii.large),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Text(
-          label,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: colors.onPrimary,
-            fontWeight: FontWeight.w700,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, color: colors.accentGold, size: 18),
+            const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                maxLines: 1,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: colors.onPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.onPrimaryMuted,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DailyQuranGoalProgress extends StatefulWidget {
+  const _DailyQuranGoalProgress({required this.progress});
+
+  final double progress;
+
+  @override
+  State<_DailyQuranGoalProgress> createState() =>
+      _DailyQuranGoalProgressState();
+}
+
+class _DailyQuranGoalProgressState extends State<_DailyQuranGoalProgress> {
+  bool _animateIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() => _animateIn = true);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
+    final double clampedProgress = widget.progress.clamp(0.0, 1.0);
+    final int percent = (clampedProgress * 100).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                'DAILY QURAN GOAL',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colors.onPrimaryMuted,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            Text(
+              '$percent%',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.accentGold,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: radius,
+          child: SizedBox(
+            height: 6,
+            child: Stack(
+              children: <Widget>[
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: colors.onPrimary.withAlpha(38),
+                      borderRadius: radius,
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: AnimatedFractionallySizedBox(
+                      alignment: AlignmentDirectional.centerStart,
+                      widthFactor: _animateIn ? clampedProgress : 0,
+                      heightFactor: 1,
+                      duration: const Duration(milliseconds: 900),
+                      curve: Curves.easeOutCubic,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: <Color>[
+                              colors.accentGold,
+                              colors.primaryGradientEnd,
+                            ],
+                          ),
+                          borderRadius: radius,
+                        ),
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroMiniSalahRow extends StatelessWidget {
+  const _HeroMiniSalahRow({required this.entry, required this.availability});
+
+  final SalahLogEntry entry;
+  final _SalahLogAvailability availability;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        for (final SalahPrayer prayer in SalahPrayer.values) ...<Widget>[
+          if (prayer != SalahPrayer.values.first) const SizedBox(width: 5),
+          Expanded(
+            child: _HeroMiniSalahChip(
+              prayer: prayer,
+              logged:
+                  availability.isLoggable(prayer) &&
+                  prayer.statusFor(entry).countsAsPrayer,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _HeroMiniSalahChip extends StatelessWidget {
+  const _HeroMiniSalahChip({required this.prayer, required this.logged});
+
+  final SalahPrayer prayer;
+  final bool logged;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final Color borderColor = logged
+        ? colors.accentGold.withAlpha(102)
+        : colors.onPrimary.withAlpha(20);
+    final Color backgroundColor = logged
+        ? colors.accentGold.withAlpha(51)
+        : colors.onPrimary.withAlpha(15);
+    final Color dotColor = logged
+        ? colors.accentGold
+        : colors.onPrimary.withAlpha(51);
+
+    return SizedBox(
+      height: 32,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          border: Border.all(color: borderColor),
+          borderRadius: BorderRadius.circular(AppRadii.small),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                prayer.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colors.onPrimaryMuted,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 3),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
+                child: const SizedBox.square(dimension: 5),
+              ),
+            ],
           ),
         ),
       ),
@@ -1078,44 +1508,40 @@ class _OverviewPill extends StatelessWidget {
   }
 }
 
-class _AnimatedWorshipProgress extends StatelessWidget {
-  const _AnimatedWorshipProgress({required this.progress});
+class _HeroCornerOrnamentsPainter extends CustomPainter {
+  const _HeroCornerOrnamentsPainter({required this.color});
 
-  final double progress;
+  final Color color;
 
   @override
-  Widget build(BuildContext context) {
-    final EquranColors colors = context.equranColors;
-    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
-    return ClipRRect(
-      borderRadius: radius,
-      child: SizedBox(
-        height: 6,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.onPrimary.withAlpha(51),
-            borderRadius: radius,
-          ),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween<double>(begin: 0, end: progress.clamp(0.0, 1.0)),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: FractionallySizedBox(widthFactor: value, child: child),
-              );
-            },
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.onPrimary,
-                borderRadius: radius,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.square;
+    const double inset = 10;
+    const double length = 16;
+
+    final Path path = Path()
+      ..moveTo(inset, inset + length)
+      ..lineTo(inset, inset)
+      ..lineTo(inset + length, inset)
+      ..moveTo(size.width - inset - length, inset)
+      ..lineTo(size.width - inset, inset)
+      ..lineTo(size.width - inset, inset + length)
+      ..moveTo(inset, size.height - inset - length)
+      ..lineTo(inset, size.height - inset)
+      ..lineTo(inset + length, size.height - inset)
+      ..moveTo(size.width - inset - length, size.height - inset)
+      ..lineTo(size.width - inset, size.height - inset)
+      ..lineTo(size.width - inset, size.height - inset - length);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeroCornerOrnamentsPainter oldDelegate) {
+    return color != oldDelegate.color;
   }
 }
 
@@ -1371,6 +1797,127 @@ class _PrimaryPillButton extends StatelessWidget {
   }
 }
 
+class _SalahLogAvailability {
+  const _SalahLogAvailability({
+    required this.unlockTimes,
+    required this.use24HourFormat,
+  });
+
+  const _SalahLogAvailability.unrestricted({required this.use24HourFormat})
+    : unlockTimes = const <SalahPrayer, DateTime>{};
+
+  final Map<SalahPrayer, DateTime> unlockTimes;
+  final bool use24HourFormat;
+
+  bool isLoggable(SalahPrayer prayer, {DateTime? now}) {
+    final DateTime? unlockTime = unlockTimes[prayer];
+    if (unlockTime == null) return true;
+    return !(now ?? DateTime.now()).isBefore(unlockTime);
+  }
+
+  String? unlockLabelFor(SalahPrayer prayer) {
+    final DateTime? unlockTime = unlockTimes[prayer];
+    if (unlockTime == null) return null;
+    return _formatSalahLogTime(unlockTime, use24HourFormat);
+  }
+}
+
+class _SalahLogSheetResult {
+  const _SalahLogSheetResult({required this.removedUnavailableStatuses});
+
+  final bool removedUnavailableStatuses;
+}
+
+class _SanitizedSalahLog {
+  const _SanitizedSalahLog({
+    required this.entry,
+    required this.removedUnavailableStatuses,
+  });
+
+  final SalahLogEntry entry;
+  final bool removedUnavailableStatuses;
+}
+
+_SalahLogAvailability _salahLogAvailabilityForNow({DateTime? now}) {
+  final DateTime effectiveNow = now ?? DateTime.now();
+  final PrayerSettingsStore store = PrayerSettingsStore();
+  final prayer_models.PrayerTimeSettings settings = store.getSettings();
+  final prayer_models.PrayerLocation? location = store.getLocation();
+  if (location == null) {
+    return _SalahLogAvailability.unrestricted(
+      use24HourFormat: settings.use24HourFormat,
+    );
+  }
+
+  final PrayerTimesService service = const PrayerTimesService();
+  final DateTime today = service.calendarDateForInstant(
+    instant: effectiveNow,
+    location: location,
+    settings: settings,
+  );
+  final prayer_models.PrayerDay day = service.calculateDay(
+    date: today,
+    location: location,
+    settings: settings,
+  );
+
+  return _SalahLogAvailability(
+    use24HourFormat: settings.use24HourFormat,
+    unlockTimes: <SalahPrayer, DateTime>{
+      for (final SalahPrayer salahPrayer in SalahPrayer.values)
+        salahPrayer: day.entryFor(_prayerTimeKindFor(salahPrayer)).time,
+    },
+  );
+}
+
+_SanitizedSalahLog _sanitizeSalahLogEntry(
+  SalahLogEntry entry, {
+  required _SalahLogAvailability availability,
+}) {
+  bool removedUnavailableStatuses = false;
+  SalahLogEntry sanitized = SalahLogEntry(date: entry.date);
+  for (final SalahPrayer prayer in SalahPrayer.values) {
+    final SalahStatus status = prayer.statusFor(entry);
+    final bool unavailableStatus =
+        status != SalahStatus.unlogged && !availability.isLoggable(prayer);
+    if (unavailableStatus) {
+      removedUnavailableStatuses = true;
+    }
+    sanitized = prayer.updateEntry(
+      sanitized,
+      unavailableStatus ? SalahStatus.unlogged : status,
+    );
+  }
+  return _SanitizedSalahLog(
+    entry: sanitized,
+    removedUnavailableStatuses: removedUnavailableStatuses,
+  );
+}
+
+prayer_models.PrayerTimeKind _prayerTimeKindFor(SalahPrayer prayer) {
+  return switch (prayer) {
+    SalahPrayer.fajr => prayer_models.PrayerTimeKind.fajr,
+    SalahPrayer.dhuhr => prayer_models.PrayerTimeKind.dhuhr,
+    SalahPrayer.asr => prayer_models.PrayerTimeKind.asr,
+    SalahPrayer.maghrib => prayer_models.PrayerTimeKind.maghrib,
+    SalahPrayer.isha => prayer_models.PrayerTimeKind.isha,
+  };
+}
+
+String _formatSalahLogTime(DateTime time, bool use24HourFormat) {
+  final int hour = time.hour;
+  final int minute = time.minute;
+  if (use24HourFormat) {
+    return '${_twoDigits(hour)}:${_twoDigits(minute)}';
+  }
+
+  final String period = hour >= 12 ? 'PM' : 'AM';
+  final int displayHour = hour % 12 == 0 ? 12 : hour % 12;
+  return '$displayHour:${_twoDigits(minute)} $period';
+}
+
+String _twoDigits(int value) => value.toString().padLeft(2, '0');
+
 class _SalahSection extends StatelessWidget {
   const _SalahSection({
     super.key,
@@ -1385,23 +1932,49 @@ class _SalahSection extends StatelessWidget {
     BuildContext context,
     SalahPrayer initialPrayer,
   ) async {
-    final bool? saved = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _SalahLogSheet(
-        initialEntry: data.todayEntry,
-        initialPrayer: initialPrayer,
-        onSave: (entry) async {
-          await SalahLogDB().saveEntry(entry);
-          onLogSaved();
-        },
-      ),
-    );
-    if (saved != true || !context.mounted) return;
+    final _SalahLogSheetResult? result =
+        await showModalBottomSheet<_SalahLogSheetResult>(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          backgroundColor: Colors.transparent,
+          builder: (sheetContext) => _SalahLogSheet(
+            initialEntry: data.todayEntry,
+            initialPrayer: initialPrayer,
+            availability: _salahLogAvailabilityForNow(),
+            onSave: (entry) async {
+              final _SanitizedSalahLog sanitized = _sanitizeSalahLogEntry(
+                entry,
+                availability: _salahLogAvailabilityForNow(),
+              );
+              await SalahLogDB().saveEntry(sanitized.entry);
+              onLogSaved();
+              return sanitized.removedUnavailableStatuses;
+            },
+          ),
+        );
+    if (result == null || !context.mounted) return;
     final EquranColors colors = context.equranColors;
-    ScaffoldMessenger.of(context).showSnackBar(
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    if (result.removedUnavailableStatuses) {
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: colors.warningSurface,
+          duration: const Duration(seconds: 3),
+          content: Text(
+            'Some prayers were not yet available and were not saved.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colors.warning,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
+    messenger.showSnackBar(
       SnackBar(
         backgroundColor: colors.primary,
         content: Row(
@@ -1428,6 +2001,7 @@ class _SalahSection extends StatelessWidget {
       children: <Widget>[
         _PrayerChipsRow(
           entry: data.todayEntry,
+          availability: _salahLogAvailabilityForNow(),
           onPrayerTap: (prayer) => _openLogSheet(context, prayer),
         ),
         const SizedBox(height: 16),
@@ -1442,9 +2016,14 @@ class _SalahSection extends StatelessWidget {
 }
 
 class _PrayerChipsRow extends StatelessWidget {
-  const _PrayerChipsRow({required this.entry, required this.onPrayerTap});
+  const _PrayerChipsRow({
+    required this.entry,
+    required this.availability,
+    required this.onPrayerTap,
+  });
 
   final SalahLogEntry entry;
+  final _SalahLogAvailability availability;
   final ValueChanged<SalahPrayer> onPrayerTap;
 
   @override
@@ -1457,6 +2036,7 @@ class _PrayerChipsRow extends StatelessWidget {
             child: _PrayerChip(
               prayer: prayer,
               status: prayer.statusFor(entry),
+              isLoggable: availability.isLoggable(prayer),
               onTap: () => onPrayerTap(prayer),
             ),
           ),
@@ -1470,11 +2050,13 @@ class _PrayerChip extends StatelessWidget {
   const _PrayerChip({
     required this.prayer,
     required this.status,
+    required this.isLoggable,
     required this.onTap,
   });
 
   final SalahPrayer prayer;
   final SalahStatus status;
+  final bool isLoggable;
   final VoidCallback onTap;
 
   @override
@@ -1482,60 +2064,69 @@ class _PrayerChip extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
-    final IconData? icon = _salahStatusIcon(status);
-    final Color statusColor = _salahStatusColor(colors, status);
-    return Material(
-      color: _salahStatusBackground(colors, status),
-      borderRadius: radius,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
+    final bool locked = !isLoggable;
+    final IconData? icon = locked ? null : _salahStatusIcon(status);
+    final Color statusColor = locked
+        ? colors.textMuted
+        : _salahStatusColor(colors, status);
+    final String statusLabel = locked ? 'Not yet' : status.label;
+    return Opacity(
+      opacity: locked ? 0.4 : 1,
+      child: Material(
+        color: locked
+            ? colors.surfaceAlt
+            : _salahStatusBackground(colors, status),
         borderRadius: radius,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            border: Border.all(color: colors.border),
-          ),
-          child: SizedBox(
-            height: 56,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(
-                    height: 14,
-                    child: icon == null
-                        ? const SizedBox.shrink()
-                        : Icon(icon, size: 14, color: statusColor),
-                  ),
-                  const SizedBox(height: 2),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      prayer.label,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: colors.textSecondary,
-                        fontWeight: FontWeight.w700,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: radius,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              border: Border.all(color: colors.border),
+            ),
+            child: SizedBox(
+              height: 60,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(
+                      height: 12,
+                      child: icon == null
+                          ? const SizedBox.shrink()
+                          : Icon(icon, size: 12, color: statusColor),
+                    ),
+                    const SizedBox(height: 2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        prayer.label,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                          height: 1,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 1),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      status.label,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: status == SalahStatus.unlogged
-                            ? colors.textMuted
-                            : statusColor,
-                        fontWeight: FontWeight.w700,
+                    const SizedBox(height: 1),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        statusLabel,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: statusColor,
+                          fontWeight: FontWeight.w700,
+                          height: 1,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -1557,42 +2148,34 @@ class _SalahWeeklyStatsGrid extends StatelessWidget {
         final double gap = constraints.maxWidth >= 720 ? 12 : 10;
         return Column(
           children: <Widget>[
-            Row(
+            _StatGridRow(
+              gap: gap,
               children: <Widget>[
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.check_circle_rounded,
-                    value: '${data.onTimeThisWeek}',
-                    label: 'On time this week',
-                  ),
+                _StatCard(
+                  icon: Icons.check_circle_rounded,
+                  value: '${data.onTimeThisWeek}',
+                  label: 'On time this week',
                 ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.schedule_rounded,
-                    value: '${data.lateThisWeek}',
-                    label: 'Late this week',
-                  ),
+                _StatCard(
+                  icon: Icons.schedule_rounded,
+                  value: '${data.lateThisWeek}',
+                  label: 'Late this week',
                 ),
               ],
             ),
             SizedBox(height: gap),
-            Row(
+            _StatGridRow(
+              gap: gap,
               children: <Widget>[
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.star_rounded,
-                    value: data.bestPrayerName,
-                    label: 'Best prayer',
-                  ),
+                _StatCard(
+                  icon: Icons.star_rounded,
+                  value: data.bestPrayerName,
+                  label: 'Best prayer',
                 ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.wb_twilight_rounded,
-                    value: '${data.fajrStreak}',
-                    label: 'Current Fajr streak',
-                  ),
+                _StatCard(
+                  icon: Icons.wb_twilight_rounded,
+                  value: '${data.fajrStreak}',
+                  label: 'Current Fajr streak',
                 ),
               ],
             ),
@@ -1805,18 +2388,14 @@ class _FajrConsistencyCallout extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    final SalahPrayerStats fajrStats = data.prayerStats.firstWhere(
-      (stats) => stats.prayer == SalahPrayer.fajr,
-      orElse: () => SalahPrayerStats.empty(SalahPrayer.fajr),
-    );
-    final double rate = fajrStats.onTimeRate;
-    final String body = rate >= 0.8
-        ? 'Mashallah — your Fajr is very consistent'
-        : rate >= 0.5
-        ? 'Good effort — Fajr is improving'
-        : rate > 0
-        ? 'Fajr is a challenge — keep going'
-        : 'Start logging Fajr to see your progress';
+    final double? fajrOnTimePct = data.perPrayerOnTimePct[SalahPrayer.fajr.key];
+    final String body = fajrOnTimePct == null || fajrOnTimePct <= 0
+        ? 'Start logging Fajr to track your progress.'
+        : fajrOnTimePct >= 0.8
+        ? 'Mashallah — your Fajr is very consistent.'
+        : fajrOnTimePct >= 0.5
+        ? 'Good effort — Fajr is getting stronger.'
+        : 'Fajr is a challenge — every attempt counts.';
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadii.large),
       child: DecoratedBox(
@@ -1869,12 +2448,14 @@ class _SalahLogSheet extends StatefulWidget {
   const _SalahLogSheet({
     required this.initialEntry,
     required this.initialPrayer,
+    required this.availability,
     required this.onSave,
   });
 
   final SalahLogEntry initialEntry;
   final SalahPrayer initialPrayer;
-  final Future<void> Function(SalahLogEntry entry) onSave;
+  final _SalahLogAvailability availability;
+  final Future<bool> Function(SalahLogEntry entry) onSave;
 
   @override
   State<_SalahLogSheet> createState() => _SalahLogSheetState();
@@ -1919,9 +2500,13 @@ class _SalahLogSheetState extends State<_SalahLogSheet> {
         _statuses[prayer] ?? SalahStatus.unlogged,
       );
     }
-    await widget.onSave(entry);
+    final bool removedUnavailableStatuses = await widget.onSave(entry);
     if (!mounted) return;
-    Navigator.of(context).pop(true);
+    Navigator.of(context).pop(
+      _SalahLogSheetResult(
+        removedUnavailableStatuses: removedUnavailableStatuses,
+      ),
+    );
   }
 
   @override
@@ -1993,6 +2578,10 @@ class _SalahLogSheetState extends State<_SalahLogSheet> {
                           selectedStatus:
                               _statuses[prayer] ?? SalahStatus.unlogged,
                           highlighted: prayer == widget.initialPrayer,
+                          isLoggable: widget.availability.isLoggable(prayer),
+                          unlockTimeLabel: widget.availability.unlockLabelFor(
+                            prayer,
+                          ),
                           onSelected: (status) {
                             setState(() => _statuses[prayer] = status);
                           },
@@ -2022,18 +2611,25 @@ class _SalahLogPrayerRow extends StatelessWidget {
     required this.prayer,
     required this.selectedStatus,
     required this.highlighted,
+    required this.isLoggable,
+    required this.unlockTimeLabel,
     required this.onSelected,
   });
 
   final SalahPrayer prayer;
   final SalahStatus selectedStatus;
   final bool highlighted;
+  final bool isLoggable;
+  final String? unlockTimeLabel;
   final ValueChanged<SalahStatus> onSelected;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final bool hasSavedStatus = selectedStatus != SalahStatus.unlogged;
+    final bool locked = !isLoggable && !hasSavedStatus;
+    final bool readOnly = !isLoggable && hasSavedStatus;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -2044,38 +2640,101 @@ class _SalahLogPrayerRow extends StatelessWidget {
       child: Row(
         children: <Widget>[
           SizedBox(
-            width: 78,
-            child: Text(
-              prayer.label,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: colors.textPrimary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            width: 96,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                for (final SalahStatus status in const <SalahStatus>[
-                  SalahStatus.onTime,
-                  SalahStatus.late,
-                  SalahStatus.notPrayed,
-                ]) ...<Widget>[
-                  if (status != SalahStatus.onTime) const SizedBox(width: 6),
-                  Flexible(
-                    child: _SalahStatusButton(
-                      status: status,
-                      selected: selectedStatus == status,
-                      onTap: () => onSelected(status),
+                Text(
+                  prayer.label,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (locked && unlockTimeLabel != null) ...<Widget>[
+                  const SizedBox(height: 3),
+                  Text(
+                    'Available after $unlockTimeLabel',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.textMuted,
+                      fontStyle: FontStyle.italic,
+                      height: 1.15,
                     ),
                   ),
                 ],
               ],
             ),
           ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: readOnly
+                ? Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: _SalahReadOnlyStatusChip(status: selectedStatus),
+                  )
+                : IgnorePointer(
+                    ignoring: locked,
+                    child: Opacity(
+                      opacity: locked ? 0.35 : 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          for (final SalahStatus status in const <SalahStatus>[
+                            SalahStatus.onTime,
+                            SalahStatus.late,
+                            SalahStatus.notPrayed,
+                          ]) ...<Widget>[
+                            if (status != SalahStatus.onTime)
+                              const SizedBox(width: 6),
+                            Flexible(
+                              child: _SalahStatusButton(
+                                status: status,
+                                selected: selectedStatus == status,
+                                onTap: () => onSelected(status),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _SalahReadOnlyStatusChip extends StatelessWidget {
+  const _SalahReadOnlyStatusChip({required this.status});
+
+  final SalahStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
+    final Color foreground = _salahStatusColor(colors, status);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: _salahStatusBackground(colors, status),
+        borderRadius: radius,
+        border: Border.all(color: colors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        child: Text(
+          status.label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: foreground,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
@@ -2217,14 +2876,17 @@ class _ActivityCard extends StatelessWidget {
         border: Border.all(color: colors.border),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             const _SectionLabel('Quran activity'),
             const SizedBox(height: 16),
             SizedBox(
-              height: 188,
+              height: math.max(
+                200.0,
+                math.min(248.0, MediaQuery.sizeOf(context).width * 0.45),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
@@ -2285,15 +2947,7 @@ class _ActivityCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              bucket.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: colors.textMuted,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                            _RotatedAxisLabel(label: bucket.label),
                           ],
                         ),
                       ),
@@ -2302,6 +2956,40 @@ class _ActivityCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RotatedAxisLabel extends StatelessWidget {
+  const _RotatedAxisLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    return SizedBox(
+      height: 32,
+      child: OverflowBox(
+        minWidth: 0,
+        maxWidth: 72,
+        alignment: Alignment.topCenter,
+        child: Transform.rotate(
+          angle: -math.pi / 4,
+          alignment: Alignment.topCenter,
+          child: Text(
+            label,
+            maxLines: 1,
+            softWrap: false,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colors.textMuted,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
+          ),
         ),
       ),
     );
@@ -2321,42 +3009,34 @@ class _LifetimeTotalsGrid extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Row(
+            _StatGridRow(
+              gap: gap,
               children: <Widget>[
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.done_all_rounded,
-                    value: '${data.totalAyahs}',
-                    label: 'Total ayahs',
-                  ),
+                _StatCard(
+                  icon: Icons.done_all_rounded,
+                  value: '${data.totalAyahs}',
+                  label: 'Total ayahs',
                 ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.text_fields_rounded,
-                    value: _compactNumber(data.totalLetters),
-                    label: 'Total letters',
-                  ),
+                _StatCard(
+                  icon: Icons.text_fields_rounded,
+                  value: _compactNumber(data.totalLetters),
+                  label: 'Total letters',
                 ),
               ],
             ),
             SizedBox(height: gap),
-            Row(
+            _StatGridRow(
+              gap: gap,
               children: <Widget>[
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.calendar_today_rounded,
-                    value: '${data.activeDays}',
-                    label: 'Active days',
-                  ),
+                _StatCard(
+                  icon: Icons.calendar_today_rounded,
+                  value: '${data.activeDays}',
+                  label: 'Active days',
                 ),
-                SizedBox(width: gap),
-                Expanded(
-                  child: _StatCard(
-                    icon: Icons.event_available_rounded,
-                    value: data.mostActiveDayName,
-                    label: 'Most active day',
-                  ),
+                _StatCard(
+                  icon: Icons.event_available_rounded,
+                  value: data.mostActiveDayName,
+                  label: 'Most active day',
                 ),
               ],
             ),
@@ -2369,6 +3049,35 @@ class _LifetimeTotalsGrid extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _StatGridRow extends StatelessWidget {
+  const _StatGridRow({required this.children, required this.gap});
+
+  final List<Widget> children;
+  final double gap;
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          for (int index = 0; index < children.length; index++) ...<Widget>[
+            if (index > 0) SizedBox(width: gap),
+            Expanded(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minHeight: _statCardMinHeight,
+                ),
+                child: children[index],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
@@ -2388,42 +3097,45 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: colors.border),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            _StatIcon(icon: icon),
-            const SizedBox(height: 14),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: AlignmentDirectional.centerStart,
-              child: Text(
-                value,
-                maxLines: 1,
-                style: theme.textTheme.headlineLarge?.copyWith(
-                  color: colors.textPrimary,
-                  fontWeight: FontWeight.w700,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: _statCardMinHeight),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.large),
+          border: Border.all(color: colors.border),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _StatIcon(icon: icon),
+              const SizedBox(height: 14),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.textSecondary,
-                fontWeight: FontWeight.w600,
+              const SizedBox(height: 4),
+              Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -2445,39 +3157,42 @@ class _MostRecitedStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: colors.border),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            _StatIcon(icon: icon),
-            const SizedBox(height: 14),
-            Text(
-              name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: colors.textPrimary,
-                fontWeight: FontWeight.w700,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: _statCardMinHeight),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.large),
+          border: Border.all(color: colors.border),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _StatIcon(icon: icon),
+              const SizedBox(height: 14),
+              Text(
+                name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '$count recitations',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.textSecondary,
-                fontWeight: FontWeight.w600,
+              const SizedBox(height: 4),
+              Text(
+                '$count recitations',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -3001,42 +3716,34 @@ class _TasbihSection extends StatelessWidget {
             final double gap = constraints.maxWidth >= 720 ? 12 : 10;
             return Column(
               children: <Widget>[
-                Row(
+                _StatGridRow(
+                  gap: gap,
                   children: <Widget>[
-                    Expanded(
-                      child: _StatCard(
-                        icon: Icons.tag_rounded,
-                        value: '${data.totalDhikr}',
-                        label: 'Total dhikr',
-                      ),
+                    _StatCard(
+                      icon: Icons.tag_rounded,
+                      value: '${data.totalDhikr}',
+                      label: 'Total dhikr',
                     ),
-                    SizedBox(width: gap),
-                    Expanded(
-                      child: _StatCard(
-                        icon: Icons.show_chart_rounded,
-                        value: _averageLabel(data.dailyAverage),
-                        label: 'Daily average',
-                      ),
+                    _StatCard(
+                      icon: Icons.show_chart_rounded,
+                      value: _averageLabel(data.dailyAverage),
+                      label: 'Daily average',
                     ),
                   ],
                 ),
                 SizedBox(height: gap),
-                Row(
+                _StatGridRow(
+                  gap: gap,
                   children: <Widget>[
-                    Expanded(
-                      child: _MostRecitedStatCard(
-                        icon: Icons.favorite_rounded,
-                        name: data.mostRecitedName,
-                        count: data.mostRecitedCount,
-                      ),
+                    _MostRecitedStatCard(
+                      icon: Icons.favorite_rounded,
+                      name: data.mostRecitedName,
+                      count: data.mostRecitedCount,
                     ),
-                    SizedBox(width: gap),
-                    Expanded(
-                      child: _StatCard(
-                        icon: Icons.calendar_month_rounded,
-                        value: '${data.activeDays}',
-                        label: 'Active days',
-                      ),
+                    _StatCard(
+                      icon: Icons.calendar_month_rounded,
+                      value: '${data.activeDays}',
+                      label: 'Active days',
                     ),
                   ],
                 ),
@@ -3071,22 +3778,18 @@ class _DuasSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
+        _StatGridRow(
+          gap: 10,
           children: <Widget>[
-            Expanded(
-              child: _StatCard(
-                icon: Icons.visibility_rounded,
-                value: '${data.viewedCount}',
-                label: 'Duas viewed',
-              ),
+            _StatCard(
+              icon: Icons.visibility_rounded,
+              value: '${data.viewedCount}',
+              label: 'Duas viewed',
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.favorite_rounded,
-                value: '${data.favouriteCount}',
-                label: 'Favourite duas',
-              ),
+            _StatCard(
+              icon: Icons.favorite_rounded,
+              value: '${data.favouriteCount}',
+              label: 'Favourite duas',
             ),
           ],
         ),
@@ -3628,6 +4331,8 @@ class OverviewStats {
     required this.duasViewed,
     required this.prayerTrackingEnabled,
     required this.salahPrayersToday,
+    required this.todaySalahEntry,
+    required this.quranGoalProgress,
     required this.progress,
     required this.motivation,
     required this.highestStreak,
@@ -3638,6 +4343,8 @@ class OverviewStats {
   final int duasViewed;
   final bool prayerTrackingEnabled;
   final int salahPrayersToday;
+  final SalahLogEntry todaySalahEntry;
+  final double quranGoalProgress;
   final double progress;
   final String motivation;
   final int highestStreak;
@@ -3739,6 +4446,13 @@ class SalahSectionData {
   final String bestPrayerName;
   final int fajrStreak;
   final List<SalahPrayerStats> prayerStats;
+
+  Map<String, double> get perPrayerOnTimePct {
+    return <String, double>{
+      for (final SalahPrayerStats stats in prayerStats)
+        if (stats.loggedCount > 0) stats.prayer.key: stats.onTimeRate,
+    };
+  }
 }
 
 class SalahPrayerStats {
@@ -3952,7 +4666,7 @@ StreakStats _buildStreaks(
   DateTime now,
 ) {
   final Set<String> quranActiveDays = quranDays
-      .where(_hasReadingActivity)
+      .where(hasQuranReadingActivity)
       .map((day) => day.dateKey)
       .toSet();
   final Set<String> tasbihActiveDays = sessions
@@ -4270,10 +4984,6 @@ int _dayAyahCount(QuranActivityDay? day) {
   return math.max(day.ayahsRead, day.readAyahKeys.length);
 }
 
-bool _hasReadingActivity(QuranActivityDay day) {
-  return _dayAyahCount(day) > 0 || day.pagesRead > 0 || day.readingSeconds > 0;
-}
-
 DateTime _dhikrDate(DhikrSessionEntry entry) {
   return entry.completedAt ?? entry.startedAt;
 }
@@ -4541,6 +5251,44 @@ String _dateRangeLabel(DateTime start, DateTime end) {
 
 String _dateChipLabel(DateTime date) {
   return '${_shortMonthLabel(date)} ${date.day}, ${date.year}';
+}
+
+String _heroDateLabel(DateTime date) {
+  return '${_shortWeekdayLabel(date.weekday)}, ${date.day} '
+      '${_shortMonthLabel(date)}';
+}
+
+String _dailyHeroQuote(DateTime date) {
+  const List<String> quotes = <String>[
+    'Small deeds, sincerely done, grow beautifully.',
+    'Begin again with remembrance and gratitude.',
+    'A steady heart returns to Allah each day.',
+    "Let today's worship be gentle and consistent.",
+    'Every ayah read is light for the journey.',
+  ];
+  return quotes[_dayOfYear(date) % quotes.length];
+}
+
+int _dayOfYear(DateTime date) {
+  return DateTime(
+        date.year,
+        date.month,
+        date.day,
+      ).difference(DateTime(date.year)).inDays +
+      1;
+}
+
+String _shortWeekdayLabel(int weekday) {
+  const List<String> weekdays = <String>[
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+  return weekdays[(weekday - 1).clamp(0, weekdays.length - 1)];
 }
 
 String _weekdayName(int weekday) {
