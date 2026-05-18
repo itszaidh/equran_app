@@ -319,11 +319,24 @@ class ReadVersePlayerBar extends StatelessWidget {
       child: Row(
         children: <Widget>[
           IconButton(
-            tooltip: isPlaying ? 'Pause' : 'Play',
-            onPressed: onTogglePlayPause,
-            icon: Icon(
-              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            ),
+            tooltip: isLoading
+                ? 'Reconnecting'
+                : isPlaying
+                ? 'Pause'
+                : 'Play',
+            onPressed: isLoading ? null : onTogglePlayPause,
+            icon: isLoading
+                ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.primary,
+                    ),
+                  )
+                : Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  ),
             color: colorScheme.primary,
             iconSize: 22,
             visualDensity: VisualDensity.compact,

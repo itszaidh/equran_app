@@ -38,7 +38,7 @@ class PrayerTimesPage extends StatefulWidget {
 }
 
 class _PrayerTimesPageState extends State<PrayerTimesPage> {
-  static const Duration _prayerSnackBarDuration = Duration(seconds: 4);
+  static const Duration _prayerSnackBarDuration = Duration(seconds: 3);
 
   final PrayerTimesService _service = const PrayerTimesService();
   final PrayerSettingsStore _store = PrayerSettingsStore();
