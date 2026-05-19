@@ -330,10 +330,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _safeSetState(() {
           _isPlaying = state == ap.PlayerState.playing;
           _isPaused = state == ap.PlayerState.paused;
-          if (!_isPlaying) {
-            _position = currentPosition;
-            _positionSampledAt = DateTime.now();
-          }
+          _position = currentPosition;
+          _positionSampledAt = _isPlaying ? DateTime.now() : null;
           if (_isLoading) {
             if (_isPlaying) {
               _isLoading = false;
@@ -373,16 +371,22 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     });
 
     _stateSubscription = _justAudio.playerStateStream.listen((state) async {
-      final Duration currentPosition = _estimatedAudioPosition();
+      final bool isActivePlayback =
+          state.playing && state.processingState == ja.ProcessingState.ready;
+      final bool isLoading =
+          state.processingState == ja.ProcessingState.loading ||
+          state.processingState == ja.ProcessingState.buffering;
+      final Duration currentPosition = _justAudio.position;
       _safeSetState(() {
-        _isPlaying = state.playing;
+        _isPlaying = isActivePlayback;
         _isPaused =
             !state.playing && state.processingState == ja.ProcessingState.ready;
-        if (!state.playing) {
-          _position = currentPosition;
-          _positionSampledAt = DateTime.now();
-        }
-        if (state.playing ||
+        _position = currentPosition;
+        _positionSampledAt = isActivePlayback ? DateTime.now() : null;
+        if (isLoading) {
+          _isLoading = true;
+        } else if (isActivePlayback ||
+            _isPaused ||
             state.processingState == ja.ProcessingState.completed) {
           _isLoading = false;
         }
@@ -404,7 +408,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     try {
       _safeSetState(() {
         _position = Duration.zero;
-        _positionSampledAt = DateTime.now();
+        _positionSampledAt = null;
         _setActiveAyahValue(null);
         _isPlaying = false;
         _isPaused = false;
@@ -507,15 +511,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   void _setAudioPosition(Duration position) {
     if (!mounted) return;
-    Duration effectivePosition = position;
-    if (_isPlaying && !_isScrubbing) {
-      final Duration estimatedPosition = _estimatedAudioPosition();
-      if (estimatedPosition - position > const Duration(milliseconds: 120)) {
-        effectivePosition = estimatedPosition;
-      }
-    }
+    final Duration effectivePosition = position;
     _position = effectivePosition;
-    _positionSampledAt = DateTime.now();
+    _positionSampledAt = _isPlaying && !_isScrubbing ? DateTime.now() : null;
     if (_isPlaying && !_isScrubbing && _progressVisualTicker != null) {
       _persistListeningResume();
       return;
@@ -700,7 +698,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     );
     _selectedSurah = surah;
     _position = position;
-    _positionSampledAt = DateTime.now();
+    _positionSampledAt = null;
     _pendingInitialResumePosition = position > Duration.zero ? position : null;
     _setActiveAyahValue(entry.ayah);
     _syncProgressNotifier();
@@ -979,10 +977,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   Future<void> _setPlaybackRate(double value) async {
     final double rate = _useAudioplayersFallback ? 1.0 : value.clamp(0.5, 2.0);
+    final Duration currentPosition = _useAudioplayersFallback
+        ? await _fallbackAudio.getCurrentPosition() ?? _position
+        : _justAudio.position;
     _safeSetState(() {
-      final Duration currentPosition = _estimatedAudioPosition();
       _position = currentPosition;
-      _positionSampledAt = DateTime.now();
+      _positionSampledAt = _isPlaying ? DateTime.now() : null;
       _playbackRate = rate;
     });
     _syncProgressNotifier();
@@ -1013,7 +1013,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     await _stopCurrentTrack();
     _safeSetState(() {
       _position = Duration.zero;
-      _positionSampledAt = DateTime.now();
+      _positionSampledAt = null;
       _duration = Duration.zero;
       _playingFromOffline = false;
     });
@@ -1033,7 +1033,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       await _fallbackAudio.stop();
       _safeSetState(() {
         _position = Duration.zero;
-        _positionSampledAt = DateTime.now();
+        _positionSampledAt = null;
         _duration = Duration.zero;
         _setActiveAyahValue(null);
       });
@@ -1051,7 +1051,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         await _fallbackAudio.seek(initialSeek);
         _safeSetState(() {
           _position = initialSeek;
-          _positionSampledAt = DateTime.now();
+          _positionSampledAt = null;
         });
         _syncProgressNotifier();
       }
@@ -1069,7 +1069,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     _safeSetState(() {
       _position = Duration.zero;
-      _positionSampledAt = DateTime.now();
+      _positionSampledAt = null;
       _duration = Duration.zero;
       _setActiveAyahValue(null);
     });
@@ -1092,7 +1092,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       await _justAudio.seek(initialSeek);
       _safeSetState(() {
         _position = initialSeek;
-        _positionSampledAt = DateTime.now();
+        _positionSampledAt = null;
       });
       _syncProgressNotifier();
     }
@@ -1101,24 +1101,39 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   Future<void> _resumeCurrentTrack() async {
     if (_useAudioplayersFallback) {
+      final Duration currentPosition =
+          await _fallbackAudio.getCurrentPosition() ?? _position;
+      _safeSetState(() {
+        _position = currentPosition;
+        _positionSampledAt = null;
+      });
+      _syncProgressVisualPolicy(syncPosition: true);
       await _fallbackAudio.resume();
       await _fallbackAudio.setPlaybackRate(_playbackRate);
     } else {
+      final Duration currentPosition = _justAudio.position;
+      _safeSetState(() {
+        _position = currentPosition;
+        _positionSampledAt = null;
+      });
+      _syncProgressVisualPolicy(syncPosition: true);
       unawaited(_justAudio.play());
       await _justAudio.setSpeed(_playbackRate);
     }
   }
 
   Future<void> _pauseCurrentTrack() async {
-    final Duration currentPosition = _estimatedAudioPosition();
     if (_useAudioplayersFallback) {
       await _fallbackAudio.pause();
     } else {
       await _justAudio.pause();
     }
+    final Duration currentPosition = _useAudioplayersFallback
+        ? await _fallbackAudio.getCurrentPosition() ?? _position
+        : _justAudio.position;
     _safeSetState(() {
       _position = currentPosition;
-      _positionSampledAt = DateTime.now();
+      _positionSampledAt = null;
       _isPlaying = false;
       _isPaused = true;
     });
@@ -1441,9 +1456,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           try {
             await _seek(value);
           } finally {
+            final bool shouldResumeVisualEstimate = _isPlaying;
             _safeSetState(() {
               _position = Duration(milliseconds: pendingMs);
-              _positionSampledAt = DateTime.now();
+              _positionSampledAt = shouldResumeVisualEstimate
+                  ? DateTime.now()
+                  : null;
               _isScrubbing = false;
               _pendingSeekProgress = null;
               _scrubPreviewPosition = null;
@@ -2044,7 +2062,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         _loadedReciterCode = null;
         _safeSetState(() {
           _position = Duration.zero;
-          _positionSampledAt = DateTime.now();
+          _positionSampledAt = null;
           _duration = Duration.zero;
           _setActiveAyahValue(null);
           _isPlaying = false;
