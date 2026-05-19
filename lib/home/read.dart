@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:ui' show ImageByteFormat, TextBox, lerpDouble;
 import 'package:like_button/like_button.dart';
-import 'package:audio_service/audio_service.dart';
+import 'package:audioplayers/audioplayers.dart' as ap;
 import 'package:equran/backend/bookmark_db.dart';
 import 'package:equran/backend/library.dart'
     show
@@ -42,7 +42,6 @@ import 'package:equran/backend/library.dart'
         TafsirVerseResult,
         TafsirService,
         prettyBytes;
-import 'package:equran/services/quran_reading_audio_handler.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/theme/equran_text_styles.dart';
@@ -80,10 +79,25 @@ import 'package:flutter/rendering.dart'
         ViewConfiguration;
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:just_audio/just_audio.dart' as ja;
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:share_plus/share_plus.dart';
 import 'package:vibration/vibration.dart';
+
+class _OfflineAudioPlaybackException implements Exception {
+  const _OfflineAudioPlaybackException();
+}
+
+class _CancelledAudioPlaybackException implements Exception {
+  const _CancelledAudioPlaybackException();
+}
+
+class _AudioPlaybackStalledException implements Exception {
+  const _AudioPlaybackStalledException();
+}
 
 class QuranPosition {
   const QuranPosition({required this.surah, required this.ayah});
@@ -307,8 +321,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const Duration _playerSettleAnimationDelay = Duration(
     milliseconds: 280,
   );
+  static const Duration _audioBufferingReconnectDelay = Duration(seconds: 5);
+  static const Duration _audioReconnectDelay = Duration(seconds: 3);
+  static const Duration _audioReconnectMaxDuration = Duration(seconds: 30);
+  static const Duration _audioReconnectAttemptTimeout = Duration(seconds: 5);
+  static const int _audioReconnectMaxAttempts = 10;
 
-  late final QuranReadingAudioHandler _audioHandler;
+  final ja.AudioPlayer _versePlayer = ja.AudioPlayer();
+  final ap.AudioPlayer _fallbackVersePlayer = ap.AudioPlayer();
+  late final bool _useAudioplayersFallback;
   late int _currentVerse;
   late int _currentChapter;
   late ScrollController _scrollController;
@@ -322,6 +343,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   bool _playerMinimizedSettled = false;
   bool _isVersePlaying = false;
   bool _isVerseLoading = false;
+  bool _isStartingVersePlayback = false;
+  bool _isAttemptingAudioReconnect = false;
+  bool _currentVerseSourceIsStream = false;
   bool _isReadPageForeground = true;
   bool _isDownloadingSurahAyahs = false;
   final Set<String> _downloadingAyahKeys = <String>{};
@@ -333,6 +357,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   RepeatChoice _intervalRepeatChoice = RepeatChoice.infinite;
   RepeatChoice _repeatAyahChoice = RepeatChoice.one;
   int _ayahDelaySeconds = 0;
+  int _intervalCyclesCompleted = 0;
+  int _currentAyahPlayCount = 1;
+  final Set<String> _preloadingAyahKeys = <String>{};
+  int _playbackRequestId = 0;
+  bool _isHandlingVerseCompletion = false;
   int? _playingVerse;
   Duration _playerPosition = Duration.zero;
   Duration _playerDuration = Duration.zero;
@@ -345,17 +374,20 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   );
   StreamSubscription<Duration>? _playerPositionSubscription;
   StreamSubscription<Duration?>? _playerDurationSubscription;
-  StreamSubscription<PlaybackState>? _playerStateSubscription;
-  StreamSubscription<QuranAudioPosition>? _audioPositionSubscription;
-  StreamSubscription<QuranReadingAudioState>? _audioStateSubscription;
-  StreamSubscription<QuranAudioPlaybackError>? _audioErrorSubscription;
-  StreamSubscription<QuranAudioPosition>? _surahCompleteSubscription;
+  StreamSubscription<ja.PlayerState>? _playerStateSubscription;
+  StreamSubscription<ja.PlayerException>? _playerErrorSubscription;
+  StreamSubscription<Duration>? _fallbackPositionSubscription;
+  StreamSubscription<Duration>? _fallbackDurationSubscription;
+  StreamSubscription<ap.PlayerState>? _fallbackStateSubscription;
+  StreamSubscription<dynamic>? _fallbackEventSubscription;
+  StreamSubscription<void>? _fallbackCompleteSubscription;
   Timer? _pageScrollProgressTimer;
   Timer? _inlineVerseHighlightTimer;
   Timer? _lowRefreshIdleTimer;
   Timer? _playerSettleTimer;
   Timer? _bottomPlayerProgressTicker;
   Timer? _readingTimeFlushTimer;
+  Timer? _audioBufferingRetryTimer;
   DateTime? _readingTimeActiveSince;
   Future<void> _readingTimeWriteChain = Future<void>.value();
   DateTime? _playerPositionSampledAt;
@@ -395,7 +427,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _viewMode = SettingsDB().get("viewMode", defaultValue: true);
-    _audioHandler = quranReadingAudioHandler;
+    _useAudioplayersFallback =
+        !kIsWeb && (Platform.isLinux || Platform.isWindows);
 
     _scrollController = ScrollController();
     _currentChapter = widget.chapter;
@@ -434,6 +467,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _playerSettleTimer?.cancel();
     _stopBottomPlayerProgressTicker('dispose');
     _readingTimeFlushTimer?.cancel();
+    _audioBufferingRetryTimer?.cancel();
     FrameRatePolicyManager.instance.setPlayerDisposed(
       true,
       reason: 'read_player_disposed',
@@ -476,12 +510,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _playerPositionSubscription?.cancel();
     _playerDurationSubscription?.cancel();
     _playerStateSubscription?.cancel();
-    _audioPositionSubscription?.cancel();
-    _audioStateSubscription?.cancel();
-    _audioErrorSubscription?.cancel();
-    _surahCompleteSubscription?.cancel();
+    _playerErrorSubscription?.cancel();
+    _fallbackPositionSubscription?.cancel();
+    _fallbackDurationSubscription?.cancel();
+    _fallbackStateSubscription?.cancel();
+    _fallbackEventSubscription?.cancel();
+    _fallbackCompleteSubscription?.cancel();
     _pageScrollProgressTimer?.cancel();
     _inlineVerseHighlightTimer?.cancel();
+    _versePlayer.dispose();
+    _fallbackVersePlayer.dispose();
     _playerPositionValue.dispose();
     _playerDurationValue.dispose();
     _scrollController.dispose();
@@ -1695,14 +1733,60 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _bindVersePlayer() {
-    _playerPositionSubscription = _audioHandler.positionStream.listen((
+    if (_useAudioplayersFallback) {
+      _fallbackPositionSubscription = _fallbackVersePlayer.onPositionChanged
+          .listen((position) {
+            if (!mounted) return;
+            _setPlayerPosition(position);
+          });
+
+      _fallbackDurationSubscription = _fallbackVersePlayer.onDurationChanged
+          .listen((duration) {
+            if (!mounted) return;
+            _setPlayerDuration(duration);
+            _syncBottomPlayerProgressPolicy(syncPosition: true);
+          });
+
+      _fallbackStateSubscription = _fallbackVersePlayer.onPlayerStateChanged
+          .listen((state) {
+            if (!mounted) return;
+            setState(() {
+              _isVersePlaying = state == ap.PlayerState.playing;
+              if (state == ap.PlayerState.playing ||
+                  state == ap.PlayerState.paused) {
+                _isVerseLoading = false;
+              }
+            });
+            _syncReadingTimeTracking();
+            unawaited(_updateKeepScreenOn());
+            unawaited(
+              AndroidAudioDisplayMode.setAudioPlaybackActive(_isVersePlaying),
+            );
+            _syncBottomPlayerProgressPolicy(syncPosition: true);
+          });
+
+      _fallbackEventSubscription = _fallbackVersePlayer.eventStream.listen(
+        (_) {},
+        onError: (Object error, StackTrace stackTrace) {
+          _handleVersePlayerError(error);
+        },
+      );
+
+      _fallbackCompleteSubscription = _fallbackVersePlayer.onPlayerComplete
+          .listen((_) async {
+            await _handleVerseCompleteFromPlayer();
+          });
+      return;
+    }
+
+    _playerPositionSubscription = _versePlayer.positionStream.listen((
       position,
     ) {
       if (!mounted) return;
       _setPlayerPosition(position);
     });
 
-    _playerDurationSubscription = _audioHandler.durationStream.listen((
+    _playerDurationSubscription = _versePlayer.durationStream.listen((
       duration,
     ) {
       if (!mounted) return;
@@ -1710,29 +1794,25 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _syncBottomPlayerProgressPolicy(syncPosition: true);
     });
 
-    _playerStateSubscription = _audioHandler.playbackState.listen((
+    _playerStateSubscription = _versePlayer.playerStateStream.listen((
       state,
     ) async {
       if (!mounted) return;
       final bool isBuffering =
-          state.processingState == AudioProcessingState.buffering;
+          state.processingState == ja.ProcessingState.buffering;
       final bool isLoading =
-          state.processingState == AudioProcessingState.loading || isBuffering;
+          state.processingState == ja.ProcessingState.loading || isBuffering;
       final bool isAudiblyPlaying =
-          state.playing && state.processingState == AudioProcessingState.ready;
+          state.playing &&
+          state.processingState == ja.ProcessingState.ready &&
+          !_isAttemptingAudioReconnect;
       setState(() {
         _isVersePlaying = isAudiblyPlaying;
-        _isVerseLoading = isLoading;
-        if (state.processingState == AudioProcessingState.completed ||
+        _isVerseLoading = _isAttemptingAudioReconnect || isLoading;
+        if (state.processingState == ja.ProcessingState.completed ||
             (!state.playing &&
-                state.processingState == AudioProcessingState.ready)) {
-          _isVerseLoading = false;
-        }
-        if (state.processingState == AudioProcessingState.idle &&
-            !_audioHandler.hasActiveQueue) {
-          _isVersePlaying = false;
-          _isVerseLoading = false;
-          _playingVerse = null;
+                state.processingState == ja.ProcessingState.ready)) {
+          _isVerseLoading = _isAttemptingAudioReconnect;
         }
       });
       _syncReadingTimeTracking();
@@ -1741,85 +1821,181 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         AndroidAudioDisplayMode.setAudioPlaybackActive(isAudiblyPlaying),
       );
       _syncBottomPlayerProgressPolicy(syncPosition: true);
-    });
 
-    _audioPositionSubscription = _audioHandler.currentPositionStream.listen((
-      position,
-    ) {
-      _syncDisplayedPositionFromAudio(position);
-    });
-
-    _audioStateSubscription = _audioHandler.readingStateStream.listen((state) {
-      if (!mounted) return;
-      setState(() {
-        _continuousPlayback = state.isContinuous;
-        if (state.isContinuous) {
-          _repeatIntervalEnabled = false;
-        }
-        if (!state.hasActiveQueue) {
-          _playingVerse = null;
-          _isVersePlaying = false;
-          _isVerseLoading = false;
-        }
-      });
-      _syncBottomPlayerProgressPolicy(syncPosition: true);
-      unawaited(_updateKeepScreenOn());
-    });
-
-    _audioErrorSubscription = _audioHandler.playbackErrorStream.listen((error) {
-      _showAudioPlaybackMessage(error.message);
-    });
-
-    _surahCompleteSubscription = _audioHandler.surahCompleteStream.listen((
-      position,
-    ) {
-      if (!mounted) return;
-      _showAudioPlaybackMessage(
-        'Completed ${quran.getSurahName(position.surah)}.',
-      );
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (_audioHandler.hasActiveQueue) {
-        _syncDisplayedPositionFromAudio(_audioHandler.currentPosition);
+      if (isBuffering && state.playing && _currentVerseSourceIsStream) {
+        _scheduleAudioBufferingReconnect();
+      } else if (!isBuffering) {
+        _audioBufferingRetryTimer?.cancel();
       }
-      unawaited(_syncReadingAudioStateFromPlayer());
+
+      if (state.processingState == ja.ProcessingState.completed) {
+        await _handleVerseCompleteFromPlayer();
+      }
+    });
+
+    _playerErrorSubscription = _versePlayer.errorStream.listen((
+      ja.PlayerException error,
+    ) {
+      _handleVersePlayerError(error);
     });
   }
 
-  void _syncDisplayedPositionFromAudio(QuranAudioPosition position) {
-    if (!mounted || !_audioHandler.hasActiveQueue) return;
+  void _scheduleAudioBufferingReconnect() {
+    if (_isStartingVersePlayback || _isAttemptingAudioReconnect) return;
+    if (_audioBufferingRetryTimer?.isActive ?? false) return;
 
-    final int safeSurah = position.surah.clamp(1, 114).toInt();
-    final int safeVerse = position.ayah
-        .clamp(1, quran.getVerseCount(safeSurah))
-        .toInt();
-    final bool chapterChanged = safeSurah != _currentChapter;
-
-    setState(() {
-      if (chapterChanged) {
-        _clearVerseTextMetrics();
-        _currentChapter = safeSurah;
-        _totalVerses = quran.getVerseCount(_currentChapter);
-        _isDownloadingSurahAyahs = AudioDownloadService()
-            .isSurahAyahsDownloadInProgress(_currentChapter);
-        _hasDownloadedSurahAyahs = false;
-        _hasDownloadedCurrentAyah = false;
+    final int requestId = _playbackRequestId;
+    _audioBufferingRetryTimer = Timer(_audioBufferingReconnectDelay, () {
+      if (!mounted || requestId != _playbackRequestId) return;
+      if (_isStartingVersePlayback ||
+          _isAttemptingAudioReconnect ||
+          !_currentVerseSourceIsStream) {
+        return;
       }
-      _playerVisible = true;
-      _playerMounted = true;
-      _playingVerse = safeVerse;
-      _currentVerse = safeVerse;
-      _continuousPlayback = _audioHandler.isContinuous;
+      final ja.PlayerState state = _versePlayer.playerState;
+      if (state.playing &&
+          state.processingState == ja.ProcessingState.buffering) {
+        _handleVersePlayerError(const _AudioPlaybackStalledException());
+      }
     });
+  }
 
-    if (chapterChanged) {
-      unawaited(_refreshSurahAyahDownloadState());
-      unawaited(_loadChapterTransliterations());
+  void _handleVersePlayerError(Object error) {
+    if (!mounted ||
+        _isStartingVersePlayback ||
+        _isAttemptingAudioReconnect ||
+        !_currentVerseSourceIsStream ||
+        _playingVerse == null) {
+      return;
     }
-    _updateDB();
-    unawaited(_scrollToVerseIfNeeded(safeVerse, smooth: true));
+
+    unawaited(_attemptAudioReconnect(error));
+  }
+
+  Future<void> _attemptAudioReconnect(Object initialError) async {
+    if (!mounted || _isAttemptingAudioReconnect) return;
+
+    final int requestId = _playbackRequestId;
+    final QuranPosition position = _playingPosition;
+    final Duration resumePosition = _resumePositionForReconnect(
+      _estimatedBottomPlayerPosition(),
+    );
+    final Stopwatch stopwatch = Stopwatch()..start();
+    Object lastError = initialError;
+    bool reconnectFailed = false;
+
+    _audioBufferingRetryTimer?.cancel();
+    setState(() {
+      _isAttemptingAudioReconnect = true;
+      _isVerseLoading = true;
+      _isVersePlaying = false;
+      _setPlayerPosition(resumePosition, render: true);
+    });
+    _syncReadingTimeTracking();
+    _syncBottomPlayerProgressPolicy(syncPosition: true);
+    unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(false));
+
+    try {
+      for (
+        int attempt = 1;
+        attempt <= _audioReconnectMaxAttempts &&
+            stopwatch.elapsed < _audioReconnectMaxDuration;
+        attempt++
+      ) {
+        await Future<void>.delayed(_audioReconnectDelay);
+        _throwIfPlaybackRequestCancelled(requestId);
+
+        if (_hasCurrentVersePlaybackRecovered) return;
+
+        final bool online = await _hasInternetConnection();
+        _throwIfPlaybackRequestCancelled(requestId);
+        if (!online) {
+          lastError = const _OfflineAudioPlaybackException();
+          continue;
+        }
+
+        try {
+          await _playVerseSource(
+            position.surah,
+            position.ayah,
+            requestId,
+            startPosition: resumePosition,
+          ).timeout(_audioReconnectAttemptTimeout);
+          _throwIfPlaybackRequestCancelled(requestId);
+          if (!mounted) return;
+          setState(() {
+            _isVerseLoading = false;
+            _isVersePlaying = true;
+            _setPlayerPosition(resumePosition, render: true);
+          });
+          _syncReadingTimeTracking();
+          _syncBottomPlayerProgressPolicy(syncPosition: true);
+          unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(true));
+          return;
+        } catch (error) {
+          lastError = error;
+          if (!mounted || requestId != _playbackRequestId) {
+            throw const _CancelledAudioPlaybackException();
+          }
+          _setPlayerPosition(resumePosition, render: true);
+          _syncBottomPlayerProgressPolicy(syncPosition: true);
+        }
+      }
+
+      if (!mounted || requestId != _playbackRequestId) return;
+      try {
+        await _pauseCurrentVerseAudio();
+      } catch (_) {
+        // Keep the sampled progress even if the platform player is already idle.
+      }
+      if (!mounted || requestId != _playbackRequestId) return;
+      setState(() {
+        _isVerseLoading = false;
+        _isVersePlaying = false;
+        _setPlayerPosition(resumePosition, render: true);
+      });
+      _syncReadingTimeTracking();
+      _syncBottomPlayerProgressPolicy(syncPosition: true);
+      unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(false));
+      reconnectFailed = true;
+      _showAudioPlaybackMessage(
+        'Audio connection was interrupted. Check your internet and try again.',
+      );
+      if (kDebugMode) {
+        debugPrint('ReadPage audio reconnect failed: $lastError');
+      }
+    } on _CancelledAudioPlaybackException {
+      return;
+    } finally {
+      stopwatch.stop();
+      if (mounted && requestId == _playbackRequestId) {
+        _isAttemptingAudioReconnect = false;
+        if (reconnectFailed) {
+          _syncBottomPlayerProgressPolicy(syncPosition: true);
+        } else {
+          unawaited(_syncReadingAudioStateFromPlayer());
+        }
+      } else {
+        _isAttemptingAudioReconnect = false;
+      }
+    }
+  }
+
+  bool get _hasCurrentVersePlaybackRecovered {
+    if (_useAudioplayersFallback) {
+      return _fallbackVersePlayer.state == ap.PlayerState.playing;
+    }
+    final ja.PlayerState state = _versePlayer.playerState;
+    return state.playing && state.processingState == ja.ProcessingState.ready;
+  }
+
+  Duration _resumePositionForReconnect(Duration position) {
+    if (position <= Duration.zero) return Duration.zero;
+    final Duration duration = _playerDuration;
+    if (duration > const Duration(milliseconds: 600) && position >= duration) {
+      return duration - const Duration(milliseconds: 500);
+    }
+    return position;
   }
 
   void _showAudioPlaybackMessage(String message) {
@@ -2059,6 +2235,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     if (_isVerseLoading) return;
 
     _pauseReadingTimeTracking(flush: true);
+    final int requestId = ++_playbackRequestId;
+    _audioBufferingRetryTimer?.cancel();
+    _isAttemptingAudioReconnect = false;
+    _currentVerseSourceIsStream = false;
     final bool chapterChanged = surah != _currentChapter;
     final int safeSurah = surah.clamp(1, 114).toInt();
     final int safeVerse = verse
@@ -2134,20 +2314,25 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         : Future<void>.value();
 
     try {
-      await _audioHandler.customAction(
-        QuranReadingAudioHandler.actionPlayAyah,
-        <String, dynamic>{
-          'surah': safeSurah,
-          'ayah': safeVerse,
-          'continuous': continuous,
-          'speed': _playbackRate(),
-        },
-      );
+      _isStartingVersePlayback = true;
+      await _playVerseWithRetry(safeSurah, safeVerse, requestId);
+      if (continuous && mounted && requestId == _playbackRequestId) {
+        unawaited(_preloadNextContinuousAyahs(safeSurah, safeVerse));
+      }
+    } on _CancelledAudioPlaybackException {
+      return;
+    } on _OfflineAudioPlaybackException {
+      if (mounted) {
+        _showAudioPlaybackMessage(
+          'You are offline. Download this ayah or reconnect to stream it.',
+        );
+      }
     } catch (_) {
       if (mounted) {
         _showAudioPlaybackMessage('Unable to play ayah audio.');
       }
     } finally {
+      _isStartingVersePlayback = false;
       if (mounted) {
         setState(() {
           _isVerseLoading = false;
@@ -2169,29 +2354,232 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _playVerseWithRetry(int surah, int verse, int requestId) async {
+    const List<Duration> retryDelays = <Duration>[
+      Duration(milliseconds: 350),
+      Duration(milliseconds: 800),
+      Duration(milliseconds: 1400),
+    ];
+
+    Object? lastError;
+    for (int attempt = 0; attempt <= retryDelays.length; attempt++) {
+      try {
+        _throwIfPlaybackRequestCancelled(requestId);
+        await _playVerseSource(surah, verse, requestId);
+        return;
+      } on _CancelledAudioPlaybackException {
+        rethrow;
+      } on _OfflineAudioPlaybackException {
+        rethrow;
+      } catch (error) {
+        lastError = error;
+        _throwIfPlaybackRequestCancelled(requestId);
+        if (!await _hasInternetConnection()) {
+          _throwIfPlaybackRequestCancelled(requestId);
+          throw const _OfflineAudioPlaybackException();
+        }
+        if (attempt == retryDelays.length) break;
+        await Future<void>.delayed(retryDelays[attempt]);
+      }
+    }
+
+    Error.throwWithStackTrace(
+      lastError ?? Exception('Audio playback failed.'),
+      StackTrace.current,
+    );
+  }
+
+  Future<void> _playVerseSource(
+    int surah,
+    int verse,
+    int requestId, {
+    Duration startPosition = Duration.zero,
+  }) async {
+    await _stopCurrentVerseAudio();
+    _throwIfPlaybackRequestCancelled(requestId);
+    final double rate = _playbackRate();
+    await _setCurrentVersePlaybackRate(rate);
+    final AudioDownloadService downloads = AudioDownloadService();
+    final File? offlineFile = kIsWeb
+        ? null
+        : await downloads.playbackAyahFile(surah, verse);
+    _throwIfPlaybackRequestCancelled(requestId);
+    if (!kIsWeb && offlineFile != null && offlineFile.existsSync()) {
+      await _playCurrentVerseSource(
+        sourceUri: Uri.file(offlineFile.path),
+        surah: surah,
+        verse: verse,
+        fromOffline: true,
+        startPosition: startPosition,
+      );
+    } else {
+      final String url = await QuranAudioService().getAyahUrl(surah, verse);
+      _throwIfPlaybackRequestCancelled(requestId);
+      if (_useAudioplayersFallback &&
+          !kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.linux) {
+        final Uint8List bytes = await _downloadVerseAudioBytes(url);
+        _throwIfPlaybackRequestCancelled(requestId);
+        _currentVerseSourceIsStream = false;
+        await _fallbackVersePlayer.play(
+          ap.BytesSource(bytes),
+          position: startPosition,
+        );
+      } else {
+        await _playCurrentVerseSource(
+          sourceUri: Uri.parse(url),
+          surah: surah,
+          verse: verse,
+          fromOffline: false,
+          startPosition: startPosition,
+        );
+      }
+      if (!kIsWeb) {
+        unawaited(downloads.cacheAyah(surah, verse));
+      }
+    }
+    await _setCurrentVersePlaybackRate(rate);
+  }
+
+  Future<void> _playCurrentVerseSource({
+    required Uri sourceUri,
+    required int surah,
+    required int verse,
+    required bool fromOffline,
+    required Duration startPosition,
+  }) async {
+    _currentVerseSourceIsStream =
+        !fromOffline &&
+        (sourceUri.isScheme('http') || sourceUri.isScheme('https'));
+    if (_useAudioplayersFallback) {
+      if (sourceUri.isScheme('file')) {
+        await _fallbackVersePlayer.play(
+          ap.DeviceFileSource(sourceUri.toFilePath()),
+          position: startPosition,
+        );
+      } else {
+        await _fallbackVersePlayer.play(
+          ap.UrlSource(sourceUri.toString()),
+          position: startPosition,
+        );
+      }
+      return;
+    }
+
+    await _versePlayer.setAudioSource(
+      ja.AudioSource.uri(
+        sourceUri,
+        tag: MediaItem(
+          id:
+              'ayah-$surah-$verse-'
+              '${fromOffline ? "offline" : "stream"}-'
+              '${QuranAudioService().selectedReciter.code}',
+          album: 'eQuran',
+          title: '${quran.getSurahName(surah)} $verse',
+          artist: QuranAudioService().selectedReciter.englishName,
+          displayDescription: 'Ayah $surah:$verse',
+        ),
+      ),
+      initialPosition: startPosition,
+    );
+    unawaited(_versePlayer.play());
+  }
+
   Future<void> _setCurrentVersePlaybackRate(double rate) async {
     final Duration currentPosition = _estimatedBottomPlayerPosition();
     _playerPosition = currentPosition;
     _playerPositionSampledAt = DateTime.now();
     _currentVersePlaybackRate = rate;
     _syncBottomPlayerProgressPolicy(syncPosition: true);
-    await _audioHandler.setSpeed(rate);
+    if (_useAudioplayersFallback) {
+      await _fallbackVersePlayer.setPlaybackRate(rate);
+      return;
+    }
+    await _versePlayer.setSpeed(rate);
   }
 
   Future<void> _pauseCurrentVerseAudio() async {
-    await _audioHandler.pause();
+    _audioBufferingRetryTimer?.cancel();
+    if (_useAudioplayersFallback) {
+      await _fallbackVersePlayer.pause();
+      return;
+    }
+    await _versePlayer.pause();
   }
 
   Future<void> _resumeCurrentVerseAudio() async {
-    await _audioHandler.play();
+    if (_useAudioplayersFallback) {
+      await _fallbackVersePlayer.resume();
+      return;
+    }
+    unawaited(_versePlayer.play());
   }
 
   Future<void> _stopCurrentVerseAudio() async {
-    await _audioHandler.stop();
+    _audioBufferingRetryTimer?.cancel();
+    if (_useAudioplayersFallback) {
+      await _fallbackVersePlayer.stop();
+      return;
+    }
+    await _versePlayer.stop();
   }
 
   Future<void> _seekCurrentVerseAudio(Duration position) async {
-    await _audioHandler.seek(position);
+    if (_useAudioplayersFallback) {
+      await _fallbackVersePlayer.seek(position);
+      return;
+    }
+    await _versePlayer.seek(position);
+  }
+
+  Future<Uint8List> _downloadVerseAudioBytes(String url) async {
+    final http.Response response = await http.get(Uri.parse(url));
+    if (response.statusCode != 200) {
+      throw Exception('Failed to load audio: ${response.statusCode}');
+    }
+    return response.bodyBytes;
+  }
+
+  Future<void> _preloadNextContinuousAyahs(int surah, int verse) async {
+    final AudioDownloadService downloads = AudioDownloadService();
+    QuranPosition? nextPosition = _nextQuranPosition(
+      QuranPosition(surah: surah, ayah: verse),
+    );
+    for (int i = 0; i < 2 && nextPosition != null; i++) {
+      final String key = '${nextPosition.surah}-${nextPosition.ayah}';
+      if (_preloadingAyahKeys.contains(key)) continue;
+      _preloadingAyahKeys.add(key);
+      try {
+        await downloads.cacheAyah(nextPosition.surah, nextPosition.ayah);
+      } catch (_) {
+        // Best-effort preload; foreground playback should never wait on this.
+      } finally {
+        _preloadingAyahKeys.remove(key);
+      }
+      nextPosition = _nextQuranPosition(nextPosition);
+    }
+  }
+
+  void _throwIfPlaybackRequestCancelled(int requestId) {
+    if (!mounted || requestId != _playbackRequestId) {
+      throw const _CancelledAudioPlaybackException();
+    }
+  }
+
+  Future<bool> _hasInternetConnection() async {
+    if (kIsWeb) return true;
+
+    final http.Client client = http.Client();
+    try {
+      final http.Response response = await client
+          .head(Uri.parse('https://quranapi.pages.dev/api/1/1.json'))
+          .timeout(const Duration(seconds: 3));
+      return response.statusCode >= 200 && response.statusCode < 500;
+    } catch (_) {
+      return false;
+    } finally {
+      client.close();
+    }
   }
 
   double _playbackRate() {
@@ -2266,12 +2654,33 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         PlaybackInterval(start: _currentPosition, end: _currentPosition);
   }
 
+  QuranPosition? _nextQuranPosition(QuranPosition position) {
+    final int verseCount = quran.getVerseCount(position.surah);
+    if (position.ayah < verseCount) {
+      return QuranPosition(surah: position.surah, ayah: position.ayah + 1);
+    }
+    if (position.surah >= 114) return null;
+    return QuranPosition(surah: position.surah + 1, ayah: 1);
+  }
+
+  QuranPosition? _previousQuranPosition(QuranPosition position) {
+    if (position.ayah > 1) {
+      return QuranPosition(surah: position.surah, ayah: position.ayah - 1);
+    }
+    if (position.surah <= 1) return null;
+    final int previousSurah = position.surah - 1;
+    return QuranPosition(
+      surah: previousSurah,
+      ayah: quran.getVerseCount(previousSurah),
+    );
+  }
+
   bool get _canPlayPreviousAyah {
     final QuranPosition position = _playingPosition;
     if (_repeatIntervalEnabled) {
       return position.isAfter(_effectiveInterval.start);
     }
-    return position.ayah > 1;
+    return _previousQuranPosition(position) != null;
   }
 
   bool get _canPlayNextAyah {
@@ -2280,7 +2689,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       return position.isBefore(_effectiveInterval.end) ||
           _intervalRepeatChoice.isInfinite;
     }
-    return position.ayah < quran.getVerseCount(position.surah);
+    return _nextQuranPosition(position) != null;
   }
 
   String _formatPosition(QuranPosition position, {bool useNames = false}) {
@@ -2297,26 +2706,156 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     return '${_formatPosition(interval.start)} → ${_formatPosition(interval.end)}';
   }
 
-  void _resetPlaybackCounters() {}
+  void _resetPlaybackCounters() {
+    _intervalCyclesCompleted = 0;
+    _currentAyahPlayCount = 1;
+  }
+
+  Future<void> _delayBeforeNextPlayback(int requestId) async {
+    if (_ayahDelaySeconds <= 0) return;
+    await Future<void>.delayed(Duration(seconds: _ayahDelaySeconds));
+    _throwIfPlaybackRequestCancelled(requestId);
+  }
+
+  Future<void> _handleVerseCompleteFromPlayer() async {
+    if (_isHandlingVerseCompletion) return;
+    _isHandlingVerseCompletion = true;
+    try {
+      await _handleVerseComplete();
+    } finally {
+      _isHandlingVerseCompletion = false;
+    }
+  }
 
   Future<void> _syncReadingAudioStateFromPlayer() async {
-    final PlaybackState state = _audioHandler.playbackState.value;
-    final bool isLoading =
-        state.processingState == AudioProcessingState.loading ||
-        state.processingState == AudioProcessingState.buffering;
-    final bool isPlaying =
-        state.playing && state.processingState == AudioProcessingState.ready;
+    final Duration position = await _currentVerseAudioPosition();
+    final Duration duration = await _currentVerseAudioDuration();
+    final bool isLoading;
+    final bool isPlaying;
+    if (_useAudioplayersFallback) {
+      isLoading = _isAttemptingAudioReconnect;
+      isPlaying = _isCurrentVerseAudioPlaying && !isLoading;
+    } else {
+      final ja.PlayerState state = _versePlayer.playerState;
+      isLoading =
+          _isAttemptingAudioReconnect ||
+          state.processingState == ja.ProcessingState.loading ||
+          state.processingState == ja.ProcessingState.buffering;
+      isPlaying =
+          state.playing &&
+          state.processingState == ja.ProcessingState.ready &&
+          !isLoading;
+    }
     if (!mounted) return;
 
     setState(() {
-      _setPlayerPosition(_audioHandler.position);
-      _setPlayerDuration(_audioHandler.duration);
+      _setPlayerPosition(position);
+      _setPlayerDuration(duration);
       _isVersePlaying = isPlaying;
       _isVerseLoading = isLoading;
     });
     _syncReadingTimeTracking();
     _syncBottomPlayerProgressPolicy(syncPosition: true);
     unawaited(AndroidAudioDisplayMode.setAudioPlaybackActive(isPlaying));
+  }
+
+  Future<Duration> _currentVerseAudioPosition() async {
+    if (_useAudioplayersFallback) {
+      return await _fallbackVersePlayer.getCurrentPosition() ?? Duration.zero;
+    }
+    return _versePlayer.position;
+  }
+
+  Future<Duration> _currentVerseAudioDuration() async {
+    if (_useAudioplayersFallback) {
+      return await _fallbackVersePlayer.getDuration() ?? Duration.zero;
+    }
+    return _versePlayer.duration ?? Duration.zero;
+  }
+
+  bool get _isCurrentVerseAudioPlaying {
+    if (_useAudioplayersFallback) {
+      return _isVersePlaying;
+    }
+    return _versePlayer.playing;
+  }
+
+  Future<void> _handleVerseComplete() async {
+    final int requestId = _playbackRequestId;
+    final QuranPosition completedPosition = _playingPosition;
+    final int? repeatAyahCount = _repeatAyahChoice.count;
+    if (_repeatAyahChoice.isInfinite ||
+        (repeatAyahCount != null && _currentAyahPlayCount < repeatAyahCount)) {
+      if (!_repeatAyahChoice.isInfinite) {
+        _currentAyahPlayCount++;
+      }
+      await _delayBeforeNextPlayback(requestId);
+      await _playVerse(
+        completedPosition.surah,
+        completedPosition.ayah,
+        continuous: _continuousPlayback,
+        smoothScroll: false,
+        preservePlayerPresentationState: true,
+        preserveRefreshState: true,
+        resetPlaybackCounters: false,
+      );
+      return;
+    }
+
+    _currentAyahPlayCount = 1;
+
+    if (_repeatIntervalEnabled) {
+      final PlaybackInterval interval = _effectiveInterval;
+      QuranPosition? nextPosition;
+      if (completedPosition.isBefore(interval.end)) {
+        nextPosition = _nextQuranPosition(completedPosition);
+      } else {
+        final int? intervalRepeatCount = _intervalRepeatChoice.count;
+        if (_intervalRepeatChoice.isInfinite ||
+            (intervalRepeatCount != null &&
+                _intervalCyclesCompleted + 1 < intervalRepeatCount)) {
+          _intervalCyclesCompleted++;
+          nextPosition = interval.start;
+        }
+      }
+
+      if (nextPosition == null || !interval.contains(nextPosition)) {
+        if (!mounted) return;
+        await _stopBottomPlayer();
+        return;
+      }
+
+      await _delayBeforeNextPlayback(requestId);
+      await _playVerse(
+        nextPosition.surah,
+        nextPosition.ayah,
+        smoothScroll: true,
+        preservePlayerPresentationState: true,
+        preserveRefreshState: true,
+        resetPlaybackCounters: false,
+      );
+      return;
+    }
+
+    final QuranPosition? nextContinuousPosition = _nextQuranPosition(
+      completedPosition,
+    );
+    if (_continuousPlayback && nextContinuousPosition != null) {
+      await _delayBeforeNextPlayback(requestId);
+      await _playVerse(
+        nextContinuousPosition.surah,
+        nextContinuousPosition.ayah,
+        continuous: true,
+        smoothScroll: true,
+        preservePlayerPresentationState: true,
+        preserveRefreshState: true,
+        resetPlaybackCounters: false,
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    await _stopBottomPlayer();
   }
 
   Future<void> _toggleBottomPlayer() async {
@@ -2343,18 +2882,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     final QuranPosition currentPosition = _playingPosition;
     QuranPosition? targetPosition = direction < 0
-        ? (currentPosition.ayah > 1
-              ? QuranPosition(
-                  surah: currentPosition.surah,
-                  ayah: currentPosition.ayah - 1,
-                )
-              : null)
-        : (currentPosition.ayah < quran.getVerseCount(currentPosition.surah)
-              ? QuranPosition(
-                  surah: currentPosition.surah,
-                  ayah: currentPosition.ayah + 1,
-                )
-              : null);
+        ? _previousQuranPosition(currentPosition)
+        : _nextQuranPosition(currentPosition);
     if (_repeatIntervalEnabled && targetPosition != null) {
       final PlaybackInterval interval = _effectiveInterval;
       if (targetPosition.isBefore(interval.start)) return;
@@ -2369,11 +2898,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     if (targetPosition == null) return;
     _resetPlaybackCounters();
 
-    if (direction < 0) {
-      await _audioHandler.skipToPrevious();
-    } else {
-      await _audioHandler.skipToNext();
-    }
+    await _playVerse(
+      targetPosition.surah,
+      targetPosition.ayah,
+      continuous: _continuousPlayback,
+      smoothScroll: true,
+    );
   }
 
   void _togglePageViewPlayback() {
@@ -2615,6 +3145,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Future<void> _stopBottomPlayer() async {
     if (!mounted) return;
+    _playbackRequestId++;
+    _audioBufferingRetryTimer?.cancel();
+    _isAttemptingAudioReconnect = false;
+    _currentVerseSourceIsStream = false;
     _playerSettleTimer?.cancel();
     _isPlayerGestureActive = false;
     _isPlayerSettleAnimating = false;
@@ -2645,12 +3179,24 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _toggleContinuousPlayback(bool value) {
-    unawaited(
-      _audioHandler.customAction(
-        QuranReadingAudioHandler.actionSetContinuous,
-        <String, dynamic>{'value': value},
-      ),
-    );
+    _beginPlayerSettleAnimation('continuous toggle expands player');
+    setState(() {
+      _resetPlaybackCounters();
+      _continuousPlayback = value;
+      if (value) {
+        _repeatIntervalEnabled = false;
+      }
+      _playerVisible = true;
+      _playerMounted = true;
+      _playerMinimized = false;
+      _playerMinimizedSettled = false;
+      _playerCollapseProgress = 0;
+      _isDraggingPlayerBar = false;
+      _playingVerse ??= _currentVerse;
+    });
+    _syncBottomPlayerProgressPolicy();
+    _syncReadingPlayerRefreshMode('continuous toggle complete');
+    unawaited(_updateKeepScreenOn());
   }
 
   Future<void> _showIntervalSelectionSheet({
@@ -3934,90 +4480,49 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Widget _buildVersePlayerBar() {
-    return StreamBuilder<QuranReadingAudioState>(
-      stream: _audioHandler.readingStateStream,
-      initialData: QuranReadingAudioState(
-        position: _audioHandler.currentPosition,
-        isContinuous: _audioHandler.isContinuous,
-        hasActiveQueue: _audioHandler.hasActiveQueue,
+    if (_playerMinimizedSettled) {
+      return _wrapPlayerRefreshPointerGate(_buildStaticMinimizedPlayerBar());
+    }
+
+    return _wrapPlayerRefreshPointerGate(
+      ReadVersePlayerBar(
+        viewMode: _viewMode,
+        isMounted: _playerMounted,
+        isVisible: _playerVisible,
+        isMinimized: _playerMinimized,
+        isMinimizedSettled: _playerMinimizedSettled,
+        isDragging: _isDraggingPlayerBar,
+        isPlaying: _isVersePlaying,
+        isLoading: _isVerseLoading,
+        continuousPlayback: _continuousPlayback,
+        repeatIntervalEnabled: _repeatIntervalEnabled,
+        collapseProgress: _playerCollapseProgress,
+        currentChapter: _currentChapter,
+        currentVerse: _currentVerse,
+        totalVerses: _totalVerses,
+        playingVerse: _playingVerse,
+        positionListenable: _playerPositionValue,
+        durationListenable: _playerDurationValue,
+        onHidden: _handleVersePlayerHidden,
+        onMinimizedSettled: _handleVersePlayerMinimizedSettled,
+        onExpand: () => _setPlayerMinimized(false),
+        onDismiss: () => unawaited(_stopBottomPlayer()),
+        onVerticalDragStart: _handlePlayerBarDragStart,
+        onVerticalDragUpdate: _handlePlayerBarDragUpdate,
+        onVerticalDragEnd: _handlePlayerBarDragEnd,
+        onVerticalDragCancel: _handlePlayerBarDragCancel,
+        onSeekStart: _handleBottomPlayerSeekStart,
+        onSeek: (value) => unawaited(_seekBottomPlayer(value)),
+        onSeekEnd: _handleBottomPlayerSeekEnd,
+        onTogglePlayPause: () => unawaited(_toggleBottomPlayer()),
+        onContinuousPlaybackChanged: _toggleContinuousPlayback,
+        onRepeatIntervalPressed: _handleRepeatIntervalPressed,
+        onAdvancedOptionsPressed: _showAdvancedPlaybackOptions,
+        onPlayPrevious: () => unawaited(_playAdjacentPageViewAyah(-1)),
+        onPlayNext: () => unawaited(_playAdjacentPageViewAyah(1)),
+        canPlayPrevious: _canPlayPreviousAyah,
+        canPlayNext: _canPlayNextAyah,
       ),
-      builder: (context, audioSnapshot) {
-        final QuranReadingAudioState audioState = audioSnapshot.data!;
-        return StreamBuilder<PlaybackState>(
-          stream: _audioHandler.playbackState,
-          initialData: _audioHandler.playbackState.value,
-          builder: (context, playbackSnapshot) {
-            final PlaybackState playbackState = playbackSnapshot.data!;
-            final bool isLoading =
-                playbackState.processingState == AudioProcessingState.loading ||
-                playbackState.processingState == AudioProcessingState.buffering;
-            final bool isPlaying =
-                playbackState.playing &&
-                playbackState.processingState == AudioProcessingState.ready;
-            final int currentChapter = audioState.hasActiveQueue
-                ? audioState.position.surah
-                : _currentChapter;
-            final int currentVerse = audioState.hasActiveQueue
-                ? audioState.position.ayah
-                : _currentVerse;
-            final int? playingVerse = audioState.hasActiveQueue
-                ? audioState.position.ayah
-                : _playingVerse;
-
-            if (_playerMinimizedSettled) {
-              return _wrapPlayerRefreshPointerGate(
-                _buildStaticMinimizedPlayerBar(
-                  chapter: currentChapter,
-                  verse: playingVerse ?? currentVerse,
-                  isPlaying: isPlaying,
-                  isLoading: isLoading,
-                ),
-              );
-            }
-
-            return _wrapPlayerRefreshPointerGate(
-              ReadVersePlayerBar(
-                viewMode: _viewMode,
-                isMounted: _playerMounted,
-                isVisible: _playerVisible,
-                isMinimized: _playerMinimized,
-                isMinimizedSettled: _playerMinimizedSettled,
-                isDragging: _isDraggingPlayerBar,
-                isPlaying: isPlaying,
-                isLoading: isLoading,
-                continuousPlayback: audioState.isContinuous,
-                repeatIntervalEnabled: _repeatIntervalEnabled,
-                collapseProgress: _playerCollapseProgress,
-                currentChapter: currentChapter,
-                currentVerse: currentVerse,
-                totalVerses: quran.getVerseCount(currentChapter),
-                playingVerse: playingVerse,
-                positionListenable: _playerPositionValue,
-                durationListenable: _playerDurationValue,
-                onHidden: _handleVersePlayerHidden,
-                onMinimizedSettled: _handleVersePlayerMinimizedSettled,
-                onExpand: () => _setPlayerMinimized(false),
-                onDismiss: () => unawaited(_stopBottomPlayer()),
-                onVerticalDragStart: _handlePlayerBarDragStart,
-                onVerticalDragUpdate: _handlePlayerBarDragUpdate,
-                onVerticalDragEnd: _handlePlayerBarDragEnd,
-                onVerticalDragCancel: _handlePlayerBarDragCancel,
-                onSeekStart: _handleBottomPlayerSeekStart,
-                onSeek: (value) => unawaited(_seekBottomPlayer(value)),
-                onSeekEnd: _handleBottomPlayerSeekEnd,
-                onTogglePlayPause: () => unawaited(_toggleBottomPlayer()),
-                onContinuousPlaybackChanged: _toggleContinuousPlayback,
-                onRepeatIntervalPressed: _handleRepeatIntervalPressed,
-                onAdvancedOptionsPressed: _showAdvancedPlaybackOptions,
-                onPlayPrevious: () => unawaited(_playAdjacentPageViewAyah(-1)),
-                onPlayNext: () => unawaited(_playAdjacentPageViewAyah(1)),
-                canPlayPrevious: _canPlayPreviousAyah,
-                canPlayNext: _canPlayNextAyah,
-              ),
-            );
-          },
-        );
-      },
     );
   }
 
@@ -4031,12 +4536,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildStaticMinimizedPlayerBar({
-    int? chapter,
-    int? verse,
-    bool? isPlaying,
-    bool? isLoading,
-  }) {
+  Widget _buildStaticMinimizedPlayerBar() {
     if (!_playerMounted) return const SizedBox.shrink();
 
     final ThemeData theme = Theme.of(context);
@@ -4045,13 +4545,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final double horizontalInset = _viewMode
         ? _readCardHorizontalInset(width)
         : (width > 700 ? 16 : 8);
-    final int displayChapter = chapter ?? _currentChapter;
-    final int displayVerse = verse ?? _playingVerse ?? _currentVerse;
-    final bool displayPlaying = isPlaying ?? _isVersePlaying;
-    final bool displayLoading = isLoading ?? _isVerseLoading;
+    final int verse = _playingVerse ?? _currentVerse;
 
-    // Guaranteed static minimized mode: no progress ticker, slider, or
-    // constantly repainting progress subtree.
+    // Guaranteed static minimized mode: no ValueListenableBuilder, Slider,
+    // StreamBuilder, progress text, opacity wrapper, or progress subtree.
     return Padding(
       padding: EdgeInsets.fromLTRB(horizontalInset, 0, horizontalInset, 13),
       child: DecoratedBox(
@@ -4083,15 +4580,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 child: Row(
                   children: <Widget>[
                     IconButton(
-                      tooltip: displayLoading
+                      tooltip: _isVerseLoading
                           ? 'Reconnecting'
-                          : displayPlaying
+                          : _isVersePlaying
                           ? 'Pause'
                           : 'Play',
-                      onPressed: displayLoading
+                      onPressed: _isVerseLoading
                           ? null
                           : () => unawaited(_toggleBottomPlayer()),
-                      icon: displayLoading
+                      icon: _isVerseLoading
                           ? SizedBox(
                               width: 18,
                               height: 18,
@@ -4101,7 +4598,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               ),
                             )
                           : Icon(
-                              displayPlaying
+                              _isVersePlaying
                                   ? Icons.pause_rounded
                                   : Icons.play_arrow_rounded,
                             ),
@@ -4124,7 +4621,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              '${quran.getSurahName(displayChapter)} • Ayah $displayVerse',
+                              '${quran.getSurahName(_currentChapter)} • Ayah $verse',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.bodyMedium?.copyWith(
@@ -4214,6 +4711,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 if (selected == null || !mounted) return;
                 await SettingsDB().put("reciter", selected.code);
                 if (_playerMounted || _isVersePlaying || _isVerseLoading) {
+                  _playbackRequestId++;
                   final QuranPosition position = _playingPosition;
                   await _playVerse(
                     position.surah,
@@ -4238,6 +4736,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 if (selected == null) return;
                 setState(() {
                   _intervalRepeatChoice = selected;
+                  _intervalCyclesCompleted = 0;
                 });
                 unawaited(_persistPlaybackOptions());
                 if (sheetContext.mounted) setSheetState(() {});
@@ -4252,6 +4751,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 if (selected == null) return;
                 setState(() {
                   _repeatAyahChoice = selected;
+                  _currentAyahPlayCount = 1;
                 });
                 unawaited(_persistPlaybackOptions());
                 if (sheetContext.mounted) setSheetState(() {});
@@ -4683,6 +5183,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Future<void> _pauseReadingAudioForShare() async {
     if (!_playerMounted && !_isVerseLoading) return;
 
+    _playbackRequestId++;
     setState(() {
       _resetPlaybackCounters();
       _isVersePlaying = false;
