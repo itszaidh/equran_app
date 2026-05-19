@@ -15,7 +15,7 @@ import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
 
 const int _totalSurahs = 114;
-const int _surahGridColumns = 6;
+const int _surahGridColumns = 8;
 const int _surahCellAnimationMs = 300;
 const int _surahCellStaggerMs = 8;
 const int _surahGridAnimationMs =
@@ -318,13 +318,9 @@ class _StatisticsPageState extends State<StatisticsPage>
                 ),
                 const _StickySectionHeader(label: 'Activity History'),
                 _PageContentSliver(
-                  child: _RangeAwareSection<HeatmapData>(
+                  child: _MonthlyActivitySection(
                     refreshToken: refreshToken,
-                    rangeListenable: _rangeNotifier,
-                    load: _repository.heatmap,
-                    placeholderHeight: 150,
-                    builder: (context, data) =>
-                        _YearlyHeatmapSection(data: data),
+                    repository: _repository,
                   ),
                 ),
                 const _StickySectionHeader(label: 'Streaks'),
@@ -358,8 +354,8 @@ class StatisticsRepository {
       <StatRange, Future<DuasStatsData>>{};
   final Map<StatRange, Future<SalahSectionData>> _salahCache =
       <StatRange, Future<SalahSectionData>>{};
-  final Map<StatRange, Future<HeatmapData>> _heatmapCache =
-      <StatRange, Future<HeatmapData>>{};
+  final Map<String, Future<MonthlyActivityData>> _monthlyActivityCache =
+      <String, Future<MonthlyActivityData>>{};
   final Map<StatRange, Future<StreakStats>> _streakCache =
       <StatRange, Future<StreakStats>>{};
 
@@ -369,7 +365,7 @@ class StatisticsRepository {
     _tasbihCache.clear();
     _duasCache.clear();
     _salahCache.clear();
-    _heatmapCache.clear();
+    _monthlyActivityCache.clear();
     _streakCache.clear();
   }
 
@@ -596,40 +592,43 @@ class StatisticsRepository {
     });
   }
 
-  Future<HeatmapData> heatmap(StatRange range) {
-    return _heatmapCache.putIfAbsent(range, () async {
-      final DateTime now = DateTime.now();
-      final DateTime currentWeekStart = _weekStart(now);
-      final DateTime firstWeekStart = currentWeekStart.subtract(
-        const Duration(days: 52 * 7),
-      );
+  Future<MonthlyActivityData> monthlyActivity(int year, int month) {
+    final DateTime monthStart = DateTime(year, month);
+    final String cacheKey = _monthCacheKey(monthStart.year, monthStart.month);
+    return _monthlyActivityCache.putIfAbsent(cacheKey, () async {
       final Map<String, QuranActivityDay> quranDays = _quranDaysByDate();
       final Map<String, int> tasbihByDate = _tasbihCountsByDate(
         _dhikrSessions(),
       );
       final Map<String, int> duasByDate = _duaCountsByDate(_duaInteractions());
       final Map<String, int> salahByDate = _salahCountsByDate(_salahLogs());
-      final List<HeatmapWeek> weeks = <HeatmapWeek>[];
-      for (int week = 0; week < 53; week++) {
-        final DateTime weekStart = firstWeekStart.add(Duration(days: week * 7));
-        weeks.add(
-          HeatmapWeek(
-            start: weekStart,
-            days: <HeatmapDay>[
-              for (int offset = 0; offset < 7; offset++)
-                _heatmapDay(
-                  weekStart.add(Duration(days: offset)),
-                  quranDays,
-                  tasbihByDate,
-                  duasByDate,
-                  salahByDate,
-                ),
-            ],
-          ),
+      final int daysInMonth = DateTime(
+        monthStart.year,
+        monthStart.month + 1,
+        0,
+      ).day;
+      final Map<int, MonthlyActivityDay> days = <int, MonthlyActivityDay>{};
+      for (int day = 1; day <= daysInMonth; day++) {
+        final DateTime date = DateTime(monthStart.year, monthStart.month, day);
+        days[day] = _monthlyActivityDay(
+          date,
+          quranDays,
+          tasbihByDate,
+          duasByDate,
+          salahByDate,
         );
       }
-      return HeatmapData(weeks: weeks);
+      return MonthlyActivityData(month: monthStart, days: days);
     });
+  }
+
+  Future<Map<int, int>> getMonthlyCellData(int year, int month) async {
+    final MonthlyActivityData activity = await monthlyActivity(year, month);
+    return <int, int>{
+      for (final MapEntry<int, MonthlyActivityDay> entry
+          in activity.days.entries)
+        entry.key: entry.value.total,
+    };
   }
 
   Future<StreakStats> streaks() {
@@ -1438,9 +1437,9 @@ class _HeroMiniSalahRow extends StatelessWidget {
           Expanded(
             child: _HeroMiniSalahChip(
               prayer: prayer,
-              logged:
-                  availability.isLoggable(prayer) &&
-                  prayer.statusFor(entry).countsAsPrayer,
+              status: availability.isLoggable(prayer)
+                  ? prayer.statusFor(entry)
+                  : SalahStatus.unlogged,
             ),
           ),
         ],
@@ -1450,22 +1449,32 @@ class _HeroMiniSalahRow extends StatelessWidget {
 }
 
 class _HeroMiniSalahChip extends StatelessWidget {
-  const _HeroMiniSalahChip({required this.prayer, required this.logged});
+  const _HeroMiniSalahChip({required this.prayer, required this.status});
 
   final SalahPrayer prayer;
-  final bool logged;
+  final SalahStatus status;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
-    final Color borderColor = logged
+    final bool prayed = status.countsAsPrayer;
+    final bool notPrayed = status == SalahStatus.notPrayed;
+    final Color borderColor = notPrayed
+        ? colorScheme.error
+        : prayed
         ? colors.accentGold.withAlpha(102)
         : colors.onPrimary.withAlpha(20);
-    final Color backgroundColor = logged
+    final Color backgroundColor = notPrayed
+        ? colorScheme.error
+        : prayed
         ? colors.accentGold.withAlpha(51)
         : colors.onPrimary.withAlpha(15);
-    final Color dotColor = logged
+    final Color foregroundColor = notPrayed
+        ? colorScheme.onError
+        : colors.onPrimaryMuted;
+    final Color dotColor = prayed
         ? colors.accentGold
         : colors.onPrimary.withAlpha(51);
 
@@ -1488,18 +1497,21 @@ class _HeroMiniSalahChip extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: colors.onPrimaryMuted,
+                  color: foregroundColor,
                   height: 1,
                 ),
               ),
               const SizedBox(height: 3),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: dotColor,
-                  shape: BoxShape.circle,
+              if (notPrayed)
+                Icon(Icons.close_rounded, size: 8, color: foregroundColor)
+              else
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: dotColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const SizedBox.square(dimension: 5),
                 ),
-                child: const SizedBox.square(dimension: 5),
-              ),
             ],
           ),
         ),
@@ -2062,20 +2074,22 @@ class _PrayerChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
     final bool locked = !isLoggable;
     final IconData? icon = locked ? null : _salahStatusIcon(status);
+    final bool notPrayed = !locked && status == SalahStatus.notPrayed;
     final Color statusColor = locked
         ? colors.textMuted
-        : _salahStatusColor(colors, status);
+        : _salahStatusColor(colorScheme, colors, status);
     final String statusLabel = locked ? 'Not yet' : status.label;
     return Opacity(
       opacity: locked ? 0.4 : 1,
       child: Material(
         color: locked
             ? colors.surfaceAlt
-            : _salahStatusBackground(colors, status),
+            : _salahStatusBackground(colorScheme, colors, status),
         borderRadius: radius,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -2084,7 +2098,9 @@ class _PrayerChip extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: radius,
-              border: Border.all(color: colors.border),
+              border: Border.all(
+                color: notPrayed ? colorScheme.error : colors.border,
+              ),
             ),
             child: SizedBox(
               height: 60,
@@ -2106,7 +2122,7 @@ class _PrayerChip extends StatelessWidget {
                         prayer.label,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.labelSmall?.copyWith(
-                          color: colors.textSecondary,
+                          color: notPrayed ? statusColor : colors.textSecondary,
                           fontWeight: FontWeight.w700,
                           height: 1,
                         ),
@@ -2715,25 +2731,39 @@ class _SalahReadOnlyStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
-    final Color foreground = _salahStatusColor(colors, status);
+    final IconData? icon = _salahStatusIcon(status);
+    final bool notPrayed = status == SalahStatus.notPrayed;
+    final Color foreground = _salahStatusColor(colorScheme, colors, status);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: _salahStatusBackground(colors, status),
+        color: _salahStatusBackground(colorScheme, colors, status),
         borderRadius: radius,
-        border: Border.all(color: colors.border),
+        border: Border.all(
+          color: notPrayed ? colorScheme.error : colors.border,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        child: Text(
-          status.label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: foreground,
-            fontWeight: FontWeight.w700,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            if (icon != null) ...<Widget>[
+              Icon(icon, size: 14, color: foreground),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              status.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -2754,13 +2784,15 @@ class _SalahStatusButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
+    final IconData? icon = selected ? _salahStatusIcon(status) : null;
     final Color background = selected
         ? switch (status) {
             SalahStatus.onTime => colors.primary,
             SalahStatus.late => colors.goldSoft,
-            SalahStatus.notPrayed => colors.surfaceAlt,
+            SalahStatus.notPrayed => colorScheme.error,
             SalahStatus.unlogged => colors.surfaceAlt,
           }
         : colors.surfaceAlt;
@@ -2768,14 +2800,14 @@ class _SalahStatusButton extends StatelessWidget {
         ? switch (status) {
             SalahStatus.onTime => colors.onPrimary,
             SalahStatus.late => colors.warning,
-            SalahStatus.notPrayed => colors.textSecondary,
+            SalahStatus.notPrayed => colorScheme.onError,
             SalahStatus.unlogged => colors.textMuted,
           }
         : colors.textMuted;
     final Color? borderColor = selected
         ? switch (status) {
             SalahStatus.late => colors.accentGold,
-            SalahStatus.notPrayed => colors.border,
+            SalahStatus.notPrayed => colorScheme.error,
             _ => null,
           }
         : null;
@@ -2795,12 +2827,21 @@ class _SalahStatusButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(
-                status.label,
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  if (icon != null) ...<Widget>[
+                    Icon(icon, size: 14, color: foreground),
+                    const SizedBox(width: 5),
+                  ],
+                  Text(
+                    status.label,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -3846,177 +3887,394 @@ class _EmptyStatsSection extends StatelessWidget {
   }
 }
 
-class _YearlyHeatmapSection extends StatelessWidget {
-  const _YearlyHeatmapSection({required this.data});
+class _MonthlyActivitySection extends StatefulWidget {
+  const _MonthlyActivitySection({
+    required this.refreshToken,
+    required this.repository,
+  });
 
-  final HeatmapData data;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[_ActivityHeatmap(data: data)],
-    );
-  }
-}
-
-class _ActivityHeatmap extends StatefulWidget {
-  const _ActivityHeatmap({required this.data});
-
-  final HeatmapData data;
+  final int refreshToken;
+  final StatisticsRepository repository;
 
   @override
-  State<_ActivityHeatmap> createState() => _ActivityHeatmapState();
+  State<_MonthlyActivitySection> createState() =>
+      _MonthlyActivitySectionState();
 }
 
-class _ActivityHeatmapState extends State<_ActivityHeatmap> {
-  late final ScrollController _scrollController;
+class _MonthlyActivitySectionState extends State<_MonthlyActivitySection> {
+  static const double _swipeThreshold = 36;
+
+  late DateTime _displayedMonth;
+  MonthlyActivityData? _data;
+  Future<MonthlyActivityData>? _pending;
+  bool _loading = false;
+  int _slideDirection = 1;
+  double _dragOffset = 0;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      }
-    });
+    _displayedMonth = _monthStart(DateTime.now());
+    _load(notify: false);
   }
 
   @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
+  void didUpdateWidget(covariant _MonthlyActivitySection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshToken != widget.refreshToken ||
+        oldWidget.repository != widget.repository) {
+      _load();
+    }
   }
+
+  void _load({bool notify = true}) {
+    final Future<MonthlyActivityData> pending = widget.repository
+        .monthlyActivity(_displayedMonth.year, _displayedMonth.month);
+    _pending = pending;
+    if (notify) {
+      setState(() => _loading = true);
+    } else {
+      _loading = true;
+    }
+    pending.then(
+      (MonthlyActivityData value) {
+        if (!mounted || _pending != pending) return;
+        setState(() {
+          _data = value;
+          _loading = false;
+        });
+      },
+      onError: (_) {
+        if (!mounted || _pending != pending) return;
+        setState(() => _loading = false);
+      },
+    );
+  }
+
+  void _changeMonth(int monthOffset) {
+    if (monthOffset == 0) return;
+    final DateTime target = _monthStart(
+      DateTime(_displayedMonth.year, _displayedMonth.month + monthOffset),
+    );
+    if (monthOffset > 0 && _isFutureMonth(target)) return;
+    setState(() {
+      _displayedMonth = target;
+      _slideDirection = monthOffset > 0 ? 1 : -1;
+      _loading = true;
+    });
+    _load(notify: false);
+  }
+
+  void _handleDragStart(DragStartDetails _) {
+    _dragOffset = 0;
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    _dragOffset += details.primaryDelta ?? 0;
+  }
+
+  void _handleDragEnd(DragEndDetails _) {
+    if (_dragOffset.abs() < _swipeThreshold) return;
+    _changeMonth(_dragOffset < 0 ? 1 : -1);
+    _dragOffset = 0;
+  }
+
+  void _showDayDetails(MonthlyActivityDay day) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadii.large),
+        ),
+      ),
+      builder: (context) {
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  _dateChipLabel(day.date),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _monthlyDayBreakdown(day),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final MonthlyActivityData? data = _data;
+    if (data == null) {
+      return const _ShimmerPlaceholder(height: 360);
+    }
+
+    final EquranColors colors = context.equranColors;
+    final String targetKey = _monthCacheKey(data.month.year, data.month.month);
+    return _LoadingOverlay(
+      loading: _loading,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.large),
+          border: Border.all(color: colors.border),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              _MonthlyActivityHeader(
+                month: data.month,
+                onPrevious: () => _changeMonth(-1),
+                onNext: _isCurrentMonth(_displayedMonth)
+                    ? null
+                    : () => _changeMonth(1),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onHorizontalDragStart: _handleDragStart,
+                onHorizontalDragUpdate: _handleDragUpdate,
+                onHorizontalDragEnd: _handleDragEnd,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  switchInCurve: Curves.easeInOut,
+                  switchOutCurve: Curves.easeInOut,
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                        final bool entering =
+                            child.key == ValueKey<String>(targetKey);
+                        final double direction = _slideDirection.toDouble();
+                        final Animation<Offset> position =
+                            Tween<Offset>(
+                              begin: Offset(
+                                entering ? direction : -direction,
+                                0,
+                              ),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeInOut,
+                              ),
+                            );
+                        return SlideTransition(
+                          position: position,
+                          child: child,
+                        );
+                      },
+                  child: _MonthlyActivityBody(
+                    key: ValueKey<String>(targetKey),
+                    data: data,
+                    onDayTap: _showDayDetails,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MonthlyActivityHeader extends StatelessWidget {
+  const _MonthlyActivityHeader({
+    required this.month,
+    required this.onPrevious,
+    required this.onNext,
+  });
+
+  final DateTime month;
+  final VoidCallback onPrevious;
+  final VoidCallback? onNext;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    const double cellSize = 10;
-    const double gap = 2;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.large),
-        border: Border.all(color: colors.border),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                const SizedBox(height: 18),
-                for (int row = 0; row < 7; row++)
-                  SizedBox(
-                    height: cellSize + gap,
-                    width: 18,
-                    child: row == 0 || row == 2 || row == 4
-                        ? Text(
-                            row == 0
-                                ? 'M'
-                                : row == 2
-                                ? 'W'
-                                : 'F',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: colors.textMuted,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        for (
-                          int index = 0;
-                          index < widget.data.weeks.length;
-                          index++
-                        )
-                          SizedBox(
-                            width: cellSize + gap,
-                            height: 18,
-                            child: _monthMarker(index)
-                                ? Text(
-                                    _shortMonthLabel(
-                                      widget.data.weeks[index].start,
-                                    ),
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      color: colors.textMuted,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                      ],
-                    ),
-                    for (int row = 0; row < 7; row++)
-                      Row(
-                        children: <Widget>[
-                          for (final HeatmapWeek week in widget.data.weeks)
-                            Padding(
-                              padding: const EdgeInsetsDirectional.only(
-                                end: gap,
-                                bottom: gap,
-                              ),
-                              child: _HeatmapCell(day: week.days[row]),
-                            ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+    return Row(
+      children: <Widget>[
+        IconButton(
+          tooltip: 'Previous month',
+          onPressed: onPrevious,
+          icon: Icon(Icons.chevron_left_rounded, color: colors.textSecondary),
         ),
-      ),
+        Expanded(
+          child: Text(
+            _monthYearLabel(month),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: 'Next month',
+          onPressed: onNext,
+          icon: Icon(
+            Icons.chevron_right_rounded,
+            color: onNext == null ? colors.textMuted : colors.textSecondary,
+          ),
+        ),
+      ],
     );
-  }
-
-  bool _monthMarker(int index) {
-    if (index == 0) return true;
-    return widget.data.weeks[index].start.month !=
-        widget.data.weeks[index - 1].start.month;
   }
 }
 
-class _HeatmapCell extends StatelessWidget {
-  const _HeatmapCell({required this.day});
+class _MonthlyActivityBody extends StatelessWidget {
+  const _MonthlyActivityBody({
+    super.key,
+    required this.data,
+    required this.onDayTap,
+  });
 
-  final HeatmapDay day;
+  final MonthlyActivityData data;
+  final ValueChanged<MonthlyActivityDay> onDayTap;
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    final Color color = switch (day.total) {
-      <= 0 => colors.surfaceAlt,
-      <= 10 => colors.primary.withAlpha(64),
-      <= 30 => colors.primary.withAlpha(140),
-      <= 60 => colors.primary.withAlpha(204),
-      _ => colors.primary,
-    };
-    return Tooltip(
-      triggerMode: TooltipTriggerMode.tap,
-      message:
-          '${_dateChipLabel(day.date)}\nQuran: ${day.quran} ayahs\nTasbih: ${day.tasbih} dhikr\nDuas: ${day.duas} duas\nSalah: ${day.salah} prayers',
-      child: SizedBox.square(
-        dimension: 10,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(AppRadii.small),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _MonthlyCalendarGrid(data: data, onDayTap: onDayTap),
+        const SizedBox(height: 14),
+        Text(
+          _monthlySummaryLabel(data),
+          textAlign: TextAlign.center,
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: colors.textSecondary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MonthlyCalendarGrid extends StatelessWidget {
+  const _MonthlyCalendarGrid({required this.data, required this.onDayTap});
+
+  final MonthlyActivityData data;
+  final ValueChanged<MonthlyActivityDay> onDayTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final List<MonthlyActivityDay?> cells = _monthlyCalendarCells(data);
+    const List<String> dayLabels = <String>['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            children: <Widget>[
+              for (final String label in dayLabels)
+                Expanded(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colors.textMuted,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: cells.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7,
+            crossAxisSpacing: 5,
+            mainAxisSpacing: 5,
+          ),
+          itemBuilder: (context, index) {
+            final MonthlyActivityDay? day = cells[index];
+            return _MonthlyCalendarCell(
+              day: day,
+              isToday: day != null && _isSameDate(day.date, DateTime.now()),
+              onTap: onDayTap,
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _MonthlyCalendarCell extends StatelessWidget {
+  const _MonthlyCalendarCell({
+    required this.day,
+    required this.isToday,
+    required this.onTap,
+  });
+
+  final MonthlyActivityDay? day;
+  final bool isToday;
+  final ValueChanged<MonthlyActivityDay> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final MonthlyActivityDay? activity = day;
+    if (activity == null) return const SizedBox.expand();
+
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.small);
+    final Color background = _monthlyActivityColor(colors, activity.total);
+    final Color foreground = activity.total >= 31
+        ? colors.onPrimary
+        : colors.textSecondary;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: radius,
+        border: isToday ? Border.all(color: colors.accentGold) : null,
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: activity.total > 0 ? () => onTap(activity) : null,
+            child: Center(
+              child: Text(
+                '${activity.date.day}',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: activity.total == 0 ? colors.textMuted : foreground,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -4498,21 +4756,31 @@ class StreakStats {
   int get highest => math.max(quran, math.max(tasbih, overall));
 }
 
-class HeatmapData {
-  const HeatmapData({required this.weeks});
+class MonthlyActivityData {
+  const MonthlyActivityData({required this.month, required this.days});
 
-  final List<HeatmapWeek> weeks;
+  final DateTime month;
+  final Map<int, MonthlyActivityDay> days;
+
+  int get activeDays =>
+      days.values.where((MonthlyActivityDay day) => day.total > 0).length;
+
+  int get totalActions => days.values.fold<int>(
+    0,
+    (int sum, MonthlyActivityDay day) => sum + day.total,
+  );
+
+  MonthlyActivityDay? get bestDay {
+    final List<MonthlyActivityDay> active = days.values
+        .where((MonthlyActivityDay day) => day.total > 0)
+        .toList(growable: false);
+    if (active.isEmpty) return null;
+    return active.reduce((a, b) => a.total >= b.total ? a : b);
+  }
 }
 
-class HeatmapWeek {
-  const HeatmapWeek({required this.start, required this.days});
-
-  final DateTime start;
-  final List<HeatmapDay> days;
-}
-
-class HeatmapDay {
-  const HeatmapDay({
+class MonthlyActivityDay {
+  const MonthlyActivityDay({
     required this.date,
     required this.quran,
     required this.tasbih,
@@ -4613,7 +4881,7 @@ class _DuaCategoryCount {
   final int count;
 }
 
-HeatmapDay _heatmapDay(
+MonthlyActivityDay _monthlyActivityDay(
   DateTime date,
   Map<String, QuranActivityDay> quranDays,
   Map<String, int> tasbihByDate,
@@ -4621,7 +4889,7 @@ HeatmapDay _heatmapDay(
   Map<String, int> salahByDate,
 ) {
   final String key = _dateKey(date);
-  return HeatmapDay(
+  return MonthlyActivityDay(
     date: DateTime(date.year, date.month, date.day),
     quran: _dayAyahCount(quranDays[key]),
     tasbih: tasbihByDate[key] ?? 0,
@@ -4942,24 +5210,34 @@ IconData? _salahStatusIcon(SalahStatus status) {
   return switch (status) {
     SalahStatus.onTime => Icons.check_circle_rounded,
     SalahStatus.late => Icons.schedule_rounded,
-    SalahStatus.notPrayed => Icons.radio_button_unchecked_rounded,
+    SalahStatus.notPrayed => Icons.close_rounded,
     SalahStatus.unlogged => null,
   };
 }
 
-Color _salahStatusColor(EquranColors colors, SalahStatus status) {
+Color _salahStatusColor(
+  ColorScheme colorScheme,
+  EquranColors colors,
+  SalahStatus status,
+) {
   return switch (status) {
     SalahStatus.onTime => colors.primary,
     SalahStatus.late => colors.accentGold,
-    SalahStatus.notPrayed || SalahStatus.unlogged => colors.textMuted,
+    SalahStatus.notPrayed => colorScheme.onError,
+    SalahStatus.unlogged => colors.textMuted,
   };
 }
 
-Color _salahStatusBackground(EquranColors colors, SalahStatus status) {
+Color _salahStatusBackground(
+  ColorScheme colorScheme,
+  EquranColors colors,
+  SalahStatus status,
+) {
   return switch (status) {
     SalahStatus.onTime => colors.primary.withAlpha(38),
     SalahStatus.late => colors.accentGold.withAlpha(38),
-    SalahStatus.notPrayed || SalahStatus.unlogged => colors.surfaceAlt,
+    SalahStatus.notPrayed => colorScheme.error,
+    SalahStatus.unlogged => colors.surfaceAlt,
   };
 }
 
@@ -5215,6 +5493,30 @@ DateTime _weekStart(DateTime date) {
   return day.subtract(Duration(days: day.weekday - 1));
 }
 
+DateTime _monthStart(DateTime date) {
+  return DateTime(date.year, date.month);
+}
+
+bool _isCurrentMonth(DateTime date) {
+  final DateTime current = _monthStart(DateTime.now());
+  final DateTime month = _monthStart(date);
+  return current.year == month.year && current.month == month.month;
+}
+
+bool _isFutureMonth(DateTime date) {
+  return _monthStart(date).isAfter(_monthStart(DateTime.now()));
+}
+
+bool _isSameDate(DateTime a, DateTime b) {
+  return a.year == b.year && a.month == b.month && a.day == b.day;
+}
+
+String _monthCacheKey(int year, int month) {
+  final DateTime date = DateTime(year, month);
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}';
+}
+
 String _dateKey(DateTime date) {
   return '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
@@ -5236,6 +5538,10 @@ String _monthLabel(DateTime date) {
   return '${_shortMonthLabel(date)} ${date.year}';
 }
 
+String _monthYearLabel(DateTime date) {
+  return '${_fullMonthLabel(date.month)} ${date.year}';
+}
+
 String _monthDayLabel(DateTime date) {
   return '${_shortMonthLabel(date)} ${date.day}';
 }
@@ -5251,6 +5557,51 @@ String _dateRangeLabel(DateTime start, DateTime end) {
 
 String _dateChipLabel(DateTime date) {
   return '${_shortMonthLabel(date)} ${date.day}, ${date.year}';
+}
+
+String _monthlySummaryLabel(MonthlyActivityData data) {
+  final MonthlyActivityDay? bestDay = data.bestDay;
+  final String activeDaysLabel = data.activeDays == 1
+      ? '1 active day'
+      : '${data.activeDays} active days';
+  return '$activeDaysLabel · Best day: '
+      '${bestDay == null ? 'No day yet' : _weekdayName(bestDay.date.weekday)}'
+      ' · ${data.totalActions} total actions';
+}
+
+String _monthlyDayBreakdown(MonthlyActivityDay day) {
+  return '${day.quran} ayahs · ${day.tasbih} dhikr · ${day.duas} duas · '
+      '${day.salah}/5 salah';
+}
+
+List<MonthlyActivityDay?> _monthlyCalendarCells(MonthlyActivityData data) {
+  final int daysInMonth = DateTime(
+    data.month.year,
+    data.month.month + 1,
+    0,
+  ).day;
+  final int leadingEmptyCells = data.month.weekday - 1;
+  final int rowCount = math.max(
+    5,
+    ((leadingEmptyCells + daysInMonth) / 7).ceil(),
+  );
+  return <MonthlyActivityDay?>[
+    for (int index = 0; index < rowCount * 7; index++)
+      if (index < leadingEmptyCells || index >= leadingEmptyCells + daysInMonth)
+        null
+      else
+        data.days[index - leadingEmptyCells + 1],
+  ];
+}
+
+Color _monthlyActivityColor(EquranColors colors, int actions) {
+  return switch (actions) {
+    <= 0 => colors.surfaceAlt,
+    <= 10 => colors.primary.withValues(alpha: 0.20),
+    <= 30 => colors.primary.withValues(alpha: 0.45),
+    < 60 => colors.primary.withValues(alpha: 0.70),
+    _ => colors.primary,
+  };
 }
 
 String _heroDateLabel(DateTime date) {
@@ -5333,6 +5684,24 @@ String _shortMonthLabel(DateTime date) {
     'Dec',
   ];
   return months[date.month - 1];
+}
+
+String _fullMonthLabel(int month) {
+  const List<String> months = <String>[
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  return months[(month - 1).clamp(0, months.length - 1)];
 }
 
 String? _stringOrNull(Object? value) {
