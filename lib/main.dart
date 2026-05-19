@@ -1,17 +1,14 @@
-import 'dart:io' show Platform;
-
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equran/home/library.dart' show HomePage;
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_timezone_service.dart';
+import 'package:equran/services/quran_reading_audio_handler.dart';
 import 'package:equran/utils/app_theme.dart';
 import 'package:equran/utils/responsive_nav.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/quran.dart' as quran;
 
 import 'backend/library.dart'
@@ -30,14 +27,6 @@ import 'backend/library.dart'
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.app.equran.audio',
-      androidNotificationChannelName: 'Quran Audio Playback',
-      androidNotificationOngoing: true,
-    );
-  }
 
   // ----- HIVE -----
   // Use an app-specific subdirectory to avoid desktop lock collisions in shared paths.
@@ -58,6 +47,7 @@ Future<void> main() async {
   await SchemaMigrationService.instance.runSafeMigrations();
   await quran.initializeQuran();
   await QuranTranslationService.instance.preloadSelectedTranslation();
+  await initQuranReadingAudioHandler();
 
   await PrayerTimezoneService.configureDeviceTimezone();
   final PrayerSettingsStore prayerSettingsStore = PrayerSettingsStore();
