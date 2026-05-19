@@ -761,6 +761,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             content: Text(message),
             action: action,
             duration: _prayerSnackBarDuration,
+            // Action snackbars persist by default; keep prayer prompts timed.
+            persist: false,
           ),
         );
     unawaited(
