@@ -1,5 +1,7 @@
 import 'package:equran/home/read.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/number_badge.dart';
 import 'package:flutter/material.dart';
 
@@ -24,9 +26,11 @@ class QuranJuzTile extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final bool arabicMode = isArabicLocalizations(localizations);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 4, 6, 4),
+      padding: const EdgeInsetsDirectional.fromSTEB(6, 4, 6, 4),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: 1,
@@ -58,24 +62,27 @@ class QuranJuzTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        transliteration,
+                        arabicMode ? name : transliteration,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        textDirection: arabicMode ? TextDirection.rtl : null,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
-                          letterSpacing: 0.2,
+                          letterSpacing: 0,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textDirection: TextDirection.rtl,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                      if (!arabicMode) ...<Widget>[
+                        const SizedBox(height: 4),
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textDirection: TextDirection.rtl,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
-                      ),
+                      ],
                       const SizedBox(height: 10),
                       Wrap(
                         spacing: 8,
@@ -83,7 +90,10 @@ class QuranJuzTile extends StatelessWidget {
                         children: <Widget>[
                           _JuzMetaChip(
                             icon: Icons.format_list_numbered_rounded,
-                            label: 'Ayahs $startVerse-$endVerse',
+                            label: localizations.ayahRange(
+                              startVerse,
+                              endVerse,
+                            ),
                             colorScheme: colorScheme,
                           ),
                         ],

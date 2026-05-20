@@ -7,9 +7,9 @@ import 'package:equran/backend/library.dart'
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/downloads_grouping.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
-import 'package:quran/quran.dart' as quran;
 
 class _SurahAyahDownloadsGroup {
   const _SurahAyahDownloadsGroup({required this.surah, required this.entries});
@@ -407,7 +407,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
       leading: const Icon(Icons.folder_outlined),
       collapsedShape: const Border(),
       shape: const Border(),
-      title: Text(quran.getSurahName(group.surah)),
+      title: Text(localizedSurahName(localizations, group.surah)),
       subtitle: Text(
         '${localizations.ayahs}: ${group.ayahCount} • ${AudioDownloadService.formatBytes(group.sizeBytes)}',
       ),

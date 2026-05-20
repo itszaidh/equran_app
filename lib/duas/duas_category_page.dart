@@ -4,6 +4,7 @@ import 'package:equran/backend/library.dart' show DuaInteractionsDB;
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/widgets/dua_card.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
@@ -69,19 +70,25 @@ class _DuasCategoryPageState extends State<DuasCategoryPage> {
           }
 
           if (snapshot.hasError) {
-            return const _CategoryMessage(
+            final AppLocalizations localizations = AppLocalizations.of(
+              context,
+            )!;
+            return _CategoryMessage(
               icon: Icons.error_outline_rounded,
-              title: 'Category unavailable',
-              message: 'This Hisn al Muslim category could not be loaded.',
+              title: localizations.categoryUnavailable,
+              message: localizations.hisnCategoryCouldNotLoad,
             );
           }
 
           final DuaCategory? category = snapshot.data;
           if (category == null || category.duas.isEmpty) {
-            return const _CategoryMessage(
+            final AppLocalizations localizations = AppLocalizations.of(
+              context,
+            )!;
+            return _CategoryMessage(
               icon: Icons.menu_book_outlined,
-              title: 'No duas found',
-              message: 'This category does not contain any duas.',
+              title: localizations.noDuasFound,
+              message: localizations.categoryContainsNoDuas,
             );
           }
 

@@ -2,12 +2,14 @@ import 'dart:math' as math;
 
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/prayer/prayer_models.dart' as prayer_models;
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -26,27 +28,17 @@ const double _statCardMinHeight = 130;
 
 final Map<String, int> _letterCountCache = <String, int>{};
 
-enum StatRange {
-  week('Week'),
-  month('Month'),
-  year('Year'),
-  allTime('All time');
-
-  const StatRange(this.label);
-
-  final String label;
-}
+enum StatRange { week, month, year, allTime }
 
 enum SalahStatus {
-  onTime('onTime', 'On time'),
-  late('late', 'Late'),
-  notPrayed('notPrayed', 'Not prayed'),
-  unlogged('unlogged', 'Log');
+  onTime('onTime'),
+  late('late'),
+  notPrayed('notPrayed'),
+  unlogged('unlogged');
 
-  const SalahStatus(this.storageValue, this.label);
+  const SalahStatus(this.storageValue);
 
   final String storageValue;
-  final String label;
 
   bool get countsAsPrayer =>
       this == SalahStatus.onTime || this == SalahStatus.late;
@@ -62,16 +54,15 @@ enum SalahStatus {
 }
 
 enum SalahPrayer {
-  fajr('fajr', 'Fajr'),
-  dhuhr('dhuhr', 'Dhuhr'),
-  asr('asr', 'Asr'),
-  maghrib('maghrib', 'Maghrib'),
-  isha('isha', 'Isha');
+  fajr('fajr'),
+  dhuhr('dhuhr'),
+  asr('asr'),
+  maghrib('maghrib'),
+  isha('isha');
 
-  const SalahPrayer(this.key, this.label);
+  const SalahPrayer(this.key);
 
   final String key;
-  final String label;
 
   SalahStatus statusFor(SalahLogEntry entry) {
     return SalahStatus.fromValue(switch (this) {
@@ -228,6 +219,7 @@ class _StatisticsPageState extends State<StatisticsPage>
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     return ColoredBox(
       color: colors.background,
@@ -245,7 +237,7 @@ class _StatisticsPageState extends State<StatisticsPage>
                   topPadding: 16,
                   child: _DataSection<OverviewStats>(
                     refreshToken: refreshToken,
-                    load: () => _repository.overview(),
+                    load: () => _repository.overview(localizations),
                     placeholderHeight: 170,
                     builder: (context, data) => _OverviewHeaderCard(data: data),
                   ),
@@ -263,7 +255,7 @@ class _StatisticsPageState extends State<StatisticsPage>
                 _PageContentSliver(
                   child: _RangeToggle(rangeListenable: _rangeNotifier),
                 ),
-                const _StickySectionHeader(label: 'Salah'),
+                _StickySectionHeader(label: localizations.prayerStats),
                 _PageContentSliver(
                   child: _RangeAwareSection<SalahSectionData>(
                     refreshToken: refreshToken,
@@ -279,12 +271,13 @@ class _StatisticsPageState extends State<StatisticsPage>
                     ),
                   ),
                 ),
-                const _StickySectionHeader(label: 'Quran'),
+                _StickySectionHeader(label: localizations.quranStats),
                 _PageContentSliver(
                   child: _RangeAwareSection<QuranStatsData>(
                     refreshToken: refreshToken,
                     rangeListenable: _rangeNotifier,
-                    load: _repository.quranStats,
+                    load: (range) =>
+                        _repository.quranStats(range, localizations),
                     placeholderHeight: 680,
                     builder: (context, data) => _QuranSection(
                       data: data,
@@ -296,7 +289,7 @@ class _StatisticsPageState extends State<StatisticsPage>
                     ),
                   ),
                 ),
-                const _StickySectionHeader(label: 'Tasbih'),
+                _StickySectionHeader(label: localizations.tasbihStats),
                 _PageContentSliver(
                   child: _RangeAwareSection<TasbihStatsData>(
                     refreshToken: refreshToken,
@@ -306,7 +299,7 @@ class _StatisticsPageState extends State<StatisticsPage>
                     builder: (context, data) => _TasbihSection(data: data),
                   ),
                 ),
-                const _StickySectionHeader(label: 'Duas'),
+                _StickySectionHeader(label: localizations.duaStats),
                 _PageContentSliver(
                   child: _RangeAwareSection<DuasStatsData>(
                     refreshToken: refreshToken,
@@ -316,14 +309,14 @@ class _StatisticsPageState extends State<StatisticsPage>
                     builder: (context, data) => _DuasSection(data: data),
                   ),
                 ),
-                const _StickySectionHeader(label: 'Activity History'),
+                _StickySectionHeader(label: localizations.activityHistory),
                 _PageContentSliver(
                   child: _MonthlyActivitySection(
                     refreshToken: refreshToken,
                     repository: _repository,
                   ),
                 ),
-                const _StickySectionHeader(label: 'Streaks'),
+                _StickySectionHeader(label: localizations.streaksLabel),
                 _PageContentSliver(
                   bottomPadding: 32,
                   child: _DataSection<StreakStats>(
@@ -344,10 +337,10 @@ class _StatisticsPageState extends State<StatisticsPage>
 }
 
 class StatisticsRepository {
-  final Map<StatRange, Future<OverviewStats>> _overviewCache =
-      <StatRange, Future<OverviewStats>>{};
-  final Map<StatRange, Future<QuranStatsData>> _quranCache =
-      <StatRange, Future<QuranStatsData>>{};
+  final Map<String, Future<OverviewStats>> _overviewCache =
+      <String, Future<OverviewStats>>{};
+  final Map<String, Future<QuranStatsData>> _quranCache =
+      <String, Future<QuranStatsData>>{};
   final Map<StatRange, Future<TasbihStatsData>> _tasbihCache =
       <StatRange, Future<TasbihStatsData>>{};
   final Map<StatRange, Future<DuasStatsData>> _duasCache =
@@ -369,8 +362,9 @@ class StatisticsRepository {
     _streakCache.clear();
   }
 
-  Future<OverviewStats> overview() {
-    return _overviewCache.putIfAbsent(StatRange.allTime, () async {
+  Future<OverviewStats> overview(AppLocalizations localizations) {
+    final String cacheKey = localizations.localeName;
+    return _overviewCache.putIfAbsent(cacheKey, () async {
       final DateTime now = DateTime.now();
       final String todayKey = _dateKey(now);
       final Map<String, QuranActivityDay> quranDays = _quranDaysByDate();
@@ -417,14 +411,18 @@ class StatisticsRepository {
         todaySalahEntry: todaySalah,
         quranGoalProgress: (quranAyahs / dailyGoal).clamp(0.0, 1.0),
         progress: progress,
-        motivation: _worshipMotivation(progress),
+        motivation: _worshipMotivation(localizations, progress),
         highestStreak: streakStats.highest,
       );
     });
   }
 
-  Future<QuranStatsData> quranStats(StatRange range) {
-    return _quranCache.putIfAbsent(range, () async {
+  Future<QuranStatsData> quranStats(
+    StatRange range,
+    AppLocalizations localizations,
+  ) {
+    final String cacheKey = '${range.name}:${localizations.localeName}';
+    return _quranCache.putIfAbsent(cacheKey, () async {
       final DateTime now = DateTime.now();
       final List<QuranActivityDay> activityDays = _quranDays();
       final Map<String, QuranActivityDay> byDate = <String, QuranActivityDay>{
@@ -452,22 +450,19 @@ class StatisticsRepository {
       final Map<int, Set<int>> ayahsBySurah = _readAyahsBySurah(activityDays);
       final Map<int, int> surahVisitCounts = _surahVisitCounts(activityDays);
       return QuranStatsData(
-        buckets: _quranBuckets(range, byDate, now),
+        buckets: _quranBuckets(range, byDate, now, localizations),
         totalAyahs: totalAyahs,
         totalLetters: totalLetters,
         activeDays: activityDays.where(hasQuranReadingActivity).length,
-        mostActiveDayName: mostActiveWeekday == null
-            ? 'No day yet'
-            : _weekdayName(mostActiveWeekday),
-        mostReadSurahName: mostRead == null
-            ? 'No surah yet'
-            : quran.getSurahName(mostRead.key),
+        mostActiveWeekday: mostActiveWeekday,
+        mostReadSurah: mostRead?.key,
         mostReadSurahAyahs: mostRead?.value ?? 0,
         insights: _buildInsights(
           activityDays: activityDays,
           activityByDate: byDate,
           now: now,
           surahVisitCounts: surahVisitCounts,
+          localizations: localizations,
         ),
         completedSurahs: _completedSurahs(ayahsBySurah),
         khatmCompletionDates: _khatmCompletionDates(activityDays),
@@ -492,7 +487,7 @@ class StatisticsRepository {
       final Map<String, int> labelCounts = <String, int>{};
       for (final DhikrSessionEntry session in sessions) {
         final String label = session.label.trim().isEmpty
-            ? 'Dhikr'
+            ? ''
             : session.label.trim();
         labelCounts[label] = (labelCounts[label] ?? 0) + session.count;
       }
@@ -504,7 +499,7 @@ class StatisticsRepository {
         totalDhikr: total,
         dailyAverage: activeDays.isEmpty ? 0 : total / activeDays.length,
         activeDays: activeDays.length,
-        mostRecitedName: mostRecited?.key ?? 'No dhikr yet',
+        mostRecitedName: mostRecited?.key ?? '',
         mostRecitedCount: mostRecited?.value ?? 0,
       );
     });
@@ -539,7 +534,7 @@ class StatisticsRepository {
         hasData: viewed > 0 || favourites > 0,
         viewedCount: viewed,
         favouriteCount: favourites,
-        mostViewedCategory: mostViewed?.title ?? 'No category yet',
+        mostViewedCategory: mostViewed?.title ?? '',
         mostViewedCategoryCount: mostViewed?.count ?? 0,
       );
     });
@@ -585,7 +580,7 @@ class StatisticsRepository {
         prayedToday: _loggedPrayerCount(todayEntry),
         onTimeThisWeek: _salahStatusTotal(weekLogs, SalahStatus.onTime),
         lateThisWeek: _salahStatusTotal(weekLogs, SalahStatus.late),
-        bestPrayerName: bestPrayer?.prayer.label ?? 'No prayer yet',
+        bestPrayer: bestPrayer?.prayer,
         fajrStreak: _fajrOnTimeStreak(allLogs, now),
         prayerStats: prayerStats,
       );
@@ -1019,6 +1014,7 @@ class _OverviewHeroContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.xl);
     final DateTime now = DateTime.now();
@@ -1075,7 +1071,7 @@ class _OverviewHeroContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  _HeroTopRow(dateLabel: _heroDateLabel(now)),
+                  _HeroTopRow(dateLabel: _heroDateLabel(now, localizations)),
                   const SizedBox(height: 4),
                   _HeroGreeting(streak: data.highestStreak),
                   const _HeroGoldDivider(),
@@ -1091,7 +1087,7 @@ class _OverviewHeroContent extends StatelessWidget {
                   ],
                   const SizedBox(height: 10),
                   Text(
-                    _dailyHeroQuote(now),
+                    _dailyHeroQuote(now, localizations),
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: colors.onPrimaryMuted,
@@ -1115,13 +1111,14 @@ class _HeroTopRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     return Row(
       children: <Widget>[
         Expanded(
           child: Text(
-            "TODAY'S WORSHIP",
+            localizations.todaysWorship.toUpperCase(),
             style: theme.textTheme.labelSmall?.copyWith(
               color: colors.onPrimary.withAlpha(179),
               fontWeight: FontWeight.w700,
@@ -1158,16 +1155,17 @@ class _HeroGreeting extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final String line = streak > 0
-        ? "You're on a $streak-day streak — keep going"
-        : 'Continue your journey today';
+        ? localizations.onStreakDay(streak)
+        : localizations.continueYourJourneyToday;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Assalamu Alaikum',
+          localizations.assalamuAlaikum,
           style: theme.textTheme.headlineMedium?.copyWith(
             color: colors.onPrimary,
             fontWeight: FontWeight.w700,
@@ -1218,13 +1216,14 @@ class _HeroMetricsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return Row(
       children: <Widget>[
         Expanded(
           child: _HeroMetricCard(
             icon: Icons.menu_book_rounded,
             value: _compactNumber(data.quranAyahs),
-            label: 'Ayahs',
+            label: localizations.ayahsLabel,
           ),
         ),
         const SizedBox(width: 8),
@@ -1232,7 +1231,7 @@ class _HeroMetricsRow extends StatelessWidget {
           child: _HeroMetricCard(
             icon: Icons.radio_button_checked_rounded,
             value: _compactNumber(data.tasbihCount),
-            label: 'Dhikr',
+            label: localizations.dhikrLabel,
           ),
         ),
         const SizedBox(width: 8),
@@ -1240,7 +1239,7 @@ class _HeroMetricsRow extends StatelessWidget {
           child: _HeroMetricCard(
             icon: Icons.volunteer_activism_rounded,
             value: _compactNumber(data.duasViewed),
-            label: 'Duas',
+            label: localizations.duas,
           ),
         ),
         const SizedBox(width: 8),
@@ -1249,12 +1248,12 @@ class _HeroMetricsRow extends StatelessWidget {
               ? _HeroMetricCard(
                   icon: Icons.mosque_rounded,
                   value: '${data.salahPrayersToday}/5',
-                  label: 'Salah',
+                  label: localizations.salah,
                 )
               : _HeroMetricCard(
                   icon: Icons.local_fire_department_rounded,
                   value: _compactNumber(data.highestStreak),
-                  label: 'Day streak',
+                  label: localizations.dayStreakLabel,
                 ),
         ),
       ],
@@ -1345,6 +1344,7 @@ class _DailyQuranGoalProgressState extends State<_DailyQuranGoalProgress> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
     final double clampedProgress = widget.progress.clamp(0.0, 1.0);
@@ -1357,7 +1357,7 @@ class _DailyQuranGoalProgressState extends State<_DailyQuranGoalProgress> {
           children: <Widget>[
             Expanded(
               child: Text(
-                'DAILY QURAN GOAL',
+                localizations.dailyQuranGoal.toUpperCase(),
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: colors.onPrimaryMuted,
                   fontWeight: FontWeight.w700,
@@ -1457,6 +1457,7 @@ class _HeroMiniSalahChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
     final bool prayed = status.countsAsPrayer;
@@ -1492,7 +1493,7 @@ class _HeroMiniSalahChip extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                prayer.label,
+                _salahPrayerLabel(localizations, prayer),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
@@ -1602,6 +1603,7 @@ class _RangePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
     return Material(
@@ -1614,7 +1616,7 @@ class _RangePill extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Text(
-            range.label,
+            _statRangeLabel(localizations, range),
             style: theme.textTheme.labelMedium?.copyWith(
               color: selected ? colors.onPrimary : colors.textSecondary,
               fontWeight: FontWeight.w700,
@@ -1683,6 +1685,7 @@ class _PrayerTrackingOptInCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -1713,7 +1716,7 @@ class _PrayerTrackingOptInCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Track your daily prayers',
+              localizations.trackYourDailyPrayers,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: colors.textPrimary,
                 fontWeight: FontWeight.w800,
@@ -1721,7 +1724,7 @@ class _PrayerTrackingOptInCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Log each prayer privately on your device. Your data never leaves your phone.',
+              localizations.trackYourDailyPrayersDescription,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.textSecondary,
                 height: 1.6,
@@ -1729,7 +1732,7 @@ class _PrayerTrackingOptInCard extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             _PrimaryPillButton(
-              label: 'Enable prayer tracking',
+              label: localizations.enablePrayerTracking,
               onPressed: onEnable,
             ),
             const SizedBox(height: 8),
@@ -1739,7 +1742,7 @@ class _PrayerTrackingOptInCard extends StatelessWidget {
                 foregroundColor: colors.textMuted,
                 textStyle: theme.textTheme.bodySmall,
               ),
-              child: const Text('Maybe later'),
+              child: Text(localizations.maybeLater),
             ),
           ],
         ),
@@ -1755,6 +1758,7 @@ class _PrayerTrackingMiniEnable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     return Center(
@@ -1766,7 +1770,7 @@ class _PrayerTrackingMiniEnable extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        child: const Text('Enable prayer tracking →'),
+        child: Text(localizations.enablePrayerTrackingLabel),
       ),
     );
   }
@@ -1923,12 +1927,44 @@ String _formatSalahLogTime(DateTime time, bool use24HourFormat) {
     return '${_twoDigits(hour)}:${_twoDigits(minute)}';
   }
 
-  final String period = hour >= 12 ? 'PM' : 'AM';
+  final bool arabicLocale =
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
+  final String period = arabicLocale
+      ? (hour >= 12 ? 'م' : 'ص')
+      : (hour >= 12 ? 'PM' : 'AM');
   final int displayHour = hour % 12 == 0 ? 12 : hour % 12;
   return '$displayHour:${_twoDigits(minute)} $period';
 }
 
 String _twoDigits(int value) => value.toString().padLeft(2, '0');
+
+String _statRangeLabel(AppLocalizations localizations, StatRange range) {
+  return switch (range) {
+    StatRange.week => localizations.thisWeek,
+    StatRange.month => localizations.thisMonth,
+    StatRange.year => localizations.thisYear,
+    StatRange.allTime => localizations.allTime,
+  };
+}
+
+String _salahStatusLabel(AppLocalizations localizations, SalahStatus status) {
+  return switch (status) {
+    SalahStatus.onTime => localizations.onTime,
+    SalahStatus.late => localizations.late,
+    SalahStatus.notPrayed => localizations.missed,
+    SalahStatus.unlogged => localizations.log,
+  };
+}
+
+String _salahPrayerLabel(AppLocalizations localizations, SalahPrayer prayer) {
+  return switch (prayer) {
+    SalahPrayer.fajr => localizations.fajr,
+    SalahPrayer.dhuhr => localizations.dhuhr,
+    SalahPrayer.asr => localizations.asr,
+    SalahPrayer.maghrib => localizations.maghrib,
+    SalahPrayer.isha => localizations.isha,
+  };
+}
 
 class _SalahSection extends StatelessWidget {
   const _SalahSection({
@@ -1944,6 +1980,7 @@ class _SalahSection extends StatelessWidget {
     BuildContext context,
     SalahPrayer initialPrayer,
   ) async {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final _SalahLogSheetResult? result =
         await showModalBottomSheet<_SalahLogSheetResult>(
           context: context,
@@ -1975,7 +2012,7 @@ class _SalahSection extends StatelessWidget {
           backgroundColor: colors.warningSurface,
           duration: const Duration(seconds: 3),
           content: Text(
-            'Some prayers were not yet available and were not saved.',
+            localizations.somePrayersNotYetAvailable,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colors.warning,
               fontWeight: FontWeight.w700,
@@ -1994,7 +2031,7 @@ class _SalahSection extends StatelessWidget {
             Icon(Icons.check_circle_rounded, color: colors.onPrimary, size: 18),
             const SizedBox(width: 8),
             Text(
-              'Prayer log saved',
+              localizations.prayerLogSaved,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colors.onPrimary,
                 fontWeight: FontWeight.w700,
@@ -2073,6 +2110,7 @@ class _PrayerChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
@@ -2083,7 +2121,9 @@ class _PrayerChip extends StatelessWidget {
     final Color statusColor = locked
         ? colors.textMuted
         : _salahStatusColor(colorScheme, colors, status);
-    final String statusLabel = locked ? 'Not yet' : status.label;
+    final String statusLabel = locked
+        ? localizations.notYet
+        : _salahStatusLabel(localizations, status);
     return Opacity(
       opacity: locked ? 0.4 : 1,
       child: Material(
@@ -2119,7 +2159,7 @@ class _PrayerChip extends StatelessWidget {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        prayer.label,
+                        _salahPrayerLabel(localizations, prayer),
                         textAlign: TextAlign.center,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: notPrayed ? statusColor : colors.textSecondary,
@@ -2159,6 +2199,7 @@ class _SalahWeeklyStatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return LayoutBuilder(
       builder: (context, constraints) {
         final double gap = constraints.maxWidth >= 720 ? 12 : 10;
@@ -2170,12 +2211,12 @@ class _SalahWeeklyStatsGrid extends StatelessWidget {
                 _StatCard(
                   icon: Icons.check_circle_rounded,
                   value: '${data.onTimeThisWeek}',
-                  label: 'On time this week',
+                  label: localizations.onTimeThisWeek,
                 ),
                 _StatCard(
                   icon: Icons.schedule_rounded,
                   value: '${data.lateThisWeek}',
-                  label: 'Late this week',
+                  label: localizations.lateThisWeek,
                 ),
               ],
             ),
@@ -2185,13 +2226,15 @@ class _SalahWeeklyStatsGrid extends StatelessWidget {
               children: <Widget>[
                 _StatCard(
                   icon: Icons.star_rounded,
-                  value: data.bestPrayerName,
-                  label: 'Best prayer',
+                  value: data.bestPrayer == null
+                      ? localizations.noPrayerYet
+                      : _salahPrayerLabel(localizations, data.bestPrayer!),
+                  label: localizations.bestPrayer,
                 ),
                 _StatCard(
                   icon: Icons.wb_twilight_rounded,
                   value: '${data.fajrStreak}',
-                  label: 'Current Fajr streak',
+                  label: localizations.currentFajrStreak,
                 ),
               ],
             ),
@@ -2289,6 +2332,7 @@ class _SalahRingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -2319,7 +2363,7 @@ class _SalahRingIndicator extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              stats.prayer.label,
+              _salahPrayerLabel(localizations, stats.prayer),
               textAlign: TextAlign.center,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: colors.textSecondary,
@@ -2403,15 +2447,16 @@ class _FajrConsistencyCallout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final double? fajrOnTimePct = data.perPrayerOnTimePct[SalahPrayer.fajr.key];
     final String body = fajrOnTimePct == null || fajrOnTimePct <= 0
-        ? 'Start logging Fajr to track your progress.'
+        ? localizations.startLoggingFajr
         : fajrOnTimePct >= 0.8
-        ? 'Mashallah — your Fajr is very consistent.'
+        ? localizations.fajrVeryConsistent
         : fajrOnTimePct >= 0.5
-        ? 'Good effort — Fajr is getting stronger.'
-        : 'Fajr is a challenge — every attempt counts.';
+        ? localizations.fajrGettingStronger
+        : localizations.fajrEveryAttemptCounts;
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadii.large),
       child: DecoratedBox(
@@ -2434,7 +2479,7 @@ class _FajrConsistencyCallout extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        'Fajr consistency',
+                        localizations.fajrConsistency,
                         style: theme.textTheme.titleSmall?.copyWith(
                           color: colors.textPrimary,
                           fontWeight: FontWeight.w800,
@@ -2528,6 +2573,7 @@ class _SalahLogSheetState extends State<_SalahLogSheet> {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = const BorderRadius.vertical(
       top: Radius.circular(AppRadii.xl),
@@ -2560,7 +2606,7 @@ class _SalahLogSheetState extends State<_SalahLogSheet> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    "Today's Prayers",
+                    localizations.todaysPrayers,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: colors.textPrimary,
@@ -2569,7 +2615,10 @@ class _SalahLogSheetState extends State<_SalahLogSheet> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _dateChipLabel(DateTime.parse(widget.initialEntry.date)),
+                    _dateChipLabel(
+                      DateTime.parse(widget.initialEntry.date),
+                      localizations,
+                    ),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.textSecondary,
@@ -2608,7 +2657,9 @@ class _SalahLogSheetState extends State<_SalahLogSheet> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                     child: _PrimaryPillButton(
-                      label: _saving ? 'Saving' : 'Save',
+                      label: _saving
+                          ? localizations.saving
+                          : localizations.save,
                       onPressed: _save,
                     ),
                   ),
@@ -2642,6 +2693,7 @@ class _SalahLogPrayerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final bool hasSavedStatus = selectedStatus != SalahStatus.unlogged;
     final bool locked = !isLoggable && !hasSavedStatus;
@@ -2661,7 +2713,7 @@ class _SalahLogPrayerRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  prayer.label,
+                  _salahPrayerLabel(localizations, prayer),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w800,
@@ -2670,7 +2722,7 @@ class _SalahLogPrayerRow extends StatelessWidget {
                 if (locked && unlockTimeLabel != null) ...<Widget>[
                   const SizedBox(height: 3),
                   Text(
-                    'Available after $unlockTimeLabel',
+                    localizations.availableAfter(unlockTimeLabel!),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelSmall?.copyWith(
@@ -2731,6 +2783,7 @@ class _SalahReadOnlyStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
@@ -2755,7 +2808,7 @@ class _SalahReadOnlyStatusChip extends StatelessWidget {
               const SizedBox(width: 5),
             ],
             Text(
-              status.label,
+              _salahStatusLabel(localizations, status),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelSmall?.copyWith(
@@ -2784,6 +2837,7 @@ class _SalahStatusButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
@@ -2835,7 +2889,7 @@ class _SalahStatusButton extends StatelessWidget {
                     const SizedBox(width: 5),
                   ],
                   Text(
-                    status.label,
+                    _salahStatusLabel(localizations, status),
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: foreground,
                       fontWeight: FontWeight.w700,
@@ -2902,6 +2956,7 @@ class _ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.large);
     final int maxAyahs = buckets.fold<int>(
@@ -2921,7 +2976,7 @@ class _ActivityCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const _SectionLabel('Quran activity'),
+            _SectionLabel(localizations.quranActivity),
             const SizedBox(height: 16),
             SizedBox(
               height: math.max(
@@ -2941,7 +2996,7 @@ class _ActivityCard extends StatelessWidget {
                               child: Tooltip(
                                 triggerMode: TooltipTriggerMode.tap,
                                 message:
-                                    '${bucket.detailLabel}\n${bucket.count} ayahs',
+                                    '${bucket.detailLabel}\n${localizations.ayahsCount(bucket.count)}',
                                 child: Align(
                                   alignment: Alignment.bottomCenter,
                                   child: bucket.count <= 0
@@ -3044,6 +3099,7 @@ class _LifetimeTotalsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return LayoutBuilder(
       builder: (context, constraints) {
         final double gap = constraints.maxWidth >= 720 ? 12 : 10;
@@ -3056,12 +3112,12 @@ class _LifetimeTotalsGrid extends StatelessWidget {
                 _StatCard(
                   icon: Icons.done_all_rounded,
                   value: '${data.totalAyahs}',
-                  label: 'Total ayahs',
+                  label: localizations.ayahsRead,
                 ),
                 _StatCard(
                   icon: Icons.text_fields_rounded,
                   value: _compactNumber(data.totalLetters),
-                  label: 'Total letters',
+                  label: localizations.lettersRead,
                 ),
               ],
             ),
@@ -3072,19 +3128,23 @@ class _LifetimeTotalsGrid extends StatelessWidget {
                 _StatCard(
                   icon: Icons.calendar_today_rounded,
                   value: '${data.activeDays}',
-                  label: 'Active days',
+                  label: localizations.activeDays,
                 ),
                 _StatCard(
                   icon: Icons.event_available_rounded,
-                  value: data.mostActiveDayName,
-                  label: 'Most active day',
+                  value: data.mostActiveWeekday == null
+                      ? localizations.noDayYet
+                      : _weekdayName(data.mostActiveWeekday!, localizations),
+                  label: localizations.mostActiveDay,
                 ),
               ],
             ),
             SizedBox(height: gap),
             _FeatureCard(
-              title: data.mostReadSurahName,
-              subtitle: '${data.mostReadSurahAyahs} ayahs read',
+              title: data.mostReadSurah == null
+                  ? localizations.noSurahYet
+                  : localizedSurahName(localizations, data.mostReadSurah!),
+              subtitle: localizations.ayahsReadCount(data.mostReadSurahAyahs),
               icon: Icons.menu_book_rounded,
             ),
           ],
@@ -3196,6 +3256,7 @@ class _MostRecitedStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     return ConstrainedBox(
@@ -3224,7 +3285,7 @@ class _MostRecitedStatCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '$count recitations',
+                localizations.recitationsCount(count),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -3399,16 +3460,17 @@ class _SurahProgressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     return Column(
       key: sectionKey,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const _SectionLabel('Surah Progress'),
+        _SectionLabel(localizations.surahProgress),
         const SizedBox(height: 12),
         Text(
-          '${completedSurahs.length} / $_totalSurahs Surahs complete',
+          localizations.surahsComplete(completedSurahs.length, _totalSurahs),
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
             color: colors.textSecondary,
@@ -3537,6 +3599,7 @@ class _SurahGridToggleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.pill);
     return Material(
@@ -3565,7 +3628,9 @@ class _SurahGridToggleButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  expanded ? 'Show less' : 'Show all $_totalSurahs surahs',
+                  expanded
+                      ? localizations.showLess
+                      : localizations.showAllSurahs(_totalSurahs),
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: colors.textSecondary,
                     fontWeight: FontWeight.w700,
@@ -3647,12 +3712,13 @@ class _KhatmTrackerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        const _SectionLabel('Quran Completions'),
+        _SectionLabel(localizations.quranCompletions),
         const SizedBox(height: 12),
         Text(
           '${completionDates.length}',
@@ -3664,7 +3730,7 @@ class _KhatmTrackerSection extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Full completions',
+          localizations.fullCompletions,
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
             color: colors.textSecondary,
@@ -3674,7 +3740,7 @@ class _KhatmTrackerSection extends StatelessWidget {
         const SizedBox(height: 14),
         if (completionDates.isEmpty)
           Text(
-            'Complete all $_totalSurahs Surahs to record your first Khatm',
+            localizations.completeAllSurahsForFirstKhatm(_totalSurahs),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodySmall?.copyWith(
               color: colors.textMuted,
@@ -3715,6 +3781,7 @@ class _KhatmDateChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -3725,7 +3792,10 @@ class _KhatmDateChip extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         child: Text(
-          'Khatm $number · ${_dateChipLabel(date)}',
+          localizations.khatmDateLabel(
+            number,
+            _dateChipLabel(date, localizations),
+          ),
           style: theme.textTheme.labelMedium?.copyWith(
             color: colors.textSecondary,
             fontWeight: FontWeight.w700,
@@ -3743,10 +3813,11 @@ class _TasbihSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (!data.hasData) {
-      return const _EmptyStatsSection(
+      return _EmptyStatsSection(
         icon: Icons.radio_button_checked_rounded,
-        message: 'Start your first Tasbih session',
+        message: localizations.startFirstTasbihSession,
       );
     }
     return Column(
@@ -3763,12 +3834,12 @@ class _TasbihSection extends StatelessWidget {
                     _StatCard(
                       icon: Icons.tag_rounded,
                       value: '${data.totalDhikr}',
-                      label: 'Total dhikr',
+                      label: localizations.totalDhikr,
                     ),
                     _StatCard(
                       icon: Icons.show_chart_rounded,
                       value: _averageLabel(data.dailyAverage),
-                      label: 'Daily average',
+                      label: localizations.dailyAverage,
                     ),
                   ],
                 ),
@@ -3778,20 +3849,26 @@ class _TasbihSection extends StatelessWidget {
                   children: <Widget>[
                     _MostRecitedStatCard(
                       icon: Icons.favorite_rounded,
-                      name: data.mostRecitedName,
+                      name: data.mostRecitedName.isEmpty
+                          ? localizations.dhikrLabel
+                          : data.mostRecitedName,
                       count: data.mostRecitedCount,
                     ),
                     _StatCard(
                       icon: Icons.calendar_month_rounded,
                       value: '${data.activeDays}',
-                      label: 'Active days',
+                      label: localizations.activeDays,
                     ),
                   ],
                 ),
                 SizedBox(height: gap),
                 _FeatureCard(
-                  title: data.mostRecitedName,
-                  subtitle: '${data.mostRecitedCount} recitations',
+                  title: data.mostRecitedName.isEmpty
+                      ? localizations.dhikrLabel
+                      : data.mostRecitedName,
+                  subtitle: localizations.recitationsCount(
+                    data.mostRecitedCount,
+                  ),
                   icon: Icons.spa_rounded,
                 ),
               ],
@@ -3810,10 +3887,11 @@ class _DuasSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (!data.hasData) {
-      return const _EmptyStatsSection(
+      return _EmptyStatsSection(
         icon: Icons.auto_stories_rounded,
-        message: 'Open a dua to begin your Duas history',
+        message: localizations.openDuaToBeginHistory,
       );
     }
     return Column(
@@ -3825,19 +3903,21 @@ class _DuasSection extends StatelessWidget {
             _StatCard(
               icon: Icons.visibility_rounded,
               value: '${data.viewedCount}',
-              label: 'Duas viewed',
+              label: localizations.duasViewed,
             ),
             _StatCard(
               icon: Icons.favorite_rounded,
               value: '${data.favouriteCount}',
-              label: 'Favourite duas',
+              label: localizations.favouriteDuas,
             ),
           ],
         ),
         const SizedBox(height: 10),
         _FeatureCard(
-          title: data.mostViewedCategory,
-          subtitle: '${data.mostViewedCategoryCount} views',
+          title: data.mostViewedCategoryCount == 0
+              ? localizations.noCategoryYet
+              : data.mostViewedCategory,
+          subtitle: localizations.viewsCount(data.mostViewedCategoryCount),
           icon: Icons.category_rounded,
         ),
       ],
@@ -3981,6 +4061,7 @@ class _MonthlyActivitySectionState extends State<_MonthlyActivitySection> {
 
   void _showDayDetails(MonthlyActivityDay day) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     showModalBottomSheet<void>(
       context: context,
@@ -4000,7 +4081,7 @@ class _MonthlyActivitySectionState extends State<_MonthlyActivitySection> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  _dateChipLabel(day.date),
+                  _dateChipLabel(day.date, localizations),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w800,
@@ -4008,7 +4089,7 @@ class _MonthlyActivitySectionState extends State<_MonthlyActivitySection> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _monthlyDayBreakdown(day),
+                  _monthlyDayBreakdown(day, localizations),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.textSecondary,
                     fontWeight: FontWeight.w600,
@@ -4113,17 +4194,18 @@ class _MonthlyActivityHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     return Row(
       children: <Widget>[
         IconButton(
-          tooltip: 'Previous month',
+          tooltip: localizations.previousMonth,
           onPressed: onPrevious,
           icon: Icon(Icons.chevron_left_rounded, color: colors.textSecondary),
         ),
         Expanded(
           child: Text(
-            _monthYearLabel(month),
+            _monthYearLabel(month, localizations),
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium?.copyWith(
               color: colors.textPrimary,
@@ -4132,7 +4214,7 @@ class _MonthlyActivityHeader extends StatelessWidget {
           ),
         ),
         IconButton(
-          tooltip: 'Next month',
+          tooltip: localizations.nextMonth,
           onPressed: onNext,
           icon: Icon(
             Icons.chevron_right_rounded,
@@ -4157,6 +4239,7 @@ class _MonthlyActivityBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -4164,7 +4247,7 @@ class _MonthlyActivityBody extends StatelessWidget {
         _MonthlyCalendarGrid(data: data, onDayTap: onDayTap),
         const SizedBox(height: 14),
         Text(
-          _monthlySummaryLabel(data),
+          _monthlySummaryLabel(data, localizations),
           textAlign: TextAlign.center,
           style: theme.textTheme.labelMedium?.copyWith(
             color: colors.textSecondary,
@@ -4185,9 +4268,10 @@ class _MonthlyCalendarGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EquranColors colors = context.equranColors;
     final List<MonthlyActivityDay?> cells = _monthlyCalendarCells(data);
-    const List<String> dayLabels = <String>['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final List<String> dayLabels = _weekdayInitials(localizations);
     return Column(
       children: <Widget>[
         Padding(
@@ -4289,6 +4373,7 @@ class _WorshipStreakSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -4298,7 +4383,7 @@ class _WorshipStreakSection extends StatelessWidget {
               child: _StreakDetailCard(
                 icon: Icons.menu_book_rounded,
                 value: data.quran,
-                label: 'Quran streak',
+                label: localizations.quranStreak,
               ),
             ),
             const SizedBox(width: 10),
@@ -4306,7 +4391,7 @@ class _WorshipStreakSection extends StatelessWidget {
               child: _StreakDetailCard(
                 icon: Icons.spa_rounded,
                 value: data.tasbih,
-                label: 'Tasbih streak',
+                label: localizations.tasbihStreak,
               ),
             ),
             const SizedBox(width: 10),
@@ -4314,7 +4399,7 @@ class _WorshipStreakSection extends StatelessWidget {
               child: _StreakDetailCard(
                 icon: Icons.local_fire_department_rounded,
                 value: data.overall,
-                label: 'Overall streak',
+                label: localizations.overallStreak,
               ),
             ),
           ],
@@ -4382,6 +4467,7 @@ class _StreakBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     return DecoratedBox(
@@ -4402,7 +4488,7 @@ class _StreakBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                '$streak day worship streak',
+                localizations.dayWorshipStreak(streak),
                 style: theme.textTheme.titleSmall?.copyWith(
                   color: colors.warning,
                   fontWeight: FontWeight.w700,
@@ -4614,8 +4700,8 @@ class QuranStatsData {
     required this.totalAyahs,
     required this.totalLetters,
     required this.activeDays,
-    required this.mostActiveDayName,
-    required this.mostReadSurahName,
+    required this.mostActiveWeekday,
+    required this.mostReadSurah,
     required this.mostReadSurahAyahs,
     required this.insights,
     required this.completedSurahs,
@@ -4626,8 +4712,8 @@ class QuranStatsData {
   final int totalAyahs;
   final int totalLetters;
   final int activeDays;
-  final String mostActiveDayName;
-  final String mostReadSurahName;
+  final int? mostActiveWeekday;
+  final int? mostReadSurah;
   final int mostReadSurahAyahs;
   final List<InsightData> insights;
   final Set<int> completedSurahs;
@@ -4675,7 +4761,7 @@ class SalahSectionData {
     required this.prayedToday,
     required this.onTimeThisWeek,
     required this.lateThisWeek,
-    required this.bestPrayerName,
+    required this.bestPrayer,
     required this.fajrStreak,
     required this.prayerStats,
   });
@@ -4687,7 +4773,7 @@ class SalahSectionData {
       prayedToday: 0,
       onTimeThisWeek: 0,
       lateThisWeek: 0,
-      bestPrayerName: 'No prayer yet',
+      bestPrayer: null,
       fajrStreak: 0,
       prayerStats: <SalahPrayerStats>[
         for (final SalahPrayer prayer in SalahPrayer.values)
@@ -4701,7 +4787,7 @@ class SalahSectionData {
   final int prayedToday;
   final int onTimeThisWeek;
   final int lateThisWeek;
-  final String bestPrayerName;
+  final SalahPrayer? bestPrayer;
   final int fajrStreak;
   final List<SalahPrayerStats> prayerStats;
 
@@ -4975,11 +5061,12 @@ List<ActivityBucket> _quranBuckets(
   StatRange range,
   Map<String, QuranActivityDay> byDate,
   DateTime now,
+  AppLocalizations localizations,
 ) {
   return switch (range) {
-    StatRange.week => _quranWeekBuckets(byDate, now),
-    StatRange.month => _quranMonthBuckets(byDate, now),
-    StatRange.year => _quranYearBuckets(byDate, now),
+    StatRange.week => _quranWeekBuckets(byDate, now, localizations),
+    StatRange.month => _quranMonthBuckets(byDate, now, localizations),
+    StatRange.year => _quranYearBuckets(byDate, now, localizations),
     StatRange.allTime => _quranAllTimeBuckets(byDate, now),
   };
 }
@@ -4987,13 +5074,17 @@ List<ActivityBucket> _quranBuckets(
 List<ActivityBucket> _quranWeekBuckets(
   Map<String, QuranActivityDay> byDate,
   DateTime now,
+  AppLocalizations localizations,
 ) {
-  const List<String> labels = <String>['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  final List<String> labels = _weekdayInitials(localizations);
   return <ActivityBucket>[
     for (int offset = 6; offset >= 0; offset--)
       _bucketForDates(
         label: labels[now.subtract(Duration(days: offset)).weekday - 1],
-        detailLabel: _monthDayLabel(now.subtract(Duration(days: offset))),
+        detailLabel: _monthDayLabel(
+          now.subtract(Duration(days: offset)),
+          localizations,
+        ),
         dates: <DateTime>[now.subtract(Duration(days: offset))],
         current: offset == 0,
         byDate: byDate,
@@ -5004,17 +5095,19 @@ List<ActivityBucket> _quranWeekBuckets(
 List<ActivityBucket> _quranMonthBuckets(
   Map<String, QuranActivityDay> byDate,
   DateTime now,
+  AppLocalizations localizations,
 ) {
   final DateTime currentWeekStart = _weekStart(now);
   return <ActivityBucket>[
     for (int offset = 3; offset >= 0; offset--)
       _bucketForDates(
-        label: 'W${4 - offset}',
+        label: localizations.weekShortLabel(4 - offset),
         detailLabel: _dateRangeLabel(
           currentWeekStart.subtract(Duration(days: offset * 7)),
           currentWeekStart
               .subtract(Duration(days: offset * 7))
               .add(const Duration(days: 6)),
+          localizations,
         ),
         dates: <DateTime>[
           for (int day = 0; day < 7; day++)
@@ -5031,10 +5124,16 @@ List<ActivityBucket> _quranMonthBuckets(
 List<ActivityBucket> _quranYearBuckets(
   Map<String, QuranActivityDay> byDate,
   DateTime now,
+  AppLocalizations localizations,
 ) {
   return <ActivityBucket>[
     for (int offset = 11; offset >= 0; offset--)
-      _bucketForMonth(DateTime(now.year, now.month - offset), byDate, now),
+      _bucketForMonth(
+        DateTime(now.year, now.month - offset),
+        byDate,
+        now,
+        localizations,
+      ),
   ];
 }
 
@@ -5069,13 +5168,14 @@ ActivityBucket _bucketForMonth(
   DateTime month,
   Map<String, QuranActivityDay> byDate,
   DateTime now,
+  AppLocalizations localizations,
 ) {
   final DateTime start = DateTime(month.year, month.month);
   final DateTime end = DateTime(month.year, month.month + 1, 0);
   final bool current = month.year == now.year && month.month == now.month;
   return _bucketForDates(
-    label: _shortMonthLabel(month),
-    detailLabel: _monthLabel(month),
+    label: _shortMonthLabel(month, localizations),
+    detailLabel: _monthLabel(month, localizations),
     dates: <DateTime>[
       for (int day = 0; day < end.day; day++) start.add(Duration(days: day)),
     ],
@@ -5250,11 +5350,11 @@ int _dailyGoal() {
   return 20;
 }
 
-String _worshipMotivation(double progress) {
-  if (progress >= 1) return 'Mashallah! Daily worship complete';
-  if (progress >= 0.5) return 'Great progress, keep going';
-  if (progress > 0) return 'Every deed counts, keep going';
-  return 'Start your worship for today';
+String _worshipMotivation(AppLocalizations localizations, double progress) {
+  if (progress >= 1) return localizations.dailyWorshipComplete;
+  if (progress >= 0.5) return localizations.greatProgressKeepGoing;
+  if (progress > 0) return localizations.everyDeedCountsKeepGoing;
+  return localizations.startYourWorshipForToday;
 }
 
 int _dayAyahCount(QuranActivityDay? day) {
@@ -5371,6 +5471,7 @@ List<InsightData> _buildInsights({
   required Map<String, QuranActivityDay> activityByDate,
   required DateTime now,
   required Map<int, int> surahVisitCounts,
+  required AppLocalizations localizations,
 }) {
   final List<InsightData> insights = <InsightData>[];
   final int? activeDay = _mostActiveWeekday(
@@ -5387,19 +5488,28 @@ List<InsightData> _buildInsights({
     insights.add(
       InsightData(
         icon: Icons.calendar_month_rounded,
-        label: 'You read most on ${_weekdayPlural(activeDay)}',
+        label: localizations.youReadMostOn(
+          _weekdayPlural(activeDay, localizations),
+        ),
       ),
     );
   }
-  final InsightData? trend = _readingTrendInsight(activityByDate, now);
+  final InsightData? trend = _readingTrendInsight(
+    activityByDate,
+    now,
+    localizations,
+  );
   if (trend != null) insights.add(trend);
-  final InsightData? favourite = _favouriteSurahInsight(surahVisitCounts);
+  final InsightData? favourite = _favouriteSurahInsight(
+    surahVisitCounts,
+    localizations,
+  );
   if (favourite != null) insights.add(favourite);
   if (insights.isEmpty) {
-    return const <InsightData>[
+    return <InsightData>[
       InsightData(
         icon: Icons.auto_awesome_rounded,
-        label: 'Start reading to unlock insights',
+        label: localizations.startReadingToUnlockInsights,
       ),
     ];
   }
@@ -5426,6 +5536,7 @@ int? _mostActiveWeekday(List<ActivityDayCount> days) {
 InsightData? _readingTrendInsight(
   Map<String, QuranActivityDay> activityByDate,
   DateTime now,
+  AppLocalizations localizations,
 ) {
   final DateTime currentWeekStart = _weekStart(now);
   final int daysElapsed = now.difference(currentWeekStart).inDays + 1;
@@ -5453,7 +5564,9 @@ InsightData? _readingTrendInsight(
   );
   return InsightData(
     icon: up ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-    label: 'Reading ${up ? 'up' : 'down'} $percent% from last week',
+    label: up
+        ? localizations.readingUpFromLastWeek(percent)
+        : localizations.readingDownFromLastWeek(percent),
   );
 }
 
@@ -5471,14 +5584,19 @@ int _ayahsForRange(
   return total;
 }
 
-InsightData? _favouriteSurahInsight(Map<int, int> surahVisitCounts) {
+InsightData? _favouriteSurahInsight(
+  Map<int, int> surahVisitCounts,
+  AppLocalizations localizations,
+) {
   if (surahVisitCounts.isEmpty) return null;
   final MapEntry<int, int> favourite = surahVisitCounts.entries.reduce(
     (a, b) => a.value >= b.value ? a : b,
   );
   return InsightData(
     icon: Icons.favorite_rounded,
-    label: 'You visit ${quran.getSurahName(favourite.key)} most often',
+    label: localizations.youVisitSurahMostOften(
+      localizedSurahName(localizations, favourite.key),
+    ),
   );
 }
 
@@ -5534,44 +5652,55 @@ String _averageLabel(double value) {
   return value.toStringAsFixed(value >= 10 ? 0 : 1);
 }
 
-String _monthLabel(DateTime date) {
-  return '${_shortMonthLabel(date)} ${date.year}';
+String _monthLabel(DateTime date, AppLocalizations localizations) {
+  return '${_shortMonthLabel(date, localizations)} ${date.year}';
 }
 
-String _monthYearLabel(DateTime date) {
-  return '${_fullMonthLabel(date.month)} ${date.year}';
+String _monthYearLabel(DateTime date, AppLocalizations localizations) {
+  return '${_fullMonthLabel(date.month, localizations)} ${date.year}';
 }
 
-String _monthDayLabel(DateTime date) {
-  return '${_shortMonthLabel(date)} ${date.day}';
+String _monthDayLabel(DateTime date, AppLocalizations localizations) {
+  return '${_shortMonthLabel(date, localizations)} ${date.day}';
 }
 
-String _dateRangeLabel(DateTime start, DateTime end) {
+String _dateRangeLabel(
+  DateTime start,
+  DateTime end,
+  AppLocalizations localizations,
+) {
   if (start.year == end.year &&
       start.month == end.month &&
       start.day == end.day) {
-    return _monthDayLabel(start);
+    return _monthDayLabel(start, localizations);
   }
-  return '${_monthDayLabel(start)} - ${_monthDayLabel(end)}';
+  return '${_monthDayLabel(start, localizations)} - ${_monthDayLabel(end, localizations)}';
 }
 
-String _dateChipLabel(DateTime date) {
-  return '${_shortMonthLabel(date)} ${date.day}, ${date.year}';
+String _dateChipLabel(DateTime date, AppLocalizations localizations) {
+  return '${_shortMonthLabel(date, localizations)} ${date.day}, ${date.year}';
 }
 
-String _monthlySummaryLabel(MonthlyActivityData data) {
+String _monthlySummaryLabel(
+  MonthlyActivityData data,
+  AppLocalizations localizations,
+) {
   final MonthlyActivityDay? bestDay = data.bestDay;
-  final String activeDaysLabel = data.activeDays == 1
-      ? '1 active day'
-      : '${data.activeDays} active days';
-  return '$activeDaysLabel · Best day: '
-      '${bestDay == null ? 'No day yet' : _weekdayName(bestDay.date.weekday)}'
-      ' · ${data.totalActions} total actions';
+  return localizations.monthlyActivitySummary(
+    localizations.activeDaysCount(data.activeDays),
+    bestDay == null
+        ? localizations.noDayYet
+        : _weekdayName(bestDay.date.weekday, localizations),
+    data.totalActions,
+  );
 }
 
-String _monthlyDayBreakdown(MonthlyActivityDay day) {
-  return '${day.quran} ayahs · ${day.tasbih} dhikr · ${day.duas} duas · '
-      '${day.salah}/5 salah';
+String _monthlyDayBreakdown(
+  MonthlyActivityDay day,
+  AppLocalizations localizations,
+) {
+  return '${localizations.ayahsCount(day.quran)} · ${localizations.dhikrCount(day.tasbih)} · ${localizations.duasCount(day.duas)} · '
+      '${day.salah}/5 ${localizations.salah}';
 }
 
 List<MonthlyActivityDay?> _monthlyCalendarCells(MonthlyActivityData data) {
@@ -5604,18 +5733,18 @@ Color _monthlyActivityColor(EquranColors colors, int actions) {
   };
 }
 
-String _heroDateLabel(DateTime date) {
-  return '${_shortWeekdayLabel(date.weekday)}, ${date.day} '
-      '${_shortMonthLabel(date)}';
+String _heroDateLabel(DateTime date, AppLocalizations localizations) {
+  return '${_shortWeekdayLabel(date.weekday, localizations)}, ${date.day} '
+      '${_shortMonthLabel(date, localizations)}';
 }
 
-String _dailyHeroQuote(DateTime date) {
-  const List<String> quotes = <String>[
-    'Small deeds, sincerely done, grow beautifully.',
-    'Begin again with remembrance and gratitude.',
-    'A steady heart returns to Allah each day.',
-    "Let today's worship be gentle and consistent.",
-    'Every ayah read is light for the journey.',
+String _dailyHeroQuote(DateTime date, AppLocalizations localizations) {
+  final List<String> quotes = <String>[
+    localizations.dailyQuoteSmallDeeds,
+    localizations.dailyQuoteBeginAgain,
+    localizations.dailyQuoteSteadyHeart,
+    localizations.dailyQuoteGentleConsistent,
+    localizations.dailyQuoteEveryAyah,
   ];
   return quotes[_dayOfYear(date) % quotes.length];
 }
@@ -5629,77 +5758,89 @@ int _dayOfYear(DateTime date) {
       1;
 }
 
-String _shortWeekdayLabel(int weekday) {
-  const List<String> weekdays = <String>[
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun',
+String _shortWeekdayLabel(int weekday, AppLocalizations localizations) {
+  final List<String> weekdays = <String>[
+    localizations.mondayShort,
+    localizations.tuesdayShort,
+    localizations.wednesdayShort,
+    localizations.thursdayShort,
+    localizations.fridayShort,
+    localizations.saturdayShort,
+    localizations.sundayShort,
   ];
   return weekdays[(weekday - 1).clamp(0, weekdays.length - 1)];
 }
 
-String _weekdayName(int weekday) {
-  const List<String> weekdays = <String>[
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
+String _weekdayName(int weekday, AppLocalizations localizations) {
+  final List<String> weekdays = <String>[
+    localizations.monday,
+    localizations.tuesday,
+    localizations.wednesday,
+    localizations.thursday,
+    localizations.friday,
+    localizations.saturday,
+    localizations.sunday,
   ];
   return weekdays[(weekday - 1).clamp(0, weekdays.length - 1)];
 }
 
-String _weekdayPlural(int weekday) {
-  const List<String> weekdays = <String>[
-    'Mondays',
-    'Tuesdays',
-    'Wednesdays',
-    'Thursdays',
-    'Fridays',
-    'Saturdays',
-    'Sundays',
+String _weekdayPlural(int weekday, AppLocalizations localizations) {
+  final List<String> weekdays = <String>[
+    localizations.mondays,
+    localizations.tuesdays,
+    localizations.wednesdays,
+    localizations.thursdays,
+    localizations.fridays,
+    localizations.saturdays,
+    localizations.sundays,
   ];
   return weekdays[(weekday - 1).clamp(0, weekdays.length - 1)];
 }
 
-String _shortMonthLabel(DateTime date) {
-  const List<String> months = <String>[
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
+List<String> _weekdayInitials(AppLocalizations localizations) {
+  return <String>[
+    localizations.mondayInitial,
+    localizations.tuesdayInitial,
+    localizations.wednesdayInitial,
+    localizations.thursdayInitial,
+    localizations.fridayInitial,
+    localizations.saturdayInitial,
+    localizations.sundayInitial,
+  ];
+}
+
+String _shortMonthLabel(DateTime date, AppLocalizations localizations) {
+  final List<String> months = <String>[
+    localizations.januaryShort,
+    localizations.februaryShort,
+    localizations.marchShort,
+    localizations.aprilShort,
+    localizations.mayShort,
+    localizations.juneShort,
+    localizations.julyShort,
+    localizations.augustShort,
+    localizations.septemberShort,
+    localizations.octoberShort,
+    localizations.novemberShort,
+    localizations.decemberShort,
   ];
   return months[date.month - 1];
 }
 
-String _fullMonthLabel(int month) {
-  const List<String> months = <String>[
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+String _fullMonthLabel(int month, AppLocalizations localizations) {
+  final List<String> months = <String>[
+    localizations.january,
+    localizations.february,
+    localizations.march,
+    localizations.april,
+    localizations.may,
+    localizations.june,
+    localizations.july,
+    localizations.august,
+    localizations.september,
+    localizations.october,
+    localizations.november,
+    localizations.december,
   ];
   return months[(month - 1).clamp(0, months.length - 1)];
 }

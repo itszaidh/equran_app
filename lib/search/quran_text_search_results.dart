@@ -5,9 +5,10 @@ import 'package:equran/home/read.dart';
 import 'package:equran/search/quran_text_search_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:quran/quran.dart' as quran;
+import 'package:equran/l10n/app_localizations.dart';
 
 class QuranTextSearchResults extends StatefulWidget {
   const QuranTextSearchResults({
@@ -131,7 +132,8 @@ class _QuranTextSearchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    final String surahName = quran.getSurahNameEnglish(result.surah);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final String surahName = localizedSurahName(localizations, result.surah);
 
     return Material(
       color: Colors.transparent,
@@ -175,7 +177,7 @@ class _QuranTextSearchTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(AppRadii.small),
                       ),
                       child: Text(
-                        '$surahName ${result.verse}',
+                        localizations.surahLabel(surahName, result.verse),
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: colors.primary,
                           fontWeight: FontWeight.w700,
@@ -282,10 +284,11 @@ class _RecentSearchHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
-        'Recent Quran text searches',
+        localizations.recentQuranTextSearches,
         style: theme.textTheme.titleSmall?.copyWith(
           fontWeight: FontWeight.w800,
         ),
@@ -304,6 +307,7 @@ class _RecentSearchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return ListTile(
       onTap: onTap,
@@ -314,7 +318,7 @@ class _RecentSearchTile extends StatelessWidget {
       tileColor: colorScheme.surfaceContainerLow,
       leading: const Icon(Icons.history_rounded),
       title: Text(entry.query),
-      subtitle: Text('${entry.resultCount} results'),
+      subtitle: Text(localizations.searchResultCount(entry.resultCount)),
       trailing: onTap == null
           ? null
           : Icon(
@@ -360,9 +364,8 @@ class _EmptyModeState extends StatelessWidget {
   Widget build(BuildContext context) {
     return _CenteredState(
       icon: Icons.travel_explore_rounded,
-      title: 'Search Quran text',
-      message:
-          'Use this tab for Arabic words or translation text. Surah search stays in the Surahs tab.',
+      title: AppLocalizations.of(context)!.searchQuranText,
+      message: AppLocalizations.of(context)!.searchQuranTextEmptyMessage,
     );
   }
 }
@@ -376,8 +379,8 @@ class _EmptySearchState extends StatelessWidget {
   Widget build(BuildContext context) {
     return _CenteredState(
       icon: Icons.search_off_rounded,
-      title: 'No Quran text results',
-      message: 'No ayahs matched "$query". Try another Arabic word or phrase.',
+      title: AppLocalizations.of(context)!.noQuranTextResults,
+      message: AppLocalizations.of(context)!.noAyahSearchResults(query),
     );
   }
 }

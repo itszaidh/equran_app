@@ -47,6 +47,7 @@ import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/reading_plans/routine_progress.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/utils/reciter.dart';
 import 'package:equran/utils/responsive_nav.dart';
@@ -1759,14 +1760,19 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 size: ResponsiveNav.iconSize(context),
               ),
               leading: const BackButton(),
-              title: Text(quran.getSurahName(_currentChapter)),
+              title: Text(
+                localizedSurahName(
+                  AppLocalizations.of(context)!,
+                  _currentChapter,
+                ),
+              ),
               centerTitle: true,
               actions: <Widget>[
                 if (!_viewMode)
                   IconButton(
                     tooltip: _isVersePlaying && _playingVerse == _currentVerse
-                        ? 'Pause'
-                        : 'Play current ayah',
+                        ? AppLocalizations.of(context)!.pause
+                        : AppLocalizations.of(context)!.playThisAyah,
                     onPressed: _togglePageViewPlayback,
                     icon: Icon(
                       _isVersePlaying && _playingVerse == _currentVerse
@@ -1778,7 +1784,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     splashRadius: 20,
                   ),
                 IconButton(
-                  tooltip: 'More options',
+                  tooltip: AppLocalizations.of(context)!.readingOptions,
                   onPressed: _showReadingOptionsSheet,
                   icon: const Icon(Icons.more_horiz_rounded, size: 24),
                   visualDensity: VisualDensity.compact,
@@ -1798,8 +1804,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Future<void> _showReadingOptionsSheet() async {
     AndroidAudioDisplayMode.notifyUserActivity();
-    final String surahName = quran.getSurahName(_currentChapter);
     final localizations = AppLocalizations.of(context)!;
+    final String surahName = localizedSurahName(localizations, _currentChapter);
 
     final _ReadingOptionsAction? action = await _withLowFpsSuppressed(() {
       return showModalBottomSheet<_ReadingOptionsAction>(
@@ -1816,6 +1822,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         builder: (sheetContext) {
           final ThemeData theme = Theme.of(sheetContext);
           final ColorScheme colorScheme = theme.colorScheme;
+          final AppLocalizations localizations = AppLocalizations.of(
+            sheetContext,
+          )!;
 
           return SafeArea(
             top: false,
@@ -2525,6 +2534,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         builder: (sheetContext) {
           final ThemeData theme = Theme.of(sheetContext);
           final ColorScheme colorScheme = theme.colorScheme;
+          final AppLocalizations localizations = AppLocalizations.of(
+            sheetContext,
+          )!;
 
           if (!initialFocusRequested) {
             initialFocusRequested = true;
@@ -2545,7 +2557,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
             if (value == null || value < 1 || value > _totalVerses) {
               setSheetState(() {
-                errorText = 'Enter a verse between 1 and $_totalVerses';
+                errorText = localizations.enterAyahRange(_totalVerses);
               });
               return;
             }
@@ -2571,14 +2583,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Text(
-                      'Go to ayah',
+                      localizations.goToAyah,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Enter a verse number from 1 to $_totalVerses',
+                      localizations.enterAyahRange(_totalVerses),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -2594,7 +2606,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                       decoration: InputDecoration(
-                        hintText: 'Verse number',
+                        hintText: localizations.ayahNumberHint,
                         errorText: errorText,
                         filled: true,
                         isDense: true,
@@ -2618,12 +2630,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     const SizedBox(height: 16),
                     FilledButton(
                       onPressed: () => submit(setSheetState),
-                      child: const Text('Go'),
+                      child: Text(localizations.go),
                     ),
                     const SizedBox(height: 4),
                     TextButton(
                       onPressed: () => Navigator.of(sheetContext).pop(),
-                      child: const Text('Cancel'),
+                      child: Text(localizations.cancel),
                     ),
                   ],
                 ),
@@ -3526,14 +3538,22 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   String _formatPosition(QuranPosition position, {bool useNames = false}) {
     if (!useNames) return '${position.surah}:${position.ayah}';
-    return '${quran.getSurahName(position.surah)} ${position.ayah}';
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    return localizations.surahLabel(
+      localizedSurahName(localizations, position.surah),
+      position.ayah,
+    );
   }
 
   String _formatIntervalSummary(PlaybackInterval? interval) {
-    if (interval == null) return 'Current ayah only';
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    if (interval == null) return localizations.currentAyahOnly;
     if (interval.start.surah == interval.end.surah) {
-      return '${quran.getSurahName(interval.start.surah)} '
-          '${interval.start.ayah} → ${interval.end.ayah}';
+      return localizations.surahAyahRange(
+        interval.end.ayah,
+        interval.start.ayah,
+        localizedSurahName(localizations, interval.start.surah),
+      );
     }
     return '${_formatPosition(interval.start)} → ${_formatPosition(interval.end)}';
   }
@@ -3759,8 +3779,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final int notificationId = DownloadNotifications.notificationId(
       'surah-ayahs-$_currentChapter',
     );
-    final String surahName = quran.getSurahName(_currentChapter);
-    final String title = 'Downloading $surahName ayahs';
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final String surahName = localizedSurahName(localizations, _currentChapter);
+    final String title = localizations.downloadingSurahAyahs(surahName);
 
     try {
       await DownloadNotifications.progress(
@@ -3780,23 +3801,27 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       );
       await DownloadNotifications.complete(
         id: notificationId,
-        title: 'Downloaded $surahName ayahs',
+        title: localizations.downloadedSurahAyahs(surahName),
       );
       await _refreshSurahAyahDownloadState();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Downloaded all ayahs for $surahName')),
+          SnackBar(
+            content: Text(localizations.downloadedAllAyahsFor(surahName)),
+          ),
         );
       }
     } catch (_) {
       await DownloadNotifications.fail(
         id: notificationId,
-        title: 'Failed to download $surahName ayahs',
+        title: localizations.failedDownloadSurahAyahs(surahName),
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to download $surahName ayahs.')),
+          SnackBar(
+            content: Text(localizations.failedDownloadSurahAyahs(surahName)),
+          ),
         );
       }
     } finally {
@@ -3809,24 +3834,23 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<void> _confirmDownloadCurrentSurahAyahs() async {
-    final String surahName = quran.getSurahName(_currentChapter);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final String surahName = localizedSurahName(localizations, _currentChapter);
     final bool? confirm = await _withLowFpsSuppressed(() {
       return showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           icon: const Icon(Icons.download_for_offline_rounded),
-          title: const Text('Download All Ayahs?'),
-          content: Text(
-            'Download all ayah audio for $surahName for offline listening?',
-          ),
+          title: Text(localizations.downloadAllAyahs),
+          content: Text(localizations.downloadAllAyahsForSurah(surahName)),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(localizations.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Download'),
+              child: Text(localizations.download),
             ),
           ],
         ),
@@ -4051,6 +4075,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         isScrollControlled: true,
         useSafeArea: true,
         builder: (context) {
+          final AppLocalizations localizations = AppLocalizations.of(context)!;
           return StatefulBuilder(
             builder: (context, setSheetState) {
               void clampAyahs() {
@@ -4074,8 +4099,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 final PlaybackInterval interval = currentSelection();
                 if (!interval.isValid) {
                   setSheetState(() {
-                    errorText =
-                        'Choose an end ayah that is the same as or after the start ayah.';
+                    errorText = localizations.intervalEndBeforeStartError;
                   });
                   return;
                 }
@@ -4103,20 +4127,20 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           children: <Widget>[
                             Expanded(
                               child: Text(
-                                'Interval range',
+                                localizations.intervalRange,
                                 style: Theme.of(context).textTheme.titleMedium
                                     ?.copyWith(fontWeight: FontWeight.w800),
                               ),
                             ),
                             IconButton(
-                              tooltip: 'Close',
+                              tooltip: localizations.close,
                               onPressed: () => Navigator.of(context).pop(),
                               icon: const Icon(Icons.close_rounded),
                             ),
                           ],
                         ),
                         Text(
-                          'Select a start and end ayah. Ranges can cross surahs.',
+                          localizations.intervalRangeHint,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: Theme.of(
@@ -4127,7 +4151,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         const SizedBox(height: 14),
                         _buildIntervalPickerRow(
                           context: context,
-                          label: 'Start',
+                          label: localizations.start,
                           surah: startSurah,
                           ayah: startAyah,
                           onSurahChanged: (value) {
@@ -4151,7 +4175,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         const SizedBox(height: 10),
                         _buildIntervalPickerRow(
                           context: context,
-                          label: 'End',
+                          label: localizations.end,
                           surah: endSurah,
                           ayah: endAyah,
                           onSurahChanged: (value) {
@@ -4211,14 +4235,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Cancel'),
+                                child: Text(localizations.cancel),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: FilledButton(
                                 onPressed: applySelection,
-                                child: const Text('Apply'),
+                                child: Text(localizations.apply),
                               ),
                             ),
                           ],
@@ -4311,17 +4335,22 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final int maxAyah = quran.getVerseCount(surah);
 
     Future<void> pickSurah() async {
       _notifyAudioUserActivity();
       final int? selected = await _showNumberChoiceDialog(
-        title: '$label surah',
+        title: localizations.intervalPickerTitle(
+          localizations.surahOption,
+          label,
+        ),
         icon: Icons.menu_book_rounded,
         selectedValue: surah,
         min: 1,
         max: 114,
-        titleBuilder: (value) => '$value. ${quran.getSurahName(value)}',
+        titleBuilder: (value) =>
+            '$value. ${localizedSurahName(localizations, value)}',
       );
       if (selected == null || !mounted) return;
       onSurahChanged(selected);
@@ -4330,12 +4359,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     Future<void> pickAyah() async {
       _notifyAudioUserActivity();
       final int? selected = await _showNumberChoiceDialog(
-        title: '$label ayah',
+        title: localizations.intervalPickerTitle(
+          localizations.ayahsLabel,
+          label,
+        ),
         icon: Icons.format_list_numbered_rounded,
         selectedValue: ayah.clamp(1, maxAyah).toInt(),
         min: 1,
         max: maxAyah,
-        titleBuilder: (value) => 'Ayah $value',
+        titleBuilder: localizations.ayahNumber,
       );
       if (selected == null || !mounted) return;
       onAyahChanged(selected);
@@ -4363,11 +4395,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               children: <Widget>[
                 Expanded(
                   child: _NumberStepperTile(
-                    label: 'Surah',
+                    label: localizations.surahOption,
                     value: surah,
                     min: 1,
                     max: 114,
-                    helper: quran.getSurahName(surah),
+                    helper: localizedSurahName(localizations, surah),
                     onTap: pickSurah,
                     onChanged: onSurahChanged,
                   ),
@@ -4375,7 +4407,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _NumberStepperTile(
-                    label: 'Ayah',
+                    label: localizations.ayahsLabel,
                     value: ayah.clamp(1, maxAyah).toInt(),
                     min: 1,
                     max: maxAyah,
@@ -5467,7 +5499,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                              localizedSurahAyahLabel(
+                                AppLocalizations.of(context)!,
+                                _currentChapter,
+                                verse,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.bodyMedium?.copyWith(
@@ -5481,7 +5517,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      tooltip: 'Dismiss player',
+                      tooltip: AppLocalizations.of(context)!.dismissPlayer,
                       onPressed: () => unawaited(_stopBottomPlayer()),
                       icon: const Icon(Icons.close_rounded),
                       iconSize: 20,
@@ -5547,6 +5583,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             builder: (sheetContext, setSheetState) {
               final ThemeData theme = Theme.of(sheetContext);
               final ColorScheme colorScheme = theme.colorScheme;
+              final AppLocalizations localizations = AppLocalizations.of(
+                sheetContext,
+              )!;
               final double rate = _playbackRate();
               final bool currentAyahDownloading = _downloadingAyahKeys.contains(
                 '$_currentChapter-$_currentVerse',
@@ -5575,7 +5614,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
               Future<void> selectIntervalRepeat() async {
                 final RepeatChoice? selected = await _showRepeatChoiceDialog(
-                  title: 'Interval repeat',
+                  title: localizations.intervalRepeatOption,
                   icon: Icons.repeat_rounded,
                   selectedValue: _intervalRepeatChoice,
                 );
@@ -5604,7 +5643,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
               Future<void> selectRepeatAyah() async {
                 final RepeatChoice? selected = await _showRepeatChoiceDialog(
-                  title: 'Repeat each ayah',
+                  title: localizations.repeatEachAyahOption,
                   icon: Icons.repeat_one_rounded,
                   selectedValue: _repeatAyahChoice,
                 );
@@ -5694,13 +5733,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  'Playback options',
+                                  localizations.playbackOptions,
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
                                 Text(
-                                  'Customize recitation behavior',
+                                  localizations.customizeRecitationBehavior,
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: colorScheme.onSurfaceVariant,
                                   ),
@@ -5721,13 +5760,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       const SizedBox(height: 10),
                       _buildPlaybackOptionsSection(
                         context: context,
-                        title: 'Recitation',
+                        title: localizations.recitation,
                         children: <Widget>[
                           ListTile(
                             leading: const Icon(
                               Icons.record_voice_over_rounded,
                             ),
-                            title: const Text('Reciter'),
+                            title: Text(localizations.reciter),
                             subtitle: Text(
                               QuranAudioService().selectedReciter.englishName,
                             ),
@@ -5736,7 +5775,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           ),
                           _buildSliderOption(
                             context: context,
-                            title: 'Playback speed',
+                            title: localizations.playbackSpeed,
                             subtitle: '${rate.toStringAsFixed(2)}x',
                             value: rate,
                             min: 0.5,
@@ -5757,11 +5796,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       const SizedBox(height: 10),
                       _buildPlaybackOptionsSection(
                         context: context,
-                        title: 'Timing',
+                        title: localizations.timing,
                         children: <Widget>[
                           _buildSliderOption(
                             context: context,
-                            title: 'Ayah delay',
+                            title: localizations.ayahDelay,
                             subtitle: _delayLabel(_ayahDelaySeconds),
                             value: _ayahDelaySeconds.toDouble(),
                             min: 0,
@@ -5781,11 +5820,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       const SizedBox(height: 10),
                       _buildPlaybackOptionsSection(
                         context: context,
-                        title: 'Interval',
+                        title: localizations.intervalOption,
                         children: <Widget>[
                           ListTile(
                             leading: const Icon(Icons.segment_rounded),
-                            title: const Text('Interval'),
+                            title: Text(localizations.intervalOption),
                             subtitle: Text(
                               _formatIntervalSummary(_playbackInterval),
                             ),
@@ -5797,14 +5836,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           ),
                           ListTile(
                             leading: const Icon(Icons.repeat_rounded),
-                            title: const Text('Interval repeat'),
+                            title: Text(localizations.intervalRepeatOption),
                             subtitle: Text(_intervalRepeatChoice.label),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: selectIntervalRepeat,
                           ),
                           ListTile(
                             leading: const Icon(Icons.repeat_one_rounded),
-                            title: const Text('Repeat each ayah'),
+                            title: Text(localizations.repeatEachAyahOption),
                             subtitle: Text(_repeatAyahChoice.label),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: selectRepeatAyah,
@@ -5815,7 +5854,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       OutlinedButton.icon(
                         onPressed: resetOptions,
                         icon: const Icon(Icons.restart_alt_rounded),
-                        label: const Text('Reset playback options'),
+                        label: Text(localizations.resetPlaybackOptions),
                       ),
                     ],
                   );
@@ -6738,12 +6777,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Widget _buildSurahIntroCard({required double marginValue}) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final bool arabicMode = isArabicLocalizations(localizations);
     final String surahName = quran.getSurahNameArabic(_currentChapter);
     final String englishName = quran.getSurahNameEnglish(_currentChapter);
     final int verseCount = quran.getVerseCount(_currentChapter);
-    final String revelation = quran
-        .getPlaceOfRevelation(_currentChapter)
-        .toUpperCase();
+    final String revelation = _localizedRevelationPlace(localizations);
     final int juzNumber = quran.getJuzNumber(_currentChapter, 1);
     final bool showBasmala = _currentChapter != 1 && _currentChapter != 9;
     final BorderRadius radius = BorderRadius.circular(20);
@@ -6797,19 +6836,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      englishName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colors.onPrimaryMuted,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.5,
+                    if (!arabicMode) ...<Widget>[
+                      const SizedBox(height: 8),
+                      Text(
+                        englishName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colors.onPrimaryMuted,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 20),
                     SizedBox(
                       width: 100,
@@ -6836,7 +6877,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ],
                     const SizedBox(height: 20),
                     Text(
-                      '$revelation · $verseCount VERSES · JUZ\' $juzNumber',
+                      localizations.surahIntroMeta(
+                        juzNumber,
+                        revelation,
+                        verseCount,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
@@ -6855,6 +6900,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  String _localizedRevelationPlace(AppLocalizations localizations) {
+    final String place = quran.getPlaceOfRevelation(_currentChapter);
+    if (!isArabicLocalizations(localizations)) return place.toUpperCase();
+    return place.toLowerCase() == 'makkah'
+        ? localizations.makkah
+        : localizations.madinah;
   }
 
   Widget cardView({required double marginValue}) {
@@ -7159,6 +7212,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         context: context,
         showDragHandle: true,
         builder: (context) {
+          final AppLocalizations localizations = AppLocalizations.of(context)!;
           bool isFavourite = const QuranBookmarkService().isFavourite(
             _currentChapter,
             verse,
@@ -7171,9 +7225,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   children: <Widget>[
                     ListTile(
                       title: Text(
-                        '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                        localizedSurahAyahLabel(
+                          localizations,
+                          _currentChapter,
+                          verse,
+                        ),
                       ),
-                      subtitle: const Text('Choose an action'),
+                      subtitle: Text(localizations.chooseAnAction),
                       trailing: SizedBox(
                         width: 48,
                         height: 48,
@@ -7235,7 +7293,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                     ListTile(
                       leading: const Icon(Icons.play_circle_outline_rounded),
-                      title: const Text('Play this ayah'),
+                      title: Text(localizations.playThisAyah),
                       onTap: () {
                         Navigator.of(context).pop();
                         _playVerse(_currentChapter, verse, continuous: false);
@@ -7243,7 +7301,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                     ListTile(
                       leading: const Icon(Icons.ios_share_outlined),
-                      title: const Text('Share image'),
+                      title: Text(localizations.shareImage),
                       onTap: () {
                         Navigator.of(context).pop();
                         _shareCurrentAyahImage();
@@ -7251,7 +7309,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                     ListTile(
                       leading: const Icon(Icons.chrome_reader_mode_rounded),
-                      title: const Text('Show tafsir'),
+                      title: Text(localizations.showTafsir),
                       onTap: () {
                         Navigator.of(context).pop();
                         _showTafsirSheet(verse);
@@ -7259,8 +7317,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                     ListTile(
                       leading: const Icon(Icons.edit_note_rounded),
-                      title: const Text('Save to library'),
-                      subtitle: const Text('Folder, tags, and private note'),
+                      title: Text(localizations.saveToLibrary),
+                      subtitle: Text(localizations.folderTagsAndNote),
                       onTap: () {
                         Navigator.of(context).pop();
                         _showFavouriteNotePrompt(verse);
@@ -7268,7 +7326,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                     ListTile(
                       leading: const Icon(Icons.notes_rounded),
-                      title: const Text('Ayah details'),
+                      title: Text(localizations.ayahDetails),
                       onTap: () {
                         Navigator.of(context).pop();
                         _showAyahDetailsSheet(verse);
@@ -7328,9 +7386,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required VoidCallback onDownloadSurah,
     required VoidCallback onToggleCurrentAyah,
   }) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return _buildPlaybackOptionsSection(
       context: context,
-      title: 'Audio downloads',
+      title: localizations.audioDownloads,
       children: <Widget>[
         ListTile(
           leading: Icon(
@@ -7342,13 +7401,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           ),
           title: Text(
             _hasDownloadedSurahAyahs
-                ? 'Surah audio downloaded'
-                : 'Download surah audio',
+                ? localizations.surahAudioDownloaded
+                : localizations.downloadSurahAudio,
           ),
           subtitle: Text(
             _hasDownloadedSurahAyahs
-                ? 'All ayahs are available offline'
-                : 'Download every ayah in this surah',
+                ? localizations.allAyahsAvailableOffline
+                : localizations.downloadEveryAyahInSurah,
           ),
           enabled: !_isDownloadingSurahAyahs && !_hasDownloadedSurahAyahs,
           onTap: !_isDownloadingSurahAyahs && !_hasDownloadedSurahAyahs
@@ -7365,12 +7424,17 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           ),
           title: Text(
             currentAyahDownloading
-                ? 'Downloading current ayah'
+                ? localizations.downloadingCurrentAyah
                 : _hasDownloadedCurrentAyah
-                ? 'Delete current ayah audio'
-                : 'Download current ayah',
+                ? localizations.deleteCurrentAyahAudio
+                : localizations.downloadCurrentAyah,
           ),
-          subtitle: Text('Ayah $_currentChapter:$_currentVerse'),
+          subtitle: Text(
+            localizations.surahLabel(
+              localizedSurahName(localizations, _currentChapter),
+              _currentVerse,
+            ),
+          ),
           enabled: !currentAyahDownloading,
           onTap: currentAyahDownloading ? null : onToggleCurrentAyah,
         ),
@@ -7482,9 +7546,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   String _delayLabel(int seconds) {
-    if (seconds <= 0) return 'No delay';
-    if (seconds == 1) return '1 second';
-    return '$seconds seconds';
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    if (seconds <= 0) return localizations.noDelay;
+    return localizations.secondsCount(seconds);
   }
 
   Future<void> _showAyahDetailsSheet(int verse) async {
@@ -7500,6 +7564,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         useSafeArea: true,
         showDragHandle: true,
         builder: (context) {
+          final AppLocalizations localizations = AppLocalizations.of(context)!;
           return StatefulBuilder(
             builder: (context, setSheetState) {
               final String translation = quran.cleanTranslationText(
@@ -7538,14 +7603,18 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         children: <Widget>[
                           Expanded(
                             child: Text(
-                              '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                              localizedSurahAyahLabel(
+                                localizations,
+                                _currentChapter,
+                                verse,
+                              ),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                           IconButton(
-                            tooltip: 'Translation language',
+                            tooltip: localizations.translationLanguage,
                             onPressed: switchLanguage,
                             icon: const Icon(Icons.language_rounded),
                           ),
@@ -7601,7 +7670,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     return showDialog<int>(
       context: context,
       builder: (context) => AppSelectionDialog<int>(
-        title: 'Translation Language',
+        title: AppLocalizations.of(context)!.translationLanguage,
         icon: Icons.translate_rounded,
         selectedValue: selectedTranslation,
         maxWidth: 420,
@@ -7655,8 +7724,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     if (resource == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('This translation is not in the resource manifest.'),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.translationNotInManifest,
+            ),
           ),
         );
       }
@@ -7667,24 +7738,32 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     final bool? download = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Download ${translationDisplayName(translation)}?'),
-        content: Text(
-          'This translation is not installed on this device. '
-          '${prettyBytes(resource.sizeBytes)}',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+      builder: (context) {
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
+        return AlertDialog(
+          title: Text(
+            localizations.downloadTranslationQuestion(
+              translationDisplayName(translation),
+            ),
           ),
-          FilledButton.icon(
-            onPressed: () => Navigator.of(context).pop(true),
-            icon: const Icon(Icons.download_rounded),
-            label: const Text('Download'),
+          content: Text(
+            localizations.translationNotInstalled(
+              prettyBytes(resource.sizeBytes),
+            ),
           ),
-        ],
-      ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(localizations.cancel),
+            ),
+            FilledButton.icon(
+              onPressed: () => Navigator.of(context).pop(true),
+              icon: const Icon(Icons.download_rounded),
+              label: Text(localizations.download),
+            ),
+          ],
+        );
+      },
     );
     if (download != true) return false;
     return _downloadDownloadableResource(resource);
@@ -7744,13 +7823,19 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         maxChildSize: 0.92,
                         builder: (context, scrollController) {
                           final ThemeData theme = Theme.of(context);
+                          final AppLocalizations localizations =
+                              AppLocalizations.of(context)!;
                           return ListView(
                             controller: scrollController,
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                             children: <Widget>[
                               Text(
-                                '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                                localizedSurahAyahLabel(
+                                  localizations,
+                                  _currentChapter,
+                                  verse,
+                                ),
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -7806,17 +7891,18 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Widget _buildNoTafsirSourcesMessage(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.auto_stories_outlined),
-      title: const Text('No Tafsir sources selected'),
-      subtitle: const Text('Choose one or more Tafsir sources first.'),
+      title: Text(localizations.noTafsirSourcesSelected),
+      subtitle: Text(localizations.chooseTafsirSourcesFirst),
       trailing: TextButton(
         onPressed: () async {
           await Navigator.of(context).maybePop();
           await _showTafsirSourceSelectorSheet();
         },
-        child: const Text('Choose'),
+        child: Text(localizations.choose),
       ),
     );
   }
@@ -7830,6 +7916,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ResourceInstallState state = _resourceStateFor(
       result.resource,
       progress,
@@ -7860,7 +7947,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'This Tafsir needs to be downloaded first. ${prettyBytes(result.resource.sizeBytes)}',
+                    localizations.tafsirNeedsDownload(
+                      prettyBytes(result.resource.sizeBytes),
+                    ),
                     style: theme.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 12),
@@ -7868,7 +7957,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     children: <Widget>[
                       TextButton(
                         onPressed: onCancel,
-                        child: const Text('Cancel'),
+                        child: Text(localizations.cancel),
                       ),
                       const SizedBox(width: 8),
                       FilledButton.icon(
@@ -7883,8 +7972,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             : const Icon(Icons.download_rounded),
                         label: Text(
                           downloading
-                              ? progress?.phase.label ?? 'Downloading'
-                              : 'Download',
+                              ? progress?.phase.label ??
+                                    localizations.downloading
+                              : localizations.download,
                         ),
                       ),
                     ],
@@ -7896,7 +7986,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             else
               Text(
                 result.text.isEmpty
-                    ? 'No tafsir text available for this ayah.'
+                    ? localizations.noTafsirTextForAyah
                     : result.text,
                 textAlign: TextAlign.start,
                 style: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
@@ -7936,6 +8026,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   >(
                     valueListenable: ResourceDownloadService.instance.downloads,
                     builder: (context, downloads, _) {
+                      final AppLocalizations localizations =
+                          AppLocalizations.of(context)!;
                       final Set<String> selectedIds = ResourceInstallStore
                           .instance
                           .selectedTafsirResourceIds(manifest)
@@ -7945,15 +8037,17 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                         children: <Widget>[
                           Text(
-                            'Tafsir sources',
+                            localizations.tafsirSources,
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 12),
                           if (tafsirResources.isEmpty)
-                            const ListTile(
-                              leading: Icon(Icons.error_outline_rounded),
-                              title: Text('No Tafsir resources available'),
+                            ListTile(
+                              leading: const Icon(Icons.error_outline_rounded),
+                              title: Text(
+                                localizations.noTafsirResourcesAvailable,
+                              ),
                             )
                           else
                             for (final DownloadableResource resource
@@ -7985,6 +8079,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }) {
     final ResourceInstallState state = _resourceStateFor(resource, progress);
     final bool downloading = state == ResourceInstallState.downloading;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Checkbox(
@@ -8002,7 +8097,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       trailing: state == ResourceInstallState.installed
           ? const Icon(Icons.check_circle_rounded)
           : IconButton(
-              tooltip: downloading ? progress?.phase.label : 'Download',
+              tooltip: downloading
+                  ? progress?.phase.label
+                  : localizations.download,
               onPressed: downloading
                   ? null
                   : () => _downloadDownloadableResource(resource),
@@ -8117,6 +8214,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
               builder: (context, setSheetState) {
                 final ThemeData theme = Theme.of(context);
                 final EquranColors colors = context.equranColors;
+                final AppLocalizations localizations = AppLocalizations.of(
+                  context,
+                )!;
                 final List<String> folders = const QuranBookmarkService()
                     .folders();
                 if (!folders.contains(selectedFolder)) {
@@ -8135,7 +8235,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          '${quran.getSurahName(_currentChapter)} • Ayah $verse',
+                          localizedSurahAyahLabel(
+                            localizations,
+                            _currentChapter,
+                            verse,
+                          ),
                           style: theme.textTheme.titleLarge?.copyWith(
                             color: colors.textPrimary,
                             fontWeight: FontWeight.w900,
@@ -8170,7 +8274,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         const SizedBox(height: 12),
                         SwitchListTile.adaptive(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('Favourite'),
+                          title: Text(localizations.favourites),
                           value: isFavourite,
                           onChanged: (value) => setSheetState(() {
                             isFavourite = value;
@@ -8180,9 +8284,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           controller: noteController,
                           maxLines: 4,
                           minLines: 2,
-                          decoration: const InputDecoration(
-                            labelText: 'Private note',
-                            hintText: 'Write a reflection...',
+                          decoration: InputDecoration(
+                            labelText: localizations.privateNote,
+                            hintText: localizations.writeReflectionHint,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -8191,8 +8295,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             Expanded(
                               child: DropdownButtonFormField<String>(
                                 initialValue: selectedFolder,
-                                decoration: const InputDecoration(
-                                  labelText: 'Folder',
+                                decoration: InputDecoration(
+                                  labelText: localizations.folders,
                                 ),
                                 items: <DropdownMenuItem<String>>[
                                   for (final String folder in folders)
@@ -8202,8 +8306,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                         folder ==
                                                 QuranBookmarkService
                                                     .defaultFolder
-                                            ? QuranBookmarkService
-                                                  .defaultFolderLabel
+                                            ? localizations.unsorted
                                             : folder,
                                       ),
                                     ),
@@ -8219,7 +8322,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             ),
                             const SizedBox(width: 8),
                             IconButton.filledTonal(
-                              tooltip: 'Create folder',
+                              tooltip: localizations.createFolder,
                               onPressed: () async {
                                 final String? folder =
                                     await _showBookmarkFolderNameDialog();
@@ -8242,7 +8345,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            'Saved ayahs can be organized into folders and tags.',
+                            localizations.savedAyahsOrganizedHint,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -8252,9 +8355,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         const SizedBox(height: 12),
                         TextField(
                           controller: tagsController,
-                          decoration: const InputDecoration(
-                            labelText: 'Tags',
-                            hintText: 'gratitude, duas',
+                          decoration: InputDecoration(
+                            labelText: localizations.tags,
+                            hintText: localizations.tagsHint,
                           ),
                         ),
                         const SizedBox(height: 18),
@@ -8271,7 +8374,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                 Navigator.of(context).pop();
                               },
                               icon: const Icon(Icons.delete_outline_rounded),
-                              label: const Text('Delete'),
+                              label: Text(localizations.delete),
                             ),
                             const Spacer(),
                             FilledButton.icon(
@@ -8292,7 +8395,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                 Navigator.of(context).pop();
                               },
                               icon: const Icon(Icons.check_rounded),
-                              label: const Text('Save'),
+                              label: Text(localizations.save),
                             ),
                           ],
                         ),
@@ -8328,15 +8431,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       return showDialog<String>(
         context: context,
         builder: (context) {
+          final AppLocalizations localizations = AppLocalizations.of(context)!;
           return AlertDialog(
-            title: const Text('New folder'),
+            title: Text(localizations.newFolder),
             content: TextField(
               controller: controller,
               autofocus: true,
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(
-                labelText: 'Folder name',
-                hintText: 'Reflections',
+              decoration: InputDecoration(
+                labelText: localizations.folderName,
+                hintText: localizations.folderNameHint,
               ),
               onSubmitted: (_) {
                 final String value = controller.text.trim();
@@ -8347,7 +8451,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(localizations.cancel),
               ),
               FilledButton(
                 onPressed: () {
@@ -8355,7 +8459,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                   if (value.isEmpty) return;
                   Navigator.of(context).pop(value);
                 },
-                child: const Text('Create'),
+                child: Text(localizations.create),
               ),
             ],
           );
@@ -8373,7 +8477,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Removed from favourites.')),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.removedFromFavourites),
+          ),
         );
       }
       return;

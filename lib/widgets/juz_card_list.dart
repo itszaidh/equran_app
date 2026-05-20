@@ -1,6 +1,7 @@
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/juz_search.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 
@@ -34,13 +35,7 @@ class _JuzCardListState extends State<JuzCardList>
 
     final localizations = AppLocalizations.of(context)!;
     if (juzGroups.isEmpty) {
-      return Center(
-        child: Text(
-          localizations.localeName == 'ar'
-              ? 'لم يتم العثور على أجزاء.'
-              : 'No juz results found.',
-        ),
-      );
+      return Center(child: Text(localizations.noJuzResultsFound));
     }
 
     final List<JuzListItem> items = buildJuzListItems(juzGroups);
@@ -71,7 +66,7 @@ class _JuzCardListState extends State<JuzCardList>
               key: ValueKey<String>('juz-header-${group.juzNumber}'),
               height: headerExtent,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(6, 10, 6, 10),
+                padding: const EdgeInsetsDirectional.fromSTEB(6, 10, 6, 10),
                 child: _JuzSectionHeader(
                   juzNumber: group.juzNumber,
                   arabicName: group.arabicName,
@@ -146,9 +141,7 @@ class _JuzSectionHeader extends StatelessWidget {
               border: Border.all(color: colors.border),
             ),
             child: Text(
-              localizations.localeName == 'ar'
-                  ? 'الجزء $juzNumber'
-                  : "Juz' $juzNumber",
+              localizedJuzLabel(localizations, juzNumber),
               style: theme.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w900,
                 color: colors.primary,
@@ -188,12 +181,6 @@ class _JuzSectionHeader extends StatelessWidget {
   }
 
   String _surahCountLabel(int count, AppLocalizations localizations) {
-    if (localizations.localeName == 'ar') {
-      if (count == 1) return 'سورة واحدة';
-      if (count == 2) return 'سورتان';
-      if (count >= 3 && count <= 10) return '$count سور';
-      return '$count سورة';
-    }
-    return count == 1 ? '1 surah' : '$count surahs';
+    return localizations.surahCount(count);
   }
 }

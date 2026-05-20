@@ -22,10 +22,12 @@ import 'package:equran/backend/library.dart'
         SurahTimingRepository,
         SettingsDB,
         prettyBytes;
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/app_slider_theme.dart';
 import 'package:equran/utils/number_formatting.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/utils/reciter.dart';
 import 'package:equran/utils/responsive_nav.dart';
@@ -167,16 +169,15 @@ class PlayerPage extends StatefulWidget {
 }
 
 class _SleepTimerChoice {
-  const _SleepTimerChoice(this.label, this.duration);
+  const _SleepTimerChoice(this.duration);
 
-  final String label;
   final Duration duration;
 
   static const List<_SleepTimerChoice> durationChoices = <_SleepTimerChoice>[
-    _SleepTimerChoice('10 minutes', Duration(minutes: 10)),
-    _SleepTimerChoice('15 minutes', Duration(minutes: 15)),
-    _SleepTimerChoice('30 minutes', Duration(minutes: 30)),
-    _SleepTimerChoice('60 minutes', Duration(minutes: 60)),
+    _SleepTimerChoice(Duration(minutes: 10)),
+    _SleepTimerChoice(Duration(minutes: 15)),
+    _SleepTimerChoice(Duration(minutes: 30)),
+    _SleepTimerChoice(Duration(minutes: 60)),
   ];
 }
 
@@ -677,6 +678,16 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   String _surahName(int surah) => _surahTransliterations[surah - 1];
 
+  String _localizedSurahName(int surah) {
+    return localizedSurahName(AppLocalizations.of(context)!, surah);
+  }
+
+  String _sleepTimerChoiceLabel(_SleepTimerChoice choice) {
+    return AppLocalizations.of(
+      context,
+    )!.minutesShort(choice.duration.inMinutes);
+  }
+
   String _selectedReciterCode() => QuranAudioService().selectedReciter.code;
 
   String _selectedReciterName() =>
@@ -833,14 +844,15 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     if (!mounted) return false;
 
     if (timingResource == null) {
+      final AppLocalizations l10n = AppLocalizations.of(context)!;
       _safeSetState(() {
         _selectionTimingSupported = false;
         _selectionTimingInstallState = null;
         _surahTiming = null;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Timings unavailable for this reciter.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.timingsUnavailable)));
       return false;
     }
 
@@ -857,9 +869,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     );
     if (!mounted) return false;
     if (_surahTiming == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Timings unavailable for this surah.')),
-      );
+      final AppLocalizations l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.timingsUnavailableSurah)));
       return false;
     }
     return true;
@@ -868,22 +881,23 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   Future<bool> _promptDownloadTimingResource(
     DownloadableResource resource,
   ) async {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final bool? shouldDownload = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Download timings?'),
+        title: Text(l10n.downloadTimings),
         content: Text(
-          'This reciter needs audio timings before synced ayah text can be shown. ${prettyBytes(resource.sizeBytes)}',
+          l10n.reciterNeedsTimings(prettyBytes(resource.sizeBytes)),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
             icon: const Icon(Icons.download_rounded),
-            label: const Text('Download'),
+            label: Text(l10n.download),
           ),
         ],
       ),
@@ -894,9 +908,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       await ResourceDownloadService.instance.downloadAndInstall(resource);
       _timingRepository.clearCache();
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
+        final AppLocalizations l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.installedLabel(resource.name))),
+        );
       }
       return true;
     } on ResourceInstallException catch (error) {
@@ -907,9 +922,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to install timings.')),
-        );
+        final AppLocalizations l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.unableToInstallTimings)));
       }
     }
     return false;
@@ -1081,9 +1097,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         tag: MediaItem(
           id: 'surah-$surah-${playOffline ? "offline" : "stream"}',
           album: 'eQuran',
-          title: _surahName(surah),
+          title: _localizedSurahName(surah),
           artist: _selectedReciterName(),
-          displayDescription: 'Surah $surah',
+          displayDescription:
+              '${AppLocalizations.of(context)!.surahOption} $surah',
         ),
       ),
     );
@@ -1224,21 +1241,23 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   String _sleepTimerSummary() {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final DateTime? endsAt = _sleepTimerEndsAt;
-    if (endsAt == null) return 'Off';
+    if (endsAt == null) return l10n.off;
     final Duration remaining = endsAt.difference(DateTime.now());
-    if (remaining.isNegative) return 'sleeping soon';
+    if (remaining.isNegative) return l10n.sleepingSoon;
     final int minutes =
         remaining.inMinutes + (remaining.inSeconds % 60 == 0 ? 0 : 1);
-    return 'sleeping in $minutes ${minutes == 1 ? 'minute' : 'minutes'}';
+    return l10n.sleepingInMinutes(minutes);
   }
 
   String _sleepTimerOptionsSubtitle() {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     if (_sleepTimerEndsAt != null) return _sleepTimerSummary();
     if (_sleepTimerMode == _sleepTimerEndSurahMode) {
-      return '${_sleepTimerLabel ?? 'End of surah'} pending';
+      return l10n.pendingLabel(_sleepTimerLabel ?? l10n.endOfSurah);
     }
-    return 'Off';
+    return l10n.off;
   }
 
   void _clearScheduledSleepTimer({bool keepMode = false}) {
@@ -1264,7 +1283,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     unawaited(
       _setSleepTimer(
         remaining,
-        'End of surah',
+        AppLocalizations.of(context)!.endOfSurah,
         mode: _sleepTimerEndSurahMode,
         startPlayback: false,
       ),
@@ -1277,21 +1296,22 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       if (minutes == null) return;
       await _setSleepTimer(
         Duration(minutes: minutes),
-        '$minutes minutes',
+        AppLocalizations.of(context)!.minutesShort(minutes),
         mode: _sleepTimerDurationMode,
       );
       return;
     }
 
     if (value == _sleepTimerEndSurahMode) {
+      final AppLocalizations l10n = AppLocalizations.of(context)!;
       _safeSetState(() {
-        _sleepTimerLabel = 'End of surah';
+        _sleepTimerLabel = l10n.endOfSurah;
         _sleepTimerMode = _sleepTimerEndSurahMode;
       });
       if (_duration > Duration.zero) {
         await _setSleepTimerUntil(
           _duration,
-          'End of surah',
+          l10n.endOfSurah,
           mode: _sleepTimerEndSurahMode,
         );
       } else {
@@ -1322,7 +1342,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     });
     if (_sleepTimerMode == _sleepTimerEndSurahMode &&
         (previousSurah != surah || forceRestart)) {
-      _sleepTimerLabel = 'End of surah';
+      _sleepTimerLabel = AppLocalizations.of(context)!.endOfSurah;
       _clearScheduledSleepTimer(keepMode: true);
     }
 
@@ -1351,9 +1371,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to play surah audio.')),
-        );
+        final AppLocalizations l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.unableToPlaySurahAudio)));
       }
       _safeSetState(() {
         _isLoading = false;
@@ -1503,6 +1524,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     required bool closeOnSelect,
     ScrollController? scrollController,
   }) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     return ListView.builder(
       controller: scrollController,
       physics: const BouncingScrollPhysics(),
@@ -1537,8 +1559,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             size: 38,
             active: isSelected,
           ),
-          title: Text(_surahName(surah)),
-          subtitle: Text('Surah $surah'),
+          title: Text(localizedSurahName(l10n, surah)),
+          subtitle: Text('${l10n.surahOption} $surah'),
           trailing: isSelected
               ? Icon(Icons.check_circle_rounded, color: colorScheme.primary)
               : null,
@@ -1548,6 +1570,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Future<void> _openSurahPickerSheet() async {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     final Size screenSize = MediaQuery.sizeOf(context);
@@ -1576,13 +1599,13 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       ListTile(
                         leading: const Icon(Icons.queue_music_rounded),
                         title: Text(
-                          'Choose Surah',
+                          l10n.chooseSurah,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         trailing: IconButton(
-                          tooltip: 'Close',
+                          tooltip: l10n.close,
                           onPressed: () => Navigator.of(dialogContext).pop(),
                           icon: const Icon(Icons.close_rounded),
                         ),
@@ -1634,7 +1657,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                     ListTile(
                       leading: const Icon(Icons.queue_music_rounded),
                       title: Text(
-                        'Choose Surah',
+                        l10n.chooseSurah,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                         ),
@@ -1662,6 +1685,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Future<void> _showPlayerOptionsSheet() async {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     await _withProgressVisualsPaused(() {
@@ -1733,7 +1757,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  'Player options',
+                                  l10n.playerOptions,
                                   style: theme.textTheme.titleLarge?.copyWith(
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -1746,12 +1770,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       const SizedBox(height: 18),
                       _buildPlayerOptionsSection(
                         context: context,
-                        title: 'Recitation',
+                        title: l10n.recitation,
                         children: <Widget>[
                           ListTile(
                             leading: const Icon(Icons.queue_music_rounded),
-                            title: const Text('Surah'),
-                            subtitle: Text(_surahName(_selectedSurah)),
+                            title: Text(l10n.surahOption),
+                            subtitle: Text(_localizedSurahName(_selectedSurah)),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: openSurahPicker,
                           ),
@@ -1759,14 +1783,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                             leading: const Icon(
                               Icons.record_voice_over_rounded,
                             ),
-                            title: const Text('Reciter'),
+                            title: Text(l10n.reciterOption),
                             subtitle: Text(_selectedReciterName()),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: selectReciter,
                           ),
                           _buildSliderOption(
                             context: context,
-                            title: 'Playback speed',
+                            title: l10n.playbackSpeed,
                             subtitle: '${_playbackRate.toStringAsFixed(2)}x',
                             value: _playbackRate,
                             min: 0.5,
@@ -1789,7 +1813,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       const SizedBox(height: 10),
                       _buildPlayerOptionsSection(
                         context: context,
-                        title: 'Offline',
+                        title: l10n.offline,
                         children: <Widget>[
                           ListTile(
                             leading: _isDownloading
@@ -1810,11 +1834,13 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                                   ),
                             title: Text(
                               _isDownloaded
-                                  ? 'Delete downloaded MP3'
-                                  : 'Download MP3',
+                                  ? l10n.deleteDownloadedMp3
+                                  : l10n.downloadMp3,
                             ),
                             subtitle: Text(
-                              _isDownloaded ? 'Available offline' : 'Not saved',
+                              _isDownloaded
+                                  ? l10n.availableOffline
+                                  : l10n.notSaved,
                             ),
                             onTap: _isDownloading ? null : handleDownload,
                           ),
@@ -1823,11 +1849,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       const SizedBox(height: 10),
                       _buildPlayerOptionsSection(
                         context: context,
-                        title: 'Playback',
+                        title: l10n.playback,
                         children: <Widget>[
                           ListTile(
                             leading: const Icon(Icons.bedtime_outlined),
-                            title: const Text('Sleep timer'),
+                            title: Text(l10n.sleepTimerOption),
                             subtitle: Text(_sleepTimerOptionsSubtitle()),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -1838,10 +1864,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                                       _cancelSleepTimer();
                                       setSheetState(() {});
                                     },
-                                    child: const Text('Cancel'),
+                                    child: Text(l10n.cancel),
                                   ),
                                 PopupMenuButton<String>(
-                                  tooltip: 'Sleep timer options',
+                                  tooltip: l10n.sleepTimerOptions,
                                   icon: const Icon(Icons.more_time_rounded),
                                   onSelected: (value) async {
                                     await _applySleepTimerSelection(value);
@@ -1856,12 +1882,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                                         PopupMenuItem<String>(
                                           value:
                                               'duration:${choice.duration.inMinutes}',
-                                          child: Text(choice.label),
+                                          child: Text(
+                                            _sleepTimerChoiceLabel(choice),
+                                          ),
                                         ),
                                       const PopupMenuDivider(),
-                                      const PopupMenuItem<String>(
+                                      PopupMenuItem<String>(
                                         value: _sleepTimerEndSurahMode,
-                                        child: Text('End of surah'),
+                                        child: Text(l10n.endOfSurah),
                                       ),
                                     ];
                                   },
@@ -1871,9 +1899,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                           ),
                           SwitchListTile(
                             secondary: const Icon(Icons.shuffle_rounded),
-                            title: const Text('Shuffle'),
+                            title: Text(l10n.shuffleOption),
                             subtitle: Text(
-                              _shuffleEnabled ? 'Enabled' : 'Disabled',
+                              _shuffleEnabled ? l10n.enabled : l10n.disabled,
                             ),
                             value: _shuffleEnabled,
                             onChanged: (value) {
@@ -1885,9 +1913,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                           ),
                           SwitchListTile(
                             secondary: const Icon(Icons.repeat_rounded),
-                            title: const Text('Loop current surah'),
+                            title: Text(l10n.loopCurrentSurah),
                             subtitle: Text(
-                              _loopEnabled ? 'Enabled' : 'Disabled',
+                              _loopEnabled ? l10n.enabled : l10n.disabled,
                             ),
                             value: _loopEnabled,
                             onChanged: (value) {
@@ -1975,6 +2003,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Future<AppReciter?> _showReciterPickerDialog() {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final List<AppReciter> reciters = AppReciter.values.toList()
       ..sort(
         (a, b) =>
@@ -1983,7 +2012,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     return showDialog<AppReciter>(
       context: context,
       builder: (context) => AppSelectionDialog<AppReciter>(
-        title: 'Reciter',
+        title: l10n.reciterOption,
         icon: Icons.record_voice_over_rounded,
         selectedValue: QuranAudioService().selectedReciter,
         options: reciters
@@ -1999,6 +2028,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Future<void> _downloadSurah() async {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final String surahName = _localizedSurahName(_selectedSurah);
     _safeSetState(() {
       _isDownloading = true;
     });
@@ -2007,7 +2038,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       final int notificationId = DownloadNotifications.notificationId(
         'surah-$_selectedSurah',
       );
-      final String title = 'Downloading ${_surahName(_selectedSurah)}';
+      final String title = l10n.downloadingName(surahName);
       await DownloadNotifications.progress(
         id: notificationId,
         title: title,
@@ -2025,24 +2056,24 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
       );
       await DownloadNotifications.complete(
         id: notificationId,
-        title: 'Downloaded ${_surahName(_selectedSurah)}',
+        title: l10n.downloadedName(surahName),
       );
       await _refreshDownloadState();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Downloaded ${_surahName(_selectedSurah)}')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.downloadedName(surahName))));
       }
     } catch (_) {
       await DownloadNotifications.fail(
         id: DownloadNotifications.notificationId('surah-$_selectedSurah'),
-        title: 'Failed to download ${_surahName(_selectedSurah)}',
+        title: l10n.failedDownloadName(surahName),
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to download surah audio.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.failedDownloadSurahAudio)));
       }
     } finally {
       _safeSetState(() {
@@ -2052,6 +2083,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Future<void> _deleteSurahDownloadConfirmed() async {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final String surahName = _localizedSurahName(_selectedSurah);
     try {
       await _downloads.deleteSurah(_selectedSurah);
 
@@ -2074,38 +2107,38 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
       await _refreshDownloadState();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Deleted ${_surahName(_selectedSurah)} MP3')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.deletedMp3Name(surahName))));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to delete downloaded surah.')),
+          SnackBar(content: Text(l10n.failedDeleteDownloadedSurah)),
         );
       }
     }
   }
 
   Future<void> _confirmDeleteSurahDownload() async {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final String surahName = _localizedSurahName(_selectedSurah);
     final bool? confirm = await _withProgressVisualsPaused(() {
       return showDialog<bool>(
         context: context,
         builder: (context) {
           return AlertDialog(
             icon: const Icon(Icons.warning_amber_rounded),
-            title: const Text('Delete Downloaded MP3?'),
-            content: Text(
-              'This will remove ${_surahName(_selectedSurah)} from offline storage.',
-            ),
+            title: Text(l10n.deleteDownloadedMp3Question),
+            content: Text(l10n.removeSurahFromOffline(surahName)),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Delete'),
+                child: Text(l10n.delete),
               ),
             ],
           );
@@ -2210,16 +2243,17 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   String? _timingStatusText() {
-    if (_isTimingLoading) return 'Loading synced ayah';
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    if (_isTimingLoading) return l10n.loadingSyncedAyah;
     if (_surahTiming != null) return null;
     if (_selectionTimingSupported == false) {
-      return 'Synced ayah display is unavailable for this reciter';
+      return l10n.syncedAyahUnavailableReciter;
     }
     if (_selectionTimingInstallState == ResourceInstallState.notDownloaded) {
-      return 'Download timings to sync ayahs for this reciter';
+      return l10n.downloadTimingsToSyncAyahs;
     }
     if (_selectionTimingSupported == true) {
-      return 'Synced ayah display is unavailable for this surah';
+      return l10n.syncedAyahUnavailableSurah;
     }
     return null;
   }
@@ -2304,6 +2338,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     required ColorScheme colorScheme,
     required bool isDesktop,
   }) {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final bool isArabic = isArabicLocalizations(l10n);
     final int ayahCount = quran.getVerseCount(_selectedSurah);
     final bool offlineReady = _playingFromOffline || _isDownloaded;
     final Color artBackground = Color.alphaBlend(
@@ -2402,21 +2438,23 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  _surahName(_selectedSurah),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style:
-                      (isDesktop
-                              ? theme.textTheme.headlineSmall
-                              : theme.textTheme.titleLarge)
-                          ?.copyWith(
-                            color: equranColors.onPrimary,
-                            fontWeight: FontWeight.w800,
-                          ),
-                ),
-                const SizedBox(height: 8),
+                if (!isArabic) ...<Widget>[
+                  Text(
+                    _surahName(_selectedSurah),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style:
+                        (isDesktop
+                                ? theme.textTheme.headlineSmall
+                                : theme.textTheme.titleLarge)
+                            ?.copyWith(
+                              color: equranColors.onPrimary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 Text(
                   _selectedReciterName(),
                   maxLines: 1,
@@ -2437,7 +2475,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       theme: theme,
                       colorScheme: colorScheme,
                       icon: Icons.format_list_numbered_rtl_rounded,
-                      label: '$ayahCount ayahs',
+                      label: l10n.ayahsCount(ayahCount),
                     ),
                     _buildNowPlayingChip(
                       theme: theme,
@@ -2445,7 +2483,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       icon: offlineReady
                           ? Icons.offline_pin_rounded
                           : Icons.cloud_rounded,
-                      label: offlineReady ? 'Offline ready' : 'Streaming',
+                      label: offlineReady ? l10n.offlineReady : l10n.streaming,
                     ),
                     if (_sleepTimerEndsAt != null)
                       _buildNowPlayingChip(
@@ -2656,6 +2694,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             ? (width * 0.54).clamp(380.0, 500.0).toDouble()
             : (width * 0.45).clamp(600.0, 740.0).toDouble();
         final double timeLabelWidth = _duration.inHours > 0 ? 76.0 : 56.0;
+        final AppLocalizations l10n = AppLocalizations.of(context)!;
 
         Widget buildTimeLabel(
           Duration value, {
@@ -2707,7 +2746,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      _surahName(_selectedSurah),
+                      _localizedSurahName(_selectedSurah),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
@@ -2733,7 +2772,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               ),
               const SizedBox(width: 8),
               IconButton(
-                tooltip: 'Player options',
+                tooltip: l10n.playerOptions,
                 onPressed: _showPlayerOptionsSheet,
                 style: ResponsiveNav.iconButtonStyle(context),
                 icon: Icon(
@@ -2820,14 +2859,16 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 buildSecondaryControl(
-                  tooltip: _showAyahText ? 'Hide ayah text' : 'Show ayah text',
+                  tooltip: _showAyahText
+                      ? l10n.hideAyahText
+                      : l10n.showAyahText,
                   onPressed: _toggleAyahText,
                   icon: Icons.menu_book_rounded,
                   selected: _showAyahText,
                 ),
                 SizedBox(width: gap),
                 IconButton(
-                  tooltip: 'Previous',
+                  tooltip: l10n.previous,
                   onPressed: _playPrevious,
                   icon: const Icon(Icons.skip_previous_rounded),
                   iconSize: playerControlIconSize,
@@ -2836,14 +2877,14 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                 buildPlayPauseButton(),
                 SizedBox(width: gap),
                 IconButton(
-                  tooltip: 'Next',
+                  tooltip: l10n.next,
                   onPressed: _playNext,
                   icon: const Icon(Icons.skip_next_rounded),
                   iconSize: playerControlIconSize,
                 ),
                 SizedBox(width: gap),
                 buildSecondaryControl(
-                  tooltip: 'Choose Surah',
+                  tooltip: l10n.chooseSurah,
                   onPressed: _openSurahPickerSheet,
                   icon: Icons.queue_music_rounded,
                 ),

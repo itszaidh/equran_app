@@ -4,10 +4,12 @@ import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:like_button/like_button.dart';
 import 'package:quran/quran.dart' as quran;
 
@@ -260,6 +262,7 @@ class _BookmarkLibraryHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final int noteCount = allItems
         .where((QuranBookmarkEntry entry) => entry.note.trim().isNotEmpty)
         .length;
@@ -343,7 +346,7 @@ class _BookmarkLibraryHeader extends StatelessWidget {
                       const SizedBox(width: 11),
                       Expanded(
                         child: Text(
-                          'Personal Library',
+                          localizations.personalLibrary,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.titleMedium?.copyWith(
@@ -366,7 +369,7 @@ class _BookmarkLibraryHeader extends StatelessWidget {
                             vertical: 5,
                           ),
                           child: Text(
-                            '$totalSavedCount saved',
+                            localizations.savedCount(totalSavedCount),
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: colors.onPrimary,
                               fontWeight: FontWeight.w900,
@@ -385,7 +388,7 @@ class _BookmarkLibraryHeader extends StatelessWidget {
                     child: Row(
                       children: <Widget>[
                         _FilterChipButton(
-                          label: 'All',
+                          label: localizations.all,
                           count: allItems.length,
                           selected:
                               selected == _SavedAyahFilter.all &&
@@ -395,14 +398,14 @@ class _BookmarkLibraryHeader extends StatelessWidget {
                         ),
                         const SizedBox(width: 7),
                         _FilterChipButton(
-                          label: 'Favourites',
+                          label: localizations.favourites,
                           count: favouriteCount,
                           selected: selected == _SavedAyahFilter.favourites,
                           onTap: () => onSelected(_SavedAyahFilter.favourites),
                         ),
                         const SizedBox(width: 7),
                         _FilterChipButton(
-                          label: 'Notes',
+                          label: localizations.notes,
                           count: noteCount,
                           selected: selected == _SavedAyahFilter.notes,
                           onTap: () => onSelected(_SavedAyahFilter.notes),
@@ -411,7 +414,7 @@ class _BookmarkLibraryHeader extends StatelessWidget {
                             unsortedCount > 0) ...<Widget>[
                           const SizedBox(width: 7),
                           _FilterChipButton(
-                            label: 'Folders',
+                            label: localizations.folders,
                             selected: selectedFolder != null,
                             onTap: () => onFolderSelected(
                               selectedFolder == null
@@ -425,7 +428,7 @@ class _BookmarkLibraryHeader extends StatelessWidget {
                         if (tags.isNotEmpty) ...<Widget>[
                           const SizedBox(width: 7),
                           _FilterChipButton(
-                            label: 'Tags',
+                            label: localizations.tags,
                             selected: selectedTag != null,
                             onTap: () => onTagSelected(
                               selectedTag == null ? tags.first : null,
@@ -468,7 +471,7 @@ class _BookmarkLibraryHeader extends StatelessWidget {
                       ),
                     ),
                     icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text('New Folder'),
+                    label: Text(localizations.addNewFolder),
                   ),
                 ],
               ),
@@ -543,7 +546,7 @@ class _FolderChipStrip extends StatelessWidget {
           for (final String folder in visibleFolders) ...<Widget>[
             _LibraryOptionChip(
               icon: Icons.folder_outlined,
-              label: _folderLabel(folder),
+              label: _folderLabel(context, folder),
               count: _folderCount(folder),
               selected: selectedFolder == folder,
               onTap: () =>
@@ -554,7 +557,7 @@ class _FolderChipStrip extends StatelessWidget {
           if (visibleFolders.length > 1) ...<Widget>[
             _LibraryOptionChip(
               icon: Icons.tune_rounded,
-              label: 'Manage',
+              label: AppLocalizations.of(context)!.manageFolders,
               selected: false,
               onTap: onManageFolders,
             ),
@@ -695,7 +698,8 @@ class _BookmarkRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    final String preview = _previewText(entry);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final String preview = _previewText(context, entry);
     final String arabicSnippet = quranVerseText(entry.surah, entry.verse);
     final bool hasMeta =
         entry.folder != QuranBookmarkService.defaultFolder ||
@@ -767,7 +771,11 @@ class _BookmarkRow extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                '${quran.getSurahName(entry.surah)} • Ayah ${entry.verse}',
+                                localizedSurahAyahLabel(
+                                  localizations,
+                                  entry.surah,
+                                  entry.verse,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.titleSmall?.copyWith(
@@ -810,7 +818,10 @@ class _BookmarkRow extends StatelessWidget {
                                     if (entry.folder !=
                                         QuranBookmarkService.defaultFolder)
                                       _BookmarkMetaChip(
-                                        label: _folderLabel(entry.folder),
+                                        label: _folderLabel(
+                                          context,
+                                          entry.folder,
+                                        ),
                                       ),
                                     for (final String tag in entry.tags.take(3))
                                       _BookmarkMetaChip(label: '#$tag'),
@@ -873,7 +884,7 @@ class _BookmarkRow extends StatelessWidget {
                               width: 36,
                               height: 34,
                               child: PopupMenuButton<_BookmarkAction>(
-                                tooltip: 'Saved ayah actions',
+                                tooltip: localizations.folderTagsAndNote,
                                 padding: EdgeInsets.zero,
                                 icon: Icon(
                                   Icons.more_horiz_rounded,
@@ -898,23 +909,23 @@ class _BookmarkRow extends StatelessWidget {
                                   }
                                 },
                                 itemBuilder: (context) =>
-                                    const <PopupMenuEntry<_BookmarkAction>>[
+                                    <PopupMenuEntry<_BookmarkAction>>[
                                       PopupMenuItem<_BookmarkAction>(
                                         value: _BookmarkAction.edit,
-                                        child: Text('Edit note'),
+                                        child: Text(localizations.editNote),
                                       ),
                                       PopupMenuItem<_BookmarkAction>(
                                         value: _BookmarkAction.folder,
-                                        child: Text('Move to folder'),
+                                        child: Text(localizations.moveToFolder),
                                       ),
                                       PopupMenuItem<_BookmarkAction>(
                                         value: _BookmarkAction.tags,
-                                        child: Text('Edit tags'),
+                                        child: Text(localizations.editTags),
                                       ),
-                                      PopupMenuDivider(),
+                                      const PopupMenuDivider(),
                                       PopupMenuItem<_BookmarkAction>(
                                         value: _BookmarkAction.delete,
-                                        child: Text('Delete'),
+                                        child: Text(localizations.delete),
                                       ),
                                     ],
                               ),
@@ -933,18 +944,18 @@ class _BookmarkRow extends StatelessWidget {
     );
   }
 
-  String _previewText(QuranBookmarkEntry entry) {
+  String _previewText(BuildContext context, QuranBookmarkEntry entry) {
     final String note = entry.note.trim();
     if (note.isNotEmpty) return note;
     final List<String> details = <String>[];
     if (entry.folder != QuranBookmarkService.defaultFolder) {
-      details.add(_folderLabel(entry.folder));
+      details.add(_folderLabel(context, entry.folder));
     }
     if (entry.tags.isNotEmpty) {
       details.add(entry.tags.map((tag) => '#$tag').join(' '));
     }
     if (details.isNotEmpty) return details.join(' • ');
-    return 'Saved ayah';
+    return AppLocalizations.of(context)!.savedAyah;
   }
 }
 
@@ -991,6 +1002,7 @@ class _BookmarkEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -1024,8 +1036,8 @@ class _BookmarkEmptyState extends StatelessWidget {
                 const SizedBox(height: 14),
                 Text(
                   isSearching || hasLibraryItems
-                      ? 'No matching saved ayahs.'
-                      : 'Save ayahs, notes, and reflections here.',
+                      ? localizations.noMatchingSavedAyahs
+                      : localizations.saveAyahsNotesHere,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: colors.textSecondary,
@@ -1034,7 +1046,7 @@ class _BookmarkEmptyState extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Favourite ayahs quickly, or add folders, tags, and private notes from the reading options.',
+                  localizations.savedAyahLibraryHint,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.textSecondary,
@@ -1074,6 +1086,7 @@ Future<void> _showBookmarkEditor(
       builder: (context) {
         final ThemeData theme = Theme.of(context);
         final EquranColors colors = context.equranColors;
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
         return StatefulBuilder(
           builder: (context, setSheetState) {
             final List<String> folders = const QuranBookmarkService().folders();
@@ -1093,7 +1106,11 @@ Future<void> _showBookmarkEditor(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      '${quran.getSurahName(entry.surah)} • Ayah ${entry.verse}',
+                      localizedSurahAyahLabel(
+                        localizations,
+                        entry.surah,
+                        entry.verse,
+                      ),
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: colors.textPrimary,
                         fontWeight: FontWeight.w900,
@@ -1120,7 +1137,7 @@ Future<void> _showBookmarkEditor(
                     const SizedBox(height: 14),
                     SwitchListTile.adaptive(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Favourite'),
+                      title: Text(localizations.favourites),
                       value: isFavourite,
                       onChanged: (value) => setSheetState(() {
                         isFavourite = value;
@@ -1130,9 +1147,9 @@ Future<void> _showBookmarkEditor(
                       controller: noteController,
                       maxLines: 4,
                       minLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Private note',
-                        hintText: 'Write a reflection...',
+                      decoration: InputDecoration(
+                        labelText: localizations.privateNote,
+                        hintText: localizations.writeReflectionHint,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -1141,14 +1158,14 @@ Future<void> _showBookmarkEditor(
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             initialValue: selectedFolder,
-                            decoration: const InputDecoration(
-                              labelText: 'Folder',
+                            decoration: InputDecoration(
+                              labelText: localizations.folders,
                             ),
                             items: <DropdownMenuItem<String>>[
                               for (final String folder in folders)
                                 DropdownMenuItem<String>(
                                   value: folder,
-                                  child: Text(_folderLabel(folder)),
+                                  child: Text(_folderLabel(context, folder)),
                                 ),
                             ],
                             onChanged: (value) {
@@ -1162,7 +1179,7 @@ Future<void> _showBookmarkEditor(
                         ),
                         const SizedBox(width: 8),
                         IconButton.filledTonal(
-                          tooltip: 'Create folder',
+                          tooltip: localizations.createFolder,
                           onPressed: () async {
                             final String? folder = await _showFolderNameDialog(
                               context,
@@ -1187,15 +1204,15 @@ Future<void> _showBookmarkEditor(
                       child: TextButton.icon(
                         onPressed: () => _showFolderManager(context),
                         icon: const Icon(Icons.folder_copy_outlined),
-                        label: const Text('Manage folders'),
+                        label: Text(localizations.manageFolders),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: tagsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Tags',
-                        hintText: 'gratitude, duas',
+                      decoration: InputDecoration(
+                        labelText: localizations.tags,
+                        hintText: localizations.tagsHint,
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -1210,7 +1227,7 @@ Future<void> _showBookmarkEditor(
                             Navigator.of(context).pop();
                           },
                           icon: const Icon(Icons.delete_outline_rounded),
-                          label: const Text('Delete'),
+                          label: Text(localizations.delete),
                         ),
                         const Spacer(),
                         FilledButton.icon(
@@ -1226,7 +1243,7 @@ Future<void> _showBookmarkEditor(
                             Navigator.of(context).pop();
                           },
                           icon: const Icon(Icons.check_rounded),
-                          label: const Text('Save'),
+                          label: Text(localizations.save),
                         ),
                       ],
                     ),
@@ -1254,31 +1271,32 @@ List<String> _parseTags(String value) {
   return tags.toList(growable: false)..sort();
 }
 
-String _folderLabel(String folder) {
+String _folderLabel(BuildContext context, String folder) {
   return folder == QuranBookmarkService.defaultFolder
-      ? QuranBookmarkService.defaultFolderLabel
+      ? AppLocalizations.of(context)!.unsorted
       : folder;
 }
 
 Future<bool> _confirmDeleteBookmark(BuildContext context) async {
   final bool? confirmed = await showDialog<bool>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Remove saved ayah?'),
-      content: const Text(
-        'This will remove the note, tags, folder, and favourite state for this ayah.',
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Remove'),
-        ),
-      ],
-    ),
+    builder: (context) {
+      final AppLocalizations localizations = AppLocalizations.of(context)!;
+      return AlertDialog(
+        title: Text(localizations.removeSavedAyah),
+        content: Text(localizations.removeSavedAyahDetailsBody),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(localizations.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(localizations.remove),
+          ),
+        ],
+      );
+    },
   );
   return confirmed == true;
 }
@@ -1286,7 +1304,7 @@ Future<bool> _confirmDeleteBookmark(BuildContext context) async {
 Future<String?> _showFolderNameDialog(
   BuildContext context, {
   String initialValue = '',
-  String title = 'New folder',
+  String? title,
 }) async {
   final TextEditingController controller = TextEditingController(
     text: initialValue == QuranBookmarkService.defaultFolder
@@ -1297,15 +1315,16 @@ Future<String?> _showFolderNameDialog(
     return showDialog<String>(
       context: context,
       builder: (context) {
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: Text(title),
+          title: Text(title ?? localizations.newFolder),
           content: TextField(
             controller: controller,
             autofocus: true,
             textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(
-              labelText: 'Folder name',
-              hintText: 'Reflections',
+            decoration: InputDecoration(
+              labelText: localizations.folderName,
+              hintText: localizations.folderNameHint,
             ),
             onSubmitted: (_) {
               final String value = controller.text.trim();
@@ -1316,7 +1335,7 @@ Future<String?> _showFolderNameDialog(
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(localizations.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -1324,7 +1343,7 @@ Future<String?> _showFolderNameDialog(
                 if (value.isEmpty) return;
                 Navigator.of(context).pop(value);
               },
-              child: const Text('Save'),
+              child: Text(localizations.save),
             ),
           ],
         );
@@ -1343,6 +1362,7 @@ Future<void> _showFolderManager(BuildContext context) async {
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setSheetState) {
+          final AppLocalizations localizations = AppLocalizations.of(context)!;
           final List<String> folders = const QuranBookmarkService().folders();
           return SafeArea(
             child: ListView(
@@ -1354,7 +1374,7 @@ Future<void> _showFolderManager(BuildContext context) async {
                   children: <Widget>[
                     Expanded(
                       child: Text(
-                        'Library folders',
+                        localizations.libraryFolders,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w900,
                         ),
@@ -1370,7 +1390,7 @@ Future<void> _showFolderManager(BuildContext context) async {
                         setSheetState(() {});
                       },
                       icon: const Icon(Icons.add_rounded),
-                      label: const Text('New'),
+                      label: Text(localizations.newFolder),
                     ),
                   ],
                 ),
@@ -1378,11 +1398,11 @@ Future<void> _showFolderManager(BuildContext context) async {
                 for (final String folder in folders)
                   ListTile(
                     leading: const Icon(Icons.folder_outlined),
-                    title: Text(_folderLabel(folder)),
+                    title: Text(_folderLabel(context, folder)),
                     subtitle: Text(
                       folder == QuranBookmarkService.defaultFolder
-                          ? 'Default destination for saved ayahs'
-                          : 'Saved ayah collection',
+                          ? localizations.defaultSavedAyahDestination
+                          : localizations.savedAyahCollection,
                     ),
                     trailing: folder == QuranBookmarkService.defaultFolder
                         ? null
@@ -1394,7 +1414,7 @@ Future<void> _showFolderManager(BuildContext context) async {
                                       await _showFolderNameDialog(
                                         context,
                                         initialValue: folder,
-                                        title: 'Rename folder',
+                                        title: localizations.renameFolder,
                                       );
                                   if (name == null) return;
                                   await const QuranBookmarkService()
@@ -1413,14 +1433,14 @@ Future<void> _showFolderManager(BuildContext context) async {
                               }
                             },
                             itemBuilder: (context) =>
-                                const <PopupMenuEntry<_FolderAction>>[
+                                <PopupMenuEntry<_FolderAction>>[
                                   PopupMenuItem<_FolderAction>(
                                     value: _FolderAction.rename,
-                                    child: Text('Rename'),
+                                    child: Text(localizations.rename),
                                   ),
                                   PopupMenuItem<_FolderAction>(
                                     value: _FolderAction.delete,
-                                    child: Text('Delete'),
+                                    child: Text(localizations.delete),
                                   ),
                                 ],
                           ),
@@ -1439,22 +1459,25 @@ enum _FolderAction { rename, delete }
 Future<bool> _confirmDeleteFolder(BuildContext context, String folder) async {
   final bool? confirmed = await showDialog<bool>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Delete ${_folderLabel(folder)}?'),
-      content: const Text(
-        'Saved ayahs in this folder will be moved to Unsorted.',
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+    builder: (context) {
+      final AppLocalizations localizations = AppLocalizations.of(context)!;
+      return AlertDialog(
+        title: Text(
+          localizations.deleteFolderQuestion(_folderLabel(context, folder)),
         ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Delete'),
-        ),
-      ],
-    ),
+        content: Text(localizations.deleteFolderBody),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(localizations.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(localizations.delete),
+          ),
+        ],
+      );
+    },
   );
   return confirmed == true;
 }

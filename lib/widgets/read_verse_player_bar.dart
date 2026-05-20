@@ -5,9 +5,9 @@ import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/app_slider_theme.dart';
 import 'package:equran/utils/number_formatting.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:quran/quran.dart' as quran;
 
 class ReadVersePlayerBar extends StatelessWidget {
   const ReadVersePlayerBar({
@@ -355,7 +355,11 @@ class ReadVersePlayerBar extends StatelessWidget {
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: Text(
-                    '${quran.getSurahName(currentChapter)} • ${localizations.ayahNumber(verse)}',
+                    localizedSurahAyahLabel(
+                      localizations,
+                      currentChapter,
+                      verse,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -450,7 +454,7 @@ class ReadVersePlayerBar extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Playback options',
+                tooltip: AppLocalizations.of(context)!.playbackOptions,
                 onPressed: onAdvancedOptionsPressed,
                 icon: const Icon(Icons.more_horiz_rounded),
                 iconSize: 22,

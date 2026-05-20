@@ -5,6 +5,7 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -738,10 +739,15 @@ _PageSummary _pageSummary(int page, AppLocalizations localizations) {
   final int endSurah = last['surah'] as int;
   final int endVerse = last['end'] as int;
   final int juz = quran.getJuzNumber(startSurah, startVerse);
-  final String primarySurah = quran.getSurahName(startSurah);
+  final String primarySurah = localizedSurahName(localizations, startSurah);
   final String rangeLabel = startSurah == endSurah
       ? localizations.ayahRange(startVerse, endVerse)
-      : '$primarySurah $startVerse - ${quran.getSurahName(endSurah)} $endVerse';
+      : localizations.surahRange(
+          localizedSurahName(localizations, endSurah),
+          endVerse,
+          primarySurah,
+          startVerse,
+        );
   return _PageSummary(
     startSurah: startSurah,
     startVerse: startVerse,

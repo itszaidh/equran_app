@@ -2,10 +2,10 @@ import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
-import 'package:quran/quran.dart';
 
 const String equranResumeQuranAsset = 'assets/media/images/app/quran.webp';
 const String equranResumePlayerAsset = 'assets/media/images/app/player.webp';
@@ -75,7 +75,7 @@ class _LastReadCardState extends State<LastReadCard> {
                 key: ValueKey<String>(
                   '${entry.surah}-${entry.verse}-${entry.timestamp.microsecondsSinceEpoch}',
                 ),
-                primary: getSurahName(entry.surah),
+                primary: localizedSurahName(localizations, entry.surah),
                 subtitle: localizations.ayahLabel(entry.verse),
                 actionText: localizations.continueReading,
                 trailingAssetPath: equranResumeQuranAsset,

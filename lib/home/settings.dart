@@ -751,7 +751,7 @@ class _SettingsPageState extends State<SettingsPage> {
         }
       },
       title: Text(localizations.colorScheme),
-      subtitle: Text(_selectedThemeName()),
+      subtitle: Text(_selectedThemeName(localizations)),
     );
   }
 
@@ -761,6 +761,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return showDialog<String>(
       context: context,
       builder: (context) {
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
         final ThemeData theme = Theme.of(context);
         final ColorScheme colorScheme = theme.colorScheme;
         final BorderRadius radius = BorderRadius.circular(AppRadii.large);
@@ -834,8 +835,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                   ? colorScheme.primaryContainer.withAlpha(90)
                                   : colorScheme.surfaceContainerLow,
                               leading: _ThemeSchemeSwatch(option: option),
-                              title: Text(option.title),
-                              subtitle: Text(option.subtitle),
+                              title: Text(option.title(localizations)),
+                              subtitle: Text(option.subtitle(localizations)),
                               trailing: option.id == selectedScheme
                                   ? Icon(
                                       Icons.check_circle_rounded,
@@ -1213,13 +1214,13 @@ class _SettingsPageState extends State<SettingsPage> {
     return "light";
   }
 
-  String _selectedThemeName() {
+  String _selectedThemeName(AppLocalizations localizations) {
     return _themeSchemeOptions
         .firstWhere(
           (option) => option.id == _selectedThemeScheme(),
           orElse: () => _themeSchemeOptions.first,
         )
-        .title;
+        .title(localizations);
   }
 
   String _selectedThemeScheme() {
@@ -1355,8 +1356,8 @@ class _ThemeSchemeOption {
   });
 
   final String id;
-  final String title;
-  final String subtitle;
+  final String Function(AppLocalizations localizations) title;
+  final String Function(AppLocalizations localizations) subtitle;
   final List<Color> colors;
 }
 
@@ -1381,41 +1382,41 @@ class _ThemeSchemeSwatch extends StatelessWidget {
   }
 }
 
-const List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
+final List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
   _ThemeSchemeOption(
     id: AppTheme.defaultScheme,
-    title: 'Emerald Green',
-    subtitle: 'The original calm eQuran palette.',
+    title: (localizations) => localizations.themeSchemeEmeraldGreen,
+    subtitle: (localizations) => localizations.themeSchemeEmeraldGreenSubtitle,
     colors: <Color>[Color(0xFF07110E), Color(0xFF1E7A61)],
   ),
   _ThemeSchemeOption(
     id: AppTheme.fancyBlueScheme,
-    title: 'Sapphire Blue',
-    subtitle: 'Deep navy with sapphire and muted cyan accents.',
+    title: (localizations) => localizations.themeSchemeSapphireBlue,
+    subtitle: (localizations) => localizations.themeSchemeSapphireBlueSubtitle,
     colors: <Color>[Color(0xFF06101C), Color(0xFF3B8DD6)],
   ),
   _ThemeSchemeOption(
     id: AppTheme.fancyPurpleScheme,
-    title: 'Royal Purple',
-    subtitle: 'Midnight purple with royal violet highlights.',
+    title: (localizations) => localizations.themeSchemeRoyalPurple,
+    subtitle: (localizations) => localizations.themeSchemeRoyalPurpleSubtitle,
     colors: <Color>[Color(0xFF100A19), Color(0xFF9368D0)],
   ),
   _ThemeSchemeOption(
     id: AppTheme.sepiaScheme,
-    title: 'Sepia',
-    subtitle: 'Warm parchment, brown, and soft gold tones.',
+    title: (localizations) => localizations.themeSchemeSepia,
+    subtitle: (localizations) => localizations.themeSchemeSepiaSubtitle,
     colors: <Color>[Color(0xFF130E09), Color(0xFFC08A4C)],
   ),
   _ThemeSchemeOption(
     id: AppTheme.blackScheme,
-    title: 'Black',
-    subtitle: 'AMOLED black with restrained teal accents.',
+    title: (localizations) => localizations.themeSchemeBlack,
+    subtitle: (localizations) => localizations.themeSchemeBlackSubtitle,
     colors: <Color>[Color(0xFF000000), Color(0xFF18A28D)],
   ),
   _ThemeSchemeOption(
     id: AppTheme.redScheme,
-    title: 'Ruby Red',
-    subtitle: 'Deep maroon surfaces with elegant ruby highlights.',
+    title: (localizations) => localizations.themeSchemeRubyRed,
+    subtitle: (localizations) => localizations.themeSchemeRubyRedSubtitle,
     colors: <Color>[Color(0xFF12070A), Color(0xFFC8475D)],
   ),
 ];

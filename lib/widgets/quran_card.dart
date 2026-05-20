@@ -3,9 +3,11 @@ import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/widgets/number_badge.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 class QuranCard extends StatelessWidget {
   final Surah surah;
@@ -25,6 +27,8 @@ class QuranCard extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     final bool tabletLayout = ResponsiveNav.isTablet(context);
     final bool compactText = compact && reduceTitleSize;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final bool arabicMode = isArabicLocalizations(localizations);
     final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
     final double verticalPadding = compact
         ? (tabletLayout ? 14 : 12)
@@ -88,32 +92,39 @@ class QuranCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      surah.transliteration,
+                      arabicMode ? surah.name : surah.transliteration,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: titleStyle?.copyWith(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      textDirection: arabicMode ? TextDirection.rtl : null,
+                      style: (arabicMode ? arabicTitleStyle : titleStyle)
+                          ?.copyWith(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w800,
+                          ),
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${surah.englishName} • ${surah.verses} verses',
+                      arabicMode
+                          ? localizations.versesCount(surah.verses)
+                          : '${surah.englishName} • ${surah.verses} verses',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      textDirection: arabicMode ? TextDirection.rtl : null,
                       style: versesStyle,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: EquranSpacing.m),
-              Text(
-                surah.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textDirection: TextDirection.rtl,
-                style: arabicTitleStyle,
-              ),
+              if (!arabicMode) ...<Widget>[
+                const SizedBox(width: EquranSpacing.m),
+                Text(
+                  surah.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textDirection: TextDirection.rtl,
+                  style: arabicTitleStyle,
+                ),
+              ],
             ],
           ),
         ),

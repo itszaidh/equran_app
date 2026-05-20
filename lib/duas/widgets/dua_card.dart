@@ -1,6 +1,7 @@
 import 'package:equran/backend/dua_favourites_db.dart';
 import 'package:equran/backend/settings_db.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -271,10 +272,11 @@ class _DuaFavouriteButton extends StatelessWidget {
                 return true;
               } catch (error) {
                 if (!context.mounted) return liked;
+                final AppLocalizations localizations = AppLocalizations.of(
+                  context,
+                )!;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Could not update dua favourite.'),
-                  ),
+                  SnackBar(content: Text(localizations.couldNotUpdateDua)),
                 );
                 return liked;
               }
@@ -294,12 +296,13 @@ class _DuaMoreMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return SizedBox(
       height: 34,
       width: 34,
       child: PopupMenuButton<_DuaOverflowAction>(
-        tooltip: 'More actions',
+        tooltip: localizations.moreActions,
         position: PopupMenuPosition.under,
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.circular(10),
@@ -313,14 +316,17 @@ class _DuaMoreMenu extends StatelessWidget {
             case _DuaOverflowAction.copy:
               await Clipboard.setData(ClipboardData(text: dua.shareText));
               if (!context.mounted) return;
+              final AppLocalizations localizations = AppLocalizations.of(
+                context,
+              )!;
               ScaffoldMessenger.of(
                 context,
-              ).showSnackBar(const SnackBar(content: Text('Dua copied.')));
+              ).showSnackBar(SnackBar(content: Text(localizations.duaCopied)));
               break;
             case _DuaOverflowAction.share:
               await SharePlus.instance.share(
                 ShareParams(
-                  title: 'Hisn al Muslim dua',
+                  title: localizations.hisnAlMuslimDua,
                   subject: dua.categoryTitle,
                   text: dua.shareText,
                 ),
@@ -329,19 +335,19 @@ class _DuaMoreMenu extends StatelessWidget {
           }
         },
         itemBuilder: (BuildContext context) {
-          return const <PopupMenuEntry<_DuaOverflowAction>>[
+          return <PopupMenuEntry<_DuaOverflowAction>>[
             PopupMenuItem<_DuaOverflowAction>(
               value: _DuaOverflowAction.copy,
               child: _OverflowMenuItem(
                 icon: Icons.copy_rounded,
-                label: 'Copy text',
+                label: localizations.copyText,
               ),
             ),
             PopupMenuItem<_DuaOverflowAction>(
               value: _DuaOverflowAction.share,
               child: _OverflowMenuItem(
                 icon: Icons.ios_share_outlined,
-                label: 'Share text',
+                label: localizations.shareText,
               ),
             ),
           ];

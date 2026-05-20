@@ -4,6 +4,7 @@ import 'package:equran/duas/duas_favourites_page.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/tasbih_page.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +64,7 @@ class _DuasPageState extends State<DuasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final Future<List<DuaCategoryIndex>>? categoryIndexFuture =
         _categoryIndexFuture;
     if (categoryIndexFuture == null) {
@@ -83,10 +85,9 @@ class _DuasPageState extends State<DuasPage> {
             if (snapshot.hasError) {
               return _DuasMessageState(
                 icon: Icons.error_outline_rounded,
-                title: 'Duas unavailable',
-                message:
-                    'Hisn al Muslim could not be loaded from the offline asset.',
-                actionLabel: 'Retry',
+                title: localizations.duasUnavailable,
+                message: localizations.hisnAlMuslimNotLoaded,
+                actionLabel: localizations.retry,
                 onActionPressed: _loadCategoryIndex,
               );
             }
@@ -94,11 +95,10 @@ class _DuasPageState extends State<DuasPage> {
             final List<DuaCategoryIndex> categoryIndex =
                 snapshot.data ?? const <DuaCategoryIndex>[];
             if (categoryIndex.isEmpty) {
-              return const _DuasMessageState(
+              return _DuasMessageState(
                 icon: Icons.menu_book_outlined,
-                title: 'No duas found',
-                message:
-                    'The offline Hisn al Muslim file did not contain any duas.',
+                title: localizations.noDuasFound,
+                message: localizations.offlineHisnAlMuslimEmpty,
               );
             }
 
@@ -129,6 +129,7 @@ class _DuasContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ColorScheme colors = theme.colorScheme;
     final List<DuaCategoryIndex> visibleCategories = _visibleCategories();
     final int duaCount = categoryIndex.fold<int>(
@@ -170,12 +171,12 @@ class _DuasContent extends StatelessWidget {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: colors.surfaceContainerLow,
-                    hintText: 'Search categories',
+                    hintText: localizations.searchCategories,
                     prefixIcon: const Icon(Icons.search_rounded),
                     suffixIcon: query.isEmpty
                         ? null
                         : IconButton(
-                            tooltip: 'Clear search',
+                            tooltip: localizations.clearSearch,
                             onPressed: searchController.clear,
                             icon: const Icon(Icons.close_rounded),
                           ),
@@ -191,18 +192,17 @@ class _DuasContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'Categories',
+                  localizations.categories,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 10),
                 if (visibleCategories.isEmpty)
-                  const _DuasMessageState(
+                  _DuasMessageState(
                     icon: Icons.search_off_rounded,
-                    title: 'No matching categories',
-                    message:
-                        'Try searching with another Arabic word or phrase.',
+                    title: localizations.noMatchingCategories,
+                    message: localizations.trySearchingArabicWord,
                   )
                 else
                   for (final DuaCategoryIndex category in visibleCategories)

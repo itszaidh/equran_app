@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/prayer/manual_prayer_location_page.dart';
 import 'package:equran/prayer/prayer_location_service.dart';
 import 'package:equran/prayer/prayer_map_location_page.dart';
@@ -69,12 +70,13 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Prayer Times Settings'),
+        title: Text(localizations.prayerTimesSettings),
         backgroundColor: colors.background,
         foregroundColor: colors.textPrimary,
         elevation: 0,
@@ -92,16 +94,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         children: <Widget>[
           _buildSettingsGroup(
             context: context,
-            title: 'Location',
+            title: localizations.location,
             subtitle: _locationSubtitle,
             icon: Icons.location_on_outlined,
             children: <Widget>[
               ListTile(
                 leading: const Icon(Icons.my_location_rounded),
-                title: const Text('Use current location'),
-                subtitle: const Text(
-                  "Save this device's location for prayer calculations.",
-                ),
+                title: Text(localizations.useCurrentLocation),
+                subtitle: Text(localizations.useCurrentLocationDescription),
                 trailing: _isLocating
                     ? const SizedBox.square(
                         dimension: 22,
@@ -112,23 +112,21 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
               ),
               ListTile(
                 leading: const Icon(Icons.map_outlined),
-                title: const Text('Choose on map'),
-                subtitle: const Text('Move the map under a centered pin.'),
+                title: Text(localizations.chooseOnMap),
+                subtitle: Text(localizations.moveMapUnderPin),
                 onTap: () => _chooseOnMap(_location),
               ),
               ListTile(
                 leading: const Icon(Icons.edit_location_alt_outlined),
-                title: const Text('Enter coordinates manually'),
-                subtitle: const Text('Enter latitude and longitude.'),
+                title: Text(localizations.enterCoordinatesManually),
+                subtitle: Text(localizations.enterLatitudeLongitude),
                 onTap: () => _chooseManually(_location),
               ),
               if (_location != null)
                 ListTile(
                   leading: const Icon(Icons.location_disabled_outlined),
-                  title: const Text('Clear saved location'),
-                  subtitle: const Text(
-                    'Prayer times will pause until you choose again.',
-                  ),
+                  title: Text(localizations.clearSavedLocation),
+                  subtitle: Text(localizations.clearSavedLocationSubtitle),
                   onTap: _clearLocation,
                 ),
             ],
@@ -136,38 +134,37 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           _buildPrayerRemindersSection(context),
           _buildSettingsGroup(
             context: context,
-            title: 'Calculation',
+            title: localizations.calculation,
             subtitle: _calculationSubtitle,
             icon: Icons.calculate_outlined,
             children: <Widget>[
               ListTile(
-                title: const Text('Calculation method'),
+                title: Text(localizations.calculationMethod),
                 subtitle: Text(_methodSubtitle),
                 onTap: _selectCalculationMethod,
               ),
               ListTile(
-                title: const Text('Asr method'),
+                title: Text(localizations.asrMethod),
                 subtitle: Text(_settings.asrMethod.label),
                 onTap: _selectAsrMethod,
               ),
               ListTile(
-                title: const Text('High latitude adjustment'),
+                title: Text(localizations.highLatitudeAdjustment),
                 subtitle: Text(
-                  '${_settings.highLatitudeRule.label}\n'
-                  'Used when Fajr or Isha are difficult to calculate in far northern or southern locations.',
+                  '${_settings.highLatitudeRule.label}\n${localizations.highLatitudeAdjustmentSubtitle}',
                 ),
                 isThreeLine: true,
                 onTap: _selectHighLatitudeRule,
               ),
               ListTile(
-                title: const Text('Time format'),
+                title: Text(localizations.timeFormat),
                 subtitle: Text(
                   _settings.use24HourFormat ? '24-hour' : '12-hour',
                 ),
                 onTap: _selectTimeFormat,
               ),
               SwitchListTile(
-                title: const Text('Use location timezone'),
+                title: Text(localizations.useLocationTimezone),
                 subtitle: Text(_timezoneSettingSubtitle),
                 value: _settings.useLocationTimezone,
                 onChanged: (bool enabled) => _saveSettings(
@@ -181,14 +178,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           _buildProhibitedTimesSection(context),
           _buildSettingsGroup(
             context: context,
-            title: 'Manual Offsets',
-            subtitle: 'Fine tune calculated times',
+            title: localizations.manualOffsets,
+            subtitle: localizations.manualOffsetsSubtitle,
             icon: Icons.tune_rounded,
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
                 child: Text(
-                  'Offsets are applied after the base calculation. Use positive or negative minutes only when you need to match a trusted local timetable.',
+                  localizations.offsetsAreAppliedAfterBaseCalculation,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     height: 1.35,
@@ -300,6 +297,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   }
 
   Widget _buildPrayerRemindersSection(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
     final PrayerReminderSettings reminders = _settings.reminderSettings;
@@ -316,7 +314,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
     return _buildSettingsGroup(
       context: context,
-      title: 'Prayer Reminders',
+      title: localizations.prayerReminders,
       subtitle: _reminderSubtitle,
       icon: Icons.notifications_active_outlined,
       children: <Widget>[
@@ -327,34 +325,34 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.notifications_none_rounded),
-          title: const Text('Prayer reminders'),
+          title: Text(localizations.prayerRemindersEnabled),
           subtitle: Text(_notificationPermissionSubtitle),
           value: remindersOn,
           onChanged: _isUpdatingReminders ? null : _toggleGlobalReminders,
         ),
         ListTile(
           leading: const Icon(Icons.notifications_none_rounded),
-          title: const Text('Notifications permission'),
+          title: Text(localizations.notificationsPermission),
           subtitle: Text(_notificationPermissionSubtitle),
           trailing: permission == PrayerNotificationPermissionStatus.denied
               ? TextButton(
                   onPressed: _isUpdatingReminders
                       ? null
                       : _requestNotificationPermission,
-                  child: const Text('Enable'),
+                  child: Text(localizations.enable),
                 )
               : null,
         ),
         ListTile(
           leading: const Icon(Icons.alarm_on_outlined),
-          title: const Text('Exact alarm / alarms & reminders permission'),
+          title: Text(localizations.exactAlarmPermission),
           subtitle: Text(_exactAlarmPermissionSubtitle),
           trailing: exactAlarmOff
               ? TextButton(
                   onPressed: _isUpdatingReminders
                       ? null
                       : _openExactAlarmSettings,
-                  child: const Text('Open'),
+                  child: Text(localizations.open),
                 )
               : null,
         ),
@@ -366,7 +364,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: Text(
-              'Choose a location before reminders can be scheduled.',
+              localizations.chooseLocationBeforeReminders,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurfaceVariant,
                 height: 1.35,
@@ -380,7 +378,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
               for (final PrayerTimeKind prayer in PrayerTimeKind.reminderOrder)
                 SwitchListTile(
                   title: Text(prayer.label),
-                  subtitle: const Text('Notify at the saved prayer time.'),
+                  subtitle: Text(localizations.notifyAtSavedPrayerTime),
                   value: reminders.prayerToggleFor(prayer),
                   onChanged: _isUpdatingReminders
                       ? null
@@ -389,7 +387,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                 ),
               ListTile(
                 leading: const Icon(Icons.schedule_rounded),
-                title: const Text('Reminder time'),
+                title: Text(localizations.reminderTime),
                 subtitle: Text(
                   _reminderOffsetLabel(reminders.reminderOffsetMinutes),
                 ),
@@ -1905,8 +1903,9 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   }
 
   String get _locationSubtitle {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerLocation? location = _location;
-    if (location == null) return 'Choose a location before calculating';
+    if (location == null) return localizations.chooseLocationBeforeCalculating;
     return location.displayLabel;
   }
 
@@ -1915,97 +1914,104 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   }
 
   String get _timezoneSettingSubtitle {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (!_settings.useLocationTimezone) {
-      return 'Using this device timezone.';
+      return localizations.usingDeviceTimezone;
     }
     final String? timezoneId = _location?.timezoneId;
     if (timezoneId == null || timezoneId.isEmpty) {
-      return 'Using device timezone until the location timezone is available.';
+      return localizations.usingDeviceTimezoneUntilLocationAvailable;
     }
-    return 'Display prayer times using $timezoneId.';
+    return localizations.displayPrayerTimesUsingTimezone(timezoneId);
   }
 
   String get _reminderSubtitle {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerReminderSettings reminders = _settings.reminderSettings;
     if (!reminders.remindersEnabled || reminders.enabledPrayerCount == 0) {
-      return 'Reminders off';
+      return localizations.remindersOff;
     }
-    if (_location == null) return 'On, waiting for location';
+    if (_location == null) return localizations.remindersOnWaitingLocation;
     final int enabledCount = reminders.enabledPrayerCount;
     if (enabledCount == PrayerTimeKind.reminderOrder.length) {
-      return 'All prayer reminders on';
+      return localizations.allPrayerRemindersOn;
     }
-    return '$enabledCount reminders enabled';
+    return localizations.remindersEnabledCount(enabledCount);
   }
 
   String get _notificationPermissionSubtitle {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (_isCheckingNotificationPermission) {
-      return 'Checking notification permission...';
+      return localizations.checkingNotificationPermission;
     }
     if (_notificationPermissionHasError) {
-      return 'Permission status needs a retry.';
+      return localizations.permissionStatusNeedsRetry;
     }
     final PrayerNotificationPermissionStatus? permission =
         _notificationPermission;
     return switch (permission) {
       PrayerNotificationPermissionStatus.granted =>
         _settings.reminderSettings.remindersEnabled
-            ? 'Local notifications are scheduled on this device.'
-            : 'Notification permission granted.',
+            ? localizations.localNotificationsScheduled
+            : localizations.notificationPermissionGranted,
       PrayerNotificationPermissionStatus.denied =>
-        'Notification permission is off.',
+        localizations.notificationPermissionOff,
       PrayerNotificationPermissionStatus.unsupported =>
-        'Prayer reminders are not supported on this platform.',
-      null => 'Checking notification permission...',
+        localizations.prayerRemindersUnsupported,
+      null => localizations.checkingNotificationPermission,
     };
   }
 
   String get _exactAlarmPermissionSubtitle {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (_isCheckingExactAlarmPermission) {
-      return 'Checking exact alarm permission...';
+      return localizations.checkingExactAlarmPermission;
     }
     if (_exactAlarmPermissionHasError) {
-      return 'Exact alarm status needs a retry.';
+      return localizations.exactAlarmStatusNeedsRetry;
     }
     final PrayerExactAlarmPermissionStatus? permission = _exactAlarmPermission;
     return switch (permission) {
       PrayerExactAlarmPermissionStatus.granted =>
-        'Alarms & reminders permission granted.',
+        localizations.alarmPermissionGranted,
       PrayerExactAlarmPermissionStatus.denied =>
-        'Exact alarm permission is disabled.',
+        localizations.exactAlarmPermissionDisabled,
       PrayerExactAlarmPermissionStatus.unsupported =>
-        'Exact alarm permission is not required on this platform.',
-      null => 'Checking exact alarm permission...',
+        localizations.exactAlarmPermissionNotRequired,
+      null => localizations.checkingExactAlarmPermission,
     };
   }
 
   String? _notificationMessageForPermission(
     PrayerNotificationPermissionStatus permission,
   ) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return switch (permission) {
       PrayerNotificationPermissionStatus.granted => null,
       PrayerNotificationPermissionStatus.denied =>
-        'Notification permission is off. Enable it to receive prayer reminders.',
+        localizations.notificationPermissionOffEnable,
       PrayerNotificationPermissionStatus.unsupported =>
-        'Prayer reminders are not supported on this platform.',
+        localizations.prayerRemindersUnsupported,
     };
   }
 
   String? _exactAlarmMessageForPermission(
     PrayerExactAlarmPermissionStatus permission,
   ) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return switch (permission) {
       PrayerExactAlarmPermissionStatus.granted => null,
       PrayerExactAlarmPermissionStatus.denied =>
-        'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+        localizations.exactAlarmPermissionDisabled,
       PrayerExactAlarmPermissionStatus.unsupported => null,
     };
   }
 
   String get _methodSubtitle {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerLocation? location = _location;
     if (_settings.method == PrayerCalculationMethod.auto && location == null) {
-      return 'Best method after location is saved';
+      return localizations.bestMethodAfterLocationSaved;
     }
     final PrayerCalculationMethod effectiveMethod =
         _settings.method == PrayerCalculationMethod.auto && location != null
@@ -2018,13 +2024,16 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   }
 
   String _offsetLabel(int offset) {
-    if (offset == 0) return 'No manual adjustment';
-    return '${offset > 0 ? '+' : ''}$offset minutes';
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    if (offset == 0) return localizations.noManualAdjustment;
+    final String label = localizations.positiveOrNegativeMinutes(offset);
+    return offset > 0 ? '+$label' : label;
   }
 
   String _reminderOffsetLabel(int offset) {
-    if (offset == 0) return 'At prayer time';
-    return '$offset minutes before prayer';
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    if (offset == 0) return localizations.atPrayerTime;
+    return localizations.minutesBeforePrayer(offset);
   }
 
   String _clockLabel(int hour, int minute) {
@@ -2037,17 +2046,18 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   }
 
   void _showLocationError(PrayerLocationResult result) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final String message = result.message ?? 'Unable to get location.';
     final PrayerLocationFailureReason? reason = result.failureReason;
     final SnackBarAction? action = switch (reason) {
       PrayerLocationFailureReason.servicesDisabled => SnackBarAction(
-        label: 'Settings',
+        label: localizations.settings,
         onPressed: () {
           _locationService.openLocationSettings();
         },
       ),
       PrayerLocationFailureReason.permissionDeniedForever => SnackBarAction(
-        label: 'App settings',
+        label: localizations.appSettings,
         onPressed: () {
           _locationService.openAppSettings();
         },

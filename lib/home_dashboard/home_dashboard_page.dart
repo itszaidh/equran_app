@@ -14,6 +14,7 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:equran/widgets/last_read_cards.dart';
@@ -141,9 +142,10 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
 
   Widget _buildHeader(ThemeData theme) {
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerLocation? location = _prayerStore.getLocation();
     final String locationLabel =
-        location?.displayLabel ?? 'Set prayer location';
+        location?.displayLabel ?? localizations.setPrayerLocation;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -184,7 +186,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                         ),
                         const SizedBox(width: 3),
                         Text(
-                          'Current Location',
+                          localizations.currentLocation,
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: colors.textMuted,
                             fontWeight: FontWeight.w700,
@@ -1027,7 +1029,10 @@ class _RoutinePlanCta extends StatelessWidget {
       );
     }
 
-    final _RoutineDayProgress dayProgress = _routineDayProgress(activePlan);
+    final _RoutineDayProgress dayProgress = _routineDayProgress(
+      activePlan,
+      localizations,
+    );
     final _AyahRef continueRef = _routineContinueRef(activePlan);
 
     return _HomePremiumCard(
@@ -1674,7 +1679,10 @@ class _DailyAyahPreview extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      '${quran.getSurahName(ayah.surah)} ${ayah.verse}',
+                      localizations.surahLabel(
+                        localizedSurahName(localizations, ayah.surah),
+                        ayah.verse,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -1742,18 +1750,19 @@ class _DashboardLastReadSection extends StatelessWidget {
     final int? surah = current?.surah;
     final int? ayah = current?.ayah;
     final bool hasResume = surah != null && ayah != null;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final String title = hasResume
-        ? (current!.title.isEmpty ? quran.getSurahName(surah) : current.title)
-        : 'Begin with the Quran';
+        ? localizedSurahName(localizations, surah)
+        : localizations.beginWithQuran;
     final String subtitle = hasResume
-        ? (current!.subtitle.isEmpty ? 'Ayah $ayah' : current.subtitle)
-        : 'Start reading';
+        ? localizations.ayahNumber(ayah)
+        : localizations.startReading;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         Text(
-          'Last Read',
+          localizations.lastRead,
           style: theme.textTheme.titleMedium?.copyWith(
             color: colors.textPrimary,
             fontWeight: FontWeight.w900,
@@ -1815,7 +1824,9 @@ class _DashboardLastReadSection extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      hasResume ? 'Resume ->' : 'Start reading ->',
+                      hasResume
+                          ? localizations.continueReading
+                          : localizations.startReading,
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: colors.onPrimary,
                         fontWeight: FontWeight.w900,
@@ -1884,7 +1895,7 @@ class _JourneyPreviewCard extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  'Quran Journey',
+                  AppLocalizations.of(context)!.quranJourney,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -1917,7 +1928,7 @@ class _JourneyPreviewCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
-                  'ayahs today',
+                  AppLocalizations.of(context)!.ayahsToday,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w800,
@@ -1959,7 +1970,9 @@ class _JourneyPreviewCard extends StatelessWidget {
                 const SizedBox(width: 8),
               ],
               _JourneyMetricChip(
-                label: '${snapshot.estimatedLettersRead} letters',
+                label: AppLocalizations.of(
+                  context,
+                )!.lettersCount(snapshot.estimatedLettersRead),
               ),
             ],
           ),
@@ -2047,7 +2060,7 @@ class _JourneyStreakChip extends StatelessWidget {
               const SizedBox(width: 4),
               Flexible(
                 child: Text(
-                  '$streak day streak',
+                  AppLocalizations.of(context)!.dayStreakCount(streak),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
@@ -2118,8 +2131,10 @@ class _PersonalLibraryPreview extends StatelessWidget {
         children: <Widget>[
           EquranSectionHeader(
             icon: Icons.bookmark_border_rounded,
-            title: 'Personal Library',
-            actionLabel: bookmarks.isEmpty ? null : 'View all',
+            title: AppLocalizations.of(context)!.personalLibrary,
+            actionLabel: bookmarks.isEmpty
+                ? null
+                : AppLocalizations.of(context)!.seeAll,
             onAction: onOpenQuran,
           ),
           const SizedBox(height: 6),
@@ -2141,7 +2156,7 @@ class _PersonalLibraryPreview extends StatelessWidget {
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(
-                      'Save ayahs and notes here as you read.',
+                      AppLocalizations.of(context)!.saveAyahsNotesHere,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colors.textSecondary,
                         fontWeight: FontWeight.w600,
@@ -2204,7 +2219,13 @@ class _LibraryPreviewTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    '${quran.getSurahName(bookmark.surah)} ${bookmark.verse}',
+                    AppLocalizations.of(context)!.surahLabel(
+                      localizedSurahName(
+                        AppLocalizations.of(context)!,
+                        bookmark.surah,
+                      ),
+                      bookmark.verse,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleSmall?.copyWith(
@@ -2450,12 +2471,8 @@ class _HomeQuranLastReadCard extends StatelessWidget {
       );
     } else {
       card = EquranResumeImageCard(
-        primary: current?.title.isNotEmpty == true
-            ? current!.title
-            : quran.getSurahName(surah),
-        subtitle: current?.subtitle.isNotEmpty == true
-            ? current!.subtitle
-            : (localizations.localeName == 'ar' ? 'الآية $ayah' : 'Ayah $ayah'),
+        primary: localizedSurahName(localizations, surah),
+        subtitle: localizations.ayahNumber(ayah),
         actionText: localizations.localeName == 'ar'
             ? '<- ${localizations.continueReading}'
             : '${localizations.continueReading} ->',
@@ -2489,12 +2506,12 @@ class _ContinueListeningCard extends StatelessWidget {
     if (current == null) {
       card = EquranResumeImageCard(
         primary: localizations.localeName == 'ar'
-            ? 'تلاوة القرآن'
-            : 'Quran recitation',
+            ? localizations.quranRecitation
+            : localizations.quranRecitation,
         subtitle: localizations.beginListeningSubtitle,
         actionText: localizations.localeName == 'ar'
-            ? '<- افتح المشغل'
-            : 'Open Player ->',
+            ? '<- ${localizations.openPlayer}'
+            : '${localizations.openPlayer} ->',
         trailingAssetPath: _playerAsset,
         secondary: true,
         artworkScale: 1.3,
@@ -2508,18 +2525,12 @@ class _ContinueListeningCard extends StatelessWidget {
           : ' - ${_formatShortDuration(Duration(milliseconds: positionMillis))}';
 
       card = EquranResumeImageCard(
-        primary: current.title.isEmpty
-            ? (localizations.localeName == 'ar'
-                  ? 'تلاوة القرآن'
-                  : 'Quran recitation')
-            : current.title,
+        primary: current.surah == null
+            ? localizations.quranRecitation
+            : localizedSurahName(localizations, current.surah!),
         subtitle: current.ayah == null
-            ? (localizations.localeName == 'ar'
-                  ? 'استئناف التلاوة$progress'
-                  : 'Resume recitation$progress')
-            : (localizations.localeName == 'ar'
-                  ? 'الآية ${current.ayah}'
-                  : 'Ayah ${current.ayah}'),
+            ? localizations.resumeRecitation(progress)
+            : localizations.ayahNumber(current.ayah!),
         actionText: localizations.localeName == 'ar'
             ? '<- ${localizations.continueListening}'
             : '${localizations.continueListening} ->',
@@ -2730,7 +2741,10 @@ class _DailyAyahCard extends StatelessWidget {
         children: <Widget>[
           _SectionLabel(
             icon: Icons.wb_sunny_outlined,
-            label: '${quran.getSurahName(ayah.surah)} ${ayah.verse}',
+            label: AppLocalizations.of(context)!.surahLabel(
+              localizedSurahName(AppLocalizations.of(context)!, ayah.surah),
+              ayah.verse,
+            ),
           ),
           const SizedBox(height: 14),
           Text(
@@ -2770,6 +2784,7 @@ class _StatsPreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final QuranStatsSnapshot snapshot =
         stats ?? QuranStatsSnapshot(id: 'summary', updatedAt: DateTime.now());
     final int today = activity?.ayahsRead ?? 0;
@@ -2778,24 +2793,30 @@ class _StatsPreviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const _SectionLabel(
+          _SectionLabel(
             icon: Icons.insights_outlined,
-            label: 'Statistics',
+            label: localizations.statistics,
           ),
           const SizedBox(height: 14),
-          _MetricRow(label: 'Today', value: '$today ayahs'),
           _MetricRow(
-            label: 'Total read',
-            value: '${snapshot.totalAyahsRead} ayahs',
+            label: localizations.today,
+            value: localizations.ayahsCount(today),
           ),
-          _MetricRow(label: 'Streak', value: '${snapshot.currentStreak} days'),
           _MetricRow(
-            label: 'Estimated letters read',
+            label: localizations.totalRead,
+            value: localizations.ayahsCount(snapshot.totalAyahsRead),
+          ),
+          _MetricRow(
+            label: localizations.streaksLabel,
+            value: localizations.daysCount(snapshot.currentStreak),
+          ),
+          _MetricRow(
+            label: localizations.estimatedLettersRead,
             value: '${snapshot.estimatedLettersRead}',
           ),
           const SizedBox(height: 8),
           Text(
-            'Reward is with Allah.',
+            localizations.rewardIsWithAllah,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -2863,7 +2884,12 @@ class _BookmarkPreviewTile extends StatelessWidget {
           ),
         ),
       ),
-      title: Text('${quran.getSurahName(bookmark.surah)} ${bookmark.verse}'),
+      title: Text(
+        AppLocalizations.of(context)!.surahLabel(
+          localizedSurahName(AppLocalizations.of(context)!, bookmark.surah),
+          bookmark.verse,
+        ),
+      ),
       subtitle: Text(
         bookmark.note.trim().isEmpty ? bookmark.folder : bookmark.note,
         maxLines: 1,
@@ -3182,15 +3208,18 @@ class _RoutineDayProgress {
   final double fraction;
 }
 
-_RoutineDayProgress _routineDayProgress(ReadingPlanEntry plan) {
+_RoutineDayProgress _routineDayProgress(
+  ReadingPlanEntry plan,
+  AppLocalizations localizations,
+) {
   final RoutineProgressSummary progress = routineProgressSummary(plan);
   final String statusLabel = progress.isTodayDone
-      ? 'Today\'s portion complete'
+      ? localizations.todaysPortionComplete
       : progress.catchUpAyahs > 0
-      ? 'Includes ${progress.catchUpAyahs} catch-up ayahs'
-      : '${progress.todayRemainingAyahs} ayahs remaining today';
+      ? localizations.catchUpAyahsIncluded(progress.catchUpAyahs)
+      : localizations.ayahsRemainingToday(progress.todayRemainingAyahs);
   return _RoutineDayProgress(
-    portionLabel: 'Today\'s portion: ${progress.todayPortionAyahs} ayahs',
+    portionLabel: localizations.todaysPortion(progress.todayPortionAyahs),
     statusLabel: statusLabel,
     fraction: progress.todayFraction,
   );

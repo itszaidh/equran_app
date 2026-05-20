@@ -3,9 +3,11 @@ import 'dart:async' show unawaited;
 import 'package:equran/backend/android_audio_display_mode.dart';
 import 'package:equran/backend/library.dart'
     show FavouritesDB, QuranBookmarkService;
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
 
@@ -81,6 +83,7 @@ class ReadQuranCard extends StatelessWidget {
   Future<bool> _showInputPrompt(BuildContext context) async {
     final TextEditingController textController = TextEditingController();
     bool saved = false;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     AndroidAudioDisplayMode.notifyUserActivity();
     onVisualOverlayChanged?.call(true);
     unawaited(AndroidAudioDisplayMode.setLowFpsSuppressed(true));
@@ -89,17 +92,17 @@ class ReadQuranCard extends StatelessWidget {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('Favourite ayah'),
+            title: Text(localizations.savedAyah),
             content: TextField(
               maxLength: _favouriteNoteMaxLength,
               maxLines: null,
               controller: textController,
-              decoration: const InputDecoration(hintText: 'Optional note...'),
+              decoration: InputDecoration(hintText: localizations.optionalNote),
             ),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(localizations.cancel),
               ),
               FilledButton(
                 onPressed: () async {
@@ -121,7 +124,7 @@ class ReadQuranCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text('Save'),
+                child: Text(localizations.save),
               ),
             ],
           );
@@ -140,6 +143,7 @@ class ReadQuranCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     final TextStyle? mutedStyle =
         (shareImageMode
@@ -151,8 +155,8 @@ class ReadQuranCard extends StatelessWidget {
               fontWeight: FontWeight.w600,
             );
     final String ayahLabel = shareImageMode
-        ? 'Ayah $currentVerse'
-        : 'Ayah $currentVerse of $totalVerses';
+        ? localizations.ayahNumber(currentVerse)
+        : localizations.ayahOfTotal(currentVerse, totalVerses);
 
     return Row(
       children: <Widget>[
@@ -166,7 +170,10 @@ class ReadQuranCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadii.pill),
                   border: Border.all(color: colors.border),
                 ),
-                child: Text("Juz' $juzNumber", style: mutedStyle),
+                child: Text(
+                  localizedJuzLabel(localizations, juzNumber),
+                  style: mutedStyle,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -226,6 +233,7 @@ class ReadQuranCard extends StatelessWidget {
       valueListenable: FavouritesDB().listener,
       builder: (context, favouritesBox, child) {
         final ColorScheme colorScheme = Theme.of(context).colorScheme;
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
         final bool isFavourite = const QuranBookmarkService().isFavourite(
           currentChapter,
           currentVerse,
@@ -240,7 +248,7 @@ class ReadQuranCard extends StatelessWidget {
           children: <Widget>[
             _buildActionButton(
               context: context,
-              tooltip: isPlaying ? 'Pause' : 'Play',
+              tooltip: isPlaying ? localizations.pause : localizations.play,
               onPressed: onPlay,
               isPrimary: true,
               child: Icon(
@@ -253,7 +261,7 @@ class ReadQuranCard extends StatelessWidget {
               SizedBox(width: actionGap),
               _buildActionButton(
                 context: context,
-                tooltip: 'Tafsir',
+                tooltip: localizations.tafsir,
                 onPressed: onTafsir,
                 child: Icon(
                   Icons.chrome_reader_mode_rounded,
@@ -275,12 +283,13 @@ class ReadQuranCard extends StatelessWidget {
     required bool isFavourite,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final bool wideActions = MediaQuery.sizeOf(context).width >= 700;
     final double buttonSize = wideActions ? 38 : 34;
     final double iconSize = wideActions ? 22 : 20;
 
     return Tooltip(
-      message: isFavourite ? 'Remove favourite' : 'Favourite',
+      message: isFavourite ? localizations.remove : localizations.favourites,
       child: SizedBox(
         height: buttonSize,
         width: buttonSize,

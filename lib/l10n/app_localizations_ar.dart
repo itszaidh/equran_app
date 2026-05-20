@@ -1149,8 +1149,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get open => 'فتح';
 
   @override
-  String get notificationPermissionOff =>
-      'إذن الإشعارات متوقف. فعّله لتلقي تذكيرات الصلاة.';
+  String get notificationPermissionOff => 'إذن الإشعارات متوقف.';
 
   @override
   String get exactAlarmPermissionDisabled =>
@@ -1478,7 +1477,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get go => 'انتقل';
 
   @override
-  String get deleteDownloadedMp3 => 'حذف MP3 المنزّل؟';
+  String get deleteDownloadedMp3 => 'حذف MP3 المنزّل';
 
   @override
   String get deleteDownloadedAyah => 'حذف الآية المنزّلة؟';
@@ -1680,11 +1679,1002 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String versesCount(int count) {
-    return '$count verses';
+    return '$count آية';
   }
 
   @override
   String surahVerseCount(String surahName, int count) {
-    return '$surahName • $count verses';
+    return '$surahName • $count آية';
   }
+
+  @override
+  String get noJuzResultsFound => 'لم يتم العثور على أجزاء.';
+
+  @override
+  String surahCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count سورة',
+      few: '$count سور',
+      two: 'سورتان',
+      one: 'سورة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String surahRange(
+    Object endSurah,
+    Object endVerse,
+    Object startSurah,
+    Object startVerse,
+  ) {
+    return '$startSurah $startVerse - $endSurah $endVerse';
+  }
+
+  @override
+  String get recentQuranTextSearches => 'عمليات البحث الأخيرة في نص القرآن';
+
+  @override
+  String searchResultCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count نتيجة',
+      few: '$count نتائج',
+      two: 'نتيجتان',
+      one: 'نتيجة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchQuranText => 'البحث في نص القرآن';
+
+  @override
+  String get searchQuranTextEmptyMessage =>
+      'استخدم هذا التبويب للبحث في الكلمات العربية أو نص الترجمة. بحث السور يبقى في تبويب السور.';
+
+  @override
+  String get noQuranTextResults => 'لا توجد نتائج في نص القرآن';
+
+  @override
+  String noAyahSearchResults(Object query) {
+    return 'لم تطابق أي آيات \"$query\". جرّب كلمة أو عبارة أخرى.';
+  }
+
+  @override
+  String get optionalNote => 'ملاحظة اختيارية...';
+
+  @override
+  String ayahOfTotal(Object current, Object total) {
+    return 'الآية $current من $total';
+  }
+
+  @override
+  String get noMatchingSavedAyahs => 'لا توجد آيات محفوظة مطابقة.';
+
+  @override
+  String get saveAyahsNotesHere => 'احفظ الآيات والملاحظات والتأملات هنا.';
+
+  @override
+  String get savedAyahLibraryHint =>
+      'احفظ الآيات بسرعة، أو أضف مجلدات ووسوماً وملاحظات خاصة من خيارات القراءة.';
+
+  @override
+  String get privateNote => 'ملاحظة خاصة';
+
+  @override
+  String get writeReflectionHint => 'اكتب تأملاً...';
+
+  @override
+  String get createFolder => 'إنشاء مجلد';
+
+  @override
+  String get tagsHint => 'شكر، دعاء';
+
+  @override
+  String get unsorted => 'غير مصنفة';
+
+  @override
+  String get removeSavedAyahDetailsBody =>
+      'سيؤدي ذلك إلى إزالة الملاحظة والوسوم والمجلد وحالة المفضلة لهذه الآية.';
+
+  @override
+  String get folderName => 'اسم المجلد';
+
+  @override
+  String get folderNameHint => 'تأملات';
+
+  @override
+  String get libraryFolders => 'مجلدات المكتبة';
+
+  @override
+  String get defaultSavedAyahDestination => 'الوجهة الافتراضية للآيات المحفوظة';
+
+  @override
+  String get savedAyahCollection => 'مجموعة آيات محفوظة';
+
+  @override
+  String get renameFolder => 'إعادة تسمية المجلد';
+
+  @override
+  String get rename => 'إعادة تسمية';
+
+  @override
+  String deleteFolderQuestion(Object folder) {
+    return 'حذف $folder؟';
+  }
+
+  @override
+  String get deleteFolderBody =>
+      'ستنقل الآيات المحفوظة في هذا المجلد إلى غير مصنفة.';
+
+  @override
+  String get quranRecitation => 'تلاوة القرآن';
+
+  @override
+  String get openPlayer => 'فتح المشغل';
+
+  @override
+  String resumeRecitation(Object progress) {
+    return 'استئناف التلاوة$progress';
+  }
+
+  @override
+  String get ayahsToday => 'آية اليوم';
+
+  @override
+  String lettersCount(Object count) {
+    return '$count حرف';
+  }
+
+  @override
+  String dayStreakCount(num count) {
+    return '$count يوم متتالية';
+  }
+
+  @override
+  String ayahsCount(num count) {
+    return '$count آية';
+  }
+
+  @override
+  String daysCount(num count) {
+    return '$count يوم';
+  }
+
+  @override
+  String get todaysPortionComplete => 'اكتمل ورد اليوم';
+
+  @override
+  String catchUpAyahsIncluded(Object count) {
+    return 'يتضمن $count آية للتعويض';
+  }
+
+  @override
+  String ayahsRemainingToday(Object count) {
+    return 'بقي $count آية اليوم';
+  }
+
+  @override
+  String todaysPortion(Object count) {
+    return 'ورد اليوم: $count آية';
+  }
+
+  @override
+  String surahIntroMeta(Object juz, Object revelation, Object verseCount) {
+    return '$revelation · $verseCount آية · الجزء $juz';
+  }
+
+  @override
+  String get makkah => 'مكية';
+
+  @override
+  String get madinah => 'مدنية';
+
+  @override
+  String get currentAyahOnly => 'الآية الحالية فقط';
+
+  @override
+  String surahAyahRange(Object endAyah, Object startAyah, Object surahName) {
+    return '$surahName $startAyah ← $endAyah';
+  }
+
+  @override
+  String get intervalEndBeforeStartError =>
+      'اختر آية نهاية مساوية لآية البداية أو بعدها.';
+
+  @override
+  String get intervalRange => 'نطاق الفاصل';
+
+  @override
+  String get intervalRangeHint =>
+      'اختر آية البداية والنهاية. يمكن أن يمتد النطاق بين السور.';
+
+  @override
+  String get end => 'النهاية';
+
+  @override
+  String get apply => 'تطبيق';
+
+  @override
+  String get customizeRecitationBehavior => 'خصّص سلوك التلاوة';
+
+  @override
+  String get recitation => 'التلاوة';
+
+  @override
+  String get timing => 'التوقيت';
+
+  @override
+  String get ayahDelay => 'تأخير الآية';
+
+  @override
+  String get audioDownloads => 'تنزيلات الصوت';
+
+  @override
+  String get surahAudioDownloaded => 'صوت السورة منزّل';
+
+  @override
+  String get allAyahsAvailableOffline => 'كل الآيات متاحة دون اتصال';
+
+  @override
+  String get downloadEveryAyahInSurah => 'تنزيل كل آية في هذه السورة';
+
+  @override
+  String get downloadingCurrentAyah => 'جارٍ تنزيل الآية الحالية';
+
+  @override
+  String get deleteCurrentAyahAudio => 'حذف صوت الآية الحالية';
+
+  @override
+  String get downloadCurrentAyah => 'تنزيل الآية الحالية';
+
+  @override
+  String intervalPickerTitle(Object kind, Object position) {
+    return '$position $kind';
+  }
+
+  @override
+  String get noDelay => 'بدون تأخير';
+
+  @override
+  String secondsCount(num count) {
+    return '$count ثانية';
+  }
+
+  @override
+  String tafsirNeedsDownload(Object size) {
+    return 'يجب تنزيل هذا التفسير أولاً. $size';
+  }
+
+  @override
+  String get downloading => 'جارٍ التنزيل';
+
+  @override
+  String get noTafsirTextForAyah => 'لا يوجد نص تفسير لهذه الآية.';
+
+  @override
+  String get noTafsirResourcesAvailable => 'لا توجد موارد تفسير متاحة';
+
+  @override
+  String enterAyahRange(Object total) {
+    return 'أدخل رقم آية من 1 إلى $total';
+  }
+
+  @override
+  String get ayahNumberHint => 'رقم الآية';
+
+  @override
+  String downloadingSurahAyahs(Object surahName) {
+    return 'جارٍ تنزيل آيات $surahName';
+  }
+
+  @override
+  String downloadedSurahAyahs(Object surahName) {
+    return 'تم تنزيل آيات $surahName';
+  }
+
+  @override
+  String downloadedAllAyahsFor(Object surahName) {
+    return 'تم تنزيل كل آيات $surahName';
+  }
+
+  @override
+  String failedDownloadSurahAyahs(Object surahName) {
+    return 'فشل تنزيل آيات $surahName.';
+  }
+
+  @override
+  String downloadAllAyahsForSurah(Object surahName) {
+    return 'تنزيل صوت كل آيات $surahName للاستماع دون اتصال؟';
+  }
+
+  @override
+  String get removedFromFavourites => 'تمت الإزالة من المفضلة.';
+
+  @override
+  String get savedAyahsOrganizedHint =>
+      'يمكن تنظيم الآيات المحفوظة في مجلدات ووسوم.';
+
+  @override
+  String get playerOptions => 'خيارات المشغل';
+
+  @override
+  String get chooseSurah => 'اختيار السورة';
+
+  @override
+  String get offline => 'دون اتصال';
+
+  @override
+  String get downloadMp3 => 'تنزيل MP3';
+
+  @override
+  String get availableOffline => 'متاح دون اتصال';
+
+  @override
+  String get notSaved => 'غير محفوظ';
+
+  @override
+  String get playback => 'التشغيل';
+
+  @override
+  String get sleepTimerOptions => 'خيارات مؤقت النوم';
+
+  @override
+  String get endOfSurah => 'نهاية السورة';
+
+  @override
+  String get enabled => 'مفعّل';
+
+  @override
+  String get disabled => 'معطّل';
+
+  @override
+  String get off => 'متوقف';
+
+  @override
+  String get sleepingSoon => 'سيتوقف قريباً';
+
+  @override
+  String sleepingInMinutes(num minutes) {
+    return 'يتوقف خلال $minutes دقيقة';
+  }
+
+  @override
+  String pendingLabel(Object label) {
+    return '$label قيد الانتظار';
+  }
+
+  @override
+  String get loadingSyncedAyah => 'جارٍ تحميل الآية المتزامنة';
+
+  @override
+  String get syncedAyahUnavailableReciter =>
+      'عرض الآية المتزامنة غير متاح لهذا القارئ';
+
+  @override
+  String get syncedAyahUnavailableSurah =>
+      'عرض الآية المتزامنة غير متاح لهذه السورة';
+
+  @override
+  String get downloadTimingsToSyncAyahs =>
+      'نزّل التوقيتات لمزامنة الآيات لهذا القارئ';
+
+  @override
+  String get unableToPlaySurahAudio => 'تعذّر تشغيل صوت السورة.';
+
+  @override
+  String downloadingName(Object name) {
+    return 'جارٍ تنزيل $name';
+  }
+
+  @override
+  String downloadedName(Object name) {
+    return 'تم تنزيل $name';
+  }
+
+  @override
+  String failedDownloadName(Object name) {
+    return 'فشل تنزيل $name';
+  }
+
+  @override
+  String get failedDownloadSurahAudio => 'فشل تنزيل صوت السورة.';
+
+  @override
+  String deletedMp3Name(Object name) {
+    return 'تم حذف MP3 لسورة $name';
+  }
+
+  @override
+  String get failedDeleteDownloadedSurah => 'فشل حذف السورة المنزّلة.';
+
+  @override
+  String get deleteDownloadedMp3Question => 'حذف MP3 المنزّل؟';
+
+  @override
+  String removeSurahFromOffline(Object name) {
+    return 'سيؤدي ذلك إلى إزالة $name من التخزين دون اتصال.';
+  }
+
+  @override
+  String get offlineReady => 'جاهز دون اتصال';
+
+  @override
+  String get streaming => 'بث مباشر';
+
+  @override
+  String get showAyahText => 'إظهار نص الآية';
+
+  @override
+  String get hideAyahText => 'إخفاء نص الآية';
+
+  @override
+  String get themeSchemeEmeraldGreen => 'أخضر زمردي';
+
+  @override
+  String get themeSchemeEmeraldGreenSubtitle => 'لوحة إي قرآن الهادئة الأصلية.';
+
+  @override
+  String get themeSchemeSapphireBlue => 'أزرق ياقوتي';
+
+  @override
+  String get themeSchemeSapphireBlueSubtitle =>
+      'كحلي عميق مع لمسات ياقوتية وسماوية هادئة.';
+
+  @override
+  String get themeSchemeRoyalPurple => 'بنفسجي ملكي';
+
+  @override
+  String get themeSchemeRoyalPurpleSubtitle => 'بنفسجي ليلي مع إبرازات ملكية.';
+
+  @override
+  String get themeSchemeSepia => 'بني دافئ';
+
+  @override
+  String get themeSchemeSepiaSubtitle => 'درجات ورق دافئة وبنية وذهبية ناعمة.';
+
+  @override
+  String get themeSchemeBlack => 'أسود';
+
+  @override
+  String get themeSchemeBlackSubtitle => 'أسود AMOLED مع لمسات فيروزية هادئة.';
+
+  @override
+  String get themeSchemeRubyRed => 'أحمر ياقوتي';
+
+  @override
+  String get themeSchemeRubyRedSubtitle =>
+      'أسطح عنابية عميقة مع لمسات ياقوتية أنيقة.';
+
+  @override
+  String get enterLatitudeLongitude => 'أدخل خط العرض وخط الطول.';
+
+  @override
+  String get chooseLocationBeforeCalculating => 'اختر موقعاً قبل الحساب';
+
+  @override
+  String get usingDeviceTimezone => 'يُستخدم توقيت هذا الجهاز.';
+
+  @override
+  String get usingDeviceTimezoneUntilLocationAvailable =>
+      'يُستخدم توقيت الجهاز حتى تتوفر المنطقة الزمنية للموقع.';
+
+  @override
+  String displayPrayerTimesUsingTimezone(Object timezone) {
+    return 'عرض أوقات الصلاة باستخدام $timezone.';
+  }
+
+  @override
+  String get remindersOff => 'التذكيرات متوقفة';
+
+  @override
+  String get remindersOnWaitingLocation => 'مفعّلة، بانتظار الموقع';
+
+  @override
+  String get allPrayerRemindersOn => 'كل تذكيرات الصلاة مفعّلة';
+
+  @override
+  String remindersEnabledCount(Object count) {
+    return '$count تذكيرات مفعّلة';
+  }
+
+  @override
+  String get checkingNotificationPermission =>
+      'جارٍ التحقق من إذن الإشعارات...';
+
+  @override
+  String get permissionStatusNeedsRetry =>
+      'تحتاج حالة الإذن إلى إعادة المحاولة.';
+
+  @override
+  String get localNotificationsScheduled =>
+      'تمت جدولة الإشعارات المحلية على هذا الجهاز.';
+
+  @override
+  String get notificationPermissionGranted => 'تم منح إذن الإشعارات.';
+
+  @override
+  String get notificationPermissionOffEnable =>
+      'إذن الإشعارات متوقف. فعّله لاستقبال تذكيرات الصلاة.';
+
+  @override
+  String get prayerRemindersUnsupported =>
+      'تذكيرات الصلاة غير مدعومة على هذه المنصة.';
+
+  @override
+  String get checkingExactAlarmPermission =>
+      'جارٍ التحقق من إذن المنبه الدقيق...';
+
+  @override
+  String get exactAlarmStatusNeedsRetry =>
+      'تحتاج حالة المنبه الدقيق إلى إعادة المحاولة.';
+
+  @override
+  String get alarmPermissionGranted => 'تم منح إذن المنبهات والتذكيرات.';
+
+  @override
+  String get exactAlarmPermissionNotRequired =>
+      'إذن المنبه الدقيق غير مطلوب على هذه المنصة.';
+
+  @override
+  String get hisnCategoryCouldNotLoad =>
+      'لم يمكن تحميل هذا التصنيف من حصن المسلم.';
+
+  @override
+  String get categoryContainsNoDuas => 'لا يحتوي هذا التصنيف على أي أدعية.';
+
+  @override
+  String get couldNotUpdateDua => 'تعذّر تحديث مفضلة الدعاء.';
+
+  @override
+  String get moreActions => 'إجراءات إضافية';
+
+  @override
+  String get duaCopied => 'تم نسخ الدعاء.';
+
+  @override
+  String get hisnAlMuslimDua => 'دعاء من حصن المسلم';
+
+  @override
+  String get copyText => 'نسخ النص';
+
+  @override
+  String get shareText => 'مشاركة النص';
+
+  @override
+  String get prayerStats => 'إحصاءات الصلاة';
+
+  @override
+  String get quranStats => 'إحصاءات القرآن';
+
+  @override
+  String get tasbihStats => 'إحصاءات التسبيح';
+
+  @override
+  String get duaStats => 'إحصاءات الأدعية';
+
+  @override
+  String get thisWeek => 'هذا الأسبوع';
+
+  @override
+  String get thisMonth => 'هذا الشهر';
+
+  @override
+  String get thisYear => 'هذه السنة';
+
+  @override
+  String get allTime => 'كل الوقت';
+
+  @override
+  String get onTime => 'في الوقت';
+
+  @override
+  String get late => 'متأخر';
+
+  @override
+  String get missed => 'فائت';
+
+  @override
+  String get log => 'تسجيل';
+
+  @override
+  String get fajr => 'الفجر';
+
+  @override
+  String get dhuhr => 'الظهر';
+
+  @override
+  String get asr => 'العصر';
+
+  @override
+  String get maghrib => 'المغرب';
+
+  @override
+  String get isha => 'العشاء';
+
+  @override
+  String get notYet => 'لم يحن بعد';
+
+  @override
+  String get onTimeThisWeek => 'في الوقت هذا الأسبوع';
+
+  @override
+  String get lateThisWeek => 'متأخر هذا الأسبوع';
+
+  @override
+  String get bestPrayer => 'أفضل صلاة';
+
+  @override
+  String get currentFajrStreak => 'سلسلة الفجر الحالية';
+
+  @override
+  String get startLoggingFajr => 'ابدأ بتسجيل الفجر لتتبع تقدمك.';
+
+  @override
+  String get fajrVeryConsistent => 'ما شاء الله، الفجر لديك منتظم جداً.';
+
+  @override
+  String get fajrGettingStronger => 'جهد طيب، الفجر يتحسن.';
+
+  @override
+  String get fajrEveryAttemptCounts => 'الفجر تحدّ، وكل محاولة تُحتسب.';
+
+  @override
+  String get fajrConsistency => 'انتظام الفجر';
+
+  @override
+  String get todaysPrayers => 'صلوات اليوم';
+
+  @override
+  String get saving => 'جارٍ الحفظ';
+
+  @override
+  String availableAfter(Object time) {
+    return 'متاح بعد $time';
+  }
+
+  @override
+  String get quranActivity => 'نشاط القرآن';
+
+  @override
+  String get ayahsRead => 'الآيات المقروءة';
+
+  @override
+  String get lettersRead => 'الحروف المقروءة';
+
+  @override
+  String get activeDays => 'الأيام النشطة';
+
+  @override
+  String get mostActiveDay => 'أكثر يوم نشاطاً';
+
+  @override
+  String ayahsReadCount(Object count) {
+    return '$count آية مقروءة';
+  }
+
+  @override
+  String recitationsCount(Object count) {
+    return '$count تلاوة';
+  }
+
+  @override
+  String get surahProgress => 'تقدم السور';
+
+  @override
+  String surahsComplete(Object completed, Object total) {
+    return '$completed / $total سورة مكتملة';
+  }
+
+  @override
+  String get showLess => 'عرض أقل';
+
+  @override
+  String showAllSurahs(Object count) {
+    return 'عرض كل السور ($count)';
+  }
+
+  @override
+  String get quranCompletions => 'ختمات القرآن';
+
+  @override
+  String get fullCompletions => 'الختمات الكاملة';
+
+  @override
+  String completeAllSurahsForFirstKhatm(Object count) {
+    return 'أكمل كل السور ($count) لتسجيل أول ختمة';
+  }
+
+  @override
+  String khatmDateLabel(Object date, Object number) {
+    return 'الختمة $number · $date';
+  }
+
+  @override
+  String get startFirstTasbihSession => 'ابدأ أول جلسة تسبيح';
+
+  @override
+  String get totalDhikr => 'إجمالي الذكر';
+
+  @override
+  String get dailyAverage => 'المتوسط اليومي';
+
+  @override
+  String get openDuaToBeginHistory => 'افتح دعاءً لبدء سجل الأدعية';
+
+  @override
+  String get duasViewed => 'الأدعية المعروضة';
+
+  @override
+  String viewsCount(Object count) {
+    return '$count مشاهدة';
+  }
+
+  @override
+  String get previousMonth => 'الشهر السابق';
+
+  @override
+  String get nextMonth => 'الشهر التالي';
+
+  @override
+  String activeDaysCount(num count) {
+    return '$count يوم نشط';
+  }
+
+  @override
+  String monthlyActivitySummary(
+    Object activeDays,
+    Object bestDay,
+    Object totalActions,
+  ) {
+    return '$activeDays · أفضل يوم: $bestDay · $totalActions إجراء إجمالي';
+  }
+
+  @override
+  String dhikrCount(Object count) {
+    return '$count ذكر';
+  }
+
+  @override
+  String duasCount(Object count) {
+    return '$count دعاء';
+  }
+
+  @override
+  String get quranStreak => 'سلسلة القرآن';
+
+  @override
+  String get tasbihStreak => 'سلسلة التسبيح';
+
+  @override
+  String get overallStreak => 'السلسلة العامة';
+
+  @override
+  String dayWorshipStreak(Object count) {
+    return 'سلسلة عبادة $count يوم';
+  }
+
+  @override
+  String weekShortLabel(Object week) {
+    return 'أ$week';
+  }
+
+  @override
+  String youReadMostOn(Object day) {
+    return 'تقرأ غالباً في $day';
+  }
+
+  @override
+  String get startReadingToUnlockInsights => 'ابدأ القراءة لعرض الرؤى';
+
+  @override
+  String readingUpFromLastWeek(Object percent) {
+    return 'القراءة أعلى $percent% من الأسبوع الماضي';
+  }
+
+  @override
+  String readingDownFromLastWeek(Object percent) {
+    return 'القراءة أقل $percent% من الأسبوع الماضي';
+  }
+
+  @override
+  String youVisitSurahMostOften(Object surahName) {
+    return 'تزور $surahName غالباً';
+  }
+
+  @override
+  String get monday => 'الاثنين';
+
+  @override
+  String get tuesday => 'الثلاثاء';
+
+  @override
+  String get wednesday => 'الأربعاء';
+
+  @override
+  String get thursday => 'الخميس';
+
+  @override
+  String get friday => 'الجمعة';
+
+  @override
+  String get saturday => 'السبت';
+
+  @override
+  String get sunday => 'الأحد';
+
+  @override
+  String get mondayShort => 'الاثنين';
+
+  @override
+  String get tuesdayShort => 'الثلاثاء';
+
+  @override
+  String get wednesdayShort => 'الأربعاء';
+
+  @override
+  String get thursdayShort => 'الخميس';
+
+  @override
+  String get fridayShort => 'الجمعة';
+
+  @override
+  String get saturdayShort => 'السبت';
+
+  @override
+  String get sundayShort => 'الأحد';
+
+  @override
+  String get mondayInitial => 'ن';
+
+  @override
+  String get tuesdayInitial => 'ث';
+
+  @override
+  String get wednesdayInitial => 'ر';
+
+  @override
+  String get thursdayInitial => 'خ';
+
+  @override
+  String get fridayInitial => 'ج';
+
+  @override
+  String get saturdayInitial => 'س';
+
+  @override
+  String get sundayInitial => 'ح';
+
+  @override
+  String get mondays => 'أيام الاثنين';
+
+  @override
+  String get tuesdays => 'أيام الثلاثاء';
+
+  @override
+  String get wednesdays => 'أيام الأربعاء';
+
+  @override
+  String get thursdays => 'أيام الخميس';
+
+  @override
+  String get fridays => 'أيام الجمعة';
+
+  @override
+  String get saturdays => 'أيام السبت';
+
+  @override
+  String get sundays => 'أيام الأحد';
+
+  @override
+  String get january => 'يناير';
+
+  @override
+  String get february => 'فبراير';
+
+  @override
+  String get march => 'مارس';
+
+  @override
+  String get april => 'أبريل';
+
+  @override
+  String get may => 'مايو';
+
+  @override
+  String get june => 'يونيو';
+
+  @override
+  String get july => 'يوليو';
+
+  @override
+  String get august => 'أغسطس';
+
+  @override
+  String get september => 'سبتمبر';
+
+  @override
+  String get october => 'أكتوبر';
+
+  @override
+  String get november => 'نوفمبر';
+
+  @override
+  String get december => 'ديسمبر';
+
+  @override
+  String get januaryShort => 'يناير';
+
+  @override
+  String get februaryShort => 'فبراير';
+
+  @override
+  String get marchShort => 'مارس';
+
+  @override
+  String get aprilShort => 'أبريل';
+
+  @override
+  String get mayShort => 'مايو';
+
+  @override
+  String get juneShort => 'يونيو';
+
+  @override
+  String get julyShort => 'يوليو';
+
+  @override
+  String get augustShort => 'أغسطس';
+
+  @override
+  String get septemberShort => 'سبتمبر';
+
+  @override
+  String get octoberShort => 'أكتوبر';
+
+  @override
+  String get novemberShort => 'نوفمبر';
+
+  @override
+  String get decemberShort => 'ديسمبر';
+
+  @override
+  String get dailyQuoteSmallDeeds => 'الأعمال الصغيرة إذا صدقت نمت بجمال.';
+
+  @override
+  String get dailyQuoteBeginAgain => 'ابدأ من جديد بالذكر والامتنان.';
+
+  @override
+  String get dailyQuoteSteadyHeart => 'القلب الثابت يعود إلى الله كل يوم.';
+
+  @override
+  String get dailyQuoteGentleConsistent => 'لتكن عبادة اليوم لطيفة وثابتة.';
+
+  @override
+  String get dailyQuoteEveryAyah => 'كل آية تُقرأ نور في الطريق.';
+
+  @override
+  String get dailyWorshipComplete => 'ما شاء الله! اكتملت عبادة اليوم';
+
+  @override
+  String get greatProgressKeepGoing => 'تقدم رائع، واصل';
+
+  @override
+  String get everyDeedCountsKeepGoing => 'كل عمل يُحتسب، واصل';
+
+  @override
+  String get startYourWorshipForToday => 'ابدأ عبادتك لليوم';
+
+  @override
+  String get totalRead => 'إجمالي المقروء';
+
+  @override
+  String get estimatedLettersRead => 'الحروف المقدرة المقروءة';
+
+  @override
+  String get rewardIsWithAllah => 'الأجر عند الله.';
 }

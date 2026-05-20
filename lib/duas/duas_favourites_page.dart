@@ -3,6 +3,7 @@ import 'package:equran/duas/duas_category_page.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/widgets/dua_card.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
@@ -21,9 +22,10 @@ class DuasFavouritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Favourite duas'),
+        title: Text(localizations.favouriteDuasPage),
         backgroundColor: colors.background,
         foregroundColor: colors.textPrimary,
         elevation: 0,
@@ -52,10 +54,10 @@ class DuasFavouritesPage extends StatelessWidget {
                   }
 
                   if (snapshot.hasError) {
-                    return const _FavouritesMessageState(
+                    return _FavouritesMessageState(
                       icon: Icons.error_outline_rounded,
-                      title: 'Favourites unavailable',
-                      message: 'Saved duas could not be loaded right now.',
+                      title: localizations.favouritesUnavailable,
+                      message: localizations.savedDuasNotLoaded,
                     );
                   }
 
