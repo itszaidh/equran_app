@@ -8,6 +8,7 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/downloads_grouping.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:quran/quran.dart' as quran;
 
 class _SurahAyahDownloadsGroup {
@@ -57,16 +58,18 @@ class _DownloadsPageState extends State<DownloadsPage> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.warning_amber_rounded),
-        title: const Text('Delete Download?'),
-        content: Text('Remove ${entry.title} from offline storage?'),
+        title: Text(AppLocalizations.of(context)!.deleteDownloadQuestion),
+        content: Text(
+          AppLocalizations.of(context)!.removeDownloadFromOffline(entry.title),
+        ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -76,9 +79,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
     await AudioDownloadService().deleteEntry(entry);
     _refresh();
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Deleted ${entry.title}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.deletedDownload(entry.title),
+          ),
+        ),
+      );
     }
   }
 
@@ -88,18 +95,21 @@ class _DownloadsPageState extends State<DownloadsPage> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.warning_amber_rounded),
-        title: const Text('Delete All Downloads?'),
+        title: Text(AppLocalizations.of(context)!.deleteAllDownloadsQuestion),
         content: Text(
-          'This will remove ${summary.allDownloads.length} downloaded audio files (${AudioDownloadService.formatBytes(summary.totalSizeBytes)}).',
+          AppLocalizations.of(context)!.deleteAllDownloadsBody(
+            summary.allDownloads.length,
+            AudioDownloadService.formatBytes(summary.totalSizeBytes),
+          ),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete All'),
+            child: Text(AppLocalizations.of(context)!.deleteAll),
           ),
         ],
       ),
@@ -110,7 +120,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
     _refresh();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Deleted all downloaded audio.')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.deletedAllDownloadedAudio,
+          ),
+        ),
       );
     }
   }
@@ -158,6 +172,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   Widget _buildSummaryCard(ThemeData theme, AudioDownloadsSummary summary) {
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: colors.heroGradient,
@@ -176,7 +191,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Offline Audio',
+              localizations.offlineAudio,
               style: theme.textTheme.titleLarge?.copyWith(
                 color: colors.onPrimary,
                 fontWeight: FontWeight.w800,
@@ -184,7 +199,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              '${summary.surahCount} surahs • ${summary.ayahCount} ayahs',
+              localizations.surahAyahSummary(
+                summary.surahCount,
+                summary.ayahCount,
+              ),
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: colors.onPrimaryMuted,
               ),
@@ -199,7 +217,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
             ),
             const SizedBox(height: 12),
             Align(
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerEnd,
               child: FilledButton.icon(
                 onPressed: summary.allDownloads.isEmpty
                     ? null
@@ -209,7 +227,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                   foregroundColor: colors.primary,
                 ),
                 icon: const Icon(Icons.delete_sweep_rounded),
-                label: const Text('Clear All'),
+                label: Text(localizations.clearAll),
               ),
             ),
           ],
@@ -224,6 +242,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
   ) {
     final EquranColors colors = context.equranColors;
     final bool hasDownloads = summary.allDownloads.isNotEmpty;
+    final localizations = AppLocalizations.of(context)!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -242,7 +261,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Cleanup preview',
+                    localizations.cleanupPreview,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: colors.textPrimary,
                       fontWeight: FontWeight.w900,
@@ -253,20 +272,20 @@ class _DownloadsPageState extends State<DownloadsPage> {
             ),
             const SizedBox(height: 10),
             _CleanupPreviewRow(
-              label: 'Downloaded surahs',
+              label: localizations.downloadedSurahs,
               value: '${summary.surahCount}',
             ),
             _CleanupPreviewRow(
-              label: 'Downloaded ayahs',
+              label: localizations.downloadedAyahs,
               value: '${summary.ayahCount}',
             ),
             _CleanupPreviewRow(
-              label: 'Potential space to free',
+              label: localizations.potentialSpaceToFree,
               value: AudioDownloadService.formatBytes(summary.totalSizeBytes),
             ),
             const SizedBox(height: 12),
             Text(
-              'Cleanup never removes favourites, notes, reading plans, Quran text, or settings.',
+              localizations.cleanupDoesNotRemoveData,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.textSecondary,
                 height: 1.35,
@@ -274,11 +293,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
             ),
             const SizedBox(height: 12),
             Align(
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerEnd,
               child: OutlinedButton.icon(
                 onPressed: hasDownloads ? () => _clearAll(summary) : null,
                 icon: const Icon(Icons.delete_sweep_outlined),
-                label: const Text('Review deletion'),
+                label: Text(localizations.reviewDeletion),
               ),
             ),
           ],
@@ -290,6 +309,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
   Widget _buildEmptyDownloadsCard() {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final localizations = AppLocalizations.of(context)!;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLow,
@@ -302,9 +322,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
           children: <Widget>[
             ListTile(
               leading: const Icon(Icons.download_done_outlined),
-              title: const Text('No downloaded audio yet.'),
+              title: Text(localizations.noDownloadedAudioYet),
               subtitle: Text(
-                'Downloaded surahs and ayahs will appear here grouped by reciter.',
+                localizations.downloadedAudioEmpty,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -319,6 +339,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
   Widget _buildReciterSection(ReciterDownloadsGroup group) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final localizations = AppLocalizations.of(context)!;
     final List<AudioDownloadEntry> surahs = group.surahs;
     final List<_SurahAyahDownloadsGroup> ayahSurahs = _groupAyahsBySurah(
       group.ayahs,
@@ -343,16 +364,17 @@ class _DownloadsPageState extends State<DownloadsPage> {
                 ),
               ),
               subtitle: Text(
-                '${surahs.length} surahs • ${group.ayahCount} ayahs • ${AudioDownloadService.formatBytes(group.sizeBytes)}',
+                '${localizations.surahAyahSummary(surahs.length, group.ayahCount)} • ${AudioDownloadService.formatBytes(group.sizeBytes)}',
               ),
             ),
             const Divider(height: 1),
-            if (surahs.isNotEmpty) _buildGroupHeader('Surahs', surahs.length),
+            if (surahs.isNotEmpty)
+              _buildGroupHeader(localizations.surahs, surahs.length),
             ...surahs.map(_buildDownloadTile),
             if (surahs.isNotEmpty && ayahSurahs.isNotEmpty)
               const Divider(height: 1),
             if (ayahSurahs.isNotEmpty)
-              _buildGroupHeader('Ayahs', group.ayahCount),
+              _buildGroupHeader(localizations.ayahs, group.ayahCount),
             ...ayahSurahs.map(_buildAyahSurahTile),
           ],
         ),
@@ -380,15 +402,16 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }
 
   Widget _buildAyahSurahTile(_SurahAyahDownloadsGroup group) {
+    final localizations = AppLocalizations.of(context)!;
     return ExpansionTile(
       leading: const Icon(Icons.folder_outlined),
       collapsedShape: const Border(),
       shape: const Border(),
       title: Text(quran.getSurahName(group.surah)),
       subtitle: Text(
-        '${group.ayahCount} ayahs • ${AudioDownloadService.formatBytes(group.sizeBytes)}',
+        '${localizations.ayahs}: ${group.ayahCount} • ${AudioDownloadService.formatBytes(group.sizeBytes)}',
       ),
-      childrenPadding: const EdgeInsets.fromLTRB(44, 0, 8, 8),
+      childrenPadding: const EdgeInsetsDirectional.fromSTEB(44, 0, 8, 8),
       children: group.entries
           .map((entry) => _buildNestedDownloadTile(entry))
           .toList(growable: false),
@@ -399,7 +422,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 4),
       child: Row(
         children: <Widget>[
           Text(
@@ -429,7 +452,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
         '${entry.subtitle} • ${AudioDownloadService.formatBytes(entry.sizeBytes)}',
       ),
       trailing: IconButton(
-        tooltip: 'Delete download',
+        tooltip: AppLocalizations.of(context)!.deleteDownload,
         onPressed: () => _deleteEntry(entry),
         icon: const Icon(Icons.delete_outline_rounded),
       ),
@@ -440,13 +463,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
     return ListTile(
       dense: true,
       visualDensity: VisualDensity.compact,
-      contentPadding: const EdgeInsets.only(left: 12, right: 0),
+      contentPadding: const EdgeInsetsDirectional.only(start: 12, end: 0),
       title: Text(entry.title),
       subtitle: Text(
         '${entry.subtitle} • ${AudioDownloadService.formatBytes(entry.sizeBytes)}',
       ),
       trailing: IconButton(
-        tooltip: 'Delete download',
+        tooltip: AppLocalizations.of(context)!.deleteDownload,
         onPressed: () => _deleteEntry(entry),
         icon: const Icon(Icons.delete_outline_rounded),
       ),
@@ -470,9 +493,9 @@ class _CleanupPreviewRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colors.textSecondary,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
             ),
           ),
           Text(

@@ -4,6 +4,7 @@ import 'package:equran/backend/settings_db.dart';
 import 'package:equran/prayer/manual_prayer_location_page.dart';
 import 'package:equran/prayer/prayer_map_location_page.dart';
 import 'package:equran/prayer/prayer_location_service.dart';
+import 'package:equran/prayer/prayer_localizations.dart';
 import 'package:equran/prayer/prayer_hero_card.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
@@ -16,6 +17,7 @@ import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({
@@ -77,6 +79,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         builder: (BuildContext context, Object? value, Widget? child) {
           final PrayerLocation? location = _store.getLocation();
           final PrayerTimeSettings settings = _store.getSettings();
+          final AppLocalizations localizations = AppLocalizations.of(context)!;
           if (location == null) {
             return _buildSetupState(context);
           }
@@ -150,11 +153,15 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                 );
             highlightedPrayer = currentPeriod.highlightedKind;
             heroCurrentPrayer = currentPeriod.currentPrayer;
-            heroTitleOverride = _heroTitleOverrideFor(currentPeriod);
+            heroTitleOverride = _heroTitleOverrideFor(
+              currentPeriod,
+              localizations,
+            );
             heroSubtitleOverride = _heroSubtitleOverrideFor(
               currentPeriod: currentPeriod,
               nextPrayer: nextPrayer,
               now: _now,
+              localizations: localizations,
             );
           } else {
             heroTiming = _selectedDateHeroTiming(selectedDay);
@@ -227,6 +234,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildSetupState(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
     final TextStyle? buttonTextStyle = theme.textTheme.titleSmall?.copyWith(
       fontWeight: FontWeight.w700,
       letterSpacing: 0,
@@ -265,7 +273,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'Prayer times need a location',
+                        localizations.prayerTimesNeedLocation,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.headlineMedium?.copyWith(
                           color: colors.textPrimary,
@@ -275,7 +283,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Calculate Fajr, Dhuhr, Asr, Maghrib and Isha for your exact location.',
+                        localizations.prayerTimesLocationSubtitle,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: colors.textSecondary,
@@ -284,7 +292,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       ),
                       const SizedBox(height: 32),
                       Text(
-                        'Your location is only used for prayer time calculation.',
+                        localizations.locationUseNotice,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: colors.textMuted,
@@ -316,7 +324,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                                   ),
                                 )
                               : const Icon(Icons.my_location_rounded),
-                          label: const Text('Use current location'),
+                          label: Text(localizations.useCurrentLocation),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -336,7 +344,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                             textStyle: buttonTextStyle,
                           ),
                           icon: const Icon(Icons.map_outlined),
-                          label: const Text('Choose on map'),
+                          label: Text(localizations.chooseOnMap),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -350,11 +358,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                             letterSpacing: 0,
                           ),
                         ),
-                        child: const Text('Enter coordinates manually'),
+                        child: Text(localizations.enterCoordinatesManually),
                       ),
                       const SizedBox(height: 28),
                       Text(
-                        'Times are calculated locally on your device.',
+                        localizations.timesCalculatedLocally,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: colors.textMuted,
@@ -379,7 +387,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   ) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
-    final String dateLabel = isViewingToday ? 'Today' : _formatDate(day.date);
+    final localizations = AppLocalizations.of(context)!;
+    final String dateLabel = isViewingToday
+        ? localizations.today
+        : _formatDate(day.date);
     final BorderRadius dateButtonRadius = BorderRadius.circular(
       AppRadii.medium,
     );
@@ -392,7 +403,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         children: <Widget>[
           _PrayerDateArrowButton(
             icon: Icons.chevron_left_rounded,
-            tooltip: 'Previous day',
+            tooltip: localizations.previousDay,
             onPressed: () => _movePrayerDate(day.date, -1),
           ),
           Expanded(
@@ -427,7 +438,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           ),
           _PrayerDateArrowButton(
             icon: Icons.chevron_right_rounded,
-            tooltip: 'Next day',
+            tooltip: localizations.nextDay,
             onPressed: () => _movePrayerDate(day.date, 1),
           ),
         ],
@@ -443,6 +454,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   ) {
     final EquranColors colors = context.equranColors;
     final _NightTimes nightTimes = _nightTimesFor(day, nextDay);
+    final localizations = AppLocalizations.of(context)!;
 
     return EquranSurfaceCard(
       padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
@@ -453,7 +465,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           Expanded(
             child: _NightTimeValue(
               icon: Icons.nights_stay_outlined,
-              label: 'Middle of night',
+              label: localizations.middleOfNight,
               value: _formatTime(nightTimes.middle, settings.use24HourFormat),
             ),
           ),
@@ -461,7 +473,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
           Expanded(
             child: _NightTimeValue(
               icon: Icons.dark_mode_outlined,
-              label: 'Last third starts',
+              label: localizations.lastThirdStarts,
               value: _formatTime(
                 nightTimes.lastThirdStart,
                 settings.use24HourFormat,
@@ -700,7 +712,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       initialDate: initialDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      helpText: 'Select prayer date',
+      helpText: AppLocalizations.of(context)!.selectPrayerDate,
     );
     if (pickedDate == null || !mounted) return;
     setState(() {
@@ -727,17 +739,18 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   void _showLocationError(PrayerLocationResult result) {
-    final String message = result.message ?? 'Unable to get location.';
+    final localizations = AppLocalizations.of(context)!;
+    final String message = result.message ?? localizations.unableGetLocation;
     final PrayerLocationFailureReason? reason = result.failureReason;
     final SnackBarAction? action = switch (reason) {
       PrayerLocationFailureReason.servicesDisabled => SnackBarAction(
-        label: 'Settings',
+        label: localizations.settings,
         onPressed: () {
           _locationService.openLocationSettings();
         },
       ),
       PrayerLocationFailureReason.permissionDeniedForever => SnackBarAction(
-        label: 'App settings',
+        label: localizations.appSettings,
         onPressed: () {
           _locationService.openAppSettings();
         },
@@ -824,12 +837,16 @@ _PrayerHeroTiming _selectedDateHeroTiming(PrayerDay day) {
   );
 }
 
-String? _heroTitleOverrideFor(PrayerCurrentPeriod period) {
+String? _heroTitleOverrideFor(
+  PrayerCurrentPeriod period,
+  AppLocalizations localizations,
+) {
   return switch (period.type) {
-    PrayerCurrentPeriodType.sunriseProhibited => 'Sunrise',
-    PrayerCurrentPeriodType.dhuhrProhibited => 'Zawal',
-    PrayerCurrentPeriodType.sunsetProhibited => 'Sunset',
-    PrayerCurrentPeriodType.beforeDhuhr => 'Morning',
+    PrayerCurrentPeriodType.sunriseProhibited =>
+      localizations.prayerNameSunrise,
+    PrayerCurrentPeriodType.dhuhrProhibited => localizations.zawal,
+    PrayerCurrentPeriodType.sunsetProhibited => localizations.sunset,
+    PrayerCurrentPeriodType.beforeDhuhr => localizations.morning,
     PrayerCurrentPeriodType.normalPrayer => null,
   };
 }
@@ -838,25 +855,35 @@ String? _heroSubtitleOverrideFor({
   required PrayerCurrentPeriod currentPeriod,
   required NextPrayer nextPrayer,
   required DateTime now,
+  required AppLocalizations localizations,
 }) {
   return switch (currentPeriod.type) {
     PrayerCurrentPeriodType.sunriseProhibited =>
-      'Prohibited time ends in ${_formatHeroCountdown(currentPeriod.endsAt.difference(now))}',
+      localizations.prohibitedTimeEndsIn(
+        _formatHeroCountdown(
+          currentPeriod.endsAt.difference(now),
+          localizations,
+        ),
+      ),
     PrayerCurrentPeriodType.dhuhrProhibited ||
-    PrayerCurrentPeriodType.sunsetProhibited =>
-      'Prohibited time ends in ${_formatHeroCountdown(currentPeriod.endsAt.difference(now))}',
-    PrayerCurrentPeriodType.beforeDhuhr =>
-      '${nextPrayer.entry.kind.label} begins in ${_formatHeroCountdown(nextPrayer.countdown)}',
+    PrayerCurrentPeriodType
+        .sunsetProhibited => localizations.prohibitedTimeEndsIn(
+      _formatHeroCountdown(currentPeriod.endsAt.difference(now), localizations),
+    ),
+    PrayerCurrentPeriodType.beforeDhuhr => localizations.prayerBeginsIn(
+      localizedPrayerName(localizations, nextPrayer.entry.kind),
+      _formatHeroCountdown(nextPrayer.countdown, localizations),
+    ),
     PrayerCurrentPeriodType.normalPrayer => null,
   };
 }
 
-String _formatHeroCountdown(Duration duration) {
+String _formatHeroCountdown(Duration duration, AppLocalizations localizations) {
   final Duration normalized = duration.isNegative ? Duration.zero : duration;
   final int hours = normalized.inHours;
   final int minutes = normalized.inMinutes.remainder(60);
-  if (hours <= 0) return '$minutes min';
-  return '${hours}h ${minutes}m';
+  if (hours <= 0) return localizations.minutesShort(minutes);
+  return localizations.hoursMinutesShort(hours, minutes);
 }
 
 class _NightTimes {

@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui' show ImageFilter, lerpDouble;
 
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/app_slider_theme.dart';
 import 'package:equran/utils/number_formatting.dart';
@@ -313,6 +314,7 @@ class ReadVersePlayerBar extends StatelessWidget {
     ColorScheme colorScheme,
   ) {
     final int verse = playingVerse ?? currentVerse;
+    final localizations = AppLocalizations.of(context)!;
 
     return Padding(
       padding: EdgeInsets.zero,
@@ -320,10 +322,10 @@ class ReadVersePlayerBar extends StatelessWidget {
         children: <Widget>[
           IconButton(
             tooltip: isLoading
-                ? 'Reconnecting'
+                ? localizations.unableToReconnect
                 : isPlaying
-                ? 'Pause'
-                : 'Play',
+                ? localizations.pause
+                : localizations.play,
             onPressed: isLoading ? null : onTogglePlayPause,
             icon: isLoading
                 ? SizedBox(
@@ -351,9 +353,9 @@ class ReadVersePlayerBar extends StatelessWidget {
               child: SizedBox(
                 height: double.infinity,
                 child: Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: Text(
-                    '${quran.getSurahName(currentChapter)} • Ayah $verse',
+                    '${quran.getSurahName(currentChapter)} • ${localizations.ayahNumber(verse)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -367,7 +369,7 @@ class ReadVersePlayerBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           IconButton(
-            tooltip: 'Dismiss player',
+            tooltip: localizations.dismissPlayer,
             onPressed: onDismiss,
             icon: const Icon(Icons.close_rounded),
             iconSize: 20,
@@ -489,18 +491,18 @@ class ReadVersePlayerBar extends StatelessWidget {
               SizedBox(width: centerGap),
               Expanded(
                 child: Align(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       IconButton(
-                        tooltip: 'Playback options',
+                        tooltip: AppLocalizations.of(context)!.playbackOptions,
                         onPressed: onAdvancedOptionsPressed,
                         icon: const Icon(Icons.more_horiz_rounded, size: 28),
                         color: colorScheme.onSurfaceVariant,
                       ),
                       IconButton(
-                        tooltip: 'Dismiss player',
+                        tooltip: AppLocalizations.of(context)!.dismissPlayer,
                         onPressed: onDismiss,
                         icon: const Icon(Icons.close_rounded, size: 28),
                         color: colorScheme.onSurfaceVariant,
@@ -587,7 +589,7 @@ class ReadVersePlayerBar extends StatelessWidget {
         SizedBox(width: spacing),
         _buildAyahNavButton(
           icon: Icons.skip_previous_rounded,
-          tooltip: 'Previous ayah',
+          tooltip: AppLocalizations.of(context)!.previousAyah,
           onPressed: canPlayPrevious ? onPlayPrevious : null,
         ),
         SizedBox(width: spacing),
@@ -614,7 +616,7 @@ class ReadVersePlayerBar extends StatelessWidget {
         SizedBox(width: spacing),
         _buildAyahNavButton(
           icon: Icons.skip_next_rounded,
-          tooltip: 'Next ayah',
+          tooltip: AppLocalizations.of(context)!.nextAyah,
           onPressed: canPlayNext ? onPlayNext : null,
         ),
         SizedBox(width: spacing),
@@ -630,7 +632,7 @@ class ReadVersePlayerBar extends StatelessWidget {
     final bool isActive = continuousPlayback && !repeatIntervalEnabled;
 
     return _buildModeButton(
-      tooltip: 'Auto Playback',
+      tooltip: AppLocalizations.of(context)!.autoPlayback,
       icon: Icons.playlist_play_rounded,
       isActive: isActive,
       colorScheme: colorScheme,
@@ -659,7 +661,7 @@ class ReadVersePlayerBar extends StatelessWidget {
     double? iconSize,
   }) {
     return _buildModeButton(
-      tooltip: 'Repeat Interval',
+      tooltip: AppLocalizations.of(context)!.repeatInterval,
       icon: icon,
       iconSize: iconSize,
       isActive: repeatIntervalEnabled,

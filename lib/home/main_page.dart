@@ -8,6 +8,7 @@ import 'package:equran/utils/debouncer.dart';
 import 'package:equran/widgets/library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
 
@@ -121,6 +122,7 @@ class _MainPageState extends State<MainPage>
 
   Widget _buildTopBar(ThemeData theme) {
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
     return Row(
       children: <Widget>[
         const SizedBox(width: 48),
@@ -144,12 +146,12 @@ class _MainPageState extends State<MainPage>
                     leading: const Icon(Icons.search_rounded),
                     trailing: <Widget>[
                       IconButton(
-                        tooltip: 'Close search',
+                        tooltip: localizations.closeSearch,
                         onPressed: _closeSearch,
                         icon: const Icon(Icons.close_rounded),
                       ),
                     ],
-                    hintText: _searchHint,
+                    hintText: _searchHint(localizations),
                     hintStyle: WidgetStatePropertyAll(
                       theme.textTheme.bodyLarge?.copyWith(
                         fontStyle: FontStyle.italic,
@@ -169,7 +171,7 @@ class _MainPageState extends State<MainPage>
                     behavior: HitTestBehavior.opaque,
                     onTap: _scrollToTop,
                     child: Text(
-                      'Quran',
+                      localizations.quran,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: colors.onPrimary,
@@ -193,7 +195,7 @@ class _MainPageState extends State<MainPage>
                     )
                   : IconButton(
                       key: const ValueKey<String>('search-button'),
-                      tooltip: 'Search Quran',
+                      tooltip: localizations.searchQuran,
                       onPressed: _openSearch,
                       color: colors.onPrimary,
                       icon: const Icon(Icons.search_rounded),
@@ -216,6 +218,7 @@ class _MainPageState extends State<MainPage>
 
   Widget _buildSectionHeader(ThemeData theme) {
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -241,6 +244,8 @@ class _MainPageState extends State<MainPage>
               builder: (context, segmentConstraints) {
                 final double segmentWidth = segmentConstraints.maxWidth / 4;
                 final double height = compact ? 38 : 42;
+                final bool isRtl =
+                    Directionality.of(context) == TextDirection.rtl;
                 return SizedBox(
                   height: height,
                   child: Stack(
@@ -248,7 +253,8 @@ class _MainPageState extends State<MainPage>
                       AnimatedPositioned(
                         duration: const Duration(milliseconds: 220),
                         curve: Curves.easeOutCubic,
-                        left: segmentWidth * _selectedSegment,
+                        left: isRtl ? null : segmentWidth * _selectedSegment,
+                        right: isRtl ? segmentWidth * _selectedSegment : null,
                         top: 0,
                         bottom: 0,
                         width: segmentWidth,
@@ -272,32 +278,32 @@ class _MainPageState extends State<MainPage>
                             theme,
                             index: 0,
                             icon: Icons.menu_book_rounded,
-                            label: 'Surahs',
-                            tooltip: 'Browse by Surah',
+                            label: localizations.surahs,
+                            tooltip: localizations.browseBySurah,
                             compact: compact,
                           ),
                           _buildSegmentButton(
                             theme,
                             index: 1,
                             icon: Icons.format_list_numbered_rtl_rounded,
-                            label: 'Juz',
-                            tooltip: 'Browse by Juz',
+                            label: localizations.juz,
+                            tooltip: localizations.browseByJuz,
                             compact: compact,
                           ),
                           _buildSegmentButton(
                             theme,
                             index: 2,
                             icon: Icons.auto_stories_rounded,
-                            label: 'Pages',
-                            tooltip: 'Browse by page',
+                            label: localizations.pages,
+                            tooltip: localizations.browseByPage,
                             compact: compact,
                           ),
                           _buildSegmentButton(
                             theme,
                             index: 3,
                             icon: Icons.bookmark_rounded,
-                            label: 'Saved',
-                            tooltip: 'Saved ayahs',
+                            label: localizations.saved,
+                            tooltip: localizations.savedAyahs,
                             compact: compact,
                           ),
                         ],
@@ -516,15 +522,16 @@ class _MainPageState extends State<MainPage>
     });
   }
 
-  String get _searchHint => switch (_selectedSegment) {
-    1 => "Juz number or surah name...",
-    2 => "Page number, surah, or juz...",
-    3 => "Saved ayah, surah, note, or number...",
-    _ =>
-      _activeSearchMode == QuranSearchMode.quranText
-          ? "Search Quran Arabic or translation..."
-          : "Surah name or number...",
-  };
+  String _searchHint(AppLocalizations localizations) =>
+      switch (_selectedSegment) {
+        1 => localizations.searchHintJuz,
+        2 => localizations.searchHintPage,
+        3 => localizations.searchHintSaved,
+        _ =>
+          _activeSearchMode == QuranSearchMode.quranText
+              ? localizations.searchHintText
+              : localizations.searchHintSurah,
+      };
 
   Widget? _buildLastReadCard() {
     if (SettingsDB().get("showLastRead", defaultValue: true) != true) {
@@ -581,6 +588,7 @@ class _QuranPageList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final String query = searchQuery.trim().toLowerCase();
     final List<int> pages =
         List<int>.generate(quran.totalPagesCount, (index) {
@@ -588,7 +596,7 @@ class _QuranPageList extends StatelessWidget {
             })
             .where((page) {
               if (query.isEmpty) return true;
-              final _PageSummary summary = _pageSummary(page);
+              final _PageSummary summary = _pageSummary(page, localizations);
               return page.toString().contains(query) ||
                   summary.primarySurah.toLowerCase().contains(query) ||
                   summary.juzLabel.toLowerCase().contains(query);
@@ -608,7 +616,10 @@ class _QuranPageList extends StatelessWidget {
       itemCount: pages.length,
       itemBuilder: (context, index) {
         final int page = pages[index];
-        return _QuranPageTile(page: page, summary: _pageSummary(page));
+        return _QuranPageTile(
+          page: page,
+          summary: _pageSummary(page, localizations),
+        );
       },
     );
   }
@@ -718,7 +729,7 @@ class _PageSummary {
   final String juzLabel;
 }
 
-_PageSummary _pageSummary(int page) {
+_PageSummary _pageSummary(int page, AppLocalizations localizations) {
   final List<dynamic> data = quran.getPageData(page);
   final Map<dynamic, dynamic> first = data.first as Map<dynamic, dynamic>;
   final Map<dynamic, dynamic> last = data.last as Map<dynamic, dynamic>;
@@ -729,14 +740,14 @@ _PageSummary _pageSummary(int page) {
   final int juz = quran.getJuzNumber(startSurah, startVerse);
   final String primarySurah = quran.getSurahName(startSurah);
   final String rangeLabel = startSurah == endSurah
-      ? 'Ayah $startVerse-$endVerse'
+      ? localizations.ayahRange(startVerse, endVerse)
       : '$primarySurah $startVerse - ${quran.getSurahName(endSurah)} $endVerse';
   return _PageSummary(
     startSurah: startSurah,
     startVerse: startVerse,
     primarySurah: primarySurah,
     rangeLabel: rangeLabel,
-    juzLabel: 'Juz $juz',
+    juzLabel: localizations.juzNumber(juz),
   );
 }
 
@@ -756,15 +767,16 @@ class _QuranLastReadEmptySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return EquranResumeImageCard(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (context) => const ReadPage(chapter: 1, startVerse: 1),
         ),
       ),
-      primary: 'Begin with the Quran',
-      subtitle: 'Start reading and your place will appear here.',
-      actionText: 'Start reading ->',
+      primary: localizations.beginWithQuran,
+      subtitle: localizations.startReadingSubtitle,
+      actionText: localizations.startReading,
       trailingAssetPath: equranResumeQuranAsset,
     );
   }

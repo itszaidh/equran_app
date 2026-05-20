@@ -2,6 +2,7 @@ import 'package:equran/backend/library.dart' show SettingsDB;
 import 'package:equran/utils/app_slider_theme.dart';
 import 'package:equran/utils/number_formatting.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:quran/quran.dart' as quran;
 
 const double _minArabicFontSize = 25;
@@ -50,12 +51,13 @@ class _FontSliderState extends State<FontSlider> {
       min: _minTranslationFontSize,
       max: _maxTranslationFontSize,
     );
+    final localizations = AppLocalizations.of(context)!;
 
     return Column(
       children: <Widget>[
         _buildSliderRow(
           context: context,
-          title: 'Arabic text size',
+          title: localizations.arabicTextSize,
           value: fontSize,
           min: _minArabicFontSize,
           max: _maxArabicFontSize,
@@ -69,7 +71,7 @@ class _FontSliderState extends State<FontSlider> {
         if (widget.showTranslationControls)
           _buildSliderRow(
             context: context,
-            title: 'Translation text size',
+            title: localizations.translationTextSize,
             value: fontSizeTranslation,
             min: _minTranslationFontSize,
             max: _maxTranslationFontSize,

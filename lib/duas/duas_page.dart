@@ -300,10 +300,7 @@ class _DuasHero extends StatelessWidget {
                 color: colors.onPrimary.withAlpha(24),
                 borderRadius: BorderRadius.circular(AppRadii.medium),
               ),
-              child: Icon(
-                Icons.auto_stories_outlined,
-                color: colors.onPrimary,
-              ),
+              child: Icon(Icons.auto_stories_outlined, color: colors.onPrimary),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -416,10 +413,7 @@ class _TasbihEntryCard extends StatelessWidget {
               color: colors.mint,
               borderRadius: BorderRadius.circular(AppRadii.medium),
             ),
-            child: Icon(
-              Icons.auto_awesome_outlined,
-              color: colors.primary,
-            ),
+            child: Icon(Icons.auto_awesome_outlined, color: colors.primary),
           ),
           const SizedBox(width: 14),
           Expanded(

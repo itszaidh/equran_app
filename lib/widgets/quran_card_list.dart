@@ -3,6 +3,7 @@ import 'package:equran/backend/surah_db.dart';
 import 'package:equran/backend/surah_model.dart';
 import 'package:equran/widgets/quran_card.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:quran/quran.dart' as quran;
 
 class QuranCardList extends StatefulWidget {
@@ -55,7 +56,9 @@ class _QuranCardListState extends State<QuranCardList>
 
         final List<Surah> data = snapshot.data ?? <Surah>[];
         if (data.isEmpty) {
-          return const Center(child: Text('No surahs found.'));
+          return Center(
+            child: Text(AppLocalizations.of(context)!.noSurahsFound),
+          );
         }
 
         return LayoutBuilder(

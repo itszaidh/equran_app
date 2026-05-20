@@ -106,7 +106,9 @@ List<JuzGroup> buildJuzGroups(String searchQuery) {
         endVerse: verses[1],
       );
 
-      if (query.isEmpty || juzHeaderMatches || entry.matches(query, juzNumber)) {
+      if (query.isEmpty ||
+          juzHeaderMatches ||
+          entry.matches(query, juzNumber)) {
         entries.add(entry);
       }
     });

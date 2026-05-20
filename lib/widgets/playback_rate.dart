@@ -1,6 +1,7 @@
 import 'package:equran/backend/library.dart';
 import 'package:equran/utils/app_slider_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 class PlayBackSlider extends StatefulWidget {
   const PlayBackSlider({super.key});
@@ -14,7 +15,7 @@ class _PlayBackSliderState extends State<PlayBackSlider> {
   Widget build(BuildContext context) {
     double rate = SettingsDB().get("playbackRate", defaultValue: 1.0);
     return ListTile(
-      title: const Text("Playback Rate"),
+      title: Text(AppLocalizations.of(context)!.playbackRate),
       subtitle: SliderTheme(
         data: AppSliderTheme.standard(context),
         child: Slider(

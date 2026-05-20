@@ -2,6 +2,7 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -52,6 +53,7 @@ class MorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
 
     return ColoredBox(
       color: colors.background,
@@ -77,71 +79,71 @@ class MorePage extends StatelessWidget {
                       _MoreAction(
                         icon: Icons.library_music_outlined,
                         assetPath: _playerAsset,
-                        title: 'Player',
-                        subtitle: 'Recitations and audio controls',
+                        title: localizations.player,
+                        subtitle: localizations.recitationsAndAudioControls,
                         onTap: onOpenPlayer,
                       ),
                       _MoreAction(
                         icon: Icons.explore_outlined,
                         assetPath: _qiblaAsset,
-                        title: 'Qibla',
-                        subtitle: 'Compass and direction',
+                        title: localizations.qibla,
+                        subtitle: localizations.compassAndDirection,
                         onTap: onOpenQibla,
                       ),
                       _MoreAction(
                         icon: Icons.download_outlined,
                         assetPath: _downloadAsset,
-                        title: 'Downloads',
-                        subtitle: 'Offline audio and cleanup',
+                        title: localizations.downloads,
+                        subtitle: localizations.offlineAudioAndCleanup,
                         onTap: onOpenDownloads,
                       ),
                       _MoreAction(
                         icon: Icons.travel_explore_rounded,
                         assetPath: _quranAsset,
-                        title: 'Quran Search',
-                        subtitle: 'Search Arabic and translation',
+                        title: localizations.quranSearch,
+                        subtitle: localizations.searchArabicAndTranslation,
                         onTap: onOpenSearch,
                       ),
                       _MoreAction(
                         icon: Icons.route_outlined,
                         assetPath: _routineAsset,
-                        title: 'Reading Routine',
-                        subtitle: 'Plans, goals, and progress',
+                        title: localizations.readingRoutine,
+                        subtitle: localizations.plansGoalsProgress,
                         onTap: onOpenReadingPlans,
                       ),
                       _MoreAction(
                         icon: Icons.auto_awesome_outlined,
                         assetPath: _tasbihAsset,
-                        title: 'Tasbih',
-                        subtitle: 'Calm dhikr counter',
+                        title: localizations.tasbih,
+                        subtitle: localizations.calmDhikrCounter,
                         onTap: onOpenTasbih,
                       ),
                       _MoreAction(
                         icon: Icons.diamond_outlined,
                         assetPath: _duaAsset,
-                        title: 'Asma ul Husna',
-                        subtitle: 'The 99 Beautiful Names',
+                        title: localizations.asmaUlHusna,
+                        subtitle: localizations.the99BeautifulNames,
                         onTap: onOpenAsmaUlHusna,
                       ),
                       _MoreAction(
                         icon: Icons.insights_outlined,
                         assetPath: _lastReadAsset,
-                        title: 'Statistics',
-                        subtitle: 'Worship trends and streaks',
+                        title: localizations.statistics,
+                        subtitle: localizations.worshipTrendsAndStreaks,
                         onTap: onOpenStats,
                       ),
                       _MoreAction(
                         icon: Icons.settings_outlined,
                         assetPath: _settingsAsset,
-                        title: 'Settings',
-                        subtitle: 'Fonts, reciter, app behavior',
+                        title: localizations.settings,
+                        subtitle: localizations.fontsReciterAppBehavior,
                         onTap: onOpenSettings,
                       ),
                       _MoreAction(
                         icon: Icons.brightness_6_outlined,
                         assetPath: _designAsset,
-                        title: 'Theme',
-                        subtitle: 'Switch light or night mode',
+                        title: localizations.theme,
+                        subtitle: localizations.switchLightOrNightMode,
                         onTap: onToggleTheme,
                       ),
                     ],
@@ -169,17 +171,17 @@ class MorePage extends StatelessWidget {
     showAboutDialog(
       context: context,
       applicationName: 'eQuran',
-      applicationVersion: 'Version ${packageInfo.version}',
+      applicationVersion: AppLocalizations.of(
+        context,
+      )!.versionLabel(packageInfo.version),
       applicationIcon: Icon(
         Icons.menu_book_rounded,
         color: colorScheme.primary,
         size: 40,
       ),
-      children: const <Widget>[
-        SizedBox(height: 16),
-        Text(
-          'eQuran is a modern Quran companion designed for focused reading, listening, and daily reflection.',
-        ),
+      children: <Widget>[
+        const SizedBox(height: 16),
+        Text(AppLocalizations.of(context)!.aboutAppBody),
       ],
     );
   }
@@ -189,13 +191,15 @@ class MorePage extends StatelessWidget {
       await SharePlus.instance.share(
         ShareParams(
           title: 'eQuran',
-          subject: 'Download eQuran',
-          text: 'Download eQuran on F-Droid: $_appDownloadUrl',
+          subject: AppLocalizations.of(context)!.downloadEquran,
+          text: AppLocalizations.of(
+            context,
+          )!.downloadEquranShareText(_appDownloadUrl),
         ),
       );
     } catch (_) {
       if (!context.mounted) return;
-      _showMessage(context, 'Unable to open the share sheet.');
+      _showMessage(context, AppLocalizations.of(context)!.unableOpenShareSheet);
     }
   }
 
@@ -223,6 +227,7 @@ class _MoreHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
 
     return EquranGradientCard(
       onTap: onOpenReadingPlans,
@@ -240,7 +245,7 @@ class _MoreHero extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Your Islamic Companion',
+                    localizations.yourIslamicCompanion,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       color: colors.onPrimary,
                       fontWeight: FontWeight.w900,
@@ -250,7 +255,7 @@ class _MoreHero extends StatelessWidget {
                   SizedBox(
                     width: copyWidth,
                     child: Text(
-                      'Qibla, downloads, settings, plans, and tools gathered in one quiet place.',
+                      localizations.moreHeroSubtitle,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colors.onPrimaryMuted,
                         height: 1.4,
@@ -263,7 +268,7 @@ class _MoreHero extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        'Open routine',
+                        localizations.openRoutine,
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: colors.onPrimary,
                           fontWeight: FontWeight.w900,
@@ -271,7 +276,9 @@ class _MoreHero extends StatelessWidget {
                       ),
                       const SizedBox(width: 5),
                       Icon(
-                        Icons.chevron_right_rounded,
+                        Directionality.of(context) == TextDirection.rtl
+                            ? Icons.chevron_left_rounded
+                            : Icons.chevron_right_rounded,
                         color: colors.onPrimary,
                         size: 19,
                       ),
@@ -305,22 +312,25 @@ class _MoreHeroArtwork extends StatelessWidget {
         final double artworkTransparentRightInset =
             artWidth * artworkScale * 0.26;
         final double artworkOffsetY = compact ? -5.0 : -5.0;
+        final bool isRtl = Directionality.of(context) == TextDirection.rtl;
 
         return IgnorePointer(
           child: Align(
-            alignment: Alignment.centerRight,
+            alignment: AlignmentDirectional.centerEnd,
             child: Padding(
-              padding: EdgeInsets.only(right: artworkEdgePadding),
+              padding: EdgeInsetsDirectional.only(end: artworkEdgePadding),
               child: OverflowBox(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 minWidth: 0,
                 maxWidth: double.infinity,
                 child: Transform.scale(
                   scale: artworkScale,
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   child: Transform.translate(
                     offset: Offset(
-                      artworkTransparentRightInset,
+                      isRtl
+                          ? -artworkTransparentRightInset
+                          : artworkTransparentRightInset,
                       artworkOffsetY,
                     ),
                     child: Opacity(
@@ -475,6 +485,7 @@ class _MoreSupportSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -482,8 +493,8 @@ class _MoreSupportSection extends StatelessWidget {
           action: _MoreAction(
             icon: Icons.info_outline_rounded,
             assetPath: _mosqueAsset,
-            title: 'About this app',
-            subtitle: 'App details and version',
+            title: localizations.aboutThisApp,
+            subtitle: localizations.appDetailsAndVersion,
             onTap: onAbout,
           ),
         ),
@@ -492,8 +503,8 @@ class _MoreSupportSection extends StatelessWidget {
           action: _MoreAction(
             icon: Icons.share_outlined,
             assetPath: _quranAsset,
-            title: 'Share app',
-            subtitle: 'Send eQuran to others',
+            title: localizations.shareApp,
+            subtitle: localizations.shareAppSubtitle,
             onTap: onShare,
           ),
         ),
@@ -502,8 +513,8 @@ class _MoreSupportSection extends StatelessWidget {
           action: _MoreAction(
             icon: Icons.feedback_outlined,
             assetPath: _designAsset,
-            title: 'Feedback / Contact',
-            subtitle: 'Report issues or email support',
+            title: localizations.feedbackContact,
+            subtitle: localizations.feedbackContactSubtitle,
             onTap: onFeedback,
           ),
         ),
@@ -519,9 +530,10 @@ class _FeedbackContactPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Feedback / Contact'),
+        title: Text(localizations.feedbackContact),
         backgroundColor: colors.background,
         foregroundColor: colors.textPrimary,
         elevation: 0,
@@ -539,24 +551,22 @@ class _FeedbackContactPage extends StatelessWidget {
         children: <Widget>[
           ListTile(
             leading: const Icon(Icons.bug_report_outlined),
-            title: const Text('Report issues'),
-            subtitle: const Text('Open the GitHub issue tracker.'),
+            title: Text(localizations.reportIssues),
+            subtitle: Text(localizations.reportIssuesSubtitle),
             trailing: const Icon(Icons.open_in_new_rounded),
             onTap: () async {
               final Uri uri = Uri.parse(_issueReportUrl);
               if (!await launchUrl(uri, mode: LaunchMode.externalApplication) &&
                   context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Unable to open issue tracker.'),
-                  ),
+                  SnackBar(content: Text(localizations.unableOpenIssueTracker)),
                 );
               }
             },
           ),
           ListTile(
             leading: const Icon(Icons.email_outlined),
-            title: const Text('Email support'),
+            title: Text(localizations.emailSupport),
             subtitle: Text(_contactEmail),
             trailing: const Icon(Icons.open_in_new_rounded),
             onTap: () async {
@@ -567,7 +577,7 @@ class _FeedbackContactPage extends StatelessWidget {
               );
               if (!await launchUrl(uri) && context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Unable to open email client.')),
+                  SnackBar(content: Text(localizations.unableOpenEmailClient)),
                 );
               }
             },
@@ -575,7 +585,7 @@ class _FeedbackContactPage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             child: Text(
-              'We appreciate your feedback and suggestions.',
+              localizations.feedbackThanks,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

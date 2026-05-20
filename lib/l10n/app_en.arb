@@ -1,0 +1,544 @@
+{
+  "@@locale": "en",
+  "appTitle": "eQuran",
+  "home": "Home",
+  "quran": "Quran",
+  "prayer": "Prayer",
+  "duas": "Duas",
+  "more": "More",
+  "settings": "Settings",
+  "downloads": "Downloads",
+  "statistics": "Statistics",
+  "qibla": "Qibla",
+  "tasbih": "Tasbih",
+  "asmaUlHusna": "Asma-ul-Husna",
+  "language": "Language",
+  "systemDefault": "System default",
+  "english": "English",
+  "arabic": "Arabic",
+  "vibration": "Vibration",
+  "vibrationSubtitle": "Enable haptic feedback when navigating.",
+  "showReadingHistory": "Show reading history",
+  "showReadingHistorySubtitle": "Shows you up to 7 last read Surahs.",
+  "general": "General",
+  "generalSubtitle": "App behavior and history",
+  "reading": "Reading",
+  "readingSubtitle": "Quran display and translation",
+  "cardView": "Card View",
+  "cardViewSubtitle": "Displays each verse separately, or all in one page.",
+  "displayTranslation": "Display Translation",
+  "displayTranslationSubtitle": "Display translation for each verse in card view.",
+  "displayTransliteration": "Display Transliteration",
+  "displayTransliterationSubtitle": "Show transliteration for each verse in card view.",
+  "dailyQuranGoal": "Daily Quran goal",
+  "dailyQuranGoalSubtitle": "{count} ayahs per day",
+  "@dailyQuranGoalSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translation": "Translation",
+  "reciter": "Reciter",
+  "audio": "Audio",
+  "audioSubtitle": "Reciter and playback",
+  "downloadableResources": "Downloadable Resources",
+  "downloadableResourcesSubtitle": "Tafsir and audio timing packs",
+  "prayerTimesSettings": "Prayer Times settings",
+  "prayerTimesSettingsSubtitle": "Manage location, method, Asr, time format, and offsets.",
+  "appearance": "Appearance",
+  "appearanceSubtitle": "Theme, color, and display mode",
+  "themeMode": "Theme mode",
+  "colorScheme": "Color scheme",
+  "data": "Data",
+  "dataSubtitle": "Backup, restore, or clear saved local data",
+  "backupData": "Backup data",
+  "backupDataSubtitle": "Exports favourites, reading history, reciter, text sizes, and all settings.",
+  "restoreData": "Restore data",
+  "restoreDataSubtitle": "Restores favourites, reading history, reciter, text sizes, and saved settings from a backup file.",
+  "clearReadingHistory": "Clear reading history",
+  "clearReadingHistorySubtitle": "Removes last read, resume positions, and Quran reading progress.",
+  "clearFavourites": "Clear Favourites",
+  "clearFavouritesSubtitle": "Removes saved ayahs, folders, notes, tags, and favourites.",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "download": "Download",
+  "update": "Update",
+  "retry": "Retry",
+  "continueReading": "Continue Reading",
+  "lastRead": "Last Read",
+  "beginWithQuran": "Begin with the Quran",
+  "startReadingSubtitle": "Start reading and your place will appear here.",
+  "startReading": "Start reading",
+  "continueListening": "Continue Listening",
+  "beginListeningSubtitle": "Listen to the recitation and your place will appear here.",
+  "startReadingRoutine": "Start a reading routine",
+  "buildDailyQuranHabit": "Build a daily Quran habit",
+  "start": "Start",
+  "readingRoutine": "Reading Routine",
+  "continueRoutine": "Continue Routine",
+  "dailyQuranCompanion": "Daily Quran Companion",
+  "dailyQuranCompanionSubtitle": "Pick up your recitation and daily tools",
+  "dailyTools": "Daily Tools",
+  "dailyToolsSubtitle": "Fast access to the essentials",
+  "exploreAllFeatures": "Explore all features",
+  "dailyAyah": "Daily Ayah",
+  "seeAll": "See all",
+  "surahs": "Surahs",
+  "juz": "Juz",
+  "pages": "Pages",
+  "saved": "Saved",
+  "quranJourney": "Quran Journey",
+  "nextPrayer": "Next Prayer",
+  "prayerTimes": "Prayer Times",
+  "exploreQibla": "Explore Qibla",
+  "tasbihCounter": "Tasbih Counter",
+  "duasAndAzkar": "Duas & Azkar",
+  "readingPlans": "Reading Plans",
+  "quranStatistics": "Quran Statistics",
+  "search": "Search",
+  "dua": "Dua",
+  "player": "Player",
+  "searchQuran": "Search Quran",
+  "searchHintSurah": "Surah name or number...",
+  "searchHintJuz": "Juz number or surah name...",
+  "searchHintPage": "Page number, surah, or juz...",
+  "searchHintSaved": "Saved ayah, surah, note, or number...",
+  "searchHintText": "Search Quran Arabic or translation...",
+  "savedAyahs": "Saved Ayahs",
+  "ayahNumber": "Ayah {number}",
+  "@ayahNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "play": "Play",
+  "pause": "Pause",
+  "next": "Next",
+  "previous": "Previous",
+  "repeat": "Repeat",
+  "audioOptions": "Audio Options",
+  "dismissPlayer": "Dismiss player",
+  "playbackOptions": "Playback options",
+  "previousAyah": "Previous ayah",
+  "nextAyah": "Next ayah",
+  "autoPlayback": "Auto Playback",
+  "repeatInterval": "Repeat Interval",
+  "downloadSurahAudio": "Download Surah Audio",
+  "deleteDownloadedAudio": "Delete Downloaded Audio",
+  "deleteDownloadQuestion": "Delete Download?",
+  "removeDownloadFromOffline": "Remove {title} from offline storage?",
+  "@removeDownloadFromOffline": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "deletedDownload": "Deleted {title}",
+  "@deletedDownload": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAllDownloadsQuestion": "Delete All Downloads?",
+  "deleteAllDownloadsBody": "This will remove {count} downloaded audio files ({size}).",
+  "@deleteAllDownloadsBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAll": "Delete All",
+  "deletedAllDownloadedAudio": "Deleted all downloaded audio.",
+  "offlineAudio": "Offline Audio",
+  "surahAyahSummary": "{surahCount} surahs • {ayahCount} ayahs",
+  "@surahAyahSummary": {
+    "placeholders": {
+      "surahCount": {
+        "type": "int"
+      },
+      "ayahCount": {
+        "type": "int"
+      }
+    }
+  },
+  "clearAll": "Clear All",
+  "cleanupPreview": "Cleanup preview",
+  "downloadedSurahs": "Downloaded surahs",
+  "downloadedAyahs": "Downloaded ayahs",
+  "potentialSpaceToFree": "Potential space to free",
+  "cleanupDoesNotRemoveData": "Cleanup never removes favourites, notes, reading plans, Quran text, or settings.",
+  "reviewDeletion": "Review deletion",
+  "noDownloadedAudioYet": "No downloaded audio yet.",
+  "downloadedAudioEmpty": "Downloaded surahs and ayahs will appear here grouped by reciter.",
+  "ayahs": "Ayahs",
+  "deleteDownload": "Delete download",
+  "playbackSpeed": "Playback Speed",
+  "locationPermissionRequired": "Location permission required",
+  "unableToReconnect": "Unable to reconnect",
+  "reciterOptions": "Reciter Options",
+  "close": "Close",
+  "theme": "Theme",
+  "themeModeDark": "Dark",
+  "themeModeLight": "Light",
+  "themeModeSystem": "Auto",
+  "themeModeDialogTitle": "Theme Mode",
+  "themeModeDarkSubtitle": "Always use night mode.",
+  "themeModeLightSubtitle": "Always use light mode.",
+  "themeModeSystemSubtitle": "Follow the system theme.",
+  "colorSchemeDialogTitle": "Color Scheme",
+  "translationLanguage": "Translation language",
+  "notDownloaded": "Not downloaded",
+  "playbackRate": "Playback Rate",
+  "arabicTextSize": "Arabic text size",
+  "translationTextSize": "Translation text size",
+  "resourcesUnavailable": "Resources unavailable",
+  "resourcesManifestUnavailable": "Unable to load the resource manifest.",
+  "tafsir": "Tafsir",
+  "audioTimings": "Audio Timings",
+  "translations": "Translations",
+  "refreshManifest": "Refresh manifest",
+  "checkGithubReleases": "Check GitHub releases for changes",
+  "noResourcesListed": "No resources listed in the manifest.",
+  "selected": "Selected",
+  "translationUnsupported": "This translation is not supported yet.",
+  "translationNotInManifest": "This translation is not in the resource manifest.",
+  "downloadTranslationQuestion": "Download {name}?",
+  "@downloadTranslationQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "translationNotInstalled": "This translation is not installed on this device. {size}",
+  "@translationNotInstalled": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "installedResource": "Installed {name}.",
+  "@installedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "unableInstallResource": "Unable to install this resource.",
+  "deleteResourceQuestion": "Delete {name}?",
+  "@deleteResourceQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteResourceBody": "This removes the downloaded files from this device.",
+  "deletedResource": "Deleted {name}.",
+  "@deletedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ayahsPerDay": "Ayahs per day",
+  "enterGoalRange": "Enter a goal from 1 to 1000 ayahs",
+  "clearReadingHistoryWarning": "WARNING: This will clear last read, resume positions, statistics, and routine day progress.",
+  "clearFavouritesWarning": "WARNING: This will clear every saved ayah, folder, note, tag, and favourite.",
+  "no": "NO",
+  "yes": "YES",
+  "restoreBackup": "Restore backup",
+  "restoreBackupWarning": "This will replace your current favourites, reading history, and saved settings with the contents of the backup file.",
+  "restore": "Restore",
+  "backupReadyToShare": "Backup file ready to share.",
+  "backupSavedTo": "Backup saved to {path}",
+  "@backupSavedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "unableCreateBackup": "Unable to create the backup file.",
+  "restoredBackupSummary": "Restored {favouritesCount} favourites, {readingHistoryCount} history entries, and {settingsCount} settings.",
+  "@restoredBackupSummary": {
+    "placeholders": {
+      "favouritesCount": {
+        "type": "int"
+      },
+      "readingHistoryCount": {
+        "type": "int"
+      },
+      "settingsCount": {
+        "type": "int"
+      }
+    }
+  },
+  "unableRestoreBackup": "Unable to restore the selected backup.",
+  "locationAndCalculationSettings": "Location and calculation settings",
+  "quranSearch": "Quran Search",
+  "searchArabicAndTranslation": "Search Arabic and translation",
+  "recitationsAndAudioControls": "Recitations and audio controls",
+  "compassAndDirection": "Compass and direction",
+  "offlineAudioAndCleanup": "Offline audio and cleanup",
+  "plansGoalsProgress": "Plans, goals, and progress",
+  "calmDhikrCounter": "Calm dhikr counter",
+  "the99BeautifulNames": "The 99 Beautiful Names",
+  "worshipTrendsAndStreaks": "Worship trends and streaks",
+  "fontsReciterAppBehavior": "Fonts, reciter, app behavior",
+  "switchLightOrNightMode": "Switch light or night mode",
+  "yourIslamicCompanion": "Your Islamic Companion",
+  "moreHeroSubtitle": "Qibla, downloads, settings, plans, and tools gathered in one quiet place.",
+  "openRoutine": "Open routine",
+  "aboutAppBody": "eQuran is a modern Quran companion designed for focused reading, listening, and daily reflection.",
+  "versionLabel": "Version {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadEquran": "Download eQuran",
+  "downloadEquranShareText": "Download eQuran on F-Droid: {url}",
+  "@downloadEquranShareText": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "unableOpenShareSheet": "Unable to open the share sheet.",
+  "aboutThisApp": "About this app",
+  "appDetailsAndVersion": "App details and version",
+  "shareApp": "Share app",
+  "shareAppSubtitle": "Send eQuran to others",
+  "feedbackContact": "Feedback / Contact",
+  "feedbackContactSubtitle": "Report issues or email support",
+  "reportIssues": "Report issues",
+  "reportIssuesSubtitle": "Open the GitHub issue tracker.",
+  "unableOpenIssueTracker": "Unable to open issue tracker.",
+  "emailSupport": "Email support",
+  "unableOpenEmailClient": "Unable to open email client.",
+  "feedbackThanks": "We appreciate your feedback and suggestions.",
+  "browseBySurah": "Browse by Surah",
+  "browseByJuz": "Browse by Juz",
+  "browseByPage": "Browse by page",
+  "closeSearch": "Close search",
+  "noSurahsFound": "No surahs found.",
+  "ayahRange": "Ayah {start}-{end}",
+  "@ayahRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "juzNumber": "Juz {number}",
+  "@juzNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerNameFajr": "Fajr",
+  "prayerNameSunrise": "Sunrise",
+  "prayerNameDhuhr": "Dhuhr",
+  "prayerNameAsr": "Asr",
+  "prayerNameMaghrib": "Maghrib",
+  "prayerNameIsha": "Isha",
+  "today": "Today",
+  "previousDay": "Previous day",
+  "nextDay": "Next day",
+  "middleOfNight": "Middle of night",
+  "lastThirdStarts": "Last third starts",
+  "useCurrentLocation": "Use current location",
+  "chooseOnMap": "Choose on map",
+  "enterCoordinatesManually": "Enter coordinates manually",
+  "locationUseNotice": "Your location is only used for prayer time calculation.",
+  "timesCalculatedLocally": "Times are calculated locally on your device.",
+  "prayerTimesNeedLocation": "Prayer times need a location",
+  "prayerTimesLocationSubtitle": "Calculate Fajr, Dhuhr, Asr, Maghrib and Isha for your exact location.",
+  "setUpLocation": "Set up location",
+  "chooseLocationForNextPrayer": "Choose a location to show the next prayer time here.",
+  "prayerTimeTitle": "{prayer} Time",
+  "prayerBeginsIn": "{prayer} begins in {countdown}",
+  "@prayerTimeTitle": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      }
+    }
+  },
+  "@prayerBeginsIn": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesShort": "{minutes} min",
+  "hoursMinutesShort": "{hours}h {minutes}m",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@hoursMinutesShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "exactAlarmPermissionOff": "Exact alarm permission is off. Prayer reminders may be delayed.",
+  "zawal": "Zawal",
+  "sunset": "Sunset",
+  "morning": "Morning",
+  "prohibitedTimeEndsIn": "Prohibited time ends in {countdown}",
+  "@prohibitedTimeEndsIn": {
+    "placeholders": {
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "selectPrayerDate": "Select prayer date",
+  "appSettings": "App settings",
+  "unableGetLocation": "Unable to get location.",
+  "qiblaBearingUnavailable": "Current location coordinates are unavailable.",
+  "currentLocationTimedOut": "Current location timed out. Check location services and try again.",
+  "compassUnavailable": "Compass unavailable. Use the bearing shown.",
+  "qiblaCalibrationHint": "For best accuracy, hold your phone flat and move it in a figure-8 to calibrate.",
+  "compassAccuracyLow": "Compass accuracy may be low.",
+  "compassAccuracyLowWithDegrees": "Compass accuracy may be low ({degrees}°).",
+  "@compassAccuracyLowWithDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "qiblaLocationServicesDisabled": "Turn on location services to use Qibla.",
+  "qiblaLocationPermissionNeeded": "Location permission is needed to calculate Qibla from your current device location.",
+  "qiblaLocationPermissionBlocked": "Location permission is blocked. Enable it from app settings to use Qibla.",
+  "qiblaLocationUnavailableMessage": "We could not read your current location. Check location services and try again.",
+  "bearingDegrees": "Bearing {degrees}°",
+  "targetDegrees": "Target {degrees}°",
+  "headingDegrees": "Heading {degrees}°",
+  "@bearingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@targetDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@headingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "heading": "Heading",
+  "facingQibla": "Facing Qibla",
+  "turnRightDegrees": "Turn right {degrees}°",
+  "turnLeftDegrees": "Turn left {degrees}°",
+  "@turnRightDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@turnLeftDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "refreshCurrentLocation": "Refresh current location",
+  "findingYourLocation": "Finding your location",
+  "currentLocationRequired": "Current location required",
+  "qiblaRequiresLocation": "Qibla requires live current location from this device. Enable location services and permission to continue.",
+  "findingLocation": "Finding location",
+  "currentLocationUnavailable": "Current location unavailable",
+  "currentLocation": "Current location",
+  "distanceUnavailable": "Distance unavailable",
+  "kilometersToKaaba": "{distance} km to Kaaba",
+  "@kilometersToKaaba": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "resetCounter": "Reset counter",
+  "recentSessions": "Recent sessions",
+  "haptics": "Haptics",
+  "countSomeDhikrFirst": "Count some dhikr first",
+  "dhikrSessionSaved": "Dhikr session saved",
+  "postPrayerDhikr": "Post-prayer dhikr",
+  "postPrayerDhikrComplete": "Post-prayer dhikr complete",
+  "dhikrComplete": "{label} complete",
+  "@dhikrComplete": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "todayMetric": "Today",
+  "rounds": "Rounds",
+  "streak": "Streak",
+  "savedDhikrSessionsEmpty": "Saved dhikr sessions will appear here.",
+  "dhikrSessionCounted": "{count} of {target} counted • {time}",
+  "@dhikrSessionCounted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  }
+}

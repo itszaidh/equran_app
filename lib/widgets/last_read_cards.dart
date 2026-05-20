@@ -3,6 +3,7 @@ import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 import 'package:quran/quran.dart';
 
@@ -59,6 +60,7 @@ class _LastReadCardState extends State<LastReadCard> {
     final List<ReadingEntry> entries = widget.entries;
     if (entries.isEmpty) return const SizedBox.shrink();
     final int activeIndex = _currentPage.clamp(0, entries.length - 1).toInt();
+    final localizations = AppLocalizations.of(context)!;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -74,8 +76,12 @@ class _LastReadCardState extends State<LastReadCard> {
                   '${entry.surah}-${entry.verse}-${entry.timestamp.microsecondsSinceEpoch}',
                 ),
                 primary: getSurahName(entry.surah),
-                subtitle: 'Ayah ${entry.verse}',
-                actionText: 'Resume ->',
+                subtitle: localizations.localeName == 'ar'
+                    ? 'الآية ${entry.verse}'
+                    : 'Ayah ${entry.verse}',
+                actionText: localizations.localeName == 'ar'
+                    ? '<- ${localizations.continueReading}'
+                    : '${localizations.continueReading} ->',
                 trailingAssetPath: equranResumeQuranAsset,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -200,6 +206,7 @@ class EquranResumeImageCard extends StatelessWidget {
             final double subtitleDividerGap = compact ? 14 : 28;
             final double dividerActionGap = compact ? 8 : 10;
             final double dividerWidth = compact ? 94 : 104;
+            final bool isRtl = Directionality.of(context) == TextDirection.rtl;
             final TextStyle? titleStyle = compact
                 ? theme.textTheme.titleLarge?.copyWith(
                     color: colors.onPrimary,
@@ -275,14 +282,18 @@ class EquranResumeImageCard extends StatelessWidget {
                     child: Stack(
                       children: <Widget>[
                         Align(
-                          alignment: Alignment.centerRight,
+                          alignment: AlignmentDirectional.centerEnd,
                           child: Padding(
-                            padding: EdgeInsets.only(right: artworkEdgePadding),
+                            padding: EdgeInsetsDirectional.only(
+                              end: artworkEdgePadding,
+                            ),
                             child: Transform.translate(
                               offset: Offset(
-                                compact
-                                    ? artworkOffsetX.clamp(0, 15).toDouble()
-                                    : artworkOffsetX.clamp(0, 22).toDouble(),
+                                (compact
+                                            ? artworkOffsetX.clamp(0, 15)
+                                            : artworkOffsetX.clamp(0, 22))
+                                        .toDouble() *
+                                    (isRtl ? -1 : 1),
                                 0,
                               ),
                               child: SizedBox(
@@ -299,14 +310,14 @@ class EquranResumeImageCard extends StatelessWidget {
                         ),
                         Positioned.fill(
                           child: Padding(
-                            padding: EdgeInsets.fromLTRB(
+                            padding: EdgeInsetsDirectional.fromSTEB(
                               horizontalPadding,
                               topPadding,
                               textRightPadding,
                               bottomPadding,
                             ),
                             child: Align(
-                              alignment: Alignment.centerLeft,
+                              alignment: AlignmentDirectional.centerStart,
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,

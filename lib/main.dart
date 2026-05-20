@@ -10,6 +10,7 @@ import 'package:equran/utils/app_theme.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/quran.dart' as quran;
@@ -82,8 +83,41 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => MyAppState();
+
+  static MyAppState? of(BuildContext context) {
+    return context.findAncestorStateOfType<MyAppState>();
+  }
+}
+
+class MyAppState extends State<MyApp> {
+  Locale? _locale;
+
+  @override
+  void initState() {
+    super.initState();
+    _locale = _getSavedLocale();
+  }
+
+  Locale? _getSavedLocale() {
+    final dynamic lang = SettingsDB().get("locale");
+    if (lang == null || lang == "system") return null;
+    return switch (lang.toString()) {
+      'en' => const Locale('en'),
+      'ar' => const Locale('ar'),
+      _ => null,
+    };
+  }
+
+  void setLocale(Locale? locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
 
   // This widget is the root of your application.
   @override
@@ -104,6 +138,10 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: theme,
         darkTheme: darkTheme,
+        onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+        locale: _locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) {
           final MediaQueryData mediaQuery = MediaQuery.of(context);
           final double tabletTextScale = ResponsiveNav.appTextScale(context);

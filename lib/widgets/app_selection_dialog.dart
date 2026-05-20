@@ -1,5 +1,6 @@
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 class AppSelectionOption<T> {
   const AppSelectionOption({
@@ -66,7 +67,7 @@ class AppSelectionDialog<T> extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Close',
+                      tooltip: AppLocalizations.of(context)!.close,
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close_rounded),
                     ),

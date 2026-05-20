@@ -20,6 +20,7 @@ import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 const int _homeDestinationIndex = 0;
 const int _quranDestinationIndex = 1;
@@ -64,14 +65,11 @@ class _HomePageState extends State<HomePage> {
   final ValueNotifier<QuranSearchRequest?> _quranSearchRequest =
       ValueNotifier<QuranSearchRequest?>(null);
 
-  late final List<Destinations> _pageDestinations;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageDestinations = <Destinations>[
+  List<Destinations> _getDestinations(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    return <Destinations>[
       Destinations(
-        'Home',
+        localizations.home,
         const Icon(Icons.home_outlined),
         const Icon(Icons.home_rounded),
         HomeDashboardPage(
@@ -89,25 +87,25 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       Destinations(
-        'Quran',
+        localizations.quran,
         const Icon(Icons.menu_book_outlined),
         const Icon(Icons.menu_book_rounded),
         MainPage(searchRequestListenable: _quranSearchRequest),
       ),
       Destinations(
-        'Prayer',
+        localizations.prayer,
         const Icon(Icons.access_time_outlined),
         const Icon(Icons.schedule_rounded),
         const PrayerTimesPage(),
       ),
       Destinations(
-        'Duas',
+        localizations.duas,
         const Icon(Icons.auto_stories_outlined),
         const Icon(Icons.auto_stories_rounded),
         DuasPage(),
       ),
       Destinations(
-        'More',
+        localizations.more,
         const Icon(Icons.grid_view_outlined),
         const Icon(Icons.grid_view_rounded),
         MorePage(
@@ -153,6 +151,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final double navIconSize = ResponsiveNav.iconSize(context);
     final EquranColors equranColors = context.equranColors;
+    final List<Destinations> destinations = _getDestinations(context);
 
     return Listener(
       behavior: HitTestBehavior.translucent,
@@ -167,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                 _selectedIndex == _moreDestinationIndex)
             ? AppBar(
                 toolbarHeight: ResponsiveNav.toolbarHeight(context),
-                title: Text(_pageDestinations[_selectedIndex].label),
+                title: Text(destinations[_selectedIndex].label),
                 centerTitle: true,
                 backgroundColor: _selectedIndex == _prayerDestinationIndex
                     ? Colors.transparent
@@ -190,12 +189,12 @@ class _HomePageState extends State<HomePage> {
                   size: navIconSize,
                 ),
                 actions: <Widget>[
-                  if (_pageDestinations[_selectedIndex].destination
+                  if (destinations[_selectedIndex].destination
                       is PrayerTimesPage)
                     Padding(
                       padding: const EdgeInsetsDirectional.only(end: 6),
                       child: IconButton(
-                        tooltip: 'Qibla',
+                        tooltip: AppLocalizations.of(context)!.qibla,
                         onPressed: _openQiblaPage,
                         icon: const Icon(Icons.explore_outlined),
                       ),
@@ -203,7 +202,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               )
             : null,
-        body: _pageDestinations[_selectedIndex].destination,
+        body: destinations[_selectedIndex].destination,
         bottomNavigationBar: _buildBottomNavigation(),
       ),
     );
@@ -211,6 +210,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomNavigation() {
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
     final int navIndex = switch (_selectedIndex) {
       _homeDestinationIndex => 0,
       _quranDestinationIndex => 1,
@@ -230,31 +230,31 @@ class _HomePageState extends State<HomePage> {
           onDestinationSelected: (int index) {
             _onItemTapped(_bottomDestinationIndices[index]);
           },
-          destinations: const <NavigationDestination>[
+          destinations: <NavigationDestination>[
             NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
-              label: 'Home',
+              icon: const Icon(Icons.home_outlined),
+              selectedIcon: const Icon(Icons.home_rounded),
+              label: localizations.home,
             ),
             NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(Icons.menu_book_rounded),
-              label: 'Quran',
+              icon: const Icon(Icons.menu_book_outlined),
+              selectedIcon: const Icon(Icons.menu_book_rounded),
+              label: localizations.quran,
             ),
             NavigationDestination(
-              icon: Icon(Icons.schedule_outlined),
-              selectedIcon: Icon(Icons.schedule_rounded),
-              label: 'Prayer',
+              icon: const Icon(Icons.schedule_outlined),
+              selectedIcon: const Icon(Icons.schedule_rounded),
+              label: localizations.prayer,
             ),
             NavigationDestination(
-              icon: Icon(Icons.auto_stories_outlined),
-              selectedIcon: Icon(Icons.auto_stories_rounded),
-              label: 'Duas',
+              icon: const Icon(Icons.auto_stories_outlined),
+              selectedIcon: const Icon(Icons.auto_stories_rounded),
+              label: localizations.duas,
             ),
             NavigationDestination(
-              icon: Icon(Icons.grid_view_rounded),
-              selectedIcon: Icon(Icons.grid_view_rounded),
-              label: 'More',
+              icon: const Icon(Icons.grid_view_rounded),
+              selectedIcon: const Icon(Icons.grid_view_rounded),
+              label: localizations.more,
             ),
           ],
         ),
@@ -424,8 +424,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openPlayerPage() {
+    final localizations = AppLocalizations.of(context)!;
     _pushSecondaryPage(
-      label: 'Player',
+      label: localizations.player,
       page: const PlayerPage(),
       reason: 'player_route',
       showAppBar: false,
@@ -433,24 +434,27 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openDownloadsPage() {
+    final localizations = AppLocalizations.of(context)!;
     _pushSecondaryPage(
-      label: 'Downloads',
+      label: localizations.downloads,
       page: const DownloadsPage(),
       reason: 'downloads_route',
     );
   }
 
   void _openSettingsPage() {
+    final localizations = AppLocalizations.of(context)!;
     _pushSecondaryPage(
-      label: 'Settings',
+      label: localizations.settings,
       page: const SettingsPage(),
       reason: 'settings_route',
     );
   }
 
   void _openStatisticsPage() {
+    final localizations = AppLocalizations.of(context)!;
     _pushSecondaryPage(
-      label: 'Statistics',
+      label: localizations.statistics,
       page: const StatisticsPage(),
       reason: 'statistics_route',
     );

@@ -18,6 +18,7 @@ import 'package:equran/utils/quran_text.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:equran/widgets/last_read_cards.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:hive/hive.dart';
 import 'package:quran/quran.dart' as quran;
 
@@ -945,6 +946,7 @@ class _RoutinePlanCta extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final ReadingPlanEntry? activePlan = plan;
+    final localizations = AppLocalizations.of(context)!;
     if (activePlan == null) {
       return _HomePremiumCard(
         onTap: onOpenReadingPlans,
@@ -982,7 +984,7 @@ class _RoutinePlanCta extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Start a reading routine',
+                    localizations.startReadingRoutine,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleMedium?.copyWith(
@@ -992,7 +994,7 @@ class _RoutinePlanCta extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Build a daily Quran habit',
+                    localizations.buildDailyQuranHabit,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -1012,7 +1014,7 @@ class _RoutinePlanCta extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: Text(
-                  'Start',
+                  localizations.start,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: colors.primary,
                     fontWeight: FontWeight.w900,
@@ -1073,7 +1075,7 @@ class _RoutinePlanCta extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Reading Routine',
+                  localizations.readingRoutine,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -1119,7 +1121,9 @@ class _RoutinePlanCta extends StatelessWidget {
                 ),
               ),
               Text(
-                'Continue Routine ->',
+                localizations.localeName == 'ar'
+                    ? '<- ${localizations.continueRoutine}'
+                    : '${localizations.continueRoutine} ->',
                 style: theme.textTheme.labelLarge?.copyWith(
                   color: colors.primary,
                   fontWeight: FontWeight.w900,
@@ -1148,16 +1152,17 @@ class _DailyQuranCompanionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 940),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const _CompanionSectionHeader(
+            _CompanionSectionHeader(
               icon: Icons.auto_stories_outlined,
-              title: 'Daily Quran Companion',
-              subtitle: 'Pick up your recitation and daily tools',
+              title: localizations.dailyQuranCompanion,
+              subtitle: localizations.dailyQuranCompanionSubtitle,
             ),
             const SizedBox(height: 12),
             _ContinueExperience(
@@ -1168,10 +1173,10 @@ class _DailyQuranCompanionSection extends StatelessWidget {
               onOpenPlayer: actions.onOpenPlayer,
             ),
             const SizedBox(height: 16),
-            const _CompanionSectionHeader(
+            _CompanionSectionHeader(
               icon: Icons.grid_view_rounded,
-              title: 'Daily Tools',
-              subtitle: 'Fast access to the essentials',
+              title: localizations.dailyTools,
+              subtitle: localizations.dailyToolsSubtitle,
               compact: true,
             ),
             const SizedBox(height: 10),
@@ -1315,52 +1320,53 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
     final List<_QuickAction> items = <_QuickAction>[
       _QuickAction(
         Icons.menu_book_outlined,
-        'Quran',
+        localizations.quran,
         widget.actions.onOpenQuran,
         assetPath: _quranReadAsset,
       ),
       _QuickAction(
         Icons.schedule_outlined,
-        'Prayer',
+        localizations.prayer,
         widget.actions.onOpenPrayerTimes,
         assetPath: _prayerTimeAsset,
       ),
       _QuickAction(
         Icons.explore_outlined,
-        'Qibla',
+        localizations.qibla,
         widget.actions.onOpenQibla,
         assetPath: _qiblaAsset,
       ),
       _QuickAction(
         Icons.graphic_eq_rounded,
-        'Player',
+        localizations.player,
         widget.actions.onOpenPlayer,
         assetPath: _playerAsset,
       ),
       _QuickAction(
         Icons.auto_awesome_outlined,
-        'Tasbih',
+        localizations.tasbih,
         widget.actions.onOpenTasbih,
         assetPath: _tasbihAsset,
       ),
       _QuickAction(
         Icons.auto_stories_outlined,
-        'Dua',
+        localizations.dua,
         widget.actions.onOpenDuas,
         assetPath: _duaAsset,
       ),
       _QuickAction(
         Icons.download_outlined,
-        'Downloads',
+        localizations.downloads,
         widget.actions.onOpenDownloads,
         assetPath: _downloadAsset,
       ),
       _QuickAction(
         Icons.search_rounded,
-        'Search',
+        localizations.search,
         widget.actions.onOpenSearch,
         assetPath: _quranAsset,
       ),
@@ -1527,6 +1533,7 @@ class _ExploreAllFeaturesRow extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
     final BorderRadius radius = BorderRadius.circular(EquranRadii.medium);
+    final localizations = AppLocalizations.of(context)!;
 
     return Material(
       color: Colors.transparent,
@@ -1569,7 +1576,7 @@ class _ExploreAllFeaturesRow extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Explore all features',
+                    localizations.exploreAllFeatures,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.labelLarge?.copyWith(
@@ -1579,7 +1586,9 @@ class _ExploreAllFeaturesRow extends StatelessWidget {
                   ),
                 ),
                 Icon(
-                  Icons.arrow_forward_rounded,
+                  localizations.localeName == 'ar'
+                      ? Icons.arrow_back_rounded
+                      : Icons.arrow_forward_rounded,
                   color: colors.primary,
                   size: 18,
                 ),
@@ -1633,14 +1642,15 @@ class _DailyAyahPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         EquranSectionHeader(
           icon: Icons.local_florist_outlined,
-          title: 'Daily Ayah',
-          actionLabel: 'See all',
+          title: localizations.dailyAyah,
+          actionLabel: localizations.seeAll,
           onAction: onOpenQuran,
         ),
         const SizedBox(height: 10),
@@ -1674,7 +1684,9 @@ class _DailyAyahPreview extends StatelessWidget {
                     ),
                   ),
                   Icon(
-                    Icons.arrow_forward_rounded,
+                    localizations.localeName == 'ar'
+                        ? Icons.arrow_back_rounded
+                        : Icons.arrow_forward_rounded,
                     color: colors.primary,
                     size: 18,
                   ),
@@ -2424,12 +2436,15 @@ class _HomeQuranLastReadCard extends StatelessWidget {
     final ResumeStateEntry? current = entry;
     final int? surah = current?.surah;
     final int? ayah = current?.ayah;
+    final localizations = AppLocalizations.of(context)!;
     final Widget card;
     if (surah == null || ayah == null) {
       card = EquranResumeImageCard(
-        primary: 'Begin with the Quran',
-        subtitle: 'Your reading history will appear here',
-        actionText: 'Start Reading ->',
+        primary: localizations.beginWithQuran,
+        subtitle: localizations.startReadingSubtitle,
+        actionText: localizations.localeName == 'ar'
+            ? '<- ${localizations.startReading}'
+            : '${localizations.startReading} ->',
         trailingAssetPath: _quranAsset,
         onTap: onOpenQuran,
       );
@@ -2440,8 +2455,10 @@ class _HomeQuranLastReadCard extends StatelessWidget {
             : quran.getSurahName(surah),
         subtitle: current?.subtitle.isNotEmpty == true
             ? current!.subtitle
-            : 'Ayah $ayah',
-        actionText: 'Resume ->',
+            : (localizations.localeName == 'ar' ? 'الآية $ayah' : 'Ayah $ayah'),
+        actionText: localizations.localeName == 'ar'
+            ? '<- ${localizations.continueReading}'
+            : '${localizations.continueReading} ->',
         trailingAssetPath: _quranAsset,
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
@@ -2467,12 +2484,17 @@ class _ContinueListeningCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ResumeStateEntry? current = entry;
+    final localizations = AppLocalizations.of(context)!;
     final Widget card;
     if (current == null) {
       card = EquranResumeImageCard(
-        primary: 'Quran recitation',
-        subtitle: 'Start audio and it will appear here',
-        actionText: 'Open Player ->',
+        primary: localizations.localeName == 'ar'
+            ? 'تلاوة القرآن'
+            : 'Quran recitation',
+        subtitle: localizations.beginListeningSubtitle,
+        actionText: localizations.localeName == 'ar'
+            ? '<- افتح المشغل'
+            : 'Open Player ->',
         trailingAssetPath: _playerAsset,
         secondary: true,
         artworkScale: 1.3,
@@ -2486,11 +2508,21 @@ class _ContinueListeningCard extends StatelessWidget {
           : ' - ${_formatShortDuration(Duration(milliseconds: positionMillis))}';
 
       card = EquranResumeImageCard(
-        primary: current.title.isEmpty ? 'Quran recitation' : current.title,
+        primary: current.title.isEmpty
+            ? (localizations.localeName == 'ar'
+                  ? 'تلاوة القرآن'
+                  : 'Quran recitation')
+            : current.title,
         subtitle: current.ayah == null
-            ? 'Resume recitation$progress'
-            : 'Ayah ${current.ayah}',
-        actionText: 'Resume ->',
+            ? (localizations.localeName == 'ar'
+                  ? 'استئناف التلاوة$progress'
+                  : 'Resume recitation$progress')
+            : (localizations.localeName == 'ar'
+                  ? 'الآية ${current.ayah}'
+                  : 'Ayah ${current.ayah}'),
+        actionText: localizations.localeName == 'ar'
+            ? '<- ${localizations.continueListening}'
+            : '${localizations.continueListening} ->',
         trailingAssetPath: _playerAsset,
         secondary: true,
         artworkScale: 1.18,

@@ -1,9 +1,11 @@
 import 'package:equran/prayer/prayer_models.dart';
+import 'package:equran/prayer/prayer_localizations.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 const String _appAssetBase = 'assets/media/images/app';
 const String _fallbackPrayerAsset = '$_appAssetBase/prayer_time.webp';
@@ -32,6 +34,7 @@ class PrayerHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerDay? prayerDay = day;
     final NextPrayer? next = nextPrayer;
 
@@ -43,21 +46,21 @@ class PrayerHeroCard extends StatelessWidget {
           height: 176,
           child: Stack(
             children: <Widget>[
-              const Positioned(
-                right: -18,
+              const PositionedDirectional(
+                end: -18,
                 top: 8,
                 bottom: 8,
                 width: 190,
                 child: _PrayerHeroDecoration(kind: PrayerTimeKind.fajr),
               ),
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Prayer Times',
+                      localizations.prayerTimes,
                       style: theme.textTheme.headlineMedium?.copyWith(
                         color: colors.onPrimary,
                         fontWeight: FontWeight.w900,
@@ -67,7 +70,7 @@ class PrayerHeroCard extends StatelessWidget {
                     SizedBox(
                       width: 230,
                       child: Text(
-                        'Choose a location to show the next prayer time here.',
+                        localizations.chooseLocationForNextPrayer,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: colors.onPrimaryMuted,
                           height: 1.4,
@@ -76,7 +79,7 @@ class PrayerHeroCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'Set up location',
+                      localizations.setUpLocation,
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: colors.onPrimary,
                         fontWeight: FontWeight.w900,
@@ -97,16 +100,25 @@ class PrayerHeroCard extends StatelessWidget {
       featuredPrayer.time,
       settings.use24HourFormat,
     );
-    final String countdown = _formatCountdown(next.countdown);
+    final String countdown = _formatCountdown(next.countdown, localizations);
     final bool exactAlarmDenied =
         exactAlarmPermission == PrayerExactAlarmPermissionStatus.denied;
+    final String featuredPrayerName = localizedPrayerName(
+      localizations,
+      featuredPrayer.kind,
+    );
+    final String nextPrayerName = localizedPrayerName(
+      localizations,
+      next.entry.kind,
+    );
     final String title =
         titleOverride ??
         (featuredPrayer.kind == PrayerTimeKind.sunrise
-            ? 'Sunrise'
-            : '${featuredPrayer.kind.label} Time');
+            ? localizations.prayerNameSunrise
+            : localizations.prayerTimeTitle(featuredPrayerName));
     final String subtitle =
-        subtitleOverride ?? '${next.entry.kind.label} begins in $countdown';
+        subtitleOverride ??
+        localizations.prayerBeginsIn(nextPrayerName, countdown);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -146,14 +158,14 @@ class PrayerHeroCard extends StatelessWidget {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: <Widget>[
-                  Positioned(
-                    right: -20,
+                  PositionedDirectional(
+                    end: -20,
                     top: -24,
                     bottom: -12,
                     width: artWidth,
                     child: Transform.scale(
                       scale: compact ? 1.12 : 1.23,
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerEnd,
                       child: _PrayerHeroDecoration(kind: featuredPrayer.kind),
                     ),
                   ),
@@ -170,7 +182,7 @@ class PrayerHeroCard extends StatelessWidget {
                             children: <Widget>[
                               FittedBox(
                                 fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
+                                alignment: AlignmentDirectional.centerStart,
                                 child: Text(
                                   prayerTime,
                                   maxLines: 1,
@@ -247,7 +259,7 @@ class PrayerHeroCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Exact alarm permission is off. Prayer reminders may be delayed.',
+                    localizations.exactAlarmPermissionOff,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.warning,
                       fontWeight: FontWeight.w700,
@@ -283,15 +295,15 @@ class _PrayerHeroDecoration extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(4, 2, 0, 2),
+              padding: const EdgeInsetsDirectional.fromSTEB(4, 2, 0, 2),
               child: Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: Image.asset(
                   _prayerBannerAsset(kind),
                   width: constraints.maxWidth,
                   height: constraints.maxHeight,
                   fit: BoxFit.contain,
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   errorBuilder: (context, error, stackTrace) {
                     return Image.asset(
                       _fallbackPrayerAsset,
@@ -329,10 +341,10 @@ String _formatTime(DateTime time, bool use24HourFormat) {
   return '$hour:${time.minute.toString().padLeft(2, '0')} $suffix';
 }
 
-String _formatCountdown(Duration duration) {
+String _formatCountdown(Duration duration, AppLocalizations localizations) {
   final Duration normalized = duration.isNegative ? Duration.zero : duration;
   final int hours = normalized.inHours;
   final int minutes = normalized.inMinutes.remainder(60);
-  if (hours <= 0) return '$minutes min';
-  return '${hours}h ${minutes}m';
+  if (hours <= 0) return localizations.minutesShort(minutes);
+  return localizations.hoursMinutesShort(hours, minutes);
 }

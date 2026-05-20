@@ -2,6 +2,7 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/juz_search.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 import 'juz_card.dart';
 
@@ -31,8 +32,15 @@ class _JuzCardListState extends State<JuzCardList>
         PrimaryScrollController.maybeOf(context) ?? _fallbackScrollController;
     final List<JuzGroup> juzGroups = buildJuzGroups(widget.searchQuery);
 
+    final localizations = AppLocalizations.of(context)!;
     if (juzGroups.isEmpty) {
-      return const Center(child: Text('No juz results found.'));
+      return Center(
+        child: Text(
+          localizations.localeName == 'ar'
+              ? 'لم يتم العثور على أجزاء.'
+              : 'No juz results found.',
+        ),
+      );
     }
 
     final List<JuzListItem> items = buildJuzListItems(juzGroups);
@@ -49,7 +57,7 @@ class _JuzCardListState extends State<JuzCardList>
       child: ListView.builder(
         controller: scrollController,
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.only(right: 8, bottom: 24),
+        padding: const EdgeInsetsDirectional.only(end: 8, bottom: 24),
         itemCount: items.length,
         itemExtentBuilder: (int index, _) {
           return items[index].group != null ? headerExtent : tileExtent;
@@ -111,6 +119,7 @@ class _JuzSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final localizations = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -137,7 +146,9 @@ class _JuzSectionHeader extends StatelessWidget {
               border: Border.all(color: colors.border),
             ),
             child: Text(
-              "Juz' $juzNumber",
+              localizations.localeName == 'ar'
+                  ? 'الجزء $juzNumber'
+                  : "Juz' $juzNumber",
               style: theme.textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w900,
                 color: colors.primary,
@@ -165,7 +176,7 @@ class _JuzSectionHeader extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            '$surahCount surahs',
+            _surahCountLabel(surahCount, localizations),
             style: theme.textTheme.labelLarge?.copyWith(
               color: colors.textSecondary,
               fontWeight: FontWeight.w700,
@@ -174,5 +185,15 @@ class _JuzSectionHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _surahCountLabel(int count, AppLocalizations localizations) {
+    if (localizations.localeName == 'ar') {
+      if (count == 1) return 'سورة واحدة';
+      if (count == 2) return 'سورتان';
+      if (count >= 3 && count <= 10) return '$count سور';
+      return '$count سورة';
+    }
+    return count == 1 ? '1 surah' : '$count surahs';
   }
 }

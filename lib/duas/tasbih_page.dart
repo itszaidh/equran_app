@@ -6,7 +6,10 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:hive/hive.dart';
+
+const String _postPrayerDhikrStorageLabel = 'Post-prayer dhikr';
 
 class TasbihPage extends StatefulWidget {
   const TasbihPage({super.key});
@@ -62,7 +65,7 @@ class _TasbihPageState extends State<TasbihPage> {
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        title: const Text('Tasbih'),
+        title: Text(AppLocalizations.of(context)!.tasbih),
         centerTitle: true,
         backgroundColor: colors.background.withAlpha(0),
         foregroundColor: colors.textPrimary,
@@ -76,7 +79,7 @@ class _TasbihPageState extends State<TasbihPage> {
         actionsIconTheme: IconThemeData(color: colors.textSecondary),
         actions: <Widget>[
           IconButton(
-            tooltip: 'Reset counter',
+            tooltip: AppLocalizations.of(context)!.resetCounter,
             onPressed: _completionInputLocked ? null : _reset,
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -144,7 +147,9 @@ class _TasbihPageState extends State<TasbihPage> {
                       const SizedBox(height: 22),
                       TextButton(
                         onPressed: () => _showRecentSessionsSheet(sessions),
-                        child: const Text('Recent sessions'),
+                        child: Text(
+                          AppLocalizations.of(context)!.recentSessions,
+                        ),
                       ),
                     ],
                   ),
@@ -173,7 +178,9 @@ class _TasbihPageState extends State<TasbihPage> {
       if (completesPreset) {
         _completionInputLocked = true;
         _completionPulse = true;
-        _completionMessage = '${preset.label} complete';
+        _completionMessage = AppLocalizations.of(
+          context,
+        )!.dhikrComplete(preset.label);
       }
     });
     _persistCurrentState();
@@ -200,8 +207,8 @@ class _TasbihPageState extends State<TasbihPage> {
 
     setState(() {
       _completionMessage = groupedCompletion
-          ? 'Post-prayer dhikr complete'
-          : '${preset.label} complete';
+          ? AppLocalizations.of(context)!.postPrayerDhikrComplete
+          : AppLocalizations.of(context)!.dhikrComplete(preset.label);
       _completionPulse = true;
     });
 
@@ -300,9 +307,11 @@ class _TasbihPageState extends State<TasbihPage> {
     final int count = completedCount ?? _count;
     if (count <= 0) {
       if (!manual || !mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Count some dhikr first')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.countSomeDhikrFirst),
+        ),
+      );
       return;
     }
 
@@ -319,9 +328,9 @@ class _TasbihPageState extends State<TasbihPage> {
     );
     await DhikrSessionsDB().put(session.id, session);
     if (!manual || !mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Dhikr session saved')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.dhikrSessionSaved)),
+    );
   }
 
   Future<bool> _recordCompletedPreset(
@@ -352,7 +361,7 @@ class _TasbihPageState extends State<TasbihPage> {
     final DateTime now = DateTime.now();
     final DhikrSessionEntry session = DhikrSessionEntry(
       id: 'dhikr:post-prayer:${now.microsecondsSinceEpoch}',
-      label: 'Post-prayer dhikr',
+      label: _postPrayerDhikrStorageLabel,
       targetCount: 100,
       count: 100,
       startedAt: _postPrayerSequenceStartedAt ?? _sessionStartedAt,
@@ -706,7 +715,7 @@ class _HapticsRow extends StatelessWidget {
         Icon(Icons.vibration_rounded, color: colors.textSecondary, size: 19),
         const SizedBox(width: 7),
         Text(
-          'Haptics',
+          AppLocalizations.of(context)!.haptics,
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: colors.textSecondary,
             fontWeight: FontWeight.w600,
@@ -731,21 +740,28 @@ class _TasbihStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return Row(
       children: <Widget>[
         Expanded(
-          child: _StatsMetricCard(label: 'Today', value: '${stats.totalToday}'),
+          child: _StatsMetricCard(
+            label: localizations.todayMetric,
+            value: '${stats.totalToday}',
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: _StatsMetricCard(
-            label: 'Rounds',
+            label: localizations.rounds,
             value: '${stats.roundsToday}',
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: _StatsMetricCard(label: 'Streak', value: '${stats.streak}d'),
+          child: _StatsMetricCard(
+            label: localizations.streak,
+            value: '${stats.streak}d',
+          ),
         ),
       ],
     );
@@ -812,6 +828,7 @@ class _RecentDhikrSessionsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
+    final localizations = AppLocalizations.of(context)!;
 
     return ListView(
       shrinkWrap: true,
@@ -819,7 +836,7 @@ class _RecentDhikrSessionsSheet extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 6, 18, 24),
       children: <Widget>[
         Text(
-          'Recent sessions',
+          localizations.recentSessions,
           style: theme.textTheme.titleLarge?.copyWith(
             color: colors.textPrimary,
             fontWeight: FontWeight.w700,
@@ -828,7 +845,7 @@ class _RecentDhikrSessionsSheet extends StatelessWidget {
         const SizedBox(height: 10),
         if (sessions.isEmpty)
           Text(
-            'Saved dhikr sessions will appear here.',
+            localizations.savedDhikrSessionsEmpty,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colors.textSecondary,
             ),
@@ -845,11 +862,19 @@ class _RecentDhikrSessionsSheet extends StatelessWidget {
                     ? colors.textMuted
                     : colors.primary,
               ),
-              title: Text(session.label),
+              title: Text(
+                session.label == _postPrayerDhikrStorageLabel
+                    ? localizations.postPrayerDhikr
+                    : session.label,
+              ),
               subtitle: Text(
-                session.label == 'Post-prayer dhikr'
+                session.label == _postPrayerDhikrStorageLabel
                     ? 'SubhanAllah 33 • Alhamdulillah 33 • Allahu Akbar 34\n${_sessionTimeLabel(session)}'
-                    : '${session.count} of ${session.targetCount} counted • ${_sessionTimeLabel(session)}',
+                    : localizations.dhikrSessionCounted(
+                        session.count,
+                        session.targetCount,
+                        _sessionTimeLabel(session),
+                      ),
               ),
             ),
       ],
@@ -931,7 +956,7 @@ class _TasbihStats {
       if (completedAt != null) {
         completedDates.add(_dateKey(completedAt));
         if (_dateKey(completedAt) == today) {
-          roundsToday += session.label == 'Post-prayer dhikr' ? 3 : 1;
+          roundsToday += session.label == _postPrayerDhikrStorageLabel ? 3 : 1;
         }
       }
     }

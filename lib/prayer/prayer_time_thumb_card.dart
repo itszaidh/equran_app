@@ -1,7 +1,9 @@
 import 'package:equran/prayer/prayer_models.dart';
+import 'package:equran/prayer/prayer_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 const String _appAssetBase = 'assets/media/images/app';
 
@@ -25,6 +27,7 @@ class PrayerTimeThumbCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final bool isLight = theme.brightness == Brightness.light;
     final BorderRadius radius = BorderRadius.circular(AppRadii.large);
 
@@ -89,10 +92,10 @@ class PrayerTimeThumbCard extends StatelessWidget {
                       children: <Widget>[
                         Expanded(
                           child: Text(
-                            entry.kind.label,
+                            localizedPrayerName(localizations, entry.kind),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.left,
+                            textAlign: TextAlign.start,
                             style: theme.textTheme.labelLarge?.copyWith(
                               color: primaryText,
                               fontWeight: FontWeight.w900,
@@ -128,10 +131,10 @@ class PrayerTimeThumbCard extends StatelessWidget {
                       ),
                     ),
                     Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
+                        alignment: AlignmentDirectional.centerStart,
                         child: Text(
                           _formatPrayerTime(entry.time, use24HourFormat),
                           maxLines: 1,

@@ -47,6 +47,7 @@ class BackupService {
     'translation',
     'reciter',
     'color',
+    'locale',
     'themeMode',
     'themeScheme',
     'fontSize',
@@ -251,6 +252,7 @@ class BackupService {
           min: 0,
           max: _themeColorCount - 1,
         ),
+        'locale' => _requireLocale(entry.value),
         'themeMode' => _requireThemeMode(entry.value),
         'themeScheme' => _requireThemeScheme(entry.value),
         'reciter' => _requireReciterCode(entry.value),
@@ -399,6 +401,14 @@ class BackupService {
     if (value is! String ||
         (value != 'light' && value != 'dark' && value != 'auto')) {
       throw AppBackupException('Invalid value for "themeMode".');
+    }
+    return value;
+  }
+
+  static String _requireLocale(dynamic value) {
+    if (value is! String ||
+        (value != 'system' && value != 'en' && value != 'ar')) {
+      throw AppBackupException('Invalid value for "locale".');
     }
     return value;
   }

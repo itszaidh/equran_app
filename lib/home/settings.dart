@@ -36,6 +36,8 @@ import 'package:equran/widgets/library.dart'
         PlayBackSlider,
         SettingsSwitch;
 import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
+import 'package:equran/main.dart' show MyApp;
 import 'package:quran/quran.dart' show Translation, isTranslationLoaded;
 
 class SettingsPage extends StatefulWidget {
@@ -65,6 +67,7 @@ class _SettingsPageState extends State<SettingsPage> {
       defaultValue: true,
     );
     final bool showTranslationControls = cardViewEnabled && translationEnabled;
+    final localizations = AppLocalizations.of(context)!;
 
     return Material(
       child: ListView(
@@ -73,45 +76,46 @@ class _SettingsPageState extends State<SettingsPage> {
         children: <Widget>[
           _buildSettingsGroup(
             context: context,
-            title: "General",
-            subtitle: "App behavior and history",
+            title: localizations.general,
+            subtitle: localizations.generalSubtitle,
             icon: Icons.tune_rounded,
             initiallyExpanded: true,
             children: <Widget>[
-              const SettingsSwitch(
-                title: "Vibration",
-                subtitle: "Enable haptic feedback when navigating.",
+              _buildLanguageTile(context),
+              SettingsSwitch(
+                title: localizations.vibration,
+                subtitle: localizations.vibrationSubtitle,
                 settingsKey: "vibration",
               ),
-              const SettingsSwitch(
-                title: "Show reading history",
+              SettingsSwitch(
+                title: localizations.showReadingHistory,
                 settingsKey: "showLastRead",
-                subtitle: "Shows you up to 7 last read Surahs.",
+                subtitle: localizations.showReadingHistorySubtitle,
               ),
             ],
           ),
           _buildSettingsGroup(
             context: context,
-            title: "Reading",
-            subtitle: "Quran display and translation",
+            title: localizations.reading,
+            subtitle: localizations.readingSubtitle,
             icon: Icons.menu_book_rounded,
             initiallyExpanded: true,
             children: <Widget>[
               SettingsSwitch(
-                title: "Card View",
-                subtitle: "Displays each verse separately, or all in one page.",
+                title: localizations.cardView,
+                subtitle: localizations.cardViewSubtitle,
                 settingsKey: "viewMode",
                 onChanged: (_) => setState(() {}),
               ),
               if (cardViewEnabled)
                 SettingsSwitch(
-                  title: "Display Translation",
-                  subtitle: "Display translation for each verse in card view.",
+                  title: localizations.displayTranslation,
+                  subtitle: localizations.displayTranslationSubtitle,
                   settingsKey: "enableTranslation",
                   onChanged: (_) => setState(() {}),
                   defaultValue: true,
                 ),
-              if (cardViewEnabled) _buildTransliterationToggle(),
+              if (cardViewEnabled) _buildTransliterationToggle(context),
               _buildDailyQuranGoalTile(context),
               _buildTranslationTile(context),
               FontSlider(showTranslationControls: showTranslationControls),
@@ -119,8 +123,8 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingsGroup(
             context: context,
-            title: "Audio",
-            subtitle: "Reciter and playback",
+            title: localizations.audio,
+            subtitle: localizations.audioSubtitle,
             icon: Icons.graphic_eq_rounded,
             children: <Widget>[
               _buildReciterTile(context),
@@ -129,23 +133,21 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingsGroup(
             context: context,
-            title: "Downloadable Resources",
-            subtitle: "Tafsir and audio timing packs",
+            title: localizations.downloadableResources,
+            subtitle: localizations.downloadableResourcesSubtitle,
             icon: Icons.cloud_download_outlined,
             children: <Widget>[_buildDownloadableResourcesSection(context)],
           ),
           _buildSettingsGroup(
             context: context,
-            title: "Prayer Times",
-            subtitle: "Location and calculation settings",
+            title: localizations.prayerTimes,
+            subtitle: localizations.locationAndCalculationSettings,
             icon: Icons.access_time_outlined,
             children: <Widget>[
               ListTile(
                 leading: const Icon(Icons.tune_rounded),
-                title: const Text('Prayer Times settings'),
-                subtitle: const Text(
-                  'Manage location, method, Asr, time format, and offsets.',
-                ),
+                title: Text(localizations.prayerTimesSettings),
+                subtitle: Text(localizations.prayerTimesSettingsSubtitle),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (context) => const PrayerTimesSettingsPage(),
@@ -156,8 +158,8 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingsGroup(
             context: context,
-            title: "Appearance",
-            subtitle: "Theme, color, and display mode",
+            title: localizations.appearance,
+            subtitle: localizations.appearanceSubtitle,
             icon: Icons.palette_outlined,
             children: <Widget>[
               _buildThemeModeTile(context),
@@ -166,8 +168,8 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _buildSettingsGroup(
             context: context,
-            title: "Data",
-            subtitle: "Backup, restore, or clear saved local data",
+            title: localizations.data,
+            subtitle: localizations.dataSubtitle,
             icon: Icons.storage_rounded,
             children: <Widget>[
               _buildBackupDataTile(context),
@@ -217,16 +219,17 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildTranslationTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return ListTile(
-      title: const Text("Translation"),
-      subtitle: Text(_selectedTranslationName()),
+      title: Text(localizations.translation),
+      subtitle: Text(_selectedTranslationName(localizations)),
       onTap: () async {
         final ResourceManifest manifest = await _resourceManifestFuture;
         if (!context.mounted) return;
         final int selected = SettingsDB().get("translation", defaultValue: 0);
         final int? value = await _showSelectionDialog<int>(
           context: context,
-          title: "Translation Language",
+          title: localizations.translationLanguage,
           icon: Icons.translate_rounded,
           selectedValue: selected,
           options:
@@ -280,18 +283,20 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildTransliterationToggle() {
-    return const SettingsSwitch(
-      title: "Display Transliteration",
-      subtitle: "Show transliteration for each verse in card view.",
+  Widget _buildTransliterationToggle(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    return SettingsSwitch(
+      title: localizations.displayTransliteration,
+      subtitle: localizations.displayTransliterationSubtitle,
       settingsKey: "showTransliteration",
       defaultValue: false,
     );
   }
 
   Widget _buildReciterTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return ListTile(
-      title: const Text("Reciter"),
+      title: Text(localizations.reciter),
       subtitle: Text(_selectedReciterName()),
       onTap: () async {
         final List<AppReciter> items = AppReciter.values.toList()
@@ -304,7 +309,7 @@ class _SettingsPageState extends State<SettingsPage> {
         final selectedReciter = AppReciter.fromCode(selected);
         final AppReciter? value = await _showSelectionDialog<AppReciter>(
           context: context,
-          title: "Reciter",
+          title: localizations.reciter,
           icon: Icons.record_voice_over_rounded,
           selectedValue: selectedReciter,
           options: items
@@ -326,6 +331,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildDownloadableResourcesSection(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return FutureBuilder<ResourceManifest>(
       future: _resourceManifestFuture,
       builder: (context, snapshot) {
@@ -340,14 +346,14 @@ class _SettingsPageState extends State<SettingsPage> {
         if (manifest == null || manifest.resources.isEmpty) {
           return Column(
             children: <Widget>[
-              const ListTile(
-                leading: Icon(Icons.error_outline_rounded),
-                title: Text('Resources unavailable'),
-                subtitle: Text('Unable to load the resource manifest.'),
+              ListTile(
+                leading: const Icon(Icons.error_outline_rounded),
+                title: Text(localizations.resourcesUnavailable),
+                subtitle: Text(localizations.resourcesManifestUnavailable),
               ),
               ListTile(
                 leading: const Icon(Icons.refresh_rounded),
-                title: const Text('Retry'),
+                title: Text(localizations.retry),
                 onTap: _refreshResourceManifest,
               ),
             ],
@@ -368,21 +374,21 @@ class _SettingsPageState extends State<SettingsPage> {
                     _buildResourceSubsection(
                       context: context,
                       manifest: manifest,
-                      title: 'Tafsir',
+                      title: localizations.tafsir,
                       resources: manifest.resourcesOfType(ResourceType.tafsir),
                       downloads: downloads,
                     ),
                     _buildResourceSubsection(
                       context: context,
                       manifest: manifest,
-                      title: 'Audio Timings',
+                      title: localizations.audioTimings,
                       resources: manifest.resourcesOfType(ResourceType.timings),
                       downloads: downloads,
                     ),
                     _buildResourceSubsection(
                       context: context,
                       manifest: manifest,
-                      title: 'Translations',
+                      title: localizations.translations,
                       resources: manifest.resourcesOfType(
                         ResourceType.translation,
                       ),
@@ -390,8 +396,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     ListTile(
                       leading: const Icon(Icons.refresh_rounded),
-                      title: const Text('Refresh manifest'),
-                      subtitle: const Text('Check GitHub releases for changes'),
+                      title: Text(localizations.refreshManifest),
+                      subtitle: Text(localizations.checkGithubReleases),
                       onTap: _refreshResourceManifest,
                     ),
                   ],
@@ -412,9 +418,10 @@ class _SettingsPageState extends State<SettingsPage> {
     required Map<String, ResourceDownloadProgress> downloads,
   }) {
     if (resources.isEmpty) {
+      final localizations = AppLocalizations.of(context)!;
       return ListTile(
         title: Text(title),
-        subtitle: const Text('No resources listed in the manifest.'),
+        subtitle: Text(localizations.noResourcesListed),
       );
     }
 
@@ -460,8 +467,9 @@ class _SettingsPageState extends State<SettingsPage> {
             progress.phase != ResourceDownloadPhase.failed
         ? ResourceInstallState.downloading
         : store.installStateFor(resource);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final String status = selected
-        ? '${installState.label} • Selected'
+        ? '${installState.label} • ${localizations.selected}'
         : installState.label;
 
     return ListTile(
@@ -504,6 +512,7 @@ class _SettingsPageState extends State<SettingsPage> {
     ResourceInstallState state,
     ResourceDownloadProgress? progress,
   ) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (state == ResourceInstallState.downloading) {
       final double? fraction = progress?.fraction;
       return SizedBox.square(
@@ -514,7 +523,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (state == ResourceInstallState.installed) {
       return IconButton(
-        tooltip: 'Delete',
+        tooltip: localizations.delete,
         onPressed: () => _confirmDeleteResource(resource),
         icon: const Icon(Icons.delete_outline_rounded),
       );
@@ -522,8 +531,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return IconButton(
       tooltip: state == ResourceInstallState.updateAvailable
-          ? 'Update'
-          : 'Download',
+          ? localizations.update
+          : localizations.download,
       onPressed: () => _downloadResource(resource),
       icon: Icon(
         state == ResourceInstallState.updateAvailable
@@ -577,10 +586,11 @@ class _SettingsPageState extends State<SettingsPage> {
     required ResourceManifest manifest,
     required DownloadableResource resource,
   }) async {
+    final localizations = AppLocalizations.of(context)!;
     final Translation? translation = _translationForResource(resource);
     if (translation == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('This translation is not supported yet.')),
+        SnackBar(content: Text(localizations.translationUnsupported)),
       );
       return;
     }
@@ -611,10 +621,9 @@ class _SettingsPageState extends State<SettingsPage> {
         .resourceForTranslation(translation, manifest);
     if (resource == null) {
       if (!mounted) return false;
+      final localizations = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('This translation is not in the resource manifest.'),
-        ),
+        SnackBar(content: Text(localizations.translationNotInManifest)),
       );
       return false;
     }
@@ -624,20 +633,25 @@ class _SettingsPageState extends State<SettingsPage> {
     final bool? download = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Download ${translationDisplayName(translation)}?'),
+        title: Text(
+          AppLocalizations.of(
+            context,
+          )!.downloadTranslationQuestion(translationDisplayName(translation)),
+        ),
         content: Text(
-          'This translation is not installed on this device. '
-          '${prettyBytes(resource.sizeBytes)}',
+          AppLocalizations.of(
+            context,
+          )!.translationNotInstalled(prettyBytes(resource.sizeBytes)),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
             icon: const Icon(Icons.download_rounded),
-            label: const Text('Download'),
+            label: Text(AppLocalizations.of(context)!.download),
           ),
         ],
       ),
@@ -659,9 +673,10 @@ class _SettingsPageState extends State<SettingsPage> {
       await QuranTranslationService.instance
           .loadInstalledTranslationForResource(resource);
       if (!mounted) return false;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
+      final localizations = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(localizations.installedResource(resource.name))),
+      );
       setState(() {});
       return true;
     } on ResourceInstallException catch (error) {
@@ -672,8 +687,9 @@ class _SettingsPageState extends State<SettingsPage> {
       return false;
     } catch (_) {
       if (!mounted) return false;
+      final localizations = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to install this resource.')),
+        SnackBar(content: Text(localizations.unableInstallResource)),
       );
       return false;
     }
@@ -683,18 +699,18 @@ class _SettingsPageState extends State<SettingsPage> {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Delete ${resource.name}?'),
-        content: const Text(
-          'This removes the downloaded files from this device.',
+        title: Text(
+          AppLocalizations.of(context)!.deleteResourceQuestion(resource.name),
         ),
+        content: Text(AppLocalizations.of(context)!.deleteResourceBody),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -702,9 +718,10 @@ class _SettingsPageState extends State<SettingsPage> {
     if (confirmed != true) return;
     await ResourceDownloadService.instance.uninstall(resource);
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Deleted ${resource.name}.')));
+    final localizations = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(localizations.deletedResource(resource.name))),
+    );
     setState(() {});
   }
 
@@ -715,6 +732,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildThemeColorTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return ListTile(
       onTap: () async {
         final String? selectedScheme = await _showThemeSchemeDialog(context);
@@ -732,7 +750,7 @@ class _SettingsPageState extends State<SettingsPage> {
           );
         }
       },
-      title: const Text("Color scheme"),
+      title: Text(localizations.colorScheme),
       subtitle: Text(_selectedThemeName()),
     );
   }
@@ -774,14 +792,16 @@ class _SettingsPageState extends State<SettingsPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Color Scheme',
+                            AppLocalizations.of(
+                              context,
+                            )!.colorSchemeDialogTitle,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                         ),
                         IconButton(
-                          tooltip: 'Close',
+                          tooltip: AppLocalizations.of(context)!.close,
                           onPressed: () => Navigator.of(context).pop(),
                           icon: const Icon(Icons.close_rounded),
                         ),
@@ -839,11 +859,12 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildDailyQuranGoalTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final int goal = _dailyQuranGoalAyahs();
     return ListTile(
       leading: const Icon(Icons.flag_outlined),
-      title: const Text("Daily Quran goal"),
-      subtitle: Text("$goal ayahs per day"),
+      title: Text(localizations.dailyQuranGoal),
+      subtitle: Text(localizations.dailyQuranGoalSubtitle(goal)),
       onTap: () async {
         final int? value = await _showDailyGoalDialog(context, goal);
         if (value == null) return;
@@ -866,14 +887,15 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final localizations = AppLocalizations.of(context)!;
             return AlertDialog(
-              title: const Text('Daily Quran goal'),
+              title: Text(localizations.dailyQuranGoal),
               content: TextField(
                 controller: controller,
                 keyboardType: TextInputType.number,
                 autofocus: true,
                 decoration: InputDecoration(
-                  labelText: 'Ayahs per day',
+                  labelText: localizations.ayahsPerDay,
                   hintText: '20',
                   errorText: errorText,
                 ),
@@ -888,20 +910,20 @@ class _SettingsPageState extends State<SettingsPage> {
               actions: <Widget>[
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel'),
+                  child: Text(localizations.cancel),
                 ),
                 FilledButton(
                   onPressed: () {
                     final int? value = int.tryParse(controller.text.trim());
                     if (value == null || value < 1 || value > 1000) {
                       setDialogState(() {
-                        errorText = 'Enter a goal from 1 to 1000 ayahs';
+                        errorText = localizations.enterGoalRange;
                       });
                       return;
                     }
                     Navigator.of(dialogContext).pop(value);
                   },
-                  child: const Text('Save'),
+                  child: Text(localizations.save),
                 ),
               ],
             );
@@ -912,28 +934,25 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildClearReadingHistoryTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return ListTile(
-      title: const Text("Clear reading history"),
-      subtitle: const Text(
-        "Removes last read, resume positions, and Quran reading progress.",
-      ),
+      title: Text(localizations.clearReadingHistory),
+      subtitle: Text(localizations.clearReadingHistorySubtitle),
       onTap: () => _showClearDataDialog(
         context: context,
-        title: "Clear reading history",
-        message:
-            "WARNING: This will clear last read, resume positions, statistics, and routine day progress.",
+        title: localizations.clearReadingHistory,
+        message: localizations.clearReadingHistoryWarning,
         onConfirm: _clearReadingHistory,
       ),
     );
   }
 
   Widget _buildBackupDataTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return ListTile(
       leading: const Icon(Icons.backup_outlined),
-      title: const Text("Backup data"),
-      subtitle: const Text(
-        "Exports favourites, reading history, reciter, text sizes, and all settings.",
-      ),
+      title: Text(localizations.backupData),
+      subtitle: Text(localizations.backupDataSubtitle),
       onTap: () async {
         try {
           final String? outputPath = await BackupService.exportBackupFile();
@@ -941,27 +960,26 @@ class _SettingsPageState extends State<SettingsPage> {
           _showMessage(
             context,
             outputPath == null
-                ? 'Backup file ready to share.'
-                : 'Backup saved to $outputPath',
+                ? localizations.backupReadyToShare
+                : localizations.backupSavedTo(outputPath),
           );
         } on AppBackupException catch (error) {
           if (error.message != 'Backup cancelled.') {
             _showMessage(context, error.message);
           }
         } catch (_) {
-          _showMessage(context, 'Unable to create the backup file.');
+          _showMessage(context, localizations.unableCreateBackup);
         }
       },
     );
   }
 
   Widget _buildRestoreDataTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return ListTile(
       leading: const Icon(Icons.restore_page_outlined),
-      title: const Text("Restore data"),
-      subtitle: const Text(
-        "Restores favourites, reading history, reciter, text sizes, and saved settings from a backup file.",
-      ),
+      title: Text(localizations.restoreData),
+      subtitle: Text(localizations.restoreDataSubtitle),
       onTap: () async {
         final bool shouldRestore = await _showRestoreConfirmation(context);
         if (!shouldRestore || !context.mounted) return;
@@ -975,7 +993,11 @@ class _SettingsPageState extends State<SettingsPage> {
           setState(() {});
           _showMessage(
             context,
-            'Restored ${result.favouritesCount} favourites, ${result.readingHistoryCount} history entries, and ${result.settingsCount} settings.',
+            localizations.restoredBackupSummary(
+              result.favouritesCount,
+              result.readingHistoryCount,
+              result.settingsCount,
+            ),
           );
         } on AppBackupException catch (error) {
           if (error.message != 'Restore cancelled.' && context.mounted) {
@@ -983,7 +1005,7 @@ class _SettingsPageState extends State<SettingsPage> {
           }
         } catch (_) {
           if (context.mounted) {
-            _showMessage(context, 'Unable to restore the selected backup.');
+            _showMessage(context, localizations.unableRestoreBackup);
           }
         }
       },
@@ -991,16 +1013,14 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildClearFavouritesTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return ListTile(
-      title: const Text("Clear Favourites"),
-      subtitle: const Text(
-        "Removes saved ayahs, folders, notes, tags, and favourites.",
-      ),
+      title: Text(localizations.clearFavourites),
+      subtitle: Text(localizations.clearFavouritesSubtitle),
       onTap: () => _showClearDataDialog(
         context: context,
-        title: "Clear Favourites",
-        message:
-            "WARNING: This will clear every saved ayah, folder, note, tag, and favourite.",
+        title: localizations.clearFavourites,
+        message: localizations.clearFavouritesWarning,
         onConfirm: _clearSavedAyahLibrary,
       ),
     );
@@ -1027,6 +1047,7 @@ class _SettingsPageState extends State<SettingsPage> {
     required String message,
     required Future<void> Function() onConfirm,
   }) {
+    final localizations = AppLocalizations.of(context)!;
     showDialog<void>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -1048,7 +1069,7 @@ class _SettingsPageState extends State<SettingsPage> {
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              "NO",
+              localizations.no,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onErrorContainer,
               ),
@@ -1062,7 +1083,7 @@ class _SettingsPageState extends State<SettingsPage> {
               }
             },
             child: Text(
-              "YES",
+              localizations.yes,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onErrorContainer,
               ),
@@ -1095,19 +1116,17 @@ class _SettingsPageState extends State<SettingsPage> {
     final bool? shouldRestore = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        title: const Text("Restore backup"),
+        title: Text(AppLocalizations.of(context)!.restoreBackup),
         icon: const Icon(Icons.restore_page_outlined),
-        content: const Text(
-          "This will replace your current favourites, reading history, and saved settings with the contents of the backup file.",
-        ),
+        content: Text(AppLocalizations.of(context)!.restoreBackupWarning),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Cancel"),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text("Restore"),
+            child: Text(AppLocalizations.of(context)!.restore),
           ),
         ],
       ),
@@ -1124,41 +1143,43 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildThemeModeTile(BuildContext context) {
     final AdaptiveThemeMode themeMode = AdaptiveTheme.of(context).mode;
+    final localizations = AppLocalizations.of(context)!;
 
     return ListTile(
       leading: Icon(_themeModeIcon(themeMode)),
-      title: const Text("Theme mode"),
-      subtitle: Text(_themeModeLabel(themeMode)),
+      title: Text(localizations.themeMode),
+      subtitle: Text(_themeModeLabel(themeMode, localizations)),
       onTap: () => _showThemeModeDialog(context),
     );
   }
 
   Future<void> _showThemeModeDialog(BuildContext context) async {
     final AdaptiveThemeMode currentMode = AdaptiveTheme.of(context).mode;
+    final localizations = AppLocalizations.of(context)!;
     final AdaptiveThemeMode? selectedMode =
         await _showSelectionDialog<AdaptiveThemeMode>(
           context: context,
-          title: "Theme Mode",
+          title: localizations.themeModeDialogTitle,
           icon: Icons.palette_outlined,
           selectedValue: currentMode,
-          options: const <AppSelectionOption<AdaptiveThemeMode>>[
+          options: <AppSelectionOption<AdaptiveThemeMode>>[
             AppSelectionOption<AdaptiveThemeMode>(
               value: AdaptiveThemeMode.dark,
-              title: "Dark",
-              subtitle: "Always use night mode.",
-              leading: Icon(Icons.dark_mode_rounded),
+              title: localizations.themeModeDark,
+              subtitle: localizations.themeModeDarkSubtitle,
+              leading: const Icon(Icons.dark_mode_rounded),
             ),
             AppSelectionOption<AdaptiveThemeMode>(
               value: AdaptiveThemeMode.light,
-              title: "Light",
-              subtitle: "Always use light mode.",
-              leading: Icon(Icons.light_mode_rounded),
+              title: localizations.themeModeLight,
+              subtitle: localizations.themeModeLightSubtitle,
+              leading: const Icon(Icons.light_mode_rounded),
             ),
             AppSelectionOption<AdaptiveThemeMode>(
               value: AdaptiveThemeMode.system,
-              title: "Auto",
-              subtitle: "Follow the system theme.",
-              leading: Icon(Icons.brightness_auto_rounded),
+              title: localizations.themeModeSystem,
+              subtitle: localizations.themeModeSystemSubtitle,
+              leading: const Icon(Icons.brightness_auto_rounded),
             ),
           ],
         );
@@ -1177,10 +1198,13 @@ class _SettingsPageState extends State<SettingsPage> {
     return Icons.light_mode_rounded;
   }
 
-  String _themeModeLabel(AdaptiveThemeMode themeMode) {
-    if (themeMode.isDark) return "Dark";
-    if (themeMode.isSystem) return "Auto";
-    return "Light";
+  String _themeModeLabel(
+    AdaptiveThemeMode themeMode,
+    AppLocalizations localizations,
+  ) {
+    if (themeMode.isDark) return localizations.themeModeDark;
+    if (themeMode.isSystem) return localizations.themeModeSystem;
+    return localizations.themeModeLight;
   }
 
   String _themeModeSettingValue(AdaptiveThemeMode themeMode) {
@@ -1230,7 +1254,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return 20;
   }
 
-  String _selectedTranslationName() {
+  String _selectedTranslationName(AppLocalizations localizations) {
     final dynamic savedTranslation = SettingsDB().get(
       "translation",
       defaultValue: 0,
@@ -1241,11 +1265,79 @@ class _SettingsPageState extends State<SettingsPage> {
       final Translation translation = Translation.values[savedTranslation];
       final String name = translationDisplayName(translation);
       if (!translation.isBundled && !isTranslationLoaded(translation)) {
-        return '$name • Not downloaded';
+        return '$name • ${localizations.notDownloaded}';
       }
       return name;
     }
     return translationDisplayName(Translation.values.first);
+  }
+
+  Widget _buildLanguageTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+    final String currentLang = SettingsDB().get(
+      "locale",
+      defaultValue: "system",
+    );
+
+    return ListTile(
+      leading: const Icon(Icons.language_rounded),
+      title: Text(localizations.language),
+      subtitle: Text(_languageLabel(currentLang, localizations)),
+      onTap: () => _showLanguageDialog(context),
+    );
+  }
+
+  String _languageLabel(String lang, AppLocalizations localizations) {
+    return switch (lang) {
+      "en" => localizations.english,
+      "ar" => localizations.arabic,
+      _ => localizations.systemDefault,
+    };
+  }
+
+  Future<void> _showLanguageDialog(BuildContext context) async {
+    final localizations = AppLocalizations.of(context)!;
+    final String currentLang = SettingsDB().get(
+      "locale",
+      defaultValue: "system",
+    );
+
+    final String? selectedLang = await _showSelectionDialog<String>(
+      context: context,
+      title: localizations.language,
+      icon: Icons.language_rounded,
+      selectedValue: currentLang,
+      options: <AppSelectionOption<String>>[
+        AppSelectionOption<String>(
+          value: "system",
+          title: localizations.systemDefault,
+          subtitle: "System default / لغة النظام",
+          leading: const Icon(Icons.brightness_auto_rounded),
+        ),
+        AppSelectionOption<String>(
+          value: "en",
+          title: localizations.english,
+          subtitle: "English",
+          leading: const Icon(Icons.translate_rounded),
+        ),
+        AppSelectionOption<String>(
+          value: "ar",
+          title: localizations.arabic,
+          subtitle: "العربية / Arabic (Still incomplete)",
+          leading: const Icon(Icons.translate_rounded),
+        ),
+      ],
+    );
+
+    if (selectedLang == null) return;
+    await SettingsDB().put("locale", selectedLang);
+    if (context.mounted) {
+      final Locale? targetLocale = selectedLang == "system"
+          ? null
+          : Locale(selectedLang);
+      MyApp.of(context)?.setLocale(targetLocale);
+      setState(() {});
+    }
   }
 
   String _selectedReciterName() {
