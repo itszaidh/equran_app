@@ -540,5 +540,397 @@
         "type": "String"
       }
     }
+  },
+  "prayerTimesSettings": "Prayer Times Settings",
+  "location": "Location",
+  "locationSubtitle": "Used only for prayer time calculations",
+  "useCurrentLocationDescription": "Save this device's location for prayer calculations.",
+  "moveMapUnderPin": "Move the map under a centered pin.",
+  "enterLatitudeAndLongitude": "Enter latitude and longitude.",
+  "clearSavedLocation": "Clear saved location",
+  "clearSavedLocationSubtitle": "Prayer times will pause until you choose again.",
+  "calculation": "Calculation",
+  "calculationSubtitle": "Method, Asr, high latitude, and time format",
+  "calculationMethod": "Calculation method",
+  "asrMethod": "Asr method",
+  "highLatitudeAdjustment": "High latitude adjustment",
+  "highLatitudeAdjustmentSubtitle": "Used when Fajr or Isha are difficult to calculate in far northern or southern locations.",
+  "timeFormat": "Time format",
+  "useLocationTimezone": "Use location timezone",
+  "locationTimezoneSubtitle": "Use the timezone of the saved location instead of this device's timezone.",
+  "customMethod": "Custom Method",
+  "fajrAngle": "Fajr angle",
+  "ishaMode": "Isha mode",
+  "maghribAngle": "Maghrib angle",
+  "leaveBlankToUseSunset": "Leave blank to use sunset.",
+  "fixedIshaTime": "Fixed Isha time",
+  "latestIshaTime": "Latest Isha time",
+  "baseIshaAngle": "Base Isha angle",
+  "baseIshaInterval": "Base Isha interval",
+  "ishaAngle": "Isha angle",
+  "ishaInterval": "Isha interval",
+  "leaveBlankToUseBaseIshaAngle": "Leave blank to use the base Isha angle.",
+  "useIshaAngle": "Use Isha angle",
+  "minutesAfterMaghrib": "{minutes} minutes after Maghrib",
+  "@minutesAfterMaghrib": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "prohibitedTimes": "Prohibited Times",
+  "prohibitedTimesSubtitle": "Sunrise, Zawal and Sunset windows",
+  "sunriseProhibitedTime": "Sunrise prohibited time",
+  "sunriseProhibitedTimeMinutes": "{minutes} minutes after Sunrise",
+  "@sunriseProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "zawalProhibitedTime": "Zawal prohibited time",
+  "zawalProhibitedTimeMinutes": "{minutes} minutes before Dhuhr",
+  "@zawalProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sunsetProhibitedTime": "Sunset prohibited time",
+  "sunsetProhibitedTimeMinutes": "{minutes} minutes before Maghrib",
+  "@sunsetProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerReminders": "Prayer Reminders",
+  "prayerRemindersSubtitle": "Notifications before each prayer",
+  "prayerRemindersEnabled": "Prayer reminders",
+  "prayerRemindersEnabledSubtitle": "Get notified before each prayer time.",
+  "notificationsPermission": "Notifications permission",
+  "exactAlarmPermission": "Exact alarm / alarms & reminders permission",
+  "enable": "Enable",
+  "open": "Open",
+  "notificationPermissionOff": "Notification permission is off. Enable it to receive prayer reminders.",
+  "exactAlarmPermissionDisabled": "Exact alarm permission is disabled. Prayer reminders may be delayed.",
+  "openAppSettings": "Open app settings",
+  "requestPermission": "Request permission",
+  "retry": "Retry",
+  "openAlarmPermissionSettings": "Open alarm permission settings",
+  "chooseLocationBeforeReminders": "Choose a location before reminders can be scheduled.",
+  "notifyAtSavedPrayerTime": "Notify at the saved prayer time.",
+  "reminderTime": "Reminder time",
+  "atPrayerTime": "At prayer time",
+  "minutesBefore": "{minutes} minutes before",
+  "@minutesBefore": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "schedule1MinuteExactTest": "Schedule 1-minute exact test",
+  "schedule1MinuteExactTestSubtitle": "Uses the prayer reminder scheduler.",
+  "offsetsAreAppliedAfterBaseCalculation": "Offsets are applied after the base calculation. Use positive or negative minutes only when you need to match a trusted local timetable.",
+  "manualOffsets": "Manual Offsets",
+  "manualOffsetsSubtitle": "Fine tune calculated times",
+  "noManualAdjustment": "No manual adjustment",
+  "positiveOrNegativeMinutes": "{value} minutes",
+  "@positiveOrNegativeMinutes": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerTimesExperimental": "Prayer times are currently experimental and may differ from local mosque or official timetables. Please verify before relying on them.",
+  "bestMethodAfterLocationSaved": "Best method after location is saved",
+  "minutesBeforePrayer": "{minutes} min before prayer",
+  "@minutesBeforePrayer": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "save": "Save",
+  "clear": "Clear",
+  "enablePrayerTracking": "Enable prayer tracking",
+  "trackYourDailyPrayers": "Track your daily prayers",
+  "trackYourDailyPrayersDescription": "Log each prayer privately on your device. Your data never leaves your phone.",
+  "maybeLater": "Maybe later",
+  "logEachPrayerPrivately": "Log each prayer privately on your device. Your data never leaves your phone.",
+  "enablePrayerTrackingLabel": "Enable prayer tracking →",
+  "somePrayersNotYetAvailable": "Some prayers were not yet available and were not saved.",
+  "prayerLogSaved": "Prayer log saved",
+  "addNewFolder": "New Folder",
+  "editNote": "Edit note",
+  "moveToFolder": "Move to folder",
+  "editTags": "Edit tags",
+  "savedAyah": "Saved ayah",
+  "removeSavedAyah": "Remove saved ayah?",
+  "removeSavedAyahBody": "This will remove the ayah from your saved library.",
+  "remove": "Remove",
+  "personalLibrary": "Personal Library",
+  "savedCount": "{count} saved",
+  "@savedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "all": "All",
+  "favourites": "Favourites",
+  "notes": "Notes",
+  "folders": "Folders",
+  "tags": "Tags",
+  "manageFolders": "Manage",
+  "surahLabel": "{surahName} • Ayah {ayah}",
+  "@surahLabel": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    },
+    "ayah": {
+      "type": "int"
+    }
+  },
+  "showTafsir": "Show tafsir",
+  "saveToLibrary": "Save to library",
+  "folderTagsAndNote": "Folder, tags, and private note",
+  "ayahDetails": "Ayah details",
+  "newFolder": "New folder",
+  "create": "Create",
+  "translationOption": "Translation",
+  "showAyahTranslation": "Show ayah translation",
+  "transliterationOption": "Transliteration",
+  "showAyahTransliteration": "Show ayah transliteration",
+  "cardViewOption": "Card View",
+  "readOneAyahPerCard": "Read one ayah per card",
+  "chooseAnAction": "Choose an action",
+  "playThisAyah": "Play this ayah",
+  "shareImage": "Share image",
+  "searchCategories": "Search categories",
+  "clearSearch": "Clear search",
+  "categories": "Categories",
+  "noMatchingCategories": "No matching categories",
+  "trySearchingArabicWord": "Try searching with another Arabic word or phrase.",
+  "duasUnavailable": "Duas unavailable",
+  "hisnAlMuslimNotLoaded": "Hisn al Muslim could not be loaded from the offline asset.",
+  "retryAction": "Retry",
+  "noDuasFound": "No duas found",
+  "offlineHisnAlMuslimEmpty": "The offline Hisn al Muslim file did not contain any duas.",
+  "hisnAlMuslim": "Hisn al Muslim",
+  "arabicCategoriesDuasOffline": "{categoryCount} Arabic categories - {duaCount} duas offline",
+  "@arabicCategoriesDuasOffline": {
+    "placeholders": {
+      "categoryCount": {
+        "type": "int"
+      },
+      "duaCount": {
+        "type": "int"
+      }
+    }
+  },
+  "favouriteDuas": "Favourite duas",
+  "saveDuasHere": "Save duas here for quick access",
+  "savedDuasCount": "{count} saved {label}",
+  "@savedDuasCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "tasbihAndDhikr": "Tasbih and dhikr",
+  "calmCounterDailyPresets": "A calm counter with daily presets",
+  "duaCount": "{count} {label}",
+  "@duaCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "label": {
+      "type": "String"
+    }
+  },
+  "favouriteDuasPage": "Favourite duas",
+  "favouritesUnavailable": "Favourites unavailable",
+  "savedDuasNotLoaded": "Saved duas could not be loaded right now.",
+  "noFavouriteDuasYet": "No favourite duas yet.",
+  "tapHeartToSave": "Tap the heart on any dua card to save it here.",
+  "categoryUnavailable": "Category unavailable",
+  "categoryNotLoaded": "This Hisn al Muslim category could not be loaded.",
+  "categoryNoDuas": "No duas found",
+  "categoryDoesNotContainDuas": "This category does not contain any duas.",
+  "downloadTimings": "Download timings?",
+  "reciterNeedsTimings": "This reciter needs audio timings before synced ayah text can be shown. {size}",
+  "@reciterNeedsTimings": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "timingsUnavailable": "Timings unavailable for this reciter.",
+  "timingsUnavailableSurah": "Timings unavailable for this surah.",
+  "unableToInstallTimings": "Unable to install timings.",
+  "installedLabel": "Installed {name}.",
+  "@installedLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "installed": "Installed",
+  "noTafsirSourcesSelected": "No Tafsir sources selected",
+  "chooseTafsirSourcesFirst": "Choose one or more Tafsir sources first.",
+  "choose": "Choose",
+  "go": "Go",
+  "deleteDownloadedMp3": "Delete Downloaded MP3?",
+  "deleteDownloadedAyah": "Delete Downloaded Ayah?",
+  "downloadAllAyahs": "Download All Ayahs?",
+  "downloadAllAyahsConfirm": "This will download audio for all {count} ayahs in this surah ({size}).",
+  "@downloadAllAyahsConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "surahOption": "Surah",
+  "reciterOption": "Reciter",
+  "sleepTimerOption": "Sleep timer",
+  "shuffleOption": "Shuffle",
+  "shuffleSubtitle": "Randomize after surah ends",
+  "loopCurrentSurah": "Loop current surah",
+  "loopSubtitle": "Repeat the current surah",
+  "downloadTimingsResource": "Download timings",
+  "timingsNeedToBeDownloaded": "This reciter needs audio timings before synced ayah text can be shown. {size}",
+  "@timingsNeedToBeDownloaded": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "intervalOption": "Interval",
+  "intervalRepeatOption": "Interval repeat",
+  "repeatEachAyahOption": "Repeat each ayah",
+  "resetPlaybackOptions": "Reset playback options",
+  "surahOptionLabel": "Surah",
+  "searchCategoriesDua": "Search categories",
+  "savedAyahLibrary": "Saved Ayah",
+  "autoAdvancesToNextPreset": "Auto-advances to {nextPreset}",
+  "@autoAdvancesToNextPreset": {
+    "placeholders": {
+      "nextPreset": {
+        "type": "String"
+      }
+    }
+  },
+  "previousDhikr": "Previous dhikr",
+  "nextDhikr": "Next dhikr",
+  "counts33To33To34": "{target} counts • 33 → 33 → 34",
+  "@counts33To33To34": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "assalamuAlaikum": "Assalamu Alaikum",
+  "continueYourJourneyToday": "Continue your journey today",
+  "onStreakDay": "You're on a {streak}-day streak — keep going",
+  "@onStreakDay": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "todaysWorship": "TODAY'S WORSHIP",
+  "ayahsLabel": "Ayahs",
+  "dhikrLabel": "Dhikr",
+  "duasLabel": "Duas",
+  "salahLabel": "Salah",
+  "dayStreakLabel": "Day streak",
+  "dailyQuranGoalLabel": "DAILY QURAN GOAL",
+  "salah": "Salah",
+  "quranLabel": "Quran",
+  "tasbihLabel": "Tasbih",
+  "activityHistory": "Activity History",
+  "streaksLabel": "Streaks",
+  "weekRange": "Week",
+  "monthRange": "Month",
+  "yearRange": "Year",
+  "allTimeRange": "All time",
+  "noPrayerYet": "No prayer yet",
+  "noDayYet": "No day yet",
+  "noSurahYet": "No surah yet",
+  "noDhikrYet": "No dhikr yet",
+  "noCategoryYet": "No category yet",
+  "dhikrLabelSimple": "Dhikr",
+  "readingOptions": "Reading options",
+  "navigation": "Navigation",
+  "goToAyah": "Go to ayah",
+  "jumpToAyahIn": "Jump to ayah in {surahName}",
+  "@jumpToAyahIn": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    }
+  },
+  "displayAndSharing": "Display and sharing",
+  "showLatinTransliteration": "Show Latin transliteration",
+  "chooseTranslationShownOnCards": "Choose the translation shown on cards",
+  "chooseDownloadedExplanations": "Choose downloaded explanations",
+  "shareCurrentAyah": "Share current ayah",
+  "createImageForThisAyah": "Create an image for this ayah",
+  "tafsirSources": "Tafsir Sources",
+  "currentLocation": "Current location",
+  "setPrayerLocation": "Set prayer location",
+  "ayahLabel": "Ayah {number}",
+  "@ayahLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "versesCount": "{count} verses",
+  "@versesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "surahVerseCount": "{surahName} • {count} verses",
+  "@surahVerseCount": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

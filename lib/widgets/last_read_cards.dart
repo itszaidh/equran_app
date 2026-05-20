@@ -76,12 +76,8 @@ class _LastReadCardState extends State<LastReadCard> {
                   '${entry.surah}-${entry.verse}-${entry.timestamp.microsecondsSinceEpoch}',
                 ),
                 primary: getSurahName(entry.surah),
-                subtitle: localizations.localeName == 'ar'
-                    ? 'الآية ${entry.verse}'
-                    : 'Ayah ${entry.verse}',
-                actionText: localizations.localeName == 'ar'
-                    ? '<- ${localizations.continueReading}'
-                    : '${localizations.continueReading} ->',
+                subtitle: localizations.ayahLabel(entry.verse),
+                actionText: localizations.continueReading,
                 trailingAssetPath: equranResumeQuranAsset,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(

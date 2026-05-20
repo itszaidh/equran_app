@@ -86,6 +86,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:quran/quran.dart' as quran;
 import 'package:share_plus/share_plus.dart';
 import 'package:vibration/vibration.dart';
+import 'package:equran/l10n/app_localizations.dart';
 
 class _OfflineAudioPlaybackException implements Exception {
   const _OfflineAudioPlaybackException();
@@ -1798,6 +1799,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Future<void> _showReadingOptionsSheet() async {
     AndroidAudioDisplayMode.notifyUserActivity();
     final String surahName = quran.getSurahName(_currentChapter);
+    final localizations = AppLocalizations.of(context)!;
 
     final _ReadingOptionsAction? action = await _withLowFpsSuppressed(() {
       return showModalBottomSheet<_ReadingOptionsAction>(
@@ -1867,14 +1869,17 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
                                   Text(
-                                    'Reading options',
+                                    localizations.readingOptions,
                                     style: theme.textTheme.titleLarge?.copyWith(
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    '$surahName • Ayah $_currentVerse',
+                                    localizations.surahLabel(
+                                      surahName,
+                                      _currentVerse,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: theme.textTheme.bodySmall?.copyWith(
@@ -1889,12 +1894,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         ),
                         const SizedBox(height: 18),
                         _ReadingOptionsSection(
-                          title: 'Navigation',
+                          title: localizations.navigation,
                           children: <Widget>[
                             _ReadingOptionTile(
                               icon: Icons.double_arrow_outlined,
-                              title: 'Go to ayah',
-                              subtitle: 'Jump to an ayah in $surahName',
+                              title: localizations.goToAyah,
+                              subtitle: localizations.jumpToAyahIn(surahName),
                               onTap: () => Navigator.of(
                                 sheetContext,
                               ).pop(_ReadingOptionsAction.goToAyah),
@@ -1902,12 +1907,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           ],
                         ),
                         _ReadingOptionsSection(
-                          title: 'Display and sharing',
+                          title: localizations.displayAndSharing,
                           children: <Widget>[
                             SwitchListTile(
                               secondary: const Icon(Icons.translate_rounded),
-                              title: const Text('Translation'),
-                              subtitle: const Text('Show ayah translation'),
+                              title: Text(localizations.translation),
+                              subtitle: Text(localizations.showAyahTranslation),
                               value: translationEnabled,
                               onChanged: (value) async {
                                 await SettingsDB().put(
@@ -1921,9 +1926,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             ),
                             SwitchListTile(
                               secondary: const Icon(Icons.text_fields_rounded),
-                              title: const Text('Transliteration'),
-                              subtitle: const Text(
-                                'Show Latin transliteration',
+                              title: Text(localizations.transliterationOption),
+                              subtitle: Text(
+                                localizations.showLatinTransliteration,
                               ),
                               value: transliterationEnabled,
                               onChanged: (value) async {
@@ -1938,8 +1943,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             ),
                             SwitchListTile(
                               secondary: const Icon(Icons.view_agenda_outlined),
-                              title: const Text('Card View'),
-                              subtitle: const Text('Read one ayah per card'),
+                              title: Text(localizations.cardViewOption),
+                              subtitle: Text(localizations.readOneAyahPerCard),
                               value: cardViewEnabled,
                               onChanged: (value) async {
                                 await SettingsDB().put("viewMode", value);
@@ -1953,25 +1958,26 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             if (translationEnabled)
                               _ReadingOptionTile(
                                 icon: Icons.language_rounded,
-                                title: 'Translation language',
+                                title: localizations.translationLanguage,
                                 subtitle:
-                                    'Choose the translation shown on cards',
+                                    localizations.chooseTranslationShownOnCards,
                                 onTap: () => Navigator.of(sheetContext).pop(
                                   _ReadingOptionsAction.translationLanguage,
                                 ),
                               ),
                             _ReadingOptionTile(
                               icon: Icons.auto_stories_outlined,
-                              title: 'Tafsir sources',
-                              subtitle: 'Choose downloaded explanations',
+                              title: localizations.tafsirSources,
+                              subtitle:
+                                  localizations.chooseDownloadedExplanations,
                               onTap: () => Navigator.of(
                                 sheetContext,
                               ).pop(_ReadingOptionsAction.tafsirSources),
                             ),
                             _ReadingOptionTile(
                               icon: Icons.ios_share_outlined,
-                              title: 'Share current ayah',
-                              subtitle: 'Create an image for this ayah',
+                              title: localizations.shareCurrentAyah,
+                              subtitle: localizations.createImageForThisAyah,
                               onTap: () => Navigator.of(
                                 sheetContext,
                               ).pop(_ReadingOptionsAction.shareCurrentAyah),

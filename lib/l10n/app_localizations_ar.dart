@@ -995,4 +995,696 @@ class AppLocalizationsAr extends AppLocalizations {
   String dhikrSessionCounted(int count, int target, String time) {
     return 'تم عدّ $count من $target • $time';
   }
+
+  @override
+  String get location => 'الموقع';
+
+  @override
+  String get locationSubtitle => 'يُستخدم فقط لحساب أوقات الصلاة';
+
+  @override
+  String get useCurrentLocationDescription =>
+      'حفظ موقع هذا الجهاز لحساب أوقات الصلاة.';
+
+  @override
+  String get moveMapUnderPin => 'حرّك الخريطة تحت دبوس مركز.';
+
+  @override
+  String get enterLatitudeAndLongitude => 'إدخال خط العرض وخط الطول.';
+
+  @override
+  String get clearSavedLocation => 'مسح الموقع المحفوظ';
+
+  @override
+  String get clearSavedLocationSubtitle =>
+      'ستتوقف أوقات الصلاة حتى تختار مجدداً.';
+
+  @override
+  String get calculation => 'الحساب';
+
+  @override
+  String get calculationSubtitle => 'الطريقة، العصر، العرض العالي، وصيغة الوقت';
+
+  @override
+  String get calculationMethod => 'طريقة الحساب';
+
+  @override
+  String get asrMethod => 'طريقة العصر';
+
+  @override
+  String get highLatitudeAdjustment => 'ضبط العرض العالي';
+
+  @override
+  String get highLatitudeAdjustmentSubtitle =>
+      'يُستخدم عندما يصعب حساب الفجر والعشاء في المواقع الشمالية أو الجنوبية البعيدة.';
+
+  @override
+  String get timeFormat => 'صيغة الوقت';
+
+  @override
+  String get useLocationTimezone => 'استخدام المنطقة الزمنية للموقع';
+
+  @override
+  String get locationTimezoneSubtitle =>
+      'استخدام المنطقة الزمنية للموقع المحفوظ بدلاً من منطقة هذا الجهاز.';
+
+  @override
+  String get customMethod => 'طريقة مخصصة';
+
+  @override
+  String get fajrAngle => 'زاوية الفجر';
+
+  @override
+  String get ishaMode => 'وضع العشاء';
+
+  @override
+  String get maghribAngle => 'زاوية المغرب';
+
+  @override
+  String get leaveBlankToUseSunset => 'اتركه فارغاً لاستخدام وقت الغروب.';
+
+  @override
+  String get fixedIshaTime => 'وقت العشاء الثابت';
+
+  @override
+  String get latestIshaTime => 'أحدث وقت للعشاء';
+
+  @override
+  String get baseIshaAngle => 'زاوية العشاء الأساسية';
+
+  @override
+  String get baseIshaInterval => 'فترة العشاء الأساسية';
+
+  @override
+  String get ishaAngle => 'زاوية العشاء';
+
+  @override
+  String get ishaInterval => 'فترة العشاء';
+
+  @override
+  String get leaveBlankToUseBaseIshaAngle =>
+      'اتركه فارغاً لاستخدام زاوية العشاء الأساسية.';
+
+  @override
+  String get useIshaAngle => 'استخدام زاوية العشاء';
+
+  @override
+  String minutesAfterMaghrib(int minutes) {
+    return '$minutes دقيقة بعد المغرب';
+  }
+
+  @override
+  String get prohibitedTimes => 'أوقات النهي';
+
+  @override
+  String get prohibitedTimesSubtitle => 'فترات الشروق والزوال والغروب';
+
+  @override
+  String get sunriseProhibitedTime => 'وقت النهي بعد الشروق';
+
+  @override
+  String sunriseProhibitedTimeMinutes(int minutes) {
+    return '$minutes دقيقة بعد الشروق';
+  }
+
+  @override
+  String get zawalProhibitedTime => 'وقت النهي عند الزوال';
+
+  @override
+  String zawalProhibitedTimeMinutes(int minutes) {
+    return '$minutes دقيقة قبل الظهر';
+  }
+
+  @override
+  String get sunsetProhibitedTime => 'وقت النهي قبل الغروب';
+
+  @override
+  String sunsetProhibitedTimeMinutes(int minutes) {
+    return '$minutes دقيقة قبل المغرب';
+  }
+
+  @override
+  String get prayerReminders => 'تذكيرات الصلاة';
+
+  @override
+  String get prayerRemindersSubtitle => 'إشعارات قبل كل صلاة';
+
+  @override
+  String get prayerRemindersEnabled => 'تذكيرات الصلاة';
+
+  @override
+  String get prayerRemindersEnabledSubtitle =>
+      'احصل على إشعار قبل كل وقت صلاة.';
+
+  @override
+  String get notificationsPermission => 'إذن الإشعارات';
+
+  @override
+  String get exactAlarmPermission => 'إذن المنبه الدقيق / المنبهات والتذكيرات';
+
+  @override
+  String get enable => 'تفعيل';
+
+  @override
+  String get open => 'فتح';
+
+  @override
+  String get notificationPermissionOff =>
+      'إذن الإشعارات متوقف. فعّله لتلقي تذكيرات الصلاة.';
+
+  @override
+  String get exactAlarmPermissionDisabled =>
+      'إذن المنبه الدقيق متوقف. قد تتأخر تذكيرات الصلاة.';
+
+  @override
+  String get openAppSettings => 'فتح إعدادات التطبيق';
+
+  @override
+  String get requestPermission => 'طلب الإذن';
+
+  @override
+  String get openAlarmPermissionSettings => 'فتح إعدادات إذن المنبه';
+
+  @override
+  String get chooseLocationBeforeReminders =>
+      'اختر موقعاً قبل جدولة التذكيرات.';
+
+  @override
+  String get notifyAtSavedPrayerTime => 'إشعار في وقت الصلاة المحفوظ.';
+
+  @override
+  String get reminderTime => 'وقت التذكير';
+
+  @override
+  String get atPrayerTime => 'عند وقت الصلاة';
+
+  @override
+  String minutesBefore(int minutes) {
+    return '$minutes دقيقة قبل';
+  }
+
+  @override
+  String get schedule1MinuteExactTest => 'جدولة اختبار دقيقة واحدة';
+
+  @override
+  String get schedule1MinuteExactTestSubtitle => 'يستخدم جدولة تذكير الصلاة.';
+
+  @override
+  String get offsetsAreAppliedAfterBaseCalculation =>
+      'تُطبّق الفروقات بعد الحساب الأساسي. استخدم دقائق موجبة أو سالبة فقط عندما تحتاج لمطابقة جدول زمني محلي موثوق.';
+
+  @override
+  String get manualOffsets => 'الفروقات اليدوية';
+
+  @override
+  String get manualOffsetsSubtitle => 'ضبط دقيق للأوقات المحسوبة';
+
+  @override
+  String get noManualAdjustment => 'لا يوجد ضبط يدوي';
+
+  @override
+  String positiveOrNegativeMinutes(int value) {
+    return '$value دقيقة';
+  }
+
+  @override
+  String get prayerTimesExperimental =>
+      'أوقات الصلاة حالياً تجريبية وقد تختلف عن أوقات المسجد المحلي أو الجداول الرسمية. يرجى التحقق قبل الاعتماد عليها.';
+
+  @override
+  String get bestMethodAfterLocationSaved => 'أفضل طريقة بعد حفظ الموقع';
+
+  @override
+  String minutesBeforePrayer(int minutes) {
+    return '$minutes د قبل الصلاة';
+  }
+
+  @override
+  String get clear => 'مسح';
+
+  @override
+  String get enablePrayerTracking => 'تفعيل تتبع الصلاة';
+
+  @override
+  String get trackYourDailyPrayers => 'تتبع صلواتك اليومية';
+
+  @override
+  String get trackYourDailyPrayersDescription =>
+      'سجّل كل صلاة بشكل خاص على جهازك. لا تغادر بياناتك هاتفك أبداً.';
+
+  @override
+  String get maybeLater => 'ربما لاحقاً';
+
+  @override
+  String get logEachPrayerPrivately =>
+      'سجّل كل صلاة بشكل خاص على جهازك. لا تغادر بياناتك هاتفك أبداً.';
+
+  @override
+  String get enablePrayerTrackingLabel => 'تفعيل تتبع الصلاة ←';
+
+  @override
+  String get somePrayersNotYetAvailable =>
+      'لم تكن بعض الصلوات متاحة بعد ولم يتم حفظها.';
+
+  @override
+  String get prayerLogSaved => 'تم حفظ سجل الصلاة';
+
+  @override
+  String get addNewFolder => 'مجلد جديد';
+
+  @override
+  String get editNote => 'تعديل الملاحظة';
+
+  @override
+  String get moveToFolder => 'نقل إلى مجلد';
+
+  @override
+  String get editTags => 'تعديل الوسوم';
+
+  @override
+  String get savedAyah => 'آية محفوظة';
+
+  @override
+  String get removeSavedAyah => 'إزالة الآية المحفوظة؟';
+
+  @override
+  String get removeSavedAyahBody =>
+      'سيؤدي ذلك إلى إزالة الآية من مكتبتك المحفوظة.';
+
+  @override
+  String get remove => 'إزالة';
+
+  @override
+  String get personalLibrary => 'المكتبة الشخصية';
+
+  @override
+  String savedCount(int count) {
+    return '$count محفوظ';
+  }
+
+  @override
+  String get all => 'الكل';
+
+  @override
+  String get favourites => 'المفضلة';
+
+  @override
+  String get notes => 'الملاحظات';
+
+  @override
+  String get folders => 'المجلدات';
+
+  @override
+  String get tags => 'الوسوم';
+
+  @override
+  String get manageFolders => 'إدارة';
+
+  @override
+  String surahLabel(String surahName, Object ayah) {
+    return '$surahName • الآية $ayah';
+  }
+
+  @override
+  String get showTafsir => 'عرض التفسير';
+
+  @override
+  String get saveToLibrary => 'حفظ في المكتبة';
+
+  @override
+  String get folderTagsAndNote => 'المجلد، الوسوم، وملاحظة خاصة';
+
+  @override
+  String get ayahDetails => 'تفاصيل الآية';
+
+  @override
+  String get newFolder => 'مجلد جديد';
+
+  @override
+  String get create => 'إنشاء';
+
+  @override
+  String get translationOption => 'الترجمة';
+
+  @override
+  String get showAyahTranslation => 'عرض ترجمة الآية';
+
+  @override
+  String get transliterationOption => 'اللفظ الصوتي';
+
+  @override
+  String get showAyahTransliteration => 'عرض اللفظ الصوتي للآية';
+
+  @override
+  String get cardViewOption => 'عرض الآيات الفردية';
+
+  @override
+  String get readOneAyahPerCard => 'قراءة آية واحدة لكل بطاقة';
+
+  @override
+  String get chooseAnAction => 'اختر إجراء';
+
+  @override
+  String get playThisAyah => 'تشغيل هذه الآية';
+
+  @override
+  String get shareImage => 'مشاركة صورة';
+
+  @override
+  String get searchCategories => 'البحث في التصنيفات';
+
+  @override
+  String get clearSearch => 'مسح البحث';
+
+  @override
+  String get categories => 'التصنيفات';
+
+  @override
+  String get noMatchingCategories => 'لا توجد تصنيفات مطابقة';
+
+  @override
+  String get trySearchingArabicWord => 'جرب البحث بكلمة أو عبارة عربية أخرى.';
+
+  @override
+  String get duasUnavailable => 'الأدعية غير متاحة';
+
+  @override
+  String get hisnAlMuslimNotLoaded =>
+      'لم يمكن تحميل حصن المسلم من الأصل دون اتصال.';
+
+  @override
+  String get retryAction => 'إعادة المحاولة';
+
+  @override
+  String get noDuasFound => 'لم يتم العثور على أدعية';
+
+  @override
+  String get offlineHisnAlMuslimEmpty =>
+      'لم يحتوي ملف حصن المسلم دون الاتصال على أي أدعية.';
+
+  @override
+  String get hisnAlMuslim => 'حصن المسلم';
+
+  @override
+  String arabicCategoriesDuasOffline(int categoryCount, int duaCount) {
+    return '$categoryCount تصنيف عربي - $duaCount دعاء دون اتصال';
+  }
+
+  @override
+  String get favouriteDuas => 'الأدعية المفضلة';
+
+  @override
+  String get saveDuasHere => 'احفظ الأدعية هنا للوصول السريع';
+
+  @override
+  String savedDuasCount(int count, String label) {
+    return '$count محفوظ $label';
+  }
+
+  @override
+  String get tasbihAndDhikr => 'التسبيح والذكر';
+
+  @override
+  String get calmCounterDailyPresets => 'عداد هادئ مع إعدادات يومية';
+
+  @override
+  String duaCount(int count, Object label) {
+    return '$count $label';
+  }
+
+  @override
+  String get favouriteDuasPage => 'الأدعية المفضلة';
+
+  @override
+  String get favouritesUnavailable => 'المفضلة غير متاحة';
+
+  @override
+  String get savedDuasNotLoaded => 'لم يمكن تحميل الأدعية المحفوظة الآن.';
+
+  @override
+  String get noFavouriteDuasYet => 'لا توجد أدعية مفضلة بعد.';
+
+  @override
+  String get tapHeartToSave => 'انقر على القلب في أي بطاقة دعاء لحفظها هنا.';
+
+  @override
+  String get categoryUnavailable => 'التصنيف غير متاح';
+
+  @override
+  String get categoryNotLoaded => 'لم يمكن تحميل هذا التصنيف من حصن المسلم.';
+
+  @override
+  String get categoryNoDuas => 'لم يتم العثور على أدعية';
+
+  @override
+  String get categoryDoesNotContainDuas => 'هذا التصنيف لا يحتوي على أي أدعية.';
+
+  @override
+  String get downloadTimings => 'تنزيل التوقيتات؟';
+
+  @override
+  String reciterNeedsTimings(String size) {
+    return 'يحتاج هذا القارئ إلى توقيتات صوتية قبل إظهار نص الآيات متزامناً. $size';
+  }
+
+  @override
+  String get timingsUnavailable => 'التوقيتات غير متاحة لهذا القارئ.';
+
+  @override
+  String get timingsUnavailableSurah => 'التوقيتات غير متاحة لهذه السورة.';
+
+  @override
+  String get unableToInstallTimings => 'تعذّر تثبيت التوقيتات.';
+
+  @override
+  String installedLabel(String name) {
+    return 'تم تثبيت $name.';
+  }
+
+  @override
+  String get installed => 'مثبت';
+
+  @override
+  String get noTafsirSourcesSelected => 'لم يتم اختيار مصادر التفسير';
+
+  @override
+  String get chooseTafsirSourcesFirst =>
+      'اختر مصدراً واحداً أو أكثر للتفسير أولاً.';
+
+  @override
+  String get choose => 'اختيار';
+
+  @override
+  String get go => 'انتقل';
+
+  @override
+  String get deleteDownloadedMp3 => 'حذف MP3 المنزّل؟';
+
+  @override
+  String get deleteDownloadedAyah => 'حذف الآية المنزّلة؟';
+
+  @override
+  String get downloadAllAyahs => 'تنزيل كل الآيات؟';
+
+  @override
+  String downloadAllAyahsConfirm(int count, String size) {
+    return 'سيؤدي ذلك إلى تنزيل الصوت لجميع $count آية في هذه السورة ($size).';
+  }
+
+  @override
+  String get surahOption => 'السورة';
+
+  @override
+  String get reciterOption => 'القارئ';
+
+  @override
+  String get sleepTimerOption => 'مؤقت النوم';
+
+  @override
+  String get shuffleOption => 'ترتيب عشوائي';
+
+  @override
+  String get shuffleSubtitle => 'عشوائية بعد انتهاء السورة';
+
+  @override
+  String get loopCurrentSurah => 'تكرار السورة الحالية';
+
+  @override
+  String get loopSubtitle => 'تكرار السورة الحالية';
+
+  @override
+  String get downloadTimingsResource => 'تنزيل التوقيتات';
+
+  @override
+  String timingsNeedToBeDownloaded(String size) {
+    return 'يحتاج هذا القارئ إلى توقيتات صوتية قبل إظهار نص الآيات متزامناً. $size';
+  }
+
+  @override
+  String get intervalOption => 'الفاصل';
+
+  @override
+  String get intervalRepeatOption => 'تكرار الفاصل';
+
+  @override
+  String get repeatEachAyahOption => 'تكرار كل آية';
+
+  @override
+  String get resetPlaybackOptions => 'إعادة ضبط خيارات التشغيل';
+
+  @override
+  String get surahOptionLabel => 'السورة';
+
+  @override
+  String get searchCategoriesDua => 'البحث في التصنيفات';
+
+  @override
+  String get savedAyahLibrary => 'الآية المحفوظة';
+
+  @override
+  String autoAdvancesToNextPreset(String nextPreset) {
+    return 'يتقدم تلقائياً إلى $nextPreset';
+  }
+
+  @override
+  String get previousDhikr => 'الذكر السابق';
+
+  @override
+  String get nextDhikr => 'الذكر التالي';
+
+  @override
+  String counts33To33To34(int target) {
+    return '$target عدد • 33 → 33 → 34';
+  }
+
+  @override
+  String get assalamuAlaikum => 'السلام عليكم';
+
+  @override
+  String get continueYourJourneyToday => 'تابع رحلتك اليوم';
+
+  @override
+  String onStreakDay(int streak) {
+    return 'أنت على سلسلة $streak يوم - استمر';
+  }
+
+  @override
+  String get todaysWorship => 'عبادة اليوم';
+
+  @override
+  String get ayahsLabel => 'الآيات';
+
+  @override
+  String get dhikrLabel => 'الذكر';
+
+  @override
+  String get duasLabel => 'الأدعية';
+
+  @override
+  String get salahLabel => 'الصلاة';
+
+  @override
+  String get dayStreakLabel => 'سلسلة الأيام';
+
+  @override
+  String get dailyQuranGoalLabel => 'الورد اليومي للقرآن';
+
+  @override
+  String get salah => 'الصلاة';
+
+  @override
+  String get quranLabel => 'القرآن';
+
+  @override
+  String get tasbihLabel => 'التسبيح';
+
+  @override
+  String get activityHistory => 'سجل النشاط';
+
+  @override
+  String get streaksLabel => 'السلاسل';
+
+  @override
+  String get weekRange => 'أسبوع';
+
+  @override
+  String get monthRange => 'شهر';
+
+  @override
+  String get yearRange => 'سنة';
+
+  @override
+  String get allTimeRange => 'كل الوقت';
+
+  @override
+  String get noPrayerYet => 'لا صلاة بعد';
+
+  @override
+  String get noDayYet => 'لا يوم بعد';
+
+  @override
+  String get noSurahYet => 'لا سورة بعد';
+
+  @override
+  String get noDhikrYet => 'لا ذكر بعد';
+
+  @override
+  String get noCategoryYet => 'لا تصنيف بعد';
+
+  @override
+  String get dhikrLabelSimple => 'ذكر';
+
+  @override
+  String get readingOptions => 'خيارات القراءة';
+
+  @override
+  String get navigation => 'التنقل';
+
+  @override
+  String get goToAyah => 'انتقل إلى الآية';
+
+  @override
+  String jumpToAyahIn(String surahName) {
+    return 'انتقل إلى آية في $surahName';
+  }
+
+  @override
+  String get displayAndSharing => 'العرض والمشاركة';
+
+  @override
+  String get showLatinTransliteration => 'عرض اللفظ الصوتي اللاتيني';
+
+  @override
+  String get chooseTranslationShownOnCards =>
+      'اختر الترجمة المعروضة على البطاقات';
+
+  @override
+  String get chooseDownloadedExplanations => 'اختر التفسيرات المنزّلة';
+
+  @override
+  String get shareCurrentAyah => 'مشاركة الآية الحالية';
+
+  @override
+  String get createImageForThisAyah => 'إنشاء صورة لهذه الآية';
+
+  @override
+  String get tafsirSources => 'مصادر التفسير';
+
+  @override
+  String get setPrayerLocation => 'تعيين موقع الصلاة';
+
+  @override
+  String ayahLabel(int number) {
+    return 'الآية $number';
+  }
+
+  @override
+  String versesCount(int count) {
+    return '$count verses';
+  }
+
+  @override
+  String surahVerseCount(String surahName, int count) {
+    return '$surahName • $count verses';
+  }
 }

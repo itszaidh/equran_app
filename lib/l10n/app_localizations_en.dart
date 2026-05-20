@@ -129,7 +129,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get downloadableResourcesSubtitle => 'Tafsir and audio timing packs';
 
   @override
-  String get prayerTimesSettings => 'Prayer Times settings';
+  String get prayerTimesSettings => 'Prayer Times Settings';
 
   @override
   String get prayerTimesSettingsSubtitle =>
@@ -1001,5 +1001,704 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String dhikrSessionCounted(int count, int target, String time) {
     return '$count of $target counted • $time';
+  }
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get locationSubtitle => 'Used only for prayer time calculations';
+
+  @override
+  String get useCurrentLocationDescription =>
+      'Save this device\'s location for prayer calculations.';
+
+  @override
+  String get moveMapUnderPin => 'Move the map under a centered pin.';
+
+  @override
+  String get enterLatitudeAndLongitude => 'Enter latitude and longitude.';
+
+  @override
+  String get clearSavedLocation => 'Clear saved location';
+
+  @override
+  String get clearSavedLocationSubtitle =>
+      'Prayer times will pause until you choose again.';
+
+  @override
+  String get calculation => 'Calculation';
+
+  @override
+  String get calculationSubtitle =>
+      'Method, Asr, high latitude, and time format';
+
+  @override
+  String get calculationMethod => 'Calculation method';
+
+  @override
+  String get asrMethod => 'Asr method';
+
+  @override
+  String get highLatitudeAdjustment => 'High latitude adjustment';
+
+  @override
+  String get highLatitudeAdjustmentSubtitle =>
+      'Used when Fajr or Isha are difficult to calculate in far northern or southern locations.';
+
+  @override
+  String get timeFormat => 'Time format';
+
+  @override
+  String get useLocationTimezone => 'Use location timezone';
+
+  @override
+  String get locationTimezoneSubtitle =>
+      'Use the timezone of the saved location instead of this device\'s timezone.';
+
+  @override
+  String get customMethod => 'Custom Method';
+
+  @override
+  String get fajrAngle => 'Fajr angle';
+
+  @override
+  String get ishaMode => 'Isha mode';
+
+  @override
+  String get maghribAngle => 'Maghrib angle';
+
+  @override
+  String get leaveBlankToUseSunset => 'Leave blank to use sunset.';
+
+  @override
+  String get fixedIshaTime => 'Fixed Isha time';
+
+  @override
+  String get latestIshaTime => 'Latest Isha time';
+
+  @override
+  String get baseIshaAngle => 'Base Isha angle';
+
+  @override
+  String get baseIshaInterval => 'Base Isha interval';
+
+  @override
+  String get ishaAngle => 'Isha angle';
+
+  @override
+  String get ishaInterval => 'Isha interval';
+
+  @override
+  String get leaveBlankToUseBaseIshaAngle =>
+      'Leave blank to use the base Isha angle.';
+
+  @override
+  String get useIshaAngle => 'Use Isha angle';
+
+  @override
+  String minutesAfterMaghrib(int minutes) {
+    return '$minutes minutes after Maghrib';
+  }
+
+  @override
+  String get prohibitedTimes => 'Prohibited Times';
+
+  @override
+  String get prohibitedTimesSubtitle => 'Sunrise, Zawal and Sunset windows';
+
+  @override
+  String get sunriseProhibitedTime => 'Sunrise prohibited time';
+
+  @override
+  String sunriseProhibitedTimeMinutes(int minutes) {
+    return '$minutes minutes after Sunrise';
+  }
+
+  @override
+  String get zawalProhibitedTime => 'Zawal prohibited time';
+
+  @override
+  String zawalProhibitedTimeMinutes(int minutes) {
+    return '$minutes minutes before Dhuhr';
+  }
+
+  @override
+  String get sunsetProhibitedTime => 'Sunset prohibited time';
+
+  @override
+  String sunsetProhibitedTimeMinutes(int minutes) {
+    return '$minutes minutes before Maghrib';
+  }
+
+  @override
+  String get prayerReminders => 'Prayer Reminders';
+
+  @override
+  String get prayerRemindersSubtitle => 'Notifications before each prayer';
+
+  @override
+  String get prayerRemindersEnabled => 'Prayer reminders';
+
+  @override
+  String get prayerRemindersEnabledSubtitle =>
+      'Get notified before each prayer time.';
+
+  @override
+  String get notificationsPermission => 'Notifications permission';
+
+  @override
+  String get exactAlarmPermission =>
+      'Exact alarm / alarms & reminders permission';
+
+  @override
+  String get enable => 'Enable';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get notificationPermissionOff =>
+      'Notification permission is off. Enable it to receive prayer reminders.';
+
+  @override
+  String get exactAlarmPermissionDisabled =>
+      'Exact alarm permission is disabled. Prayer reminders may be delayed.';
+
+  @override
+  String get openAppSettings => 'Open app settings';
+
+  @override
+  String get requestPermission => 'Request permission';
+
+  @override
+  String get openAlarmPermissionSettings => 'Open alarm permission settings';
+
+  @override
+  String get chooseLocationBeforeReminders =>
+      'Choose a location before reminders can be scheduled.';
+
+  @override
+  String get notifyAtSavedPrayerTime => 'Notify at the saved prayer time.';
+
+  @override
+  String get reminderTime => 'Reminder time';
+
+  @override
+  String get atPrayerTime => 'At prayer time';
+
+  @override
+  String minutesBefore(int minutes) {
+    return '$minutes minutes before';
+  }
+
+  @override
+  String get schedule1MinuteExactTest => 'Schedule 1-minute exact test';
+
+  @override
+  String get schedule1MinuteExactTestSubtitle =>
+      'Uses the prayer reminder scheduler.';
+
+  @override
+  String get offsetsAreAppliedAfterBaseCalculation =>
+      'Offsets are applied after the base calculation. Use positive or negative minutes only when you need to match a trusted local timetable.';
+
+  @override
+  String get manualOffsets => 'Manual Offsets';
+
+  @override
+  String get manualOffsetsSubtitle => 'Fine tune calculated times';
+
+  @override
+  String get noManualAdjustment => 'No manual adjustment';
+
+  @override
+  String positiveOrNegativeMinutes(int value) {
+    return '$value minutes';
+  }
+
+  @override
+  String get prayerTimesExperimental =>
+      'Prayer times are currently experimental and may differ from local mosque or official timetables. Please verify before relying on them.';
+
+  @override
+  String get bestMethodAfterLocationSaved =>
+      'Best method after location is saved';
+
+  @override
+  String minutesBeforePrayer(int minutes) {
+    return '$minutes min before prayer';
+  }
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get enablePrayerTracking => 'Enable prayer tracking';
+
+  @override
+  String get trackYourDailyPrayers => 'Track your daily prayers';
+
+  @override
+  String get trackYourDailyPrayersDescription =>
+      'Log each prayer privately on your device. Your data never leaves your phone.';
+
+  @override
+  String get maybeLater => 'Maybe later';
+
+  @override
+  String get logEachPrayerPrivately =>
+      'Log each prayer privately on your device. Your data never leaves your phone.';
+
+  @override
+  String get enablePrayerTrackingLabel => 'Enable prayer tracking →';
+
+  @override
+  String get somePrayersNotYetAvailable =>
+      'Some prayers were not yet available and were not saved.';
+
+  @override
+  String get prayerLogSaved => 'Prayer log saved';
+
+  @override
+  String get addNewFolder => 'New Folder';
+
+  @override
+  String get editNote => 'Edit note';
+
+  @override
+  String get moveToFolder => 'Move to folder';
+
+  @override
+  String get editTags => 'Edit tags';
+
+  @override
+  String get savedAyah => 'Saved ayah';
+
+  @override
+  String get removeSavedAyah => 'Remove saved ayah?';
+
+  @override
+  String get removeSavedAyahBody =>
+      'This will remove the ayah from your saved library.';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get personalLibrary => 'Personal Library';
+
+  @override
+  String savedCount(int count) {
+    return '$count saved';
+  }
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get favourites => 'Favourites';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get folders => 'Folders';
+
+  @override
+  String get tags => 'Tags';
+
+  @override
+  String get manageFolders => 'Manage';
+
+  @override
+  String surahLabel(String surahName, Object ayah) {
+    return '$surahName • Ayah $ayah';
+  }
+
+  @override
+  String get showTafsir => 'Show tafsir';
+
+  @override
+  String get saveToLibrary => 'Save to library';
+
+  @override
+  String get folderTagsAndNote => 'Folder, tags, and private note';
+
+  @override
+  String get ayahDetails => 'Ayah details';
+
+  @override
+  String get newFolder => 'New folder';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get translationOption => 'Translation';
+
+  @override
+  String get showAyahTranslation => 'Show ayah translation';
+
+  @override
+  String get transliterationOption => 'Transliteration';
+
+  @override
+  String get showAyahTransliteration => 'Show ayah transliteration';
+
+  @override
+  String get cardViewOption => 'Card View';
+
+  @override
+  String get readOneAyahPerCard => 'Read one ayah per card';
+
+  @override
+  String get chooseAnAction => 'Choose an action';
+
+  @override
+  String get playThisAyah => 'Play this ayah';
+
+  @override
+  String get shareImage => 'Share image';
+
+  @override
+  String get searchCategories => 'Search categories';
+
+  @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get noMatchingCategories => 'No matching categories';
+
+  @override
+  String get trySearchingArabicWord =>
+      'Try searching with another Arabic word or phrase.';
+
+  @override
+  String get duasUnavailable => 'Duas unavailable';
+
+  @override
+  String get hisnAlMuslimNotLoaded =>
+      'Hisn al Muslim could not be loaded from the offline asset.';
+
+  @override
+  String get retryAction => 'Retry';
+
+  @override
+  String get noDuasFound => 'No duas found';
+
+  @override
+  String get offlineHisnAlMuslimEmpty =>
+      'The offline Hisn al Muslim file did not contain any duas.';
+
+  @override
+  String get hisnAlMuslim => 'Hisn al Muslim';
+
+  @override
+  String arabicCategoriesDuasOffline(int categoryCount, int duaCount) {
+    return '$categoryCount Arabic categories - $duaCount duas offline';
+  }
+
+  @override
+  String get favouriteDuas => 'Favourite duas';
+
+  @override
+  String get saveDuasHere => 'Save duas here for quick access';
+
+  @override
+  String savedDuasCount(int count, String label) {
+    return '$count saved $label';
+  }
+
+  @override
+  String get tasbihAndDhikr => 'Tasbih and dhikr';
+
+  @override
+  String get calmCounterDailyPresets => 'A calm counter with daily presets';
+
+  @override
+  String duaCount(int count, Object label) {
+    return '$count $label';
+  }
+
+  @override
+  String get favouriteDuasPage => 'Favourite duas';
+
+  @override
+  String get favouritesUnavailable => 'Favourites unavailable';
+
+  @override
+  String get savedDuasNotLoaded => 'Saved duas could not be loaded right now.';
+
+  @override
+  String get noFavouriteDuasYet => 'No favourite duas yet.';
+
+  @override
+  String get tapHeartToSave => 'Tap the heart on any dua card to save it here.';
+
+  @override
+  String get categoryUnavailable => 'Category unavailable';
+
+  @override
+  String get categoryNotLoaded =>
+      'This Hisn al Muslim category could not be loaded.';
+
+  @override
+  String get categoryNoDuas => 'No duas found';
+
+  @override
+  String get categoryDoesNotContainDuas =>
+      'This category does not contain any duas.';
+
+  @override
+  String get downloadTimings => 'Download timings?';
+
+  @override
+  String reciterNeedsTimings(String size) {
+    return 'This reciter needs audio timings before synced ayah text can be shown. $size';
+  }
+
+  @override
+  String get timingsUnavailable => 'Timings unavailable for this reciter.';
+
+  @override
+  String get timingsUnavailableSurah => 'Timings unavailable for this surah.';
+
+  @override
+  String get unableToInstallTimings => 'Unable to install timings.';
+
+  @override
+  String installedLabel(String name) {
+    return 'Installed $name.';
+  }
+
+  @override
+  String get installed => 'Installed';
+
+  @override
+  String get noTafsirSourcesSelected => 'No Tafsir sources selected';
+
+  @override
+  String get chooseTafsirSourcesFirst =>
+      'Choose one or more Tafsir sources first.';
+
+  @override
+  String get choose => 'Choose';
+
+  @override
+  String get go => 'Go';
+
+  @override
+  String get deleteDownloadedMp3 => 'Delete Downloaded MP3?';
+
+  @override
+  String get deleteDownloadedAyah => 'Delete Downloaded Ayah?';
+
+  @override
+  String get downloadAllAyahs => 'Download All Ayahs?';
+
+  @override
+  String downloadAllAyahsConfirm(int count, String size) {
+    return 'This will download audio for all $count ayahs in this surah ($size).';
+  }
+
+  @override
+  String get surahOption => 'Surah';
+
+  @override
+  String get reciterOption => 'Reciter';
+
+  @override
+  String get sleepTimerOption => 'Sleep timer';
+
+  @override
+  String get shuffleOption => 'Shuffle';
+
+  @override
+  String get shuffleSubtitle => 'Randomize after surah ends';
+
+  @override
+  String get loopCurrentSurah => 'Loop current surah';
+
+  @override
+  String get loopSubtitle => 'Repeat the current surah';
+
+  @override
+  String get downloadTimingsResource => 'Download timings';
+
+  @override
+  String timingsNeedToBeDownloaded(String size) {
+    return 'This reciter needs audio timings before synced ayah text can be shown. $size';
+  }
+
+  @override
+  String get intervalOption => 'Interval';
+
+  @override
+  String get intervalRepeatOption => 'Interval repeat';
+
+  @override
+  String get repeatEachAyahOption => 'Repeat each ayah';
+
+  @override
+  String get resetPlaybackOptions => 'Reset playback options';
+
+  @override
+  String get surahOptionLabel => 'Surah';
+
+  @override
+  String get searchCategoriesDua => 'Search categories';
+
+  @override
+  String get savedAyahLibrary => 'Saved Ayah';
+
+  @override
+  String autoAdvancesToNextPreset(String nextPreset) {
+    return 'Auto-advances to $nextPreset';
+  }
+
+  @override
+  String get previousDhikr => 'Previous dhikr';
+
+  @override
+  String get nextDhikr => 'Next dhikr';
+
+  @override
+  String counts33To33To34(int target) {
+    return '$target counts • 33 → 33 → 34';
+  }
+
+  @override
+  String get assalamuAlaikum => 'Assalamu Alaikum';
+
+  @override
+  String get continueYourJourneyToday => 'Continue your journey today';
+
+  @override
+  String onStreakDay(int streak) {
+    return 'You\'re on a $streak-day streak — keep going';
+  }
+
+  @override
+  String get todaysWorship => 'TODAY\'S WORSHIP';
+
+  @override
+  String get ayahsLabel => 'Ayahs';
+
+  @override
+  String get dhikrLabel => 'Dhikr';
+
+  @override
+  String get duasLabel => 'Duas';
+
+  @override
+  String get salahLabel => 'Salah';
+
+  @override
+  String get dayStreakLabel => 'Day streak';
+
+  @override
+  String get dailyQuranGoalLabel => 'DAILY QURAN GOAL';
+
+  @override
+  String get salah => 'Salah';
+
+  @override
+  String get quranLabel => 'Quran';
+
+  @override
+  String get tasbihLabel => 'Tasbih';
+
+  @override
+  String get activityHistory => 'Activity History';
+
+  @override
+  String get streaksLabel => 'Streaks';
+
+  @override
+  String get weekRange => 'Week';
+
+  @override
+  String get monthRange => 'Month';
+
+  @override
+  String get yearRange => 'Year';
+
+  @override
+  String get allTimeRange => 'All time';
+
+  @override
+  String get noPrayerYet => 'No prayer yet';
+
+  @override
+  String get noDayYet => 'No day yet';
+
+  @override
+  String get noSurahYet => 'No surah yet';
+
+  @override
+  String get noDhikrYet => 'No dhikr yet';
+
+  @override
+  String get noCategoryYet => 'No category yet';
+
+  @override
+  String get dhikrLabelSimple => 'Dhikr';
+
+  @override
+  String get readingOptions => 'Reading options';
+
+  @override
+  String get navigation => 'Navigation';
+
+  @override
+  String get goToAyah => 'Go to ayah';
+
+  @override
+  String jumpToAyahIn(String surahName) {
+    return 'Jump to ayah in $surahName';
+  }
+
+  @override
+  String get displayAndSharing => 'Display and sharing';
+
+  @override
+  String get showLatinTransliteration => 'Show Latin transliteration';
+
+  @override
+  String get chooseTranslationShownOnCards =>
+      'Choose the translation shown on cards';
+
+  @override
+  String get chooseDownloadedExplanations => 'Choose downloaded explanations';
+
+  @override
+  String get shareCurrentAyah => 'Share current ayah';
+
+  @override
+  String get createImageForThisAyah => 'Create an image for this ayah';
+
+  @override
+  String get tafsirSources => 'Tafsir Sources';
+
+  @override
+  String get setPrayerLocation => 'Set prayer location';
+
+  @override
+  String ayahLabel(int number) {
+    return 'Ayah $number';
+  }
+
+  @override
+  String versesCount(int count) {
+    return '$count verses';
+  }
+
+  @override
+  String surahVerseCount(String surahName, int count) {
+    return '$surahName • $count verses';
   }
 }
