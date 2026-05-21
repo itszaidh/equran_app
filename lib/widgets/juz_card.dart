@@ -68,7 +68,7 @@ class QuranJuzTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textDirection: arabicMode ? TextDirection.rtl : null,
-                        style: arabicMode ? theme.textTheme.headlineSmall?.copyWith(
+                        style: arabicMode ? theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0,
                         ): 
