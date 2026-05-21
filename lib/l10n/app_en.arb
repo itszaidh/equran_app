@@ -740,6 +740,8 @@
     }
   },
   "favouriteDuas": "Favourite duas",
+  "favourite": "Favourite",
+  "removeFavourite": "Remove favourite",
   "saveDuasHere": "Save duas here for quick access",
   "savedDuasCount": "{count} saved {label}",
   "@savedDuasCount": {
@@ -1217,5 +1219,6 @@
   "startYourWorshipForToday": "Start your worship for today",
   "totalRead": "Total read",
   "estimatedLettersRead": "Estimated letters read",
-  "rewardIsWithAllah": "Reward is with Allah."
+  "rewardIsWithAllah": "Reward is with Allah.",
+  "totalZakahWealth": "Total wealth must be at least 200 to calculate Zakah."
 }

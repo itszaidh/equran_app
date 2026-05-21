@@ -2604,6 +2604,18 @@ abstract class AppLocalizations {
   /// **'Favourite duas'**
   String get favouriteDuas;
 
+  /// No description provided for @favourite.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourite'**
+  String get favourite;
+
+  /// No description provided for @removeFavourite.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove favourite'**
+  String get removeFavourite;
+
   /// No description provided for @saveDuasHere.
   ///
   /// In en, this message translates to:
@@ -4826,6 +4838,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reward is with Allah.'**
   String get rewardIsWithAllah;
+
+  /// No description provided for @totalZakahWealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Total wealth must be at least 200 to calculate Zakah.'**
+  String get totalZakahWealth;
 }
 
 class _AppLocalizationsDelegate

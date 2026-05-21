@@ -1405,6 +1405,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get favouriteDuas => 'Favourite duas';
 
   @override
+  String get favourite => 'Favourite';
+
+  @override
+  String get removeFavourite => 'Remove favourite';
+
+  @override
   String get saveDuasHere => 'Save duas here for quick access';
 
   @override
@@ -2735,4 +2741,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardIsWithAllah => 'Reward is with Allah.';
+
+  @override
+  String get totalZakahWealth =>
+      'Total wealth must be at least 200 to calculate Zakah.';
 }

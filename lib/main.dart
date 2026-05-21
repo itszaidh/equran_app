@@ -6,6 +6,7 @@ import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_timezone_service.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_theme.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -144,30 +145,35 @@ class MyAppState extends State<MyApp> {
         supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) {
           final MediaQueryData mediaQuery = MediaQuery.of(context);
+          final ThemeData localizedTheme = EquranTextStyles.localizeTheme(
+            Theme.of(context),
+            Localizations.localeOf(context),
+          );
           final double tabletTextScale = ResponsiveNav.appTextScale(context);
           final double chromeTextScale = ResponsiveNav.appChromeTextScale(
             context,
           );
           final double effectiveTextScale =
               mediaQuery.textScaler.scale(1.0) * tabletTextScale;
-          final Widget scaledChild = chromeTextScale == 1.0
-              ? child ?? const SizedBox.shrink()
-              : Theme(
-                  data: Theme.of(context).copyWith(
-                    textTheme: Theme.of(
-                      context,
-                    ).textTheme.apply(fontSizeFactor: chromeTextScale),
-                    primaryTextTheme: Theme.of(
-                      context,
-                    ).primaryTextTheme.apply(fontSizeFactor: chromeTextScale),
+          final ThemeData effectiveTheme = chromeTextScale == 1.0
+              ? localizedTheme
+              : localizedTheme.copyWith(
+                  textTheme: localizedTheme.textTheme.apply(
+                    fontSizeFactor: chromeTextScale,
                   ),
-                  child: child ?? const SizedBox.shrink(),
+                  primaryTextTheme: localizedTheme.primaryTextTheme.apply(
+                    fontSizeFactor: chromeTextScale,
+                  ),
                 );
+          final Widget themedChild = Theme(
+            data: effectiveTheme,
+            child: child ?? const SizedBox.shrink(),
+          );
           return MediaQuery(
             data: mediaQuery.copyWith(
               textScaler: TextScaler.linear(effectiveTextScale),
             ),
-            child: scaledChild,
+            child: themedChild,
           );
         },
         home: const HomePage(),

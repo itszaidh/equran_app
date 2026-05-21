@@ -1324,7 +1324,7 @@ class _SettingsPageState extends State<SettingsPage> {
         AppSelectionOption<String>(
           value: "ar",
           title: localizations.arabic,
-          subtitle: "العربية / Arabic (Still incomplete)",
+          subtitle: "العربية / Arabic",
           leading: const Icon(Icons.translate_rounded),
         ),
       ],

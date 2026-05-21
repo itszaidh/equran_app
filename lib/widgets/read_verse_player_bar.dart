@@ -585,47 +585,50 @@ class ReadVersePlayerBar extends StatelessWidget {
     ColorScheme colorScheme, {
     required double spacing,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        _buildAutoPlaybackButton(context, colorScheme),
-        SizedBox(width: spacing),
-        _buildAyahNavButton(
-          icon: Icons.skip_previous_rounded,
-          tooltip: AppLocalizations.of(context)!.previousAyah,
-          onPressed: canPlayPrevious ? onPlayPrevious : null,
-        ),
-        SizedBox(width: spacing),
-        FilledButton.tonal(
-          onPressed: onTogglePlayPause,
-          style: FilledButton.styleFrom(
-            shape: const CircleBorder(),
-            padding: const EdgeInsets.all(16),
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          _buildAutoPlaybackButton(context, colorScheme),
+          SizedBox(width: spacing),
+          _buildAyahNavButton(
+            icon: Icons.skip_previous_rounded,
+            tooltip: AppLocalizations.of(context)!.previousAyah,
+            onPressed: canPlayPrevious ? onPlayPrevious : null,
           ),
-          child: isLoading
-              ? SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.4,
-                    color: colorScheme.onPrimary,
+          SizedBox(width: spacing),
+          FilledButton.tonal(
+            onPressed: onTogglePlayPause,
+            style: FilledButton.styleFrom(
+              shape: const CircleBorder(),
+              padding: const EdgeInsets.all(16),
+            ),
+            child: isLoading
+                ? SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: colorScheme.onPrimary,
+                    ),
+                  )
+                : Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    size: 30,
                   ),
-                )
-              : Icon(
-                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  size: 30,
-                ),
-        ),
-        SizedBox(width: spacing),
-        _buildAyahNavButton(
-          icon: Icons.skip_next_rounded,
-          tooltip: AppLocalizations.of(context)!.nextAyah,
-          onPressed: canPlayNext ? onPlayNext : null,
-        ),
-        SizedBox(width: spacing),
-        _buildRepeatIntervalButton(context, colorScheme),
-      ],
+          ),
+          SizedBox(width: spacing),
+          _buildAyahNavButton(
+            icon: Icons.skip_next_rounded,
+            tooltip: AppLocalizations.of(context)!.nextAyah,
+            onPressed: canPlayNext ? onPlayNext : null,
+          ),
+          SizedBox(width: spacing),
+          _buildRepeatIntervalButton(context, colorScheme),
+        ],
+      ),
     );
   }
 

@@ -131,6 +131,7 @@ class _CategoryContentState extends State<_CategoryContent> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final DuaCategory category = widget.category;
 
     return ListView(
@@ -166,7 +167,12 @@ class _CategoryContentState extends State<_CategoryContent> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${category.duas.length} ${category.duas.length == 1 ? 'dua' : 'duas'}',
+                          localizations.duaCount(
+                            category.duas.length,
+                            category.duas.length == 1
+                                ? localizations.dua
+                                : localizations.duasLabel,
+                          ),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: colors.onSurfaceVariant,
                             fontWeight: FontWeight.w700,

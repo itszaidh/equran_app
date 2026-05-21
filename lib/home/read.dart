@@ -5350,10 +5350,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         distance >= minDistance ||
         (distance >= assistedDistance && velocity >= _cardSwipeMinVelocity);
 
+    final bool reverseSwipeDirection =
+        Directionality.of(context) == TextDirection.rtl;
     if (triggersForward) {
-      _increase();
+      reverseSwipeDirection ? _decrease() : _increase();
     } else if (triggersBackward) {
-      _decrease();
+      reverseSwipeDirection ? _increase() : _decrease();
     }
   }
 

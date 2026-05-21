@@ -276,6 +276,7 @@ class _DuasHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -308,7 +309,7 @@ class _DuasHero extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'Hisn al Muslim',
+                    localizations.hisnAlMuslim,
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: colors.onPrimary,
                       fontWeight: FontWeight.w900,
@@ -317,7 +318,10 @@ class _DuasHero extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '$categoryCount Arabic categories - $duaCount duas offline',
+                    localizations.arabicCategoriesDuasOffline(
+                      categoryCount,
+                      duaCount,
+                    ),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colors.onPrimaryMuted,
                       height: 1.3,
@@ -343,6 +347,7 @@ class _FavouritesEntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return _TappablePanel(
       onTap: onTap,
@@ -368,7 +373,7 @@ class _FavouritesEntryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Favourite duas',
+                  localizations.favouriteDuas,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
@@ -376,8 +381,13 @@ class _FavouritesEntryCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   count == 0
-                      ? 'Save duas here for quick access'
-                      : '$count saved ${count == 1 ? 'dua' : 'duas'}',
+                      ? localizations.saveDuasHere
+                      : localizations.savedDuasCount(
+                          count,
+                          count == 1
+                              ? localizations.dua
+                              : localizations.duasLabel,
+                        ),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
@@ -401,6 +411,7 @@ class _TasbihEntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return _TappablePanel(
       onTap: onTap,
@@ -421,7 +432,7 @@ class _TasbihEntryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Tasbih and dhikr',
+                  localizations.tasbihAndDhikr,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w900,
@@ -429,7 +440,7 @@ class _TasbihEntryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'A calm counter with daily presets',
+                  localizations.calmCounterDailyPresets,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.textSecondary,
                   ),
@@ -454,6 +465,7 @@ class _DuaCategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final int visualIndex = category.index % _categoryIcons.length;
 
     return _TappablePanel(
@@ -497,7 +509,12 @@ class _DuaCategoryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '${category.duaCount} ${category.duaCount == 1 ? 'dua' : 'duas'}',
+                  localizations.duaCount(
+                    category.duaCount,
+                    category.duaCount == 1
+                        ? localizations.dua
+                        : localizations.duasLabel,
+                  ),
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: colors.primary,
                     fontWeight: FontWeight.w800,

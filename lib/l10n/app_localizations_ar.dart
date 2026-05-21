@@ -1393,6 +1393,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get favouriteDuas => 'الأدعية المفضلة';
 
   @override
+  String get favourite => 'إضافة إلى المفضلة';
+
+  @override
+  String get removeFavourite => 'إزالة من المفضلة';
+
+  @override
   String get saveDuasHere => 'احفظ الأدعية هنا للوصول السريع';
 
   @override
@@ -2677,4 +2683,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get rewardIsWithAllah => 'الأجر عند الله.';
+
+  @override
+  String get totalZakahWealth =>
+      'يجب أن يكون إجمالي الثروة 200 على الأقل لحساب الزكاة.';
 }

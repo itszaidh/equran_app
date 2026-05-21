@@ -420,6 +420,8 @@
   "hisnAlMuslim": "حصن المسلم",
   "arabicCategoriesDuasOffline": "{categoryCount} تصنيف عربي - {duaCount} دعاء دون اتصال",
   "favouriteDuas": "الأدعية المفضلة",
+  "favourite": "إضافة إلى المفضلة",
+  "removeFavourite": "إزالة من المفضلة",
   "saveDuasHere": "احفظ الأدعية هنا للوصول السريع",
   "savedDuasCount": "{count} محفوظ {label}",
   "tasbihAndDhikr": "التسبيح والذكر",
@@ -808,5 +810,6 @@
   "startYourWorshipForToday": "ابدأ عبادتك لليوم",
   "totalRead": "إجمالي المقروء",
   "estimatedLettersRead": "الحروف المقدرة المقروءة",
-  "rewardIsWithAllah": "الأجر عند الله."
+  "rewardIsWithAllah": "الأجر عند الله.",
+  "totalZakahWealth": "يجب أن يكون إجمالي الثروة 200 على الأقل لحساب الزكاة."
 }

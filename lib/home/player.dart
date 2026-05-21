@@ -1044,6 +1044,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     required bool playOffline,
   }) async {
     final Duration? initialSeek = _pendingInitialResumePosition;
+    final String surahOptionLabel = AppLocalizations.of(context)!.surahOption;
     _pendingInitialResumePosition = null;
     if (_useAudioplayersFallback) {
       await _fallbackAudio.stop();
@@ -1099,8 +1100,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           album: 'eQuran',
           title: _localizedSurahName(surah),
           artist: _selectedReciterName(),
-          displayDescription:
-              '${AppLocalizations.of(context)!.surahOption} $surah',
+          displayDescription: '$surahOptionLabel $surah',
         ),
       ),
     );
@@ -2854,41 +2854,44 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
         Widget buildTransportControls({double gap = 12}) {
           return FittedBox(
             fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                buildSecondaryControl(
-                  tooltip: _showAyahText
-                      ? l10n.hideAyahText
-                      : l10n.showAyahText,
-                  onPressed: _toggleAyahText,
-                  icon: Icons.menu_book_rounded,
-                  selected: _showAyahText,
-                ),
-                SizedBox(width: gap),
-                IconButton(
-                  tooltip: l10n.previous,
-                  onPressed: _playPrevious,
-                  icon: const Icon(Icons.skip_previous_rounded),
-                  iconSize: playerControlIconSize,
-                ),
-                SizedBox(width: gap),
-                buildPlayPauseButton(),
-                SizedBox(width: gap),
-                IconButton(
-                  tooltip: l10n.next,
-                  onPressed: _playNext,
-                  icon: const Icon(Icons.skip_next_rounded),
-                  iconSize: playerControlIconSize,
-                ),
-                SizedBox(width: gap),
-                buildSecondaryControl(
-                  tooltip: l10n.chooseSurah,
-                  onPressed: _openSurahPickerSheet,
-                  icon: Icons.queue_music_rounded,
-                ),
-              ],
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  buildSecondaryControl(
+                    tooltip: _showAyahText
+                        ? l10n.hideAyahText
+                        : l10n.showAyahText,
+                    onPressed: _toggleAyahText,
+                    icon: Icons.menu_book_rounded,
+                    selected: _showAyahText,
+                  ),
+                  SizedBox(width: gap),
+                  IconButton(
+                    tooltip: l10n.previous,
+                    onPressed: _playPrevious,
+                    icon: const Icon(Icons.skip_previous_rounded),
+                    iconSize: playerControlIconSize,
+                  ),
+                  SizedBox(width: gap),
+                  buildPlayPauseButton(),
+                  SizedBox(width: gap),
+                  IconButton(
+                    tooltip: l10n.next,
+                    onPressed: _playNext,
+                    icon: const Icon(Icons.skip_next_rounded),
+                    iconSize: playerControlIconSize,
+                  ),
+                  SizedBox(width: gap),
+                  buildSecondaryControl(
+                    tooltip: l10n.chooseSurah,
+                    onPressed: _openSurahPickerSheet,
+                    icon: Icons.queue_music_rounded,
+                  ),
+                ],
+              ),
             ),
           );
         }

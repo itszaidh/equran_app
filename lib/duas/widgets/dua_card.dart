@@ -31,9 +31,11 @@ class DuaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final bool isLight = theme.brightness == Brightness.light;
     final List<String> metadata = <String>[
-      if (dua.count != null && dua.count! > 1) 'Repeat ${dua.count}x',
+      if (dua.count != null && dua.count! > 1)
+        '${localizations.repeat} ${dua.count}x',
       if (dua.reference != null) dua.reference!,
       if (dua.source != null) dua.source!,
       if (dua.notes != null) dua.notes!,
@@ -182,6 +184,7 @@ class _DuaCardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Row(
       children: <Widget>[
@@ -194,7 +197,7 @@ class _DuaCardHeader extends StatelessWidget {
               border: Border.all(color: colors.primary.withAlpha(24)),
             ),
             child: Text(
-              'Dua $number',
+              '${localizations.dua} $number',
               style: theme.textTheme.labelMedium?.copyWith(
                 color: colors.onSurfaceVariant.withAlpha(205),
                 fontWeight: FontWeight.w700,
@@ -235,9 +238,12 @@ class _DuaFavouriteButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colors = Theme.of(context).colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Tooltip(
-      message: isFavourite ? 'Remove favourite' : 'Favourite',
+      message: isFavourite
+          ? localizations.removeFavourite
+          : localizations.favourite,
       child: SizedBox(
         height: 34,
         width: 34,

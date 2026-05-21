@@ -30,6 +30,24 @@ class PrayerHeroCard extends StatelessWidget {
   final String? subtitleOverride;
   final VoidCallback onTap;
 
+  String _formatTime(DateTime time, bool use24HourFormat) {
+    if (use24HourFormat) {
+      return '${time.hour.toString().padLeft(2, '0')}:'
+          '${time.minute.toString().padLeft(2, '0')}';
+    }
+    final int hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final String suffix = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:${time.minute.toString().padLeft(2, '0')} $suffix';
+  }
+
+  String _formatCountdown(Duration duration, AppLocalizations localizations) {
+    final Duration normalized = duration.isNegative ? Duration.zero : duration;
+    final int hours = normalized.inHours;
+    final int minutes = normalized.inMinutes.remainder(60);
+    if (hours <= 0) return localizations.minutesShort(minutes);
+    return localizations.hoursMinutesShort(hours, minutes);
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -125,7 +143,7 @@ class PrayerHeroCard extends StatelessWidget {
       children: <Widget>[
         LayoutBuilder(
           builder: (context, constraints) {
-            final bool compact = constraints.maxWidth < 360;
+            final bool compact = constraints.maxWidth < 390;
             final bool use12HourTime = !settings.use24HourFormat;
             final double artWidth =
                 (constraints.maxWidth * (compact ? 0.72 : 0.76))
@@ -284,17 +302,16 @@ class _PrayerHeroDecoration extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(EquranRadii.large),
-      child: ShaderMask(
-        shaderCallback: (Rect bounds) => const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: <Color>[Colors.transparent, Colors.white, Colors.white],
-          stops: <double>[0, 0.28, 1],
-        ).createShader(bounds),
-        blendMode: BlendMode.dstIn,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Padding(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.diagonal3Values(
+              1.0,
+              1.0,
+              1.0,
+            ),
+            child: Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(4, 2, 0, 2),
               child: Align(
                 alignment: AlignmentDirectional.centerEnd,
@@ -312,39 +329,21 @@ class _PrayerHeroDecoration extends StatelessWidget {
                   },
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
-}
 
-String _prayerBannerAsset(PrayerTimeKind kind) {
-  return switch (kind) {
-    PrayerTimeKind.fajr => '$_appAssetBase/fajr_banner.webp',
-    PrayerTimeKind.sunrise => '$_appAssetBase/fajr_banner.webp',
-    PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr_banner.webp',
-    PrayerTimeKind.asr => '$_appAssetBase/asr_banner.webp',
-    PrayerTimeKind.maghrib => '$_appAssetBase/maghrib_banner.webp',
-    PrayerTimeKind.isha => '$_appAssetBase/isha_banner.webp',
-  };
-}
-
-String _formatTime(DateTime time, bool use24HourFormat) {
-  if (use24HourFormat) {
-    return '${time.hour.toString().padLeft(2, '0')}:'
-        '${time.minute.toString().padLeft(2, '0')}';
+  String _prayerBannerAsset(PrayerTimeKind kind) {
+    return switch (kind) {
+      PrayerTimeKind.fajr => '$_appAssetBase/fajr_banner.webp',
+      PrayerTimeKind.sunrise => '$_appAssetBase/fajr_banner.webp',
+      PrayerTimeKind.dhuhr => '$_appAssetBase/dhuhr_banner.webp',
+      PrayerTimeKind.asr => '$_appAssetBase/asr_banner.webp',
+      PrayerTimeKind.maghrib => '$_appAssetBase/maghrib_banner.webp',
+      PrayerTimeKind.isha => '$_appAssetBase/isha_banner.webp',
+    };
   }
-  final int hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
-  final String suffix = time.hour >= 12 ? 'PM' : 'AM';
-  return '$hour:${time.minute.toString().padLeft(2, '0')} $suffix';
-}
-
-String _formatCountdown(Duration duration, AppLocalizations localizations) {
-  final Duration normalized = duration.isNegative ? Duration.zero : duration;
-  final int hours = normalized.inHours;
-  final int minutes = normalized.inMinutes.remainder(60);
-  if (hours <= 0) return localizations.minutesShort(minutes);
-  return localizations.hoursMinutesShort(hours, minutes);
 }
