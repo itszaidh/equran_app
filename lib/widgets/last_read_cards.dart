@@ -247,7 +247,6 @@ class EquranResumeImageCard extends StatelessWidget {
                     ],
                   )
                 : colors.heroGradient;
-            debugPrint("$textRightPadding");
             return SizedBox(
               width: double.infinity,
               height: _resumeImageCardHeight,
