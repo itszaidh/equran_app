@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:equran/backend/library.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:equran/l10n/app_localizations.dart';
@@ -178,9 +179,10 @@ class _TasbihPageState extends State<TasbihPage> {
       if (completesPreset) {
         _completionInputLocked = true;
         _completionPulse = true;
-        _completionMessage = AppLocalizations.of(
-          context,
-        )!.dhikrComplete(preset.label);
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
+        _completionMessage = localizations.dhikrComplete(
+          preset.localizedLabel(localizations),
+        );
       }
     });
     _persistCurrentState();
@@ -206,9 +208,10 @@ class _TasbihPageState extends State<TasbihPage> {
     if (!mounted) return;
 
     setState(() {
+      final AppLocalizations localizations = AppLocalizations.of(context)!;
       _completionMessage = groupedCompletion
-          ? AppLocalizations.of(context)!.postPrayerDhikrComplete
-          : AppLocalizations.of(context)!.dhikrComplete(preset.label);
+          ? localizations.postPrayerDhikrComplete
+          : localizations.dhikrComplete(preset.localizedLabel(localizations));
       _completionPulse = true;
     });
 
@@ -410,6 +413,7 @@ class _PresetSelector extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
     final _DhikrPreset selectedPreset = _DhikrPreset.presets[selectedIndex];
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final BorderRadius radius = BorderRadius.circular(16);
 
     return Material(
@@ -436,7 +440,7 @@ class _PresetSelector extends StatelessWidget {
                   ),
                   Expanded(
                     child: Text(
-                      selectedPreset.label,
+                      selectedPreset.localizedLabel(localizations),
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -456,7 +460,7 @@ class _PresetSelector extends StatelessWidget {
                 ],
               ),
               Text(
-                '${selectedPreset.target} counts • 33 → 33 → 34',
+                localizations.counts33To33To34(selectedPreset.target),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall?.copyWith(
@@ -667,11 +671,12 @@ class _DhikrCaption extends StatelessWidget {
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Column(
       children: <Widget>[
         Text(
-          preset.label,
+          preset.localizedLabel(localizations),
           textAlign: TextAlign.center,
           style: theme.textTheme.titleLarge?.copyWith(
             color: colors.textPrimary,
@@ -681,7 +686,10 @@ class _DhikrCaption extends StatelessWidget {
         ),
         const SizedBox(height: 5),
         Text(
-          completionMessage ?? 'Auto-advances to ${nextPreset.label}',
+          completionMessage ??
+              localizations.autoAdvancesToNextPreset(
+                nextPreset.localizedLabel(localizations),
+              ),
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
             color: completionMessage == null
@@ -741,6 +749,7 @@ class _TasbihStatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
+    final bool arabic = isArabicLocalizations(localizations);
     return Row(
       children: <Widget>[
         Expanded(
@@ -760,7 +769,7 @@ class _TasbihStatsRow extends StatelessWidget {
         Expanded(
           child: _StatsMetricCard(
             label: localizations.streak,
-            value: '${stats.streak}d',
+            value: arabic ? '${stats.streak} يوم' : '${stats.streak}d',
           ),
         ),
       ],
@@ -865,15 +874,15 @@ class _RecentDhikrSessionsSheet extends StatelessWidget {
               title: Text(
                 session.label == _postPrayerDhikrStorageLabel
                     ? localizations.postPrayerDhikr
-                    : session.label,
+                    : _localizedDhikrSessionLabel(session.label, localizations),
               ),
               subtitle: Text(
                 session.label == _postPrayerDhikrStorageLabel
-                    ? 'SubhanAllah 33 • Alhamdulillah 33 • Allahu Akbar 34\n${_sessionTimeLabel(session)}'
+                    ? '${_postPrayerDhikrSummary(localizations)}\n${_sessionTimeLabel(session, localizations)}'
                     : localizations.dhikrSessionCounted(
                         session.count,
                         session.targetCount,
-                        _sessionTimeLabel(session),
+                        _sessionTimeLabel(session, localizations),
                       ),
               ),
             ),
@@ -994,6 +1003,19 @@ class _DhikrPreset {
   final String? shortLabel;
   final String sequenceHint;
 
+  String localizedLabel(AppLocalizations localizations) {
+    final bool arabicMode = isArabicLocalizations(localizations);
+    if (!arabicMode) return label;
+    return switch (label) {
+      'SubhanAllah' => 'سبحان الله',
+      'Alhamdulillah' => 'الحمد لله',
+      'Allahu Akbar' => 'الله أكبر',
+      'Astaghfirullah' => 'أستغفر الله',
+      'Custom' => 'ذكر مخصص',
+      _ => label,
+    };
+  }
+
   static const List<_DhikrPreset> presets = <_DhikrPreset>[
     _DhikrPreset(
       label: 'SubhanAllah',
@@ -1032,9 +1054,40 @@ String _dateKey(DateTime date) {
       '${date.day.toString().padLeft(2, '0')}';
 }
 
-String _sessionTimeLabel(DhikrSessionEntry session) {
+String _localizedDhikrSessionLabel(
+  String label,
+  AppLocalizations localizations,
+) {
+  return switch (label) {
+    'SubhanAllah' =>
+      isArabicLocalizations(localizations) ? 'سبحان الله' : label,
+    'Alhamdulillah' =>
+      isArabicLocalizations(localizations) ? 'الحمد لله' : label,
+    'Allahu Akbar' =>
+      isArabicLocalizations(localizations) ? 'الله أكبر' : label,
+    'Astaghfirullah' =>
+      isArabicLocalizations(localizations) ? 'أستغفر الله' : label,
+    'Custom' => isArabicLocalizations(localizations) ? 'ذكر مخصص' : label,
+    _ => label,
+  };
+}
+
+String _postPrayerDhikrSummary(AppLocalizations localizations) {
+  if (!isArabicLocalizations(localizations)) {
+    return 'SubhanAllah 33 • Alhamdulillah 33 • Allahu Akbar 34';
+  }
+  return 'سبحان الله 33 • الحمد لله 33 • الله أكبر 34';
+}
+
+String _sessionTimeLabel(
+  DhikrSessionEntry session,
+  AppLocalizations localizations,
+) {
   final DateTime time = session.completedAt ?? session.startedAt;
   final int hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
-  final String period = time.hour >= 12 ? 'PM' : 'AM';
+  final bool arabic = isArabicLocalizations(localizations);
+  final String period = arabic
+      ? (time.hour >= 12 ? 'م' : 'ص')
+      : (time.hour >= 12 ? 'PM' : 'AM');
   return '${time.month}/${time.day} $hour:${time.minute.toString().padLeft(2, '0')} $period';
 }

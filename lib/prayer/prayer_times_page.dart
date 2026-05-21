@@ -15,6 +15,7 @@ import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
@@ -466,7 +467,11 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             child: _NightTimeValue(
               icon: Icons.nights_stay_outlined,
               label: localizations.middleOfNight,
-              value: _formatTime(nightTimes.middle, settings.use24HourFormat),
+              value: _formatTime(
+                nightTimes.middle,
+                settings.use24HourFormat,
+                localizations,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -477,6 +482,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
               value: _formatTime(
                 nightTimes.lastThirdStart,
                 settings.use24HourFormat,
+                localizations,
               ),
             ),
           ),
@@ -1524,14 +1530,21 @@ class _NightTimeValue extends StatelessWidget {
   }
 }
 
-String _formatTime(DateTime time, bool use24HourFormat) {
+String _formatTime(
+  DateTime time,
+  bool use24HourFormat,
+  AppLocalizations localizations,
+) {
   final int hour = time.hour;
   final int minute = time.minute;
   if (use24HourFormat) {
     return '${_two(hour)}:${_two(minute)}';
   }
 
-  final String period = hour >= 12 ? 'PM' : 'AM';
+  final bool arabic = isArabicLocalizations(localizations);
+  final String period = arabic
+      ? (hour >= 12 ? 'م' : 'ص')
+      : (hour >= 12 ? 'PM' : 'AM');
   final int displayHour = hour % 12 == 0 ? 12 : hour % 12;
   return '$displayHour:${_two(minute)} $period';
 }

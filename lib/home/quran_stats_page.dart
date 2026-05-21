@@ -3851,7 +3851,10 @@ class _TasbihSection extends StatelessWidget {
                       icon: Icons.favorite_rounded,
                       name: data.mostRecitedName.isEmpty
                           ? localizations.dhikrLabel
-                          : data.mostRecitedName,
+                          : _localizedDhikrStatsLabel(
+                              data.mostRecitedName,
+                              localizations,
+                            ),
                       count: data.mostRecitedCount,
                     ),
                     _StatCard(
@@ -3865,7 +3868,10 @@ class _TasbihSection extends StatelessWidget {
                 _FeatureCard(
                   title: data.mostRecitedName.isEmpty
                       ? localizations.dhikrLabel
-                      : data.mostRecitedName,
+                      : _localizedDhikrStatsLabel(
+                          data.mostRecitedName,
+                          localizations,
+                        ),
                   subtitle: localizations.recitationsCount(
                     data.mostRecitedCount,
                   ),
@@ -5843,6 +5849,19 @@ String _fullMonthLabel(int month, AppLocalizations localizations) {
     localizations.december,
   ];
   return months[(month - 1).clamp(0, months.length - 1)];
+}
+
+String _localizedDhikrStatsLabel(String label, AppLocalizations localizations) {
+  if (!isArabicLocalizations(localizations)) return label;
+  return switch (label) {
+    'Post-prayer dhikr' => localizations.postPrayerDhikr,
+    'SubhanAllah' => 'سبحان الله',
+    'Alhamdulillah' => 'الحمد لله',
+    'Allahu Akbar' => 'الله أكبر',
+    'Astaghfirullah' => 'أستغفر الله',
+    'Custom' => 'ذكر مخصص',
+    _ => label,
+  };
 }
 
 String? _stringOrNull(Object? value) {

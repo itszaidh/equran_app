@@ -10,7 +10,7 @@ import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 const String equranResumeQuranAsset = 'assets/media/images/app/quran.webp';
 const String equranResumePlayerAsset = 'assets/media/images/app/player.webp';
 const double _resumeImageCardMaxWidth = 620;
-const double _resumeImageCardHeight = 150;
+const double _resumeImageCardHeight = 160;
 
 class LastReadCard extends StatefulWidget {
   const LastReadCard({super.key, required this.entries});
@@ -186,22 +186,22 @@ class EquranResumeImageCard extends StatelessWidget {
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final bool compact = constraints.maxWidth < 340;
+            final bool compact = constraints.maxWidth < 300;
             final double artworkEdgePadding = _artworkEdgePadding(
               constraints.maxWidth,
             );
             final double scale = artworkScale.clamp(0.82, 1.28).toDouble();
             final double artWidth = (compact ? 108 : 132) * scale;
             final double textRightPadding =
-                ((compact ? 94 : 114) * scale.clamp(0.94, 1.16)) +
+                ((compact ? 94 : 124) * scale.clamp(0.94, 1.16)) +
                 artworkEdgePadding;
             final double horizontalPadding = compact ? 16 : 18;
             final double topPadding = compact ? 13 : 14;
             final double bottomPadding = compact ? 13 : 13;
             final double titleSubtitleGap = compact ? 4 : 5;
-            final double subtitleDividerGap = compact ? 14 : 28;
+            final double subtitleDividerGap = compact ? 19 : 28;
             final double dividerActionGap = compact ? 8 : 10;
-            final double dividerWidth = compact ? 94 : 104;
+            final double dividerWidth = 170;
             final bool isRtl = Directionality.of(context) == TextDirection.rtl;
             final TextStyle? titleStyle = compact
                 ? theme.textTheme.titleLarge?.copyWith(
@@ -247,7 +247,7 @@ class EquranResumeImageCard extends StatelessWidget {
                     ],
                   )
                 : colors.heroGradient;
-
+            debugPrint("$textRightPadding");
             return SizedBox(
               width: double.infinity,
               height: _resumeImageCardHeight,

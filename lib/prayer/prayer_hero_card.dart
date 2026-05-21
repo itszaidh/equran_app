@@ -3,6 +3,7 @@ import 'package:equran/prayer/prayer_localizations.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
@@ -30,13 +31,20 @@ class PrayerHeroCard extends StatelessWidget {
   final String? subtitleOverride;
   final VoidCallback onTap;
 
-  String _formatTime(DateTime time, bool use24HourFormat) {
+  String _formatTime(
+    DateTime time,
+    bool use24HourFormat,
+    AppLocalizations localizations,
+  ) {
     if (use24HourFormat) {
       return '${time.hour.toString().padLeft(2, '0')}:'
           '${time.minute.toString().padLeft(2, '0')}';
     }
     final int hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
-    final String suffix = time.hour >= 12 ? 'PM' : 'AM';
+    final bool arabic = isArabicLocalizations(localizations);
+    final String suffix = arabic
+        ? (time.hour >= 12 ? 'م' : 'ص')
+        : (time.hour >= 12 ? 'PM' : 'AM');
     return '$hour:${time.minute.toString().padLeft(2, '0')} $suffix';
   }
 
@@ -117,6 +125,7 @@ class PrayerHeroCard extends StatelessWidget {
     final String prayerTime = _formatTime(
       featuredPrayer.time,
       settings.use24HourFormat,
+      localizations,
     );
     final String countdown = _formatCountdown(next.countdown, localizations);
     final bool exactAlarmDenied =
@@ -306,11 +315,7 @@ class _PrayerHeroDecoration extends StatelessWidget {
         builder: (context, constraints) {
           return Transform(
             alignment: Alignment.center,
-            transform: Matrix4.diagonal3Values(
-              1.0,
-              1.0,
-              1.0,
-            ),
+            transform: Matrix4.diagonal3Values(1.0, 1.0, 1.0),
             child: Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(4, 2, 0, 2),
               child: Align(

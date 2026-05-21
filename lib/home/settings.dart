@@ -28,6 +28,7 @@ import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/utils/app_theme.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/library.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/library.dart'
     show
         AppSelectionDialog,
@@ -316,7 +317,9 @@ class _SettingsPageState extends State<SettingsPage> {
               .map(
                 (reciter) => AppSelectionOption<AppReciter>(
                   value: reciter,
-                  title: reciter.englishName,
+                  title: reciter.displayName(
+                    arabic: isArabicLocalizations(localizations),
+                  ),
                 ),
               )
               .toList(),
@@ -543,10 +546,13 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   String _resourceSubtitle(DownloadableResource resource) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final List<String> parts = <String>[
       if (resource.language != null) resource.language!.toUpperCase(),
       if (resource.reciterCode != null)
-        AppReciter.fromCode(resource.reciterCode).englishName,
+        AppReciter.fromCode(
+          resource.reciterCode,
+        ).displayName(arabic: isArabicLocalizations(localizations)),
       'v${resource.version}',
       prettyBytes(resource.sizeBytes),
     ];
@@ -1343,7 +1349,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   String _selectedReciterName() {
     final dynamic savedReciter = SettingsDB().get("reciter", defaultValue: "1");
-    return AppReciter.fromCode(savedReciter?.toString()).englishName;
+    final AppLocalizations? localizations = AppLocalizations.of(context);
+    return AppReciter.fromCode(savedReciter?.toString()).displayName(
+      arabic: localizations != null && isArabicLocalizations(localizations),
+    );
   }
 }
 

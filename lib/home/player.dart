@@ -690,8 +690,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   String _selectedReciterCode() => QuranAudioService().selectedReciter.code;
 
-  String _selectedReciterName() =>
-      QuranAudioService().selectedReciter.englishName;
+  String _selectedReciterName() {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    return QuranAudioService().selectedReciter.displayName(
+      arabic: isArabicLocalizations(localizations),
+    );
+  }
 
   void _loadListeningResumeState() {
     final List<ResumeStateEntry> entries =
@@ -2019,7 +2023,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
             .map(
               (reciter) => AppSelectionOption<AppReciter>(
                 value: reciter,
-                title: reciter.englishName,
+                title: reciter.displayName(arabic: isArabicLocalizations(l10n)),
               ),
             )
             .toList(),

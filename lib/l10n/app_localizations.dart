@@ -473,7 +473,7 @@ abstract class AppLocalizations {
   /// No description provided for @beginWithQuran.
   ///
   /// In en, this message translates to:
-  /// **'Begin with the Quran'**
+  /// **'Quran Reading'**
   String get beginWithQuran;
 
   /// No description provided for @startReadingSubtitle.
@@ -3332,7 +3332,7 @@ abstract class AppLocalizations {
   /// No description provided for @quranRecitation.
   ///
   /// In en, this message translates to:
-  /// **'Quran recitation'**
+  /// **'Quran Player'**
   String get quranRecitation;
 
   /// No description provided for @openPlayer.

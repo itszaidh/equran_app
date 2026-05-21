@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/prayer/prayer_hero_card.dart';
+import 'package:equran/prayer/prayer_localizations.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
@@ -373,10 +374,12 @@ class _DashboardContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final _DashboardSummary summary = _DashboardSummary.load(
       now: now,
       prayerStore: prayerStore,
       prayerService: prayerService,
+      localizations: localizations,
     );
 
     return LayoutBuilder(
@@ -469,6 +472,7 @@ class _DashboardSummary {
     required DateTime now,
     required PrayerSettingsStore prayerStore,
     required PrayerTimesService prayerService,
+    required AppLocalizations localizations,
   }) {
     final List<ResumeStateEntry> resumeEntries = ResumeStateDB().box.values
         .whereType<ResumeStateEntry>()
@@ -499,6 +503,7 @@ class _DashboardSummary {
         now: now,
         store: prayerStore,
         service: prayerService,
+        localizations: localizations,
       ),
       todayActivity: activityValue is QuranActivityDay ? activityValue : null,
       activePlan: plans.isEmpty ? null : plans.first,
@@ -566,6 +571,7 @@ class _PrayerSummary {
     required DateTime now,
     required PrayerSettingsStore store,
     required PrayerTimesService service,
+    required AppLocalizations localizations,
   }) {
     final PrayerLocation? location = store.getLocation();
     if (location == null) {
@@ -615,11 +621,12 @@ class _PrayerSummary {
       day: today,
       currentPeriod: currentPeriod,
       nextPrayer: nextPrayer,
-      heroTitleOverride: _heroTitleOverrideFor(currentPeriod),
+      heroTitleOverride: _heroTitleOverrideFor(currentPeriod, localizations),
       heroSubtitleOverride: _heroSubtitleOverrideFor(
         currentPeriod: currentPeriod,
         nextPrayer: nextPrayer,
         now: now,
+        localizations: localizations,
       ),
     );
   }
@@ -815,6 +822,7 @@ class _PrayerTimeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 7),
@@ -836,7 +844,7 @@ class _PrayerTimeChip extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            _formatTime(entry.time, use24HourFormat),
+            _formatTime(entry.time, use24HourFormat, localizations),
             style: theme.textTheme.labelMedium?.copyWith(
               color: colors.onPrimary,
               fontWeight: FontWeight.w900,
@@ -2334,6 +2342,7 @@ class _PrayerDashboardCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerDay? day = prayerSummary.day;
     final NextPrayer? nextPrayer = prayerSummary.nextPrayer;
 
@@ -2417,6 +2426,7 @@ class _PrayerDashboardCard extends StatelessWidget {
                 label: _formatTime(
                   nextPrayer.entry.time,
                   settings.use24HourFormat,
+                  localizations,
                 ),
               ),
               _InfoPill(icon: Icons.calculate_outlined, label: methodLabel),
@@ -3092,6 +3102,7 @@ class _CompactPrayerTimes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -3102,7 +3113,7 @@ class _CompactPrayerTimes extends StatelessWidget {
                   ? Icons.wb_sunny_outlined
                   : Icons.nights_stay_outlined,
               label:
-                  '${entry.kind.label} ${_formatTime(entry.time, use24HourFormat)}',
+                  '${entry.kind.label} ${_formatTime(entry.time, use24HourFormat, localizations)}',
             );
           })
           .toList(growable: false),
@@ -3284,12 +3295,16 @@ String _formatDashboardDate(DateTime now) {
   return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
 }
 
-String? _heroTitleOverrideFor(PrayerCurrentPeriod period) {
+String? _heroTitleOverrideFor(
+  PrayerCurrentPeriod period,
+  AppLocalizations localizations,
+) {
   return switch (period.type) {
-    PrayerCurrentPeriodType.sunriseProhibited => 'Sunrise',
-    PrayerCurrentPeriodType.dhuhrProhibited => 'Zawal',
-    PrayerCurrentPeriodType.sunsetProhibited => 'Sunset',
-    PrayerCurrentPeriodType.beforeDhuhr => 'Morning',
+    PrayerCurrentPeriodType.sunriseProhibited =>
+      localizations.prayerNameSunrise,
+    PrayerCurrentPeriodType.dhuhrProhibited => localizations.zawal,
+    PrayerCurrentPeriodType.sunsetProhibited => localizations.sunset,
+    PrayerCurrentPeriodType.beforeDhuhr => localizations.morning,
     PrayerCurrentPeriodType.normalPrayer => null,
   };
 }
@@ -3298,34 +3313,52 @@ String? _heroSubtitleOverrideFor({
   required PrayerCurrentPeriod currentPeriod,
   required NextPrayer nextPrayer,
   required DateTime now,
+  required AppLocalizations localizations,
 }) {
   return switch (currentPeriod.type) {
     PrayerCurrentPeriodType.sunriseProhibited =>
-      'Prohibited time ends in ${_formatHeroCountdown(currentPeriod.endsAt.difference(now))}',
+      localizations.prohibitedTimeEndsIn(
+        _formatHeroCountdown(
+          currentPeriod.endsAt.difference(now),
+          localizations,
+        ),
+      ),
     PrayerCurrentPeriodType.dhuhrProhibited ||
-    PrayerCurrentPeriodType.sunsetProhibited =>
-      'Prohibited time ends in ${_formatHeroCountdown(currentPeriod.endsAt.difference(now))}',
-    PrayerCurrentPeriodType.beforeDhuhr =>
-      '${nextPrayer.entry.kind.label} begins in ${_formatHeroCountdown(nextPrayer.countdown)}',
+    PrayerCurrentPeriodType
+        .sunsetProhibited => localizations.prohibitedTimeEndsIn(
+      _formatHeroCountdown(currentPeriod.endsAt.difference(now), localizations),
+    ),
+    PrayerCurrentPeriodType.beforeDhuhr => localizations.prayerBeginsIn(
+      localizedPrayerName(localizations, nextPrayer.entry.kind),
+      _formatHeroCountdown(nextPrayer.countdown, localizations),
+    ),
     PrayerCurrentPeriodType.normalPrayer => null,
   };
 }
 
-String _formatHeroCountdown(Duration duration) {
+String _formatHeroCountdown(Duration duration, AppLocalizations localizations) {
   final Duration normalized = duration.isNegative ? Duration.zero : duration;
   final int hours = normalized.inHours;
   final int minutes = normalized.inMinutes.remainder(60);
-  if (hours <= 0) return '$minutes min';
-  return '${hours}h ${minutes}m';
+  if (hours <= 0) return localizations.minutesShort(minutes);
+  return localizations.hoursMinutesShort(hours, minutes);
 }
 
-String _formatTime(DateTime time, bool use24HourFormat) {
+String _formatTime(
+  DateTime time,
+  bool use24HourFormat, [
+  AppLocalizations? localizations,
+]) {
   if (use24HourFormat) {
     return '${time.hour.toString().padLeft(2, '0')}:'
         '${time.minute.toString().padLeft(2, '0')}';
   }
   final int hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
-  final String suffix = time.hour >= 12 ? 'PM' : 'AM';
+  final bool arabic =
+      localizations != null && isArabicLocalizations(localizations);
+  final String suffix = arabic
+      ? (time.hour >= 12 ? 'م' : 'ص')
+      : (time.hour >= 12 ? 'PM' : 'AM');
   return '$hour:${time.minute.toString().padLeft(2, '0')} $suffix';
 }
 

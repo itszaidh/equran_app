@@ -2,6 +2,7 @@ import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 
@@ -136,7 +137,11 @@ class PrayerTimeThumbCard extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         alignment: AlignmentDirectional.centerStart,
                         child: Text(
-                          _formatPrayerTime(entry.time, use24HourFormat),
+                          _formatPrayerTime(
+                            entry.time,
+                            use24HourFormat,
+                            AppLocalizations.of(context)!,
+                          ),
                           maxLines: 1,
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: primaryText,
@@ -179,14 +184,21 @@ String _prayerThumbAsset(PrayerTimeKind kind) {
   };
 }
 
-String _formatPrayerTime(DateTime time, bool use24HourFormat) {
+String _formatPrayerTime(
+  DateTime time,
+  bool use24HourFormat,
+  AppLocalizations localizations,
+) {
   final int hour = time.hour;
   final int minute = time.minute;
   if (use24HourFormat) {
     return '${_two(hour)}:${_two(minute)}';
   }
 
-  final String period = hour >= 12 ? 'PM' : 'AM';
+  final bool arabic = isArabicLocalizations(localizations);
+  final String period = arabic
+      ? (hour >= 12 ? 'م' : 'ص')
+      : (hour >= 12 ? 'PM' : 'AM');
   final int displayHour = hour % 12 == 0 ? 12 : hour % 12;
   return '$displayHour:${_two(minute)} $period';
 }

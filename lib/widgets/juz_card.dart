@@ -4,6 +4,7 @@ import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/number_badge.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class QuranJuzTile extends StatelessWidget {
   final String transliteration;
@@ -30,7 +31,8 @@ class QuranJuzTile extends StatelessWidget {
     final bool arabicMode = isArabicLocalizations(localizations);
 
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(6, 4, 6, 4),
+      padding: 
+      const EdgeInsetsDirectional.fromSTEB(10,6,10,6),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: 1,
@@ -66,7 +68,11 @@ class QuranJuzTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textDirection: arabicMode ? TextDirection.rtl : null,
-                        style: theme.textTheme.titleMedium?.copyWith(
+                        style: arabicMode ? theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0,
+                        ): 
+                        theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0,
                         ),
@@ -79,6 +85,9 @@ class QuranJuzTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           textDirection: TextDirection.rtl,
                           style: theme.textTheme.titleMedium?.copyWith(
+                                                      fontFamily:
+                                GoogleFonts.notoNaskhArabic().fontFamily,
+
                             color: colorScheme.onSurfaceVariant,
                           ),
                         ),

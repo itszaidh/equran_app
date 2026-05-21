@@ -257,6 +257,18 @@ enum RepeatChoice {
 
   int get storageValue => count ?? 0;
 
+  String localizedLabel(AppLocalizations localizations) {
+    final bool arabic = isArabicLocalizations(localizations);
+    return switch (this) {
+      RepeatChoice.one => arabic ? 'مرة واحدة' : label,
+      RepeatChoice.three => arabic ? '3 مرات' : label,
+      RepeatChoice.five => arabic ? '5 مرات' : label,
+      RepeatChoice.eleven => arabic ? '11 مرة' : label,
+      RepeatChoice.nineteen => arabic ? '19 مرة' : label,
+      RepeatChoice.infinite => arabic ? 'بلا حد' : label,
+    };
+  }
+
   static RepeatChoice fromStorage(
     dynamic value, {
     required RepeatChoice fallback,
@@ -2426,6 +2438,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       if (_readingAudioPlanCursor?.exhausted == false) {
         await _extendReadingAudioSequenceWithRetry(requestId);
         if (!mounted || requestId != _playbackRequestId) return;
+        if (_versePlayer.playerState.processingState !=
+            ja.ProcessingState.completed) {
+          return;
+        }
         if (_versePlayer.hasNext) {
           await _versePlayer.seekToNext();
           unawaited(_versePlayer.play());
@@ -5770,7 +5786,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             ),
                             title: Text(localizations.reciter),
                             subtitle: Text(
-                              QuranAudioService().selectedReciter.englishName,
+                              _localizedReciterName(
+                                QuranAudioService().selectedReciter,
+                                localizations,
+                              ),
                             ),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: selectReciter,
@@ -5839,14 +5858,20 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           ListTile(
                             leading: const Icon(Icons.repeat_rounded),
                             title: Text(localizations.intervalRepeatOption),
-                            subtitle: Text(_intervalRepeatChoice.label),
+                            subtitle: Text(
+                              _intervalRepeatChoice.localizedLabel(
+                                localizations,
+                              ),
+                            ),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: selectIntervalRepeat,
                           ),
                           ListTile(
                             leading: const Icon(Icons.repeat_one_rounded),
                             title: Text(localizations.repeatEachAyahOption),
-                            subtitle: Text(_repeatAyahChoice.label),
+                            subtitle: Text(
+                              _repeatAyahChoice.localizedLabel(localizations),
+                            ),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: selectRepeatAyah,
                           ),
@@ -7475,6 +7500,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<AppReciter?> _showReciterPickerDialog() {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final List<AppReciter> reciters = AppReciter.values.toList()
       ..sort(
         (a, b) =>
@@ -7483,14 +7509,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     return showDialog<AppReciter>(
       context: context,
       builder: (context) => AppSelectionDialog<AppReciter>(
-        title: 'Reciter',
+        title: localizations.reciter,
         icon: Icons.record_voice_over_rounded,
         selectedValue: QuranAudioService().selectedReciter,
         options: reciters
             .map(
               (reciter) => AppSelectionOption<AppReciter>(
                 value: reciter,
-                title: reciter.englishName,
+                title: _localizedReciterName(reciter, localizations),
               ),
             )
             .toList(),
@@ -7513,12 +7539,19 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             .map(
               (choice) => AppSelectionOption<RepeatChoice>(
                 value: choice,
-                title: choice.label,
+                title: choice.localizedLabel(AppLocalizations.of(context)!),
               ),
             )
             .toList(),
       ),
     );
+  }
+
+  String _localizedReciterName(
+    AppReciter reciter,
+    AppLocalizations localizations,
+  ) {
+    return reciter.displayName(arabic: isArabicLocalizations(localizations));
   }
 
   Future<int?> _showNumberChoiceDialog({

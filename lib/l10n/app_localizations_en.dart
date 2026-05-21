@@ -206,7 +206,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lastRead => 'Last Read';
 
   @override
-  String get beginWithQuran => 'Begin with the Quran';
+  String get beginWithQuran => 'Quran Reading';
 
   @override
   String get startReadingSubtitle =>
@@ -1829,7 +1829,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Saved ayahs in this folder will be moved to Unsorted.';
 
   @override
-  String get quranRecitation => 'Quran recitation';
+  String get quranRecitation => 'Quran Player';
 
   @override
   String get openPlayer => 'Open Player';

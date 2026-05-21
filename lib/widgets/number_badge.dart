@@ -81,18 +81,31 @@ class _DiamondNumberBadge extends StatelessWidget {
             alignment: Alignment.center,
             child: Transform.rotate(
               angle: -math.pi / 4,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  label,
-                  style: theme.textTheme.labelLarge
-                      ?.copyWith(
+              child: SizedBox.square(
+                dimension: diamondSize * 0.72,
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.center,
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      strutStyle: StrutStyle(
                         fontSize: fontSize,
-                        fontWeight: FontWeight.w800,
                         height: 1,
-                        color: colors.textPrimary,
-                      )
-                      .merge(textStyle),
+                        forceStrutHeight: true,
+                      ),
+                      style: theme.textTheme.labelLarge
+                          ?.copyWith(
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w800,
+                            height: 1,
+                            leadingDistribution: TextLeadingDistribution.even,
+                            color: colors.textPrimary,
+                          )
+                          .merge(textStyle),
+                    ),
+                  ),
                 ),
               ),
             ),

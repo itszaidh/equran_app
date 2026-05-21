@@ -52,7 +52,7 @@ class _JuzCardListState extends State<JuzCardList>
       child: ListView.builder(
         controller: scrollController,
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsetsDirectional.only(end: 8, bottom: 24),
+        padding: const EdgeInsetsDirectional.only(end: 2, bottom: 24),
         itemCount: items.length,
         itemExtentBuilder: (int index, _) {
           return items[index].group != null ? headerExtent : tileExtent;
