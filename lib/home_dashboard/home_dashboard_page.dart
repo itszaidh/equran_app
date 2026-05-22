@@ -18,10 +18,11 @@ import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/widgets/common/equran_components.dart';
+import 'package:equran/widgets/holographic_card.dart';
 import 'package:equran/widgets/last_read_cards.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quran/quran.dart' as quran;
 
 const String _appAssetBase = 'assets/media/images/app';
@@ -2495,7 +2496,7 @@ class _HomeQuranLastReadCard extends StatelessWidget {
       );
     }
 
-    return card;
+    return HolographicCardWrapper(child: card);
   }
 }
 
@@ -2560,7 +2561,7 @@ class _ContinueListeningCard extends StatelessWidget {
       );
     }
 
-    return card;
+    return HolographicCardWrapper(child: card);
   }
 }
 

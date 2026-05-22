@@ -41,6 +41,7 @@ class BackupService {
     'viewMode',
     'enableTranslation',
     'showTransliteration',
+    'holographicCardsEnabled',
   };
   static const Set<String> _allowedSettings = <String>{
     ..._boolSettings,
@@ -239,7 +240,8 @@ class BackupService {
         'showLastRead' ||
         'viewMode' ||
         'enableTranslation' ||
-        'showTransliteration' => _requireBool(entry.key, entry.value),
+        'showTransliteration' ||
+        'holographicCardsEnabled' => _requireBool(entry.key, entry.value),
         'translation' => _requireIntInRange(
           entry.key,
           entry.value,

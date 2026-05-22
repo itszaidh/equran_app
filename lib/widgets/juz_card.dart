@@ -1,5 +1,6 @@
 import 'package:equran/home/read.dart';
 import 'package:equran/l10n/app_localizations.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/number_badge.dart';
@@ -25,19 +26,17 @@ class QuranJuzTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
     final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final bool arabicMode = isArabicLocalizations(localizations);
 
     return Padding(
-      padding: 
-      const EdgeInsetsDirectional.fromSTEB(10,6,10,6),
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: 1,
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: colors.surface,
+        borderRadius: radius,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: radius),
         child: InkWell(
           borderRadius: radius,
           onTap: () async {
@@ -53,7 +52,12 @@ class QuranJuzTile extends StatelessWidget {
               ),
             );
           },
-          child: Padding(
+          child: Container(
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: radius,
+              border: Border.all(color: colors.border),
+            ),
             padding: const EdgeInsets.all(14),
             child: Row(
               children: <Widget>[
@@ -70,10 +74,12 @@ class QuranJuzTile extends StatelessWidget {
                         textDirection: arabicMode ? TextDirection.rtl : null,
                         style: arabicMode ? theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w700,
+                          color: colors.textPrimary,
                           letterSpacing: 0,
                         ): 
                         theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
+                          color: colors.textPrimary,
                           letterSpacing: 0,
                         ),
                       ),
@@ -85,10 +91,9 @@ class QuranJuzTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           textDirection: TextDirection.rtl,
                           style: theme.textTheme.titleMedium?.copyWith(
-                                                      fontFamily:
+                            fontFamily:
                                 GoogleFonts.notoNaskhArabic().fontFamily,
-
-                            color: colorScheme.onSurfaceVariant,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ],
@@ -103,7 +108,7 @@ class QuranJuzTile extends StatelessWidget {
                               startVerse,
                               endVerse,
                             ),
-                            colorScheme: colorScheme,
+                            colors: colors,
                           ),
                         ],
                       ),
@@ -123,12 +128,12 @@ class _JuzMetaChip extends StatelessWidget {
   const _JuzMetaChip({
     required this.icon,
     required this.label,
-    required this.colorScheme,
+    required this.colors,
   });
 
   final IconData icon;
   final String label;
-  final ColorScheme colorScheme;
+  final EquranColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -138,23 +143,23 @@ class _JuzMetaChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Color.alphaBlend(
-          colorScheme.secondary.withValues(alpha: 0.10),
-          colorScheme.secondaryContainer.withValues(alpha: 0.78),
+          colors.primary.withAlpha(25),
+          colors.surface,
         ),
         borderRadius: BorderRadius.circular(AppRadii.small),
         border: Border.all(
-          color: colorScheme.secondary.withValues(alpha: 0.22),
+          color: colors.primary.withAlpha(50),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 15, color: colorScheme.onSurfaceVariant),
+          Icon(icon, size: 15, color: colors.textSecondary),
           const SizedBox(width: 6),
           Text(
             label,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: colorScheme.onSecondaryContainer,
+              color: colors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
           ),

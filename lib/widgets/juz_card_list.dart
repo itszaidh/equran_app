@@ -8,9 +8,14 @@ import 'package:equran/l10n/app_localizations.dart';
 import 'juz_card.dart';
 
 class JuzCardList extends StatefulWidget {
-  const JuzCardList({super.key, required this.searchQuery});
+  const JuzCardList({
+    super.key,
+    required this.searchQuery,
+    required this.ascending,
+  });
 
   final String searchQuery;
+  final bool ascending;
 
   @override
   State<JuzCardList> createState() => _JuzCardListState();
@@ -31,12 +36,22 @@ class _JuzCardListState extends State<JuzCardList>
     super.build(context);
     final ScrollController scrollController =
         PrimaryScrollController.maybeOf(context) ?? _fallbackScrollController;
-    final List<JuzGroup> juzGroups = buildJuzGroups(widget.searchQuery);
+    final List<JuzGroup> rawJuzGroups = buildJuzGroups(widget.searchQuery);
 
     final localizations = AppLocalizations.of(context)!;
-    if (juzGroups.isEmpty) {
+    if (rawJuzGroups.isEmpty) {
       return Center(child: Text(localizations.noJuzResultsFound));
     }
+
+    final List<JuzGroup> juzGroups = widget.ascending
+        ? rawJuzGroups
+        : rawJuzGroups.reversed.map((group) {
+            return JuzGroup(
+              juzNumber: group.juzNumber,
+              arabicName: group.arabicName,
+              entries: group.entries.reversed.toList(),
+            );
+          }).toList();
 
     final List<JuzListItem> items = buildJuzListItems(juzGroups);
     final double textScale = MediaQuery.textScalerOf(
@@ -45,7 +60,8 @@ class _JuzCardListState extends State<JuzCardList>
     final double headerExtent = 74 * textScale;
     final double tileExtent = 132 * textScale;
 
-    return Scrollbar(
+    Widget child = Scrollbar(
+      key: ValueKey<bool>(widget.ascending),
       controller: scrollController,
       thumbVisibility: true,
       interactive: true,
@@ -66,7 +82,7 @@ class _JuzCardListState extends State<JuzCardList>
               key: ValueKey<String>('juz-header-${group.juzNumber}'),
               height: headerExtent,
               child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(6, 10, 6, 10),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 6),
                 child: _JuzSectionHeader(
                   juzNumber: group.juzNumber,
                   arabicName: group.arabicName,
@@ -92,6 +108,11 @@ class _JuzCardListState extends State<JuzCardList>
           );
         },
       ),
+    );
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: child,
     );
   }
 

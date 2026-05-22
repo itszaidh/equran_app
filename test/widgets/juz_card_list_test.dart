@@ -17,7 +17,7 @@ void main() {
     'renders page/Mushaf Juz results and supports search labels',
     (WidgetTester tester) async {
       await tester.pumpWidget(
-        materialTestApp(const JuzCardList(searchQuery: '')),
+        materialTestApp(const JuzCardList(searchQuery: '', ascending: true)),
       );
       await pumpBounded(tester);
 
@@ -25,7 +25,7 @@ void main() {
       expect(find.text('Al Fatiha'), findsOneWidget);
 
       await tester.pumpWidget(
-        materialTestApp(const JuzCardList(searchQuery: 'baqarah')),
+        materialTestApp(const JuzCardList(searchQuery: 'baqarah', ascending: true)),
       );
       await pumpBounded(tester);
 

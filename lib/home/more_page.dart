@@ -1,3 +1,4 @@
+import 'package:equran/backend/library.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/widgets/common/equran_components.dart';
@@ -167,22 +168,11 @@ class MorePage extends StatelessWidget {
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     if (!context.mounted) return;
 
-    final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    showAboutDialog(
+    showDialog<void>(
       context: context,
-      applicationName: 'eQuran',
-      applicationVersion: AppLocalizations.of(
-        context,
-      )!.versionLabel(packageInfo.version),
-      applicationIcon: Icon(
-        Icons.menu_book_rounded,
-        color: colorScheme.primary,
-        size: 40,
+      builder: (BuildContext context) => _CustomAboutDialog(
+        version: AppLocalizations.of(context)!.versionLabel(packageInfo.version),
       ),
-      children: <Widget>[
-        const SizedBox(height: 16),
-        Text(AppLocalizations.of(context)!.aboutAppBody),
-      ],
     );
   }
 
@@ -611,4 +601,123 @@ class _MoreAction {
   final String subtitle;
   final VoidCallback onTap;
   final String? assetPath;
+}
+
+class _CustomAboutDialog extends StatefulWidget {
+  const _CustomAboutDialog({required this.version});
+
+  final String version;
+
+  @override
+  State<_CustomAboutDialog> createState() => _CustomAboutDialogState();
+}
+
+class _CustomAboutDialogState extends State<_CustomAboutDialog> {
+  int _clickCount = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    return AlertDialog(
+      backgroundColor: colors.background,
+      surfaceTintColor: Colors.transparent,
+      title: Row(
+        children: <Widget>[
+          Icon(
+            Icons.menu_book_rounded,
+            color: theme.colorScheme.primary,
+            size: 40,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _clickCount++;
+                    });
+                    if (_clickCount == 7) {
+                      _clickCount = 0;
+                      final SettingsDB settings = SettingsDB();
+                      final bool currentVal = settings.get(
+                        'holographicCardsEnabled',
+                        defaultValue: false,
+                      ) as bool;
+                      final bool nextVal = !currentVal;
+                      settings.put('holographicCardsEnabled', nextVal);
+
+                      Navigator.of(context).pop();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            nextVal
+                                ? '🌈 Holographic cards enabled!'
+                                : '✨ Holographic cards disabled!',
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  child: Text(
+                    'eQuran',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                Text(
+                  widget.version,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      content: Text(
+        localizations.aboutAppBody,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: colors.textSecondary,
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            showLicensePage(
+              context: context,
+              applicationName: 'eQuran',
+              applicationVersion: widget.version,
+              applicationIcon: Icon(
+                Icons.menu_book_rounded,
+                color: theme.colorScheme.primary,
+                size: 40,
+              ),
+            );
+          },
+          child: Text(
+            localizations.localeName == 'ar' ? 'التراخيص' : 'Licenses',
+            style: TextStyle(color: theme.colorScheme.primary),
+          ),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            localizations.localeName == 'ar' ? 'إغلاق' : 'Close',
+            style: TextStyle(color: theme.colorScheme.primary),
+          ),
+        ),
+      ],
+    );
+  }
 }

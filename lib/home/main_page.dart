@@ -6,6 +6,7 @@ import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/debouncer.dart';
 import 'package:equran/utils/quran_display.dart';
+import 'package:equran/widgets/holographic_card.dart';
 import 'package:equran/widgets/library.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,7 @@ class _MainPageState extends State<MainPage>
   int _selectedSegment = 0;
   int _lastHandledSearchRequestNonce = -1;
   bool _showSearch = false;
+  bool _ascending = true;
 
   @override
   void initState() {
@@ -92,32 +94,60 @@ class _MainPageState extends State<MainPage>
         : width >= 1100
         ? 28
         : EquranSpacing.pagePadding;
-    return Column(
-      children: <Widget>[
-        DecoratedBox(
-          decoration: _topBarDecoration(),
-          child: SafeArea(
-            bottom: false,
-            child: Material(
-              color: colors.background.withAlpha(0),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                child: _buildTopBar(theme),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: false,
+      body: Column(
+        children: <Widget>[
+          DecoratedBox(
+            decoration: _topBarDecoration(),
+            child: SafeArea(
+              bottom: false,
+              child: Material(
+                color: colors.background.withAlpha(0),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                  child: _buildTopBar(theme),
+                ),
               ),
             ),
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.fromLTRB(
-            horizontalPadding,
-            10,
-            horizontalPadding,
-            15,
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              10,
+              horizontalPadding,
+              15,
+            ),
+            child: _buildSectionHeader(theme),
           ),
-          child: _buildSectionHeader(theme),
-        ),
-        Expanded(child: _buildSegmentPager(horizontalPadding)),
-      ],
+          Expanded(child: _buildSegmentPager(horizontalPadding)),
+        ],
+      ),
+      floatingActionButton: _selectedSegment == 3
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  _ascending = !_ascending;
+                });
+              },
+              backgroundColor: colors.surface,
+              foregroundColor: colors.primary,
+              shape: CircleBorder(
+                side: BorderSide(color: colors.border),
+              ),
+              elevation: 4,
+              child: AnimatedRotation(
+                duration: const Duration(milliseconds: 250),
+                turns: _ascending ? 0.0 : 0.5,
+                child: Icon(
+                  Icons.arrow_downward_rounded,
+                  color: colors.primary,
+                  size: 24,
+                ),
+              ),
+            ),
     );
   }
 
@@ -422,6 +452,7 @@ class _MainPageState extends State<MainPage>
                 : QuranCardList(
                     key: const ValueKey<String>('surah-list'),
                     searchQuery: _searchQuery,
+                    ascending: _ascending,
                     header: _buildLastReadCard(),
                   ),
           ),
@@ -431,8 +462,9 @@ class _MainPageState extends State<MainPage>
           child: PrimaryScrollController(
             controller: _juzScrollController,
             child: JuzCardList(
-              key: ValueKey<String>('juz-list'),
+              key: const ValueKey<String>('juz-list'),
               searchQuery: _searchQuery,
+              ascending: _ascending,
             ),
           ),
         ),
@@ -440,7 +472,10 @@ class _MainPageState extends State<MainPage>
           padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
           child: PrimaryScrollController(
             controller: _pageScrollController,
-            child: _QuranPageList(searchQuery: _searchQuery),
+            child: _QuranPageList(
+              searchQuery: _searchQuery,
+              ascending: _ascending,
+            ),
           ),
         ),
         Padding(
@@ -583,15 +618,20 @@ class _MainPageState extends State<MainPage>
 }
 
 class _QuranPageList extends StatelessWidget {
-  const _QuranPageList({required this.searchQuery});
+  const _QuranPageList({
+    required this.searchQuery,
+    required this.ascending,
+  });
 
   final String searchQuery;
+  final bool ascending;
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final String query = searchQuery.trim().toLowerCase();
-    final List<int> pages =
+    
+    final List<int> rawPages =
         List<int>.generate(quran.totalPagesCount, (index) {
               return index + 1;
             })
@@ -602,10 +642,12 @@ class _QuranPageList extends StatelessWidget {
                   summary.primarySurah.toLowerCase().contains(query) ||
                   summary.juzLabel.toLowerCase().contains(query);
             })
-            .toList(growable: false);
+            .toList();
 
-    return GridView.builder(
-      key: const PageStorageKey<String>('quran-page-grid'),
+    final List<int> pages = ascending ? rawPages : rawPages.reversed.toList();
+
+    Widget child = GridView.builder(
+      key: ValueKey<bool>(ascending),
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 28),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -622,6 +664,11 @@ class _QuranPageList extends StatelessWidget {
           summary: _pageSummary(page, localizations),
         );
       },
+    );
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: child,
     );
   }
 }
@@ -774,16 +821,18 @@ class _QuranLastReadEmptySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-    return EquranResumeImageCard(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (context) => const ReadPage(chapter: 1, startVerse: 1),
+    return HolographicCardWrapper(
+      child: EquranResumeImageCard(
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (context) => const ReadPage(chapter: 1, startVerse: 1),
+          ),
         ),
+        primary: localizations.beginWithQuran,
+        subtitle: localizations.startReadingSubtitle,
+        actionText: localizations.startReading,
+        trailingAssetPath: equranResumeQuranAsset,
       ),
-      primary: localizations.beginWithQuran,
-      subtitle: localizations.startReadingSubtitle,
-      actionText: localizations.startReading,
-      trailingAssetPath: equranResumeQuranAsset,
     );
   }
 }

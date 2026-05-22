@@ -117,6 +117,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   defaultValue: true,
                 ),
               if (cardViewEnabled) _buildTransliterationToggle(context),
+
               _buildDailyQuranGoalTile(context),
               _buildTranslationTile(context),
               FontSlider(showTranslationControls: showTranslationControls),
