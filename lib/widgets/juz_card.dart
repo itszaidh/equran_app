@@ -138,28 +138,29 @@ class _JuzMetaChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Color.alphaBlend(
-          colors.primary.withAlpha(25),
-          colors.surface,
+          colorScheme.secondary.withValues(alpha: 0.10),
+          colorScheme.secondaryContainer.withValues(alpha: 0.78),
         ),
         borderRadius: BorderRadius.circular(AppRadii.small),
         border: Border.all(
-          color: colors.primary.withAlpha(50),
+          color: colorScheme.secondary.withValues(alpha: 0.22),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 15, color: colors.textSecondary),
+          Icon(icon, size: 15, color: colorScheme.onSurfaceVariant),
           const SizedBox(width: 6),
           Text(
             label,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: colors.textPrimary,
+              color: colorScheme.onSecondaryContainer,
               fontWeight: FontWeight.w600,
             ),
           ),
