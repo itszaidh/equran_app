@@ -58,7 +58,7 @@ class QuranJuzTile extends StatelessWidget {
               borderRadius: radius,
               border: Border.all(color: colors.border),
             ),
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: <Widget>[
                 NumberBadge(label: id.toString()),

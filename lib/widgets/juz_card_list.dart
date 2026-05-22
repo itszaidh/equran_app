@@ -58,7 +58,7 @@ class _JuzCardListState extends State<JuzCardList>
       context,
     ).scale(1.0).clamp(1.0, 1.2).toDouble();
     final double headerExtent = 76 * textScale;
-    final double tileExtent = 132 * textScale;
+    final double tileExtent = 122 * textScale;
 
     Widget child = Scrollbar(
       key: ValueKey<bool>(widget.ascending),
