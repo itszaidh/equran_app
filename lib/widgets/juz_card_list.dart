@@ -57,7 +57,7 @@ class _JuzCardListState extends State<JuzCardList>
     final double textScale = MediaQuery.textScalerOf(
       context,
     ).scale(1.0).clamp(1.0, 1.2).toDouble();
-    final double headerExtent = 74 * textScale;
+    final double headerExtent = 76 * textScale;
     final double tileExtent = 132 * textScale;
 
     Widget child = Scrollbar(
@@ -82,7 +82,7 @@ class _JuzCardListState extends State<JuzCardList>
               key: ValueKey<String>('juz-header-${group.juzNumber}'),
               height: headerExtent,
               child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 6),
+                padding: const EdgeInsetsDirectional.fromSTEB(0, 6, 0, 12),
                 child: _JuzSectionHeader(
                   juzNumber: group.juzNumber,
                   arabicName: group.arabicName,
