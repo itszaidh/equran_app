@@ -118,8 +118,12 @@ class _HifzHomePageState extends State<HifzHomePage> {
                           Divider(color: colors.divider, height: 1),
                       itemBuilder: (context, index) {
                         final e = dueEntries[index];
-                        final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-                        final surahName = isArabic ? quran.getSurahNameArabic(e.surah) : HifzSurahData.name(e.surah);
+                        final isArabic =
+                            Localizations.localeOf(context).languageCode ==
+                            'ar';
+                        final surahName = isArabic
+                            ? quran.getSurahNameArabic(e.surah)
+                            : HifzSurahData.name(e.surah);
                         return Container(
                           color: colors.surface,
                           padding: const EdgeInsets.symmetric(
@@ -132,7 +136,10 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    l10n.hifzStatsNextDueValue(surahName, e.ayah),
+                                    l10n.hifzStatsNextDueValue(
+                                      surahName,
+                                      e.ayah,
+                                    ),
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: colors.textPrimary,
                                       fontWeight: FontWeight.w600,
@@ -653,40 +660,107 @@ class _HifzHomePageState extends State<HifzHomePage> {
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: math.min(5, dueEntries.length),
                           separatorBuilder: (context, index) =>
-                              Divider(color: colors.divider, height: 1),
+                              const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final e = dueEntries[index];
-                            final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-                            final surahName = isArabic ? quran.getSurahNameArabic(e.surah) : HifzSurahData.name(e.surah);
+                            final isArabic =
+                                Localizations.localeOf(context).languageCode ==
+                                'ar';
+                            final surahName = isArabic
+                                ? quran.getSurahNameArabic(e.surah)
+                                : HifzSurahData.name(e.surah);
                             return Container(
-                              color: colors.surface,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
+                              decoration: BoxDecoration(
+                                color: colors.surface,
+                                border: Border.all(color: colors.border),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.large,
+                                ),
                               ),
-                              child: Row(
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        l10n.hifzStatsNextDueValue(surahName, e.ayah),
-                                        style: theme.textTheme.bodyMedium
-                                            ?.copyWith(
-                                              color: colors.textPrimary,
+                              clipBehavior: Clip.hardEdge,
+                              child: IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    // Start-side accent bar — RTL-aware via
+                                    // Row's ambient Directionality.
+                                    Container(width: 3, color: colors.mint),
+                                    Expanded(
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsetsDirectional.fromSTEB(
+                                              12,
+                                              12,
+                                              12,
+                                              12,
                                             ),
+                                        child: Row(
+                                          children: [
+                                            // Leading: soft icon container
+                                            Container(
+                                              width: 36,
+                                              height: 36,
+                                              decoration: BoxDecoration(
+                                                color: colors.primary.withAlpha(
+                                                  20,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      AppRadii.medium,
+                                                    ),
+                                              ),
+                                              child: Icon(
+                                                Icons.auto_stories_outlined,
+                                                size: 18,
+                                                color: colors.primary,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            // Center: title + due subtitle
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    l10n.hifzStatsNextDueValue(
+                                                      surahName,
+                                                      e.ayah,
+                                                    ),
+                                                    style: theme
+                                                        .textTheme
+                                                        .bodyMedium
+                                                        ?.copyWith(
+                                                          color: colors
+                                                              .textPrimary,
+                                                        ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    _dueLabel(l10n, e.dueDate),
+                                                    style: theme
+                                                        .textTheme
+                                                        .labelSmall
+                                                        ?.copyWith(
+                                                          color:
+                                                              colors.textMuted,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            // Trailing: track status badge
+                                            _TrackBadge(track: e.track),
+                                          ],
+                                        ),
                                       ),
-                                      Text(
-                                        _dueLabel(l10n, e.dueDate),
-                                        style: theme.textTheme.labelSmall
-                                            ?.copyWith(color: colors.textMuted),
-                                      ),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  _TrackBadge(track: e.track),
-                                ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -796,8 +870,14 @@ class _HifzHomePageState extends State<HifzHomePage> {
                               ),
                               items: List.generate(114, (index) {
                                 final surahNum = index + 1;
-                                final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-                                final name = isArabic ? quran.getSurahNameArabic(surahNum) : HifzSurahData.name(surahNum);
+                                final isArabic =
+                                    Localizations.localeOf(
+                                      context,
+                                    ).languageCode ==
+                                    'ar';
+                                final name = isArabic
+                                    ? quran.getSurahNameArabic(surahNum)
+                                    : HifzSurahData.name(surahNum);
                                 final count = HifzSurahData.ayahCount(surahNum);
                                 return DropdownMenuItem<int>(
                                   value: surahNum,
@@ -918,8 +998,14 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                       cellText = colors.primary;
                                     }
 
-                                    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
-                                    final surahName = isArabic ? quran.getSurahNameArabic(surah) : HifzSurahData.name(surah);
+                                    final isArabic =
+                                        Localizations.localeOf(
+                                          context,
+                                        ).languageCode ==
+                                        'ar';
+                                    final surahName = isArabic
+                                        ? quran.getSurahNameArabic(surah)
+                                        : HifzSurahData.name(surah);
 
                                     return Tooltip(
                                       message:
@@ -934,7 +1020,11 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                             AppRadii.small,
                                           ),
                                           onTap: () {
-                                            final name = isArabic ? quran.getSurahNameArabic(surah) : HifzSurahData.name(surah);
+                                            final name = isArabic
+                                                ? quran.getSurahNameArabic(
+                                                    surah,
+                                                  )
+                                                : HifzSurahData.name(surah);
                                             ScaffoldMessenger.of(
                                               context,
                                             ).clearSnackBars();
