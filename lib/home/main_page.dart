@@ -4,6 +4,7 @@ import 'package:equran/search/quran_text_search_results.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/hifz/hifz.dart';
 import 'package:equran/utils/debouncer.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/holographic_card.dart';
@@ -121,6 +122,50 @@ class _MainPageState extends State<MainPage>
             ),
             child: _buildSectionHeader(theme),
           ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              0,
+              horizontalPadding,
+              10,
+            ),
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colors.primary,
+                side: BorderSide(color: colors.primary.withAlpha(77)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                minimumSize: const Size.fromHeight(40),
+              ),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const HifzHomePage(),
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.menu_book_rounded,
+                    color: colors.primary,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Hifz Mode',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           Expanded(child: _buildSegmentPager(horizontalPadding)),
         ],
       ),
@@ -134,9 +179,7 @@ class _MainPageState extends State<MainPage>
               },
               backgroundColor: colors.surface,
               foregroundColor: colors.primary,
-              shape: CircleBorder(
-                side: BorderSide(color: colors.border),
-              ),
+              shape: CircleBorder(side: BorderSide(color: colors.border)),
               elevation: 4,
               child: AnimatedRotation(
                 duration: const Duration(milliseconds: 250),
@@ -453,7 +496,7 @@ class _MainPageState extends State<MainPage>
                     key: const ValueKey<String>('surah-list'),
                     searchQuery: _searchQuery,
                     ascending: _ascending,
-                    header: _buildLastReadCard(),
+                    header: _buildHeader(),
                   ),
           ),
         ),
@@ -600,6 +643,18 @@ class _MainPageState extends State<MainPage>
     );
   }
 
+  Widget _buildHeader() {
+    final lastRead = _buildLastReadCard();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ?lastRead,
+        const _HifzReminderCard(),
+      ],
+    );
+  }
+
   void _scrollToTop() {
     final ScrollController scrollController = switch (_selectedSegment) {
       0 => _surahScrollController,
@@ -617,6 +672,119 @@ class _MainPageState extends State<MainPage>
   }
 }
 
+
+
+class _HifzReminderCard extends StatelessWidget {
+  const _HifzReminderCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.equranColors;
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    return ValueListenableBuilder(
+      valueListenable: HifzDB.entriesListenable,
+      builder: (context, box, child) {
+        final dueEntries = HifzDB.getDueEntries();
+        if (dueEntries.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final count = dueEntries.length;
+        final radius = BorderRadius.circular(AppRadii.large);
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: radius,
+            clipBehavior: Clip.antiAlias,
+            child: Ink(
+              decoration: BoxDecoration(
+                borderRadius: radius,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: <Color>[
+                    colors.primary.withAlpha(20),
+                    colors.primary.withAlpha(5),
+                  ],
+                ),
+                border: Border.all(color: colors.primary.withAlpha(40)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: colors.primary.withAlpha(30),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.menu_book_rounded,
+                        color: colors.primary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.hifzReminderDueCount(count),
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                HifzSessionPage(entries: dueEntries),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.primary,
+                        foregroundColor: colors.onPrimary,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadii.pill),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                      ),
+                      child: Text(
+                        l10n.hifzReminderReview,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _QuranPageList extends StatelessWidget {
   const _QuranPageList({
     required this.searchQuery,
@@ -630,19 +798,17 @@ class _QuranPageList extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final String query = searchQuery.trim().toLowerCase();
-    
+
     final List<int> rawPages =
         List<int>.generate(quran.totalPagesCount, (index) {
-              return index + 1;
-            })
-            .where((page) {
-              if (query.isEmpty) return true;
-              final _PageSummary summary = _pageSummary(page, localizations);
-              return page.toString().contains(query) ||
-                  summary.primarySurah.toLowerCase().contains(query) ||
-                  summary.juzLabel.toLowerCase().contains(query);
-            })
-            .toList();
+          return index + 1;
+        }).where((page) {
+          if (query.isEmpty) return true;
+          final _PageSummary summary = _pageSummary(page, localizations);
+          return page.toString().contains(query) ||
+              summary.primarySurah.toLowerCase().contains(query) ||
+              summary.juzLabel.toLowerCase().contains(query);
+        }).toList();
 
     final List<int> pages = ascending ? rawPages : rawPages.reversed.toList();
 

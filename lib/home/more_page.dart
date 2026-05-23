@@ -3,6 +3,7 @@ import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
+import 'package:equran/hifz/hifz.dart';
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
@@ -113,6 +114,19 @@ class MorePage extends StatelessWidget {
                         onTap: onOpenReadingPlans,
                       ),
                       _MoreAction(
+                        icon: Icons.menu_book_rounded,
+                        title: 'Hifz',
+                        subtitle: 'Memorize the Quran with smart review',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (BuildContext context) =>
+                                  const HifzHomePage(),
+                            ),
+                          );
+                        },
+                      ),
+                      _MoreAction(
                         icon: Icons.auto_awesome_outlined,
                         assetPath: _tasbihAsset,
                         title: localizations.tasbih,
@@ -171,7 +185,9 @@ class MorePage extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (BuildContext context) => _CustomAboutDialog(
-        version: AppLocalizations.of(context)!.versionLabel(packageInfo.version),
+        version: AppLocalizations.of(
+          context,
+        )!.versionLabel(packageInfo.version),
       ),
     );
   }
@@ -645,10 +661,12 @@ class _CustomAboutDialogState extends State<_CustomAboutDialog> {
                     if (_clickCount == 7) {
                       _clickCount = 0;
                       final SettingsDB settings = SettingsDB();
-                      final bool currentVal = settings.get(
-                        'holographicCardsEnabled',
-                        defaultValue: false,
-                      ) as bool;
+                      final bool currentVal =
+                          settings.get(
+                                'holographicCardsEnabled',
+                                defaultValue: false,
+                              )
+                              as bool;
                       final bool nextVal = !currentVal;
                       settings.put('holographicCardsEnabled', nextVal);
 

@@ -138,11 +138,16 @@ class DuaEntry {
   String get shareText {
     return <String>[
       text,
-      ?translation,
-      ?transliteration,
-      ?reference,
-      ?source,
-      ?notes,
+      // ignore: use_null_aware_elements
+      if (translation != null) translation!,
+      // ignore: use_null_aware_elements
+      if (transliteration != null) transliteration!,
+      // ignore: use_null_aware_elements
+      if (reference != null) reference!,
+      // ignore: use_null_aware_elements
+      if (source != null) source!,
+      // ignore: use_null_aware_elements
+      if (notes != null) notes!,
       'Hisn al Muslim - $categoryTitle',
     ].join('\n\n');
   }

@@ -2687,4 +2687,315 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get totalZakahWealth =>
       'يجب أن يكون إجمالي الثروة 200 على الأقل لحساب الزكاة.';
+
+  @override
+  String get hifzTitle => 'الحفظ';
+
+  @override
+  String get hifzJourneyTitle => 'رحلة حفظك';
+
+  @override
+  String hifzNewTodayLabel(int count, int max) {
+    return '$count/$max جديد اليوم';
+  }
+
+  @override
+  String get hifzMemorized => 'محفوظ';
+
+  @override
+  String get hifzDueToday => 'مستحق اليوم';
+
+  @override
+  String get hifzInReview => 'قيد المراجعة';
+
+  @override
+  String hifzAyahsMemorized(int count) {
+    return '$count / 6,236 آية محفوظة';
+  }
+
+  @override
+  String get hifzDueForReview => 'مستحق للمراجعة';
+
+  @override
+  String get hifzAllCaughtUp => 'أحسنت — لا توجد مراجعات مستحقة';
+
+  @override
+  String hifzAyahsReady(int count) {
+    return '$count آيات جاهزة للمراجعة';
+  }
+
+  @override
+  String get hifzStartYourSession => 'ابدأ جلسة المراجعة';
+
+  @override
+  String get hifzStart => 'ابدأ';
+
+  @override
+  String get hifzDueNow => 'مستحق الآن';
+
+  @override
+  String hifzOverdueDays(int days) {
+    return 'متأخر $days يوم';
+  }
+
+  @override
+  String hifzShowAll(int count) {
+    return 'عرض الكل $count ←';
+  }
+
+  @override
+  String get hifzAddToMemorize => 'أضف للحفظ';
+
+  @override
+  String get hifzQuickAdd => 'إضافة سريعة';
+
+  @override
+  String get hifzQuickAlFatiha => 'الفاتحة';
+
+  @override
+  String get hifzQuickAlKahf => 'الكهف';
+
+  @override
+  String get hifzQuickJuzAmma => 'جزء عمّ';
+
+  @override
+  String get hifzQuickLast10 => 'آخر 10 سور';
+
+  @override
+  String get hifzOrChooseSurah => 'أو اختر سورة';
+
+  @override
+  String get hifzFromAyah => 'من الآية';
+
+  @override
+  String get hifzToAyah => 'إلى الآية';
+
+  @override
+  String hifzAddAyahsButton(int count) {
+    return 'أضف $count آيات للحفظ';
+  }
+
+  @override
+  String hifzAyahsAdded(int count) {
+    return 'تمت إضافة $count آيات';
+  }
+
+  @override
+  String get hifzSurahProgress => 'تقدم السور';
+
+  @override
+  String get hifzShowAllSurahs => 'عرض جميع السور الـ 114';
+
+  @override
+  String get hifzShowLess => 'عرض أقل';
+
+  @override
+  String hifzSurahsMastered(int count) {
+    return '$count / 114 سورة محفوظة';
+  }
+
+  @override
+  String get hifzSettingsTitle => 'إعدادات الحفظ';
+
+  @override
+  String get hifzTrackNew => 'جديد';
+
+  @override
+  String get hifzTrackRevision => 'مراجعة';
+
+  @override
+  String get hifzTrackMaintenance => 'صيانة';
+
+  @override
+  String hifzSessionProgress(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
+  String get hifzExitSession => 'إنهاء الجلسة؟';
+
+  @override
+  String hifzExitSessionBody(int count, int total) {
+    return 'راجعت $count من $total آيات.\nسيتم حفظ تقدمك حتى الآن.';
+  }
+
+  @override
+  String get hifzExitCancel => 'إلغاء';
+
+  @override
+  String get hifzExitConfirm => 'خروج';
+
+  @override
+  String get hifzImReady => 'أنا مستعد';
+
+  @override
+  String get hifzRevealAll => 'اكشف الكل';
+
+  @override
+  String get hifzToggleTransliteration => 'النطق';
+
+  @override
+  String get hifzToggleTranslation => 'الترجمة';
+
+  @override
+  String get hifzToggleListen => 'استمع';
+
+  @override
+  String get hifzRatingAgain => 'مجدداً';
+
+  @override
+  String get hifzRatingHard => 'صعب';
+
+  @override
+  String get hifzRatingGood => 'جيد';
+
+  @override
+  String get hifzRatingEasy => 'سهل';
+
+  @override
+  String get hifzSessionComplete => 'اكتملت الجلسة';
+
+  @override
+  String get hifzCompletedUnderMinute => 'اكتملت في أقل من دقيقة';
+
+  @override
+  String hifzCompletedInMinutes(int minutes, String plural) {
+    return 'اكتملت في $minutes دقيقة';
+  }
+
+  @override
+  String get hifzSummaryTitle => 'الملخص';
+
+  @override
+  String get hifzTotalReviewed => 'إجمالي المراجعة';
+
+  @override
+  String hifzTotalReviewedValue(int count) {
+    return '$count آيات';
+  }
+
+  @override
+  String get hifzRetentionRate => 'معدل الاحتفاظ';
+
+  @override
+  String get hifzNextReviewDue => 'موعد المراجعة القادمة';
+
+  @override
+  String get hifzNextReviewToday => 'اليوم';
+
+  @override
+  String get hifzNextReviewTomorrow => 'غداً';
+
+  @override
+  String hifzNextReviewInDays(int days) {
+    return 'بعد $days أيام';
+  }
+
+  @override
+  String get hifzAllCaughtUpDue => 'لا توجد مراجعات متبقية';
+
+  @override
+  String get hifzHadithQuote => '«خيركم من تعلّم القرآن وعلّمه» — البخاري';
+
+  @override
+  String get hifzBackToHifz => 'العودة للحفظ';
+
+  @override
+  String hifzKeepReviewing(int count) {
+    return 'استمر في المراجعة ($count متبقية)';
+  }
+
+  @override
+  String hifzDueReminderTitle(int count) {
+    return '$count آيات مستحقة لمراجعة الحفظ';
+  }
+
+  @override
+  String get hifzSettingsComingSoon => 'إعدادات الحفظ — قريباً';
+
+  @override
+  String get hifzStatsSection => 'الحفظ';
+
+  @override
+  String get hifzStatsTotalMemorized => 'إجمالي المحفوظ';
+
+  @override
+  String get hifzStatsDailyStreak => 'التواصل اليومي';
+
+  @override
+  String get hifzStatsRetentionRate => 'معدل الاحتفاظ';
+
+  @override
+  String get hifzStatsTotalReviews => 'إجمالي المراجعات';
+
+  @override
+  String get hifzStatsNextDue => 'المراجعة القادمة';
+
+  @override
+  String hifzStatsNextDueValue(String surah, int ayah) {
+    return '$surah · الآية $ayah';
+  }
+
+  @override
+  String hifzStatsNextDueDate(String date) {
+    return 'موعدها $date';
+  }
+
+  @override
+  String get hifzStatsNoEntries => 'ابدأ الحفظ لرؤية إحصائياتك';
+
+  @override
+  String get hifzStatsSurahProgress => 'تقدم السور';
+
+  @override
+  String hifzStatsRetentionSuffix(String value) {
+    return '$value٪';
+  }
+
+  @override
+  String hifzStatsPill(int count) {
+    return '$count محفوظة';
+  }
+
+  @override
+  String hifzReminderDueCount(int count) {
+    return '$count آيات مستحقة لمراجعة الحفظ';
+  }
+
+  @override
+  String get hifzReminderReview => 'مراجعة';
+
+  @override
+  String get hifzSettingsNewPerDay => 'آيات جديدة يومياً';
+
+  @override
+  String get hifzSettingsReviewsPerDay => 'مراجعات يومياً';
+
+  @override
+  String get hifzSettingsShowTranslit => 'عرض النطق افتراضياً';
+
+  @override
+  String get hifzSettingsShowTranslation => 'عرض الترجمة افتراضياً';
+
+  @override
+  String get hifzSettingsAutoPlayAudio =>
+      'تشغيل الصوت تلقائياً في مرحلة التعلم';
+
+  @override
+  String get hifzSettingsBlankingLevel => 'مستوى الإخفاء';
+
+  @override
+  String get hifzSettingsBlankingAuto => 'تلقائي';
+
+  @override
+  String get hifzSettingsBlankingEasy => 'سهل';
+
+  @override
+  String get hifzSettingsBlankingMedium => 'متوسط';
+
+  @override
+  String get hifzSettingsBlankingHard => 'صعب';
+
+  @override
+  String get hifzSettingsDone => 'تم';
 }

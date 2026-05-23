@@ -30,6 +30,8 @@ import 'backend/library.dart'
         SurahAdapter,
         SurahDB;
 
+import 'hifz/hifz.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -47,6 +49,8 @@ Future<void> main() async {
 
   Hive.registerAdapter(SurahAdapter());
   Hive.registerAdapter(ReadingEntryAdapter());
+  Hive.registerAdapter(HifzEntryAdapter());
+  Hive.registerAdapter(HifzReviewLogAdapter());
   registerCompanionStorageAdapters();
 
   // Hive.deleteBoxFromDisk("bookmarks");
@@ -57,6 +61,7 @@ Future<void> main() async {
   await FavouritesDB().initBox();
   await DuaFavouritesDB().initBox();
   await initCompanionStorageBoxes();
+  await HifzDB.init();
   await SchemaMigrationService.instance.runSafeMigrations();
   await quran.initializeQuran();
   await QuranTranslationService.instance.preloadSelectedTranslation();

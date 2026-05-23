@@ -811,5 +811,251 @@
   "totalRead": "إجمالي المقروء",
   "estimatedLettersRead": "الحروف المقدرة المقروءة",
   "rewardIsWithAllah": "الأجر عند الله.",
-  "totalZakahWealth": "يجب أن يكون إجمالي الثروة 200 على الأقل لحساب الزكاة."
+  "totalZakahWealth": "يجب أن يكون إجمالي الثروة 200 على الأقل لحساب الزكاة.",
+  "hifzTitle": "الحفظ",
+  "hifzJourneyTitle": "رحلة حفظك",
+  "hifzNewTodayLabel": "{count}/{max} جديد اليوم",
+  "@hifzNewTodayLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzMemorized": "محفوظ",
+  "hifzDueToday": "مستحق اليوم",
+  "hifzInReview": "قيد المراجعة",
+  "hifzAyahsMemorized": "{count} / 6,236 آية محفوظة",
+  "@hifzAyahsMemorized": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueForReview": "مستحق للمراجعة",
+  "hifzAllCaughtUp": "أحسنت — لا توجد مراجعات مستحقة",
+  "hifzAyahsReady": "{count} آيات جاهزة للمراجعة",
+  "@hifzAyahsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzStartYourSession": "ابدأ جلسة المراجعة",
+  "hifzStart": "ابدأ",
+  "hifzDueNow": "مستحق الآن",
+  "hifzOverdueDays": "متأخر {days} يوم",
+  "@hifzOverdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzShowAll": "عرض الكل {count} ←",
+  "@hifzShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzAddToMemorize": "أضف للحفظ",
+  "hifzQuickAdd": "إضافة سريعة",
+  "hifzQuickAlFatiha": "الفاتحة",
+  "hifzQuickAlKahf": "الكهف",
+  "hifzQuickJuzAmma": "جزء عمّ",
+  "hifzQuickLast10": "آخر 10 سور",
+  "hifzOrChooseSurah": "أو اختر سورة",
+  "hifzFromAyah": "من الآية",
+  "hifzToAyah": "إلى الآية",
+  "hifzAddAyahsButton": "أضف {count} آيات للحفظ",
+  "@hifzAddAyahsButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzAyahsAdded": "تمت إضافة {count} آيات",
+  "@hifzAyahsAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzSurahProgress": "تقدم السور",
+  "hifzShowAllSurahs": "عرض جميع السور الـ 114",
+  "hifzShowLess": "عرض أقل",
+  "hifzSurahsMastered": "{count} / 114 سورة محفوظة",
+  "@hifzSurahsMastered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzSettingsTitle": "إعدادات الحفظ",
+  "hifzTrackNew": "جديد",
+  "hifzTrackRevision": "مراجعة",
+  "hifzTrackMaintenance": "صيانة",
+  "hifzSessionProgress": "{current} / {total}",
+  "@hifzSessionProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzExitSession": "إنهاء الجلسة؟",
+  "hifzExitSessionBody": "راجعت {count} من {total} آيات.\nسيتم حفظ تقدمك حتى الآن.",
+  "@hifzExitSessionBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzExitCancel": "إلغاء",
+  "hifzExitConfirm": "خروج",
+  "hifzImReady": "أنا مستعد",
+  "hifzRevealAll": "اكشف الكل",
+  "hifzToggleTransliteration": "النطق",
+  "hifzToggleTranslation": "الترجمة",
+  "hifzToggleListen": "استمع",
+  "hifzRatingAgain": "مجدداً",
+  "hifzRatingHard": "صعب",
+  "hifzRatingGood": "جيد",
+  "hifzRatingEasy": "سهل",
+  "hifzSessionComplete": "اكتملت الجلسة",
+  "hifzCompletedUnderMinute": "اكتملت في أقل من دقيقة",
+  "hifzCompletedInMinutes": "اكتملت في {minutes} دقيقة",
+  "@hifzCompletedInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzSummaryTitle": "الملخص",
+  "hifzTotalReviewed": "إجمالي المراجعة",
+  "hifzTotalReviewedValue": "{count} آيات",
+  "@hifzTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzRetentionRate": "معدل الاحتفاظ",
+  "hifzNextReviewDue": "موعد المراجعة القادمة",
+  "hifzNextReviewToday": "اليوم",
+  "hifzNextReviewTomorrow": "غداً",
+  "hifzNextReviewInDays": "بعد {days} أيام",
+  "@hifzNextReviewInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzAllCaughtUpDue": "لا توجد مراجعات متبقية",
+  "hifzHadithQuote": "«خيركم من تعلّم القرآن وعلّمه» — البخاري",
+  "hifzBackToHifz": "العودة للحفظ",
+  "hifzKeepReviewing": "استمر في المراجعة ({count} متبقية)",
+  "@hifzKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueReminderTitle": "{count} آيات مستحقة لمراجعة الحفظ",
+  "@hifzDueReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzSettingsComingSoon": "إعدادات الحفظ — قريباً",
+  "hifzStatsSection": "الحفظ",
+  "hifzStatsTotalMemorized": "إجمالي المحفوظ",
+  "hifzStatsDailyStreak": "التواصل اليومي",
+  "hifzStatsRetentionRate": "معدل الاحتفاظ",
+  "hifzStatsTotalReviews": "إجمالي المراجعات",
+  "hifzStatsNextDue": "المراجعة القادمة",
+  "hifzStatsNextDueValue": "{surah} · الآية {ayah}",
+  "@hifzStatsNextDueValue": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzStatsNextDueDate": "موعدها {date}",
+  "@hifzStatsNextDueDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzStatsNoEntries": "ابدأ الحفظ لرؤية إحصائياتك",
+  "hifzStatsSurahProgress": "تقدم السور",
+  "hifzStatsRetentionSuffix": "{value}٪",
+  "@hifzStatsRetentionSuffix": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzStatsPill": "{count} محفوظة",
+  "@hifzStatsPill": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzReminderDueCount": "{count} آيات مستحقة لمراجعة الحفظ",
+  "@hifzReminderDueCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzReminderReview": "مراجعة",
+  "hifzSettingsTitle": "إعدادات الحفظ",
+  "hifzSettingsNewPerDay": "آيات جديدة يومياً",
+  "hifzSettingsReviewsPerDay": "مراجعات يومياً",
+  "hifzSettingsShowTranslit": "عرض النطق افتراضياً",
+  "hifzSettingsShowTranslation": "عرض الترجمة افتراضياً",
+  "hifzSettingsAutoPlayAudio": "تشغيل الصوت تلقائياً في مرحلة التعلم",
+  "hifzSettingsBlankingLevel": "مستوى الإخفاء",
+  "hifzSettingsBlankingAuto": "تلقائي",
+  "hifzSettingsBlankingEasy": "سهل",
+  "hifzSettingsBlankingMedium": "متوسط",
+  "hifzSettingsBlankingHard": "صعب",
+  "hifzSettingsDone": "تم"
 }

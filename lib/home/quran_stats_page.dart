@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/hifz/hifz.dart';
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/prayer/prayer_models.dart' as prayer_models;
 import 'package:equran/prayer/prayer_settings_store.dart';
@@ -289,6 +290,19 @@ class _StatisticsPageState extends State<StatisticsPage>
                     ),
                   ),
                 ),
+                _StickySectionHeader(label: localizations.hifzStatsSection),
+                _PageContentSliver(
+                  child: _DataSection<HifzSectionData>(
+                    refreshToken: refreshToken,
+                    load: _repository.getHifzData,
+                    placeholderHeight: 350,
+                    builder: (context, data) => _HifzSection(
+                      data: data,
+                      surahGridExpanded: _surahGridExpanded,
+                      onToggleSurahGrid: _toggleSurahGridExpanded,
+                    ),
+                  ),
+                ),
                 _StickySectionHeader(label: localizations.tasbihStats),
                 _PageContentSliver(
                   child: _RangeAwareSection<TasbihStatsData>(
@@ -336,6 +350,25 @@ class _StatisticsPageState extends State<StatisticsPage>
   }
 }
 
+class HifzSectionData {
+  final int totalMemorized;
+  final int totalReviews;
+  final int currentStreak;
+  final double retentionRate; // 0.0 to 1.0
+  final HifzEntry? nextDueEntry; // null if none due
+  final Map<int, int> masteredPerSurah;
+  // key: surah number, value: mastered ayah count
+
+  const HifzSectionData({
+    required this.totalMemorized,
+    required this.totalReviews,
+    required this.currentStreak,
+    required this.retentionRate,
+    required this.nextDueEntry,
+    required this.masteredPerSurah,
+  });
+}
+
 class StatisticsRepository {
   final Map<String, Future<OverviewStats>> _overviewCache =
       <String, Future<OverviewStats>>{};
@@ -351,6 +384,7 @@ class StatisticsRepository {
       <String, Future<MonthlyActivityData>>{};
   final Map<StatRange, Future<StreakStats>> _streakCache =
       <StatRange, Future<StreakStats>>{};
+  Future<HifzSectionData>? _hifzCache;
 
   void clearCache() {
     _overviewCache.clear();
@@ -360,6 +394,43 @@ class StatisticsRepository {
     _salahCache.clear();
     _monthlyActivityCache.clear();
     _streakCache.clear();
+    _hifzCache = null;
+  }
+
+  Future<HifzSectionData> getHifzData() {
+    return _hifzCache ??= (() async {
+      final entries = HifzDB.getAllEntries();
+      final mastered = entries.where((e) => e.status == 'mastered').length;
+      final totalReviews = HifzDB.getLogsForRange(
+        DateTime(2000),
+        DateTime.now(),
+      ).length;
+      final retention = HifzDB.getRetentionRate();
+      final due = HifzDB.getDueEntries();
+      final masteredMap = HifzDB.getMasteredPerSurah();
+      final streak = _computeHifzStreak();
+
+      return HifzSectionData(
+        totalMemorized: mastered,
+        totalReviews: totalReviews,
+        currentStreak: streak,
+        retentionRate: retention,
+        nextDueEntry: due.isEmpty ? null : due.first,
+        masteredPerSurah: masteredMap,
+      );
+    })();
+  }
+
+  int _computeHifzStreak() {
+    // Count consecutive days (going back from today)
+    // where HifzDB.hasActivityOnDate returns true
+    int streak = 0;
+    DateTime day = DateTime.now();
+    while (HifzDB.hasActivityOnDate(day)) {
+      streak++;
+      day = day.subtract(const Duration(days: 1));
+    }
+    return streak;
   }
 
   Future<OverviewStats> overview(AppLocalizations localizations) {
@@ -1061,7 +1132,7 @@ class _OverviewHeroContent extends StatelessWidget {
             ),
             Positioned.fill(
               child: CustomPaint(
-                painter: _HeroCornerOrnamentsPainter(
+                painter: HeroCornerOrnamentsPainter(
                   color: colors.accentGold.withAlpha(128),
                 ),
               ),
@@ -1217,6 +1288,10 @@ class _HeroMetricsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final int masteredCount = HifzDB.getAllEntries()
+        .where((e) => e.status == 'mastered')
+        .length;
+
     return Row(
       children: <Widget>[
         Expanded(
@@ -1256,6 +1331,16 @@ class _HeroMetricsRow extends StatelessWidget {
                   label: localizations.dayStreakLabel,
                 ),
         ),
+        if (masteredCount > 0) ...[
+          const SizedBox(width: 8),
+          Expanded(
+            child: _HeroMetricCard(
+              icon: Icons.military_tech_rounded,
+              value: '$masteredCount',
+              label: localizations.hifzStatsPill(masteredCount),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -1521,8 +1606,8 @@ class _HeroMiniSalahChip extends StatelessWidget {
   }
 }
 
-class _HeroCornerOrnamentsPainter extends CustomPainter {
-  const _HeroCornerOrnamentsPainter({required this.color});
+class HeroCornerOrnamentsPainter extends CustomPainter {
+  const HeroCornerOrnamentsPainter({required this.color});
 
   final Color color;
 
@@ -1553,7 +1638,7 @@ class _HeroCornerOrnamentsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _HeroCornerOrnamentsPainter oldDelegate) {
+  bool shouldRepaint(covariant HeroCornerOrnamentsPainter oldDelegate) {
     return color != oldDelegate.color;
   }
 }
@@ -4878,6 +4963,7 @@ class MonthlyActivityDay {
     required this.tasbih,
     required this.duas,
     required this.salah,
+    required this.hifz,
   });
 
   final DateTime date;
@@ -4885,8 +4971,9 @@ class MonthlyActivityDay {
   final int tasbih;
   final int duas;
   final int salah;
+  final int hifz;
 
-  int get total => quran + tasbih + duas + salah;
+  int get total => quran + tasbih + duas + salah + hifz;
 }
 
 class ActivityBucket {
@@ -4981,12 +5068,14 @@ MonthlyActivityDay _monthlyActivityDay(
   Map<String, int> salahByDate,
 ) {
   final String key = _dateKey(date);
+  final bool hasHifz = HifzDB.hasActivityOnDate(date);
   return MonthlyActivityDay(
     date: DateTime(date.year, date.month, date.day),
     quran: _dayAyahCount(quranDays[key]),
     tasbih: tasbihByDate[key] ?? 0,
     duas: duasByDate[key] ?? 0,
     salah: salahByDate[key] ?? 0,
+    hifz: hasHifz ? 1 : 0,
   );
 }
 
@@ -5044,19 +5133,28 @@ StreakStats _buildStreaks(
   return StreakStats(
     quran: _currentStreak(quranActiveDays, now),
     tasbih: _currentStreak(tasbihActiveDays, now),
-    overall: _currentStreak(<String>{
-      ...quranActiveDays,
-      ...tasbihActiveDays,
-      ...duaActiveDays,
-      ...salahActiveDays,
-    }, now),
+    overall: _currentStreak(
+      <String>{
+        ...quranActiveDays,
+        ...tasbihActiveDays,
+        ...duaActiveDays,
+        ...salahActiveDays,
+      },
+      now,
+      includeHifz: true,
+    ),
   );
 }
 
-int _currentStreak(Set<String> activeDays, DateTime now) {
+int _currentStreak(
+  Set<String> activeDays,
+  DateTime now, {
+  bool includeHifz = false,
+}) {
   int streak = 0;
   DateTime cursor = DateTime(now.year, now.month, now.day);
-  while (activeDays.contains(_dateKey(cursor))) {
+  while (activeDays.contains(_dateKey(cursor)) ||
+      (includeHifz && HifzDB.hasActivityOnDate(cursor))) {
     streak++;
     cursor = cursor.subtract(const Duration(days: 1));
   }
@@ -5885,4 +5983,469 @@ DateTime? _dateTimeOrNull(Object? value) {
   if (value is DateTime) return value;
   if (value is String) return DateTime.tryParse(value);
   return null;
+}
+
+class _HifzSection extends StatelessWidget {
+  const _HifzSection({
+    required this.data,
+    required this.surahGridExpanded,
+    required this.onToggleSurahGrid,
+  });
+
+  final HifzSectionData data;
+  final bool surahGridExpanded;
+  final VoidCallback onToggleSurahGrid;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final EquranColors colors = context.equranColors;
+
+    // Check empty state
+    if (data.totalMemorized == 0 && data.totalReviews == 0) {
+      final radius = BorderRadius.circular(AppRadii.large);
+      return Container(
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: radius,
+          border: Border.all(color: colors.border),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Icon(Icons.menu_book_rounded, color: colors.textMuted, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              localizations.hifzStatsNoEntries,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colors.textSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const HifzHomePage()));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.primary,
+                foregroundColor: colors.onPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+              child: Text(
+                localizations.hifzTitle,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final bool isSmallScreen = screenWidth < 500;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        if (isSmallScreen) ...[
+          _StatCard(
+            icon: Icons.military_tech_rounded,
+            value: '${data.totalMemorized}',
+            label: localizations.hifzStatsTotalMemorized,
+          ),
+          const SizedBox(height: 12),
+          _StatCard(
+            icon: Icons.local_fire_department_rounded,
+            value: '${data.currentStreak}',
+            label: localizations.hifzStatsDailyStreak,
+          ),
+          const SizedBox(height: 12),
+          _StatCard(
+            icon: Icons.insights_rounded,
+            value: localizations.hifzStatsRetentionSuffix(
+              (data.retentionRate * 100).round().toString(),
+            ),
+            label: localizations.hifzStatsRetentionRate,
+          ),
+          const SizedBox(height: 12),
+          _StatCard(
+            icon: Icons.repeat_rounded,
+            value: '${data.totalReviews}',
+            label: localizations.hifzStatsTotalReviews,
+          ),
+        ] else ...[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: _StatCard(
+                  icon: Icons.military_tech_rounded,
+                  value: '${data.totalMemorized}',
+                  label: localizations.hifzStatsTotalMemorized,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  icon: Icons.local_fire_department_rounded,
+                  value: '${data.currentStreak}',
+                  label: localizations.hifzStatsDailyStreak,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: _StatCard(
+                  icon: Icons.insights_rounded,
+                  value: localizations.hifzStatsRetentionSuffix(
+                    (data.retentionRate * 100).round().toString(),
+                  ),
+                  label: localizations.hifzStatsRetentionRate,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _StatCard(
+                  icon: Icons.repeat_rounded,
+                  value: '${data.totalReviews}',
+                  label: localizations.hifzStatsTotalReviews,
+                ),
+              ),
+            ],
+          ),
+        ],
+        const SizedBox(height: 20),
+        if (data.nextDueEntry != null) ...[
+          _HifzNextDueCard(entry: data.nextDueEntry!),
+          const SizedBox(height: 20),
+        ],
+        _HifzSurahProgressSection(
+          masteredPerSurah: data.masteredPerSurah,
+          expanded: surahGridExpanded,
+          onToggleExpanded: onToggleSurahGrid,
+        ),
+      ],
+    );
+  }
+}
+
+class _HifzNextDueCard extends StatelessWidget {
+  const _HifzNextDueCard({required this.entry});
+
+  final HifzEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final EquranColors colors = context.equranColors;
+    final radius = BorderRadius.circular(AppRadii.large);
+
+    final surahName = localizedSurahName(localizations, entry.surah);
+    final valueText = localizations.hifzStatsNextDueValue(
+      surahName,
+      entry.ayah,
+    );
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final due = DateTime(
+      entry.dueDate.year,
+      entry.dueDate.month,
+      entry.dueDate.day,
+    );
+
+    String dateStr;
+    if (due == today) {
+      dateStr = localizations.hifzNextReviewToday;
+    } else if (due == today.add(const Duration(days: 1))) {
+      dateStr = localizations.hifzNextReviewTomorrow;
+    } else {
+      dateStr =
+          '${entry.dueDate.day}/${entry.dueDate.month}/${entry.dueDate.year}';
+    }
+
+    final dateText = localizations.hifzStatsNextDueDate(dateStr);
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const HifzHomePage()));
+        },
+        borderRadius: radius,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: radius,
+            border: Border.all(color: colors.border),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: colors.primary.withAlpha(20),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.alarm_rounded,
+                  color: colors.primary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      localizations.hifzStatsNextDue,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      valueText,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                dateText,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.chevron_right_rounded, color: colors.textMuted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HifzSurahProgressSection extends StatelessWidget {
+  const _HifzSurahProgressSection({
+    required this.masteredPerSurah,
+    required this.expanded,
+    required this.onToggleExpanded,
+  });
+
+  final Map<int, int> masteredPerSurah;
+  final bool expanded;
+  final VoidCallback onToggleExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+
+    int masteredCount = 0;
+    for (int surah = 1; surah <= _totalSurahs; surah++) {
+      final mastered = masteredPerSurah[surah] ?? 0;
+      final total = quran.getVerseCount(surah);
+      if (mastered == total && total > 0) {
+        masteredCount++;
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _SectionLabel(localizations.hifzStatsSurahProgress),
+        const SizedBox(height: 12),
+        Text(
+          localizations.hifzSurahsMastered(masteredCount),
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: colors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const int columns = 10;
+            const double gap = 4;
+            final double cellSize =
+                (constraints.maxWidth - (gap * (columns - 1))) / columns;
+            final int rows = (_totalSurahs / columns).ceil();
+            final double fullHeight = (cellSize * rows) + (gap * (rows - 1));
+            final double collapsedHeight = (cellSize + gap) * 4;
+            final double gridHeight = expanded ? fullHeight : collapsedHeight;
+
+            return AnimatedSize(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeInOutCubic,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                height: gridHeight,
+                child: Stack(
+                  clipBehavior: expanded ? Clip.none : Clip.hardEdge,
+                  children: <Widget>[
+                    SizedBox(
+                      height: fullHeight,
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        itemCount: _totalSurahs,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: columns,
+                              childAspectRatio: 1,
+                              mainAxisSpacing: gap,
+                              crossAxisSpacing: gap,
+                            ),
+                        itemBuilder: (context, index) {
+                          final int surah = index + 1;
+                          final mastered = masteredPerSurah[surah] ?? 0;
+                          final total = quran.getVerseCount(surah);
+                          final double progress = total > 0
+                              ? (mastered / total)
+                              : 0.0;
+
+                          return _HifzProgressCell(
+                            surah: surah,
+                            progress: progress,
+                            mastered: mastered,
+                            total: total,
+                          );
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: collapsedHeight * 0.3,
+                      child: IgnorePointer(
+                        child: AnimatedOpacity(
+                          opacity: expanded ? 0 : 1,
+                          duration: const Duration(milliseconds: 250),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: <Color>[
+                                  colors.background.withAlpha(0),
+                                  colors.background,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: _SurahGridToggleButton(
+            expanded: expanded,
+            onPressed: onToggleExpanded,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HifzProgressCell extends StatelessWidget {
+  const _HifzProgressCell({
+    required this.surah,
+    required this.progress,
+    required this.mastered,
+    required this.total,
+  });
+
+  final int surah;
+  final double progress;
+  final int mastered;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final EquranColors colors = context.equranColors;
+    final BorderRadius radius = BorderRadius.circular(AppRadii.small);
+
+    final Color background = progress == 0.0
+        ? colors.surfaceAlt
+        : (progress == 1.0
+              ? colors.primary
+              : colors.primary.withAlpha(((0.1 + 0.6 * progress) * 255).round()));
+
+    final Color foreground = progress == 0.0
+        ? colors.textMuted
+        : (progress == 1.0 ? colors.onPrimary : colors.textPrimary);
+
+    final Widget label = Center(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          '$surah',
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: foreground,
+            fontWeight: progress > 0 ? FontWeight.w900 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+
+    final tooltipMessage = 'Surah $surah: $mastered / $total ayahs mastered';
+
+    return Tooltip(
+      message: tooltipMessage,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: radius,
+          border: Border.all(
+            color: progress > 0 && progress < 1.0
+                ? colors.primary.withAlpha(102)
+                : Colors.transparent,
+          ),
+        ),
+        child: label,
+      ),
+    );
+  }
 }

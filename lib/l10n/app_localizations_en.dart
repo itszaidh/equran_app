@@ -2745,4 +2745,315 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get totalZakahWealth =>
       'Total wealth must be at least 200 to calculate Zakah.';
+
+  @override
+  String get hifzTitle => 'Hifz';
+
+  @override
+  String get hifzJourneyTitle => 'Your Hifz Journey';
+
+  @override
+  String hifzNewTodayLabel(int count, int max) {
+    return '$count/$max new today';
+  }
+
+  @override
+  String get hifzMemorized => 'Memorized';
+
+  @override
+  String get hifzDueToday => 'Due today';
+
+  @override
+  String get hifzInReview => 'In review';
+
+  @override
+  String hifzAyahsMemorized(int count) {
+    return '$count / 6,236 ayahs memorized';
+  }
+
+  @override
+  String get hifzDueForReview => 'Due for Review';
+
+  @override
+  String get hifzAllCaughtUp => 'All caught up — no reviews due';
+
+  @override
+  String hifzAyahsReady(int count) {
+    return '$count ayahs ready';
+  }
+
+  @override
+  String get hifzStartYourSession => 'Start your review session';
+
+  @override
+  String get hifzStart => 'Start';
+
+  @override
+  String get hifzDueNow => 'Due now';
+
+  @override
+  String hifzOverdueDays(int days) {
+    return 'Overdue ${days}d';
+  }
+
+  @override
+  String hifzShowAll(int count) {
+    return 'Show all $count →';
+  }
+
+  @override
+  String get hifzAddToMemorize => 'Add to Memorize';
+
+  @override
+  String get hifzQuickAdd => 'Quick add';
+
+  @override
+  String get hifzQuickAlFatiha => 'Al-Fatiha';
+
+  @override
+  String get hifzQuickAlKahf => 'Al-Kahf';
+
+  @override
+  String get hifzQuickJuzAmma => 'Juz Amma';
+
+  @override
+  String get hifzQuickLast10 => 'Last 10 Surahs';
+
+  @override
+  String get hifzOrChooseSurah => 'Or choose a surah';
+
+  @override
+  String get hifzFromAyah => 'From ayah';
+
+  @override
+  String get hifzToAyah => 'To ayah';
+
+  @override
+  String hifzAddAyahsButton(int count) {
+    return 'Add $count ayahs to Hifz';
+  }
+
+  @override
+  String hifzAyahsAdded(int count) {
+    return '$count ayahs added';
+  }
+
+  @override
+  String get hifzSurahProgress => 'Surah Progress';
+
+  @override
+  String get hifzShowAllSurahs => 'Show all 114 surahs';
+
+  @override
+  String get hifzShowLess => 'Show less';
+
+  @override
+  String hifzSurahsMastered(int count) {
+    return '$count / 114 Surahs mastered';
+  }
+
+  @override
+  String get hifzSettingsTitle => 'Hifz Settings';
+
+  @override
+  String get hifzTrackNew => 'New';
+
+  @override
+  String get hifzTrackRevision => 'Revision';
+
+  @override
+  String get hifzTrackMaintenance => 'Maintenance';
+
+  @override
+  String hifzSessionProgress(int current, int total) {
+    return '$current / $total';
+  }
+
+  @override
+  String get hifzExitSession => 'Exit session?';
+
+  @override
+  String hifzExitSessionBody(int count, int total) {
+    return 'You have reviewed $count of $total ayahs.\nProgress so far will be saved.';
+  }
+
+  @override
+  String get hifzExitCancel => 'Cancel';
+
+  @override
+  String get hifzExitConfirm => 'Exit';
+
+  @override
+  String get hifzImReady => 'I\'m ready';
+
+  @override
+  String get hifzRevealAll => 'Reveal all';
+
+  @override
+  String get hifzToggleTransliteration => 'Transliteration';
+
+  @override
+  String get hifzToggleTranslation => 'Translation';
+
+  @override
+  String get hifzToggleListen => 'Listen';
+
+  @override
+  String get hifzRatingAgain => 'Again';
+
+  @override
+  String get hifzRatingHard => 'Hard';
+
+  @override
+  String get hifzRatingGood => 'Good';
+
+  @override
+  String get hifzRatingEasy => 'Easy';
+
+  @override
+  String get hifzSessionComplete => 'Session Complete';
+
+  @override
+  String get hifzCompletedUnderMinute => 'Completed in under a minute';
+
+  @override
+  String hifzCompletedInMinutes(int minutes, String plural) {
+    return 'Completed in $minutes minute$plural';
+  }
+
+  @override
+  String get hifzSummaryTitle => 'Summary';
+
+  @override
+  String get hifzTotalReviewed => 'Total reviewed';
+
+  @override
+  String hifzTotalReviewedValue(int count) {
+    return '$count ayahs';
+  }
+
+  @override
+  String get hifzRetentionRate => 'Retention rate';
+
+  @override
+  String get hifzNextReviewDue => 'Next review due';
+
+  @override
+  String get hifzNextReviewToday => 'Today';
+
+  @override
+  String get hifzNextReviewTomorrow => 'Tomorrow';
+
+  @override
+  String hifzNextReviewInDays(int days) {
+    return 'In $days days';
+  }
+
+  @override
+  String get hifzAllCaughtUpDue => 'All caught up';
+
+  @override
+  String get hifzHadithQuote =>
+      '\"The best of you are those who learn the Quran and teach it.\" — Al-Bukhari';
+
+  @override
+  String get hifzBackToHifz => 'Back to Hifz';
+
+  @override
+  String hifzKeepReviewing(int count) {
+    return 'Keep reviewing ($count left)';
+  }
+
+  @override
+  String hifzDueReminderTitle(int count) {
+    return '$count ayahs due for Hifz review';
+  }
+
+  @override
+  String get hifzSettingsComingSoon => 'Hifz Settings — coming soon';
+
+  @override
+  String get hifzStatsSection => 'Hifz';
+
+  @override
+  String get hifzStatsTotalMemorized => 'Total memorized';
+
+  @override
+  String get hifzStatsDailyStreak => 'Daily streak';
+
+  @override
+  String get hifzStatsRetentionRate => 'Retention rate';
+
+  @override
+  String get hifzStatsTotalReviews => 'Total reviews';
+
+  @override
+  String get hifzStatsNextDue => 'Next review';
+
+  @override
+  String hifzStatsNextDueValue(String surah, int ayah) {
+    return '$surah · Ayah $ayah';
+  }
+
+  @override
+  String hifzStatsNextDueDate(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get hifzStatsNoEntries => 'Start memorizing to see your Hifz stats';
+
+  @override
+  String get hifzStatsSurahProgress => 'Surah Progress';
+
+  @override
+  String hifzStatsRetentionSuffix(String value) {
+    return '$value%';
+  }
+
+  @override
+  String hifzStatsPill(int count) {
+    return '$count memorized';
+  }
+
+  @override
+  String hifzReminderDueCount(int count) {
+    return '$count ayahs due for Hifz review';
+  }
+
+  @override
+  String get hifzReminderReview => 'Review';
+
+  @override
+  String get hifzSettingsNewPerDay => 'New ayahs per day';
+
+  @override
+  String get hifzSettingsReviewsPerDay => 'Reviews per day';
+
+  @override
+  String get hifzSettingsShowTranslit => 'Show transliteration by default';
+
+  @override
+  String get hifzSettingsShowTranslation => 'Show translation by default';
+
+  @override
+  String get hifzSettingsAutoPlayAudio => 'Auto-play audio on learn phase';
+
+  @override
+  String get hifzSettingsBlankingLevel => 'Blanking level';
+
+  @override
+  String get hifzSettingsBlankingAuto => 'Auto';
+
+  @override
+  String get hifzSettingsBlankingEasy => 'Easy';
+
+  @override
+  String get hifzSettingsBlankingMedium => 'Medium';
+
+  @override
+  String get hifzSettingsBlankingHard => 'Hard';
+
+  @override
+  String get hifzSettingsDone => 'Done';
 }

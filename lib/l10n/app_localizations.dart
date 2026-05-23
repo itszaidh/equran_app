@@ -4844,6 +4844,546 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Total wealth must be at least 200 to calculate Zakah.'**
   String get totalZakahWealth;
+
+  /// No description provided for @hifzTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hifz'**
+  String get hifzTitle;
+
+  /// No description provided for @hifzJourneyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Hifz Journey'**
+  String get hifzJourneyTitle;
+
+  /// No description provided for @hifzNewTodayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}/{max} new today'**
+  String hifzNewTodayLabel(int count, int max);
+
+  /// No description provided for @hifzMemorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Memorized'**
+  String get hifzMemorized;
+
+  /// No description provided for @hifzDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get hifzDueToday;
+
+  /// No description provided for @hifzInReview.
+  ///
+  /// In en, this message translates to:
+  /// **'In review'**
+  String get hifzInReview;
+
+  /// No description provided for @hifzAyahsMemorized.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} / 6,236 ayahs memorized'**
+  String hifzAyahsMemorized(int count);
+
+  /// No description provided for @hifzDueForReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Due for Review'**
+  String get hifzDueForReview;
+
+  /// No description provided for @hifzAllCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'All caught up — no reviews due'**
+  String get hifzAllCaughtUp;
+
+  /// No description provided for @hifzAyahsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ayahs ready'**
+  String hifzAyahsReady(int count);
+
+  /// No description provided for @hifzStartYourSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your review session'**
+  String get hifzStartYourSession;
+
+  /// No description provided for @hifzStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get hifzStart;
+
+  /// No description provided for @hifzDueNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Due now'**
+  String get hifzDueNow;
+
+  /// No description provided for @hifzOverdueDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue {days}d'**
+  String hifzOverdueDays(int days);
+
+  /// No description provided for @hifzShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all {count} →'**
+  String hifzShowAll(int count);
+
+  /// No description provided for @hifzAddToMemorize.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Memorize'**
+  String get hifzAddToMemorize;
+
+  /// No description provided for @hifzQuickAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick add'**
+  String get hifzQuickAdd;
+
+  /// No description provided for @hifzQuickAlFatiha.
+  ///
+  /// In en, this message translates to:
+  /// **'Al-Fatiha'**
+  String get hifzQuickAlFatiha;
+
+  /// No description provided for @hifzQuickAlKahf.
+  ///
+  /// In en, this message translates to:
+  /// **'Al-Kahf'**
+  String get hifzQuickAlKahf;
+
+  /// No description provided for @hifzQuickJuzAmma.
+  ///
+  /// In en, this message translates to:
+  /// **'Juz Amma'**
+  String get hifzQuickJuzAmma;
+
+  /// No description provided for @hifzQuickLast10.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 10 Surahs'**
+  String get hifzQuickLast10;
+
+  /// No description provided for @hifzOrChooseSurah.
+  ///
+  /// In en, this message translates to:
+  /// **'Or choose a surah'**
+  String get hifzOrChooseSurah;
+
+  /// No description provided for @hifzFromAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'From ayah'**
+  String get hifzFromAyah;
+
+  /// No description provided for @hifzToAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'To ayah'**
+  String get hifzToAyah;
+
+  /// No description provided for @hifzAddAyahsButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {count} ayahs to Hifz'**
+  String hifzAddAyahsButton(int count);
+
+  /// No description provided for @hifzAyahsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ayahs added'**
+  String hifzAyahsAdded(int count);
+
+  /// No description provided for @hifzSurahProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Surah Progress'**
+  String get hifzSurahProgress;
+
+  /// No description provided for @hifzShowAllSurahs.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all 114 surahs'**
+  String get hifzShowAllSurahs;
+
+  /// No description provided for @hifzShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get hifzShowLess;
+
+  /// No description provided for @hifzSurahsMastered.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} / 114 Surahs mastered'**
+  String hifzSurahsMastered(int count);
+
+  /// No description provided for @hifzSettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hifz Settings'**
+  String get hifzSettingsTitle;
+
+  /// No description provided for @hifzTrackNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get hifzTrackNew;
+
+  /// No description provided for @hifzTrackRevision.
+  ///
+  /// In en, this message translates to:
+  /// **'Revision'**
+  String get hifzTrackRevision;
+
+  /// No description provided for @hifzTrackMaintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance'**
+  String get hifzTrackMaintenance;
+
+  /// No description provided for @hifzSessionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {total}'**
+  String hifzSessionProgress(int current, int total);
+
+  /// No description provided for @hifzExitSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit session?'**
+  String get hifzExitSession;
+
+  /// No description provided for @hifzExitSessionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reviewed {count} of {total} ayahs.\nProgress so far will be saved.'**
+  String hifzExitSessionBody(int count, int total);
+
+  /// No description provided for @hifzExitCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get hifzExitCancel;
+
+  /// No description provided for @hifzExitConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get hifzExitConfirm;
+
+  /// No description provided for @hifzImReady.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m ready'**
+  String get hifzImReady;
+
+  /// No description provided for @hifzRevealAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal all'**
+  String get hifzRevealAll;
+
+  /// No description provided for @hifzToggleTransliteration.
+  ///
+  /// In en, this message translates to:
+  /// **'Transliteration'**
+  String get hifzToggleTransliteration;
+
+  /// No description provided for @hifzToggleTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation'**
+  String get hifzToggleTranslation;
+
+  /// No description provided for @hifzToggleListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get hifzToggleListen;
+
+  /// No description provided for @hifzRatingAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Again'**
+  String get hifzRatingAgain;
+
+  /// No description provided for @hifzRatingHard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get hifzRatingHard;
+
+  /// No description provided for @hifzRatingGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get hifzRatingGood;
+
+  /// No description provided for @hifzRatingEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get hifzRatingEasy;
+
+  /// No description provided for @hifzSessionComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Complete'**
+  String get hifzSessionComplete;
+
+  /// No description provided for @hifzCompletedUnderMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed in under a minute'**
+  String get hifzCompletedUnderMinute;
+
+  /// No description provided for @hifzCompletedInMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed in {minutes} minute{plural}'**
+  String hifzCompletedInMinutes(int minutes, String plural);
+
+  /// No description provided for @hifzSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get hifzSummaryTitle;
+
+  /// No description provided for @hifzTotalReviewed.
+  ///
+  /// In en, this message translates to:
+  /// **'Total reviewed'**
+  String get hifzTotalReviewed;
+
+  /// No description provided for @hifzTotalReviewedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ayahs'**
+  String hifzTotalReviewedValue(int count);
+
+  /// No description provided for @hifzRetentionRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Retention rate'**
+  String get hifzRetentionRate;
+
+  /// No description provided for @hifzNextReviewDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next review due'**
+  String get hifzNextReviewDue;
+
+  /// No description provided for @hifzNextReviewToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get hifzNextReviewToday;
+
+  /// No description provided for @hifzNextReviewTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get hifzNextReviewTomorrow;
+
+  /// No description provided for @hifzNextReviewInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'In {days} days'**
+  String hifzNextReviewInDays(int days);
+
+  /// No description provided for @hifzAllCaughtUpDue.
+  ///
+  /// In en, this message translates to:
+  /// **'All caught up'**
+  String get hifzAllCaughtUpDue;
+
+  /// No description provided for @hifzHadithQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'\"The best of you are those who learn the Quran and teach it.\" — Al-Bukhari'**
+  String get hifzHadithQuote;
+
+  /// No description provided for @hifzBackToHifz.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Hifz'**
+  String get hifzBackToHifz;
+
+  /// No description provided for @hifzKeepReviewing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep reviewing ({count} left)'**
+  String hifzKeepReviewing(int count);
+
+  /// No description provided for @hifzDueReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ayahs due for Hifz review'**
+  String hifzDueReminderTitle(int count);
+
+  /// No description provided for @hifzSettingsComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Hifz Settings — coming soon'**
+  String get hifzSettingsComingSoon;
+
+  /// No description provided for @hifzStatsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Hifz'**
+  String get hifzStatsSection;
+
+  /// No description provided for @hifzStatsTotalMemorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Total memorized'**
+  String get hifzStatsTotalMemorized;
+
+  /// No description provided for @hifzStatsDailyStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily streak'**
+  String get hifzStatsDailyStreak;
+
+  /// No description provided for @hifzStatsRetentionRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Retention rate'**
+  String get hifzStatsRetentionRate;
+
+  /// No description provided for @hifzStatsTotalReviews.
+  ///
+  /// In en, this message translates to:
+  /// **'Total reviews'**
+  String get hifzStatsTotalReviews;
+
+  /// No description provided for @hifzStatsNextDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Next review'**
+  String get hifzStatsNextDue;
+
+  /// No description provided for @hifzStatsNextDueValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{surah} · Ayah {ayah}'**
+  String hifzStatsNextDueValue(String surah, int ayah);
+
+  /// No description provided for @hifzStatsNextDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String hifzStatsNextDueDate(String date);
+
+  /// No description provided for @hifzStatsNoEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Start memorizing to see your Hifz stats'**
+  String get hifzStatsNoEntries;
+
+  /// No description provided for @hifzStatsSurahProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Surah Progress'**
+  String get hifzStatsSurahProgress;
+
+  /// No description provided for @hifzStatsRetentionSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}%'**
+  String hifzStatsRetentionSuffix(String value);
+
+  /// No description provided for @hifzStatsPill.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} memorized'**
+  String hifzStatsPill(int count);
+
+  /// No description provided for @hifzReminderDueCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} ayahs due for Hifz review'**
+  String hifzReminderDueCount(int count);
+
+  /// No description provided for @hifzReminderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get hifzReminderReview;
+
+  /// No description provided for @hifzSettingsNewPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'New ayahs per day'**
+  String get hifzSettingsNewPerDay;
+
+  /// No description provided for @hifzSettingsReviewsPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviews per day'**
+  String get hifzSettingsReviewsPerDay;
+
+  /// No description provided for @hifzSettingsShowTranslit.
+  ///
+  /// In en, this message translates to:
+  /// **'Show transliteration by default'**
+  String get hifzSettingsShowTranslit;
+
+  /// No description provided for @hifzSettingsShowTranslation.
+  ///
+  /// In en, this message translates to:
+  /// **'Show translation by default'**
+  String get hifzSettingsShowTranslation;
+
+  /// No description provided for @hifzSettingsAutoPlayAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-play audio on learn phase'**
+  String get hifzSettingsAutoPlayAudio;
+
+  /// No description provided for @hifzSettingsBlankingLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Blanking level'**
+  String get hifzSettingsBlankingLevel;
+
+  /// No description provided for @hifzSettingsBlankingAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get hifzSettingsBlankingAuto;
+
+  /// No description provided for @hifzSettingsBlankingEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get hifzSettingsBlankingEasy;
+
+  /// No description provided for @hifzSettingsBlankingMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get hifzSettingsBlankingMedium;
+
+  /// No description provided for @hifzSettingsBlankingHard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get hifzSettingsBlankingHard;
+
+  /// No description provided for @hifzSettingsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get hifzSettingsDone;
 }
 
 class _AppLocalizationsDelegate
