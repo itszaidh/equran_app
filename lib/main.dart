@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:adaptive_theme/adaptive_theme.dart';
@@ -9,6 +10,8 @@ import 'package:equran/prayer/prayer_timezone_service.dart';
 import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_theme.dart';
 import 'package:equran/utils/responsive_nav.dart';
+import 'package:equran/widgets/prayer_widget_service.dart';
+import 'package:equran/widgets/prayer_widget_worker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
@@ -47,10 +50,11 @@ Future<void> main() async {
   // Use an app-specific subdirectory to avoid desktop lock collisions in shared paths.
   await Hive.initFlutter('equran');
 
-  Hive.registerAdapter(SurahAdapter());
   Hive.registerAdapter(ReadingEntryAdapter());
+  Hive.registerAdapter(SurahAdapter());
   Hive.registerAdapter(HifzEntryAdapter());
   Hive.registerAdapter(HifzReviewLogAdapter());
+  Hive.registerAdapter(HifzUnitAdapter());
   registerCompanionStorageAdapters();
 
   // Hive.deleteBoxFromDisk("bookmarks");
@@ -86,6 +90,17 @@ Future<void> main() async {
     );
   }
 
+  if (!kIsWeb && Platform.isAndroid) {
+    await PrayerWidgetService.init();
+    await PrayerWidgetWorker.init();
+    await PrayerWidgetWorker.scheduleRefresh();
+    // Schedule delayed widget update to let prayer service calculate times first
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(seconds: 2));
+      await PrayerWidgetService.refreshWidget();
+    });
+  }
+
   runApp(const MyApp());
 }
 
@@ -100,13 +115,29 @@ class MyApp extends StatefulWidget {
   }
 }
 
-class MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Locale? _locale;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _locale = _getSavedLocale();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (!kIsWeb && Platform.isAndroid) {
+        unawaited(PrayerWidgetService.refreshWidget());
+      }
+    }
   }
 
   Locale? _getSavedLocale() {

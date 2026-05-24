@@ -11,6 +11,7 @@ import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/widgets/app_selection_dialog.dart';
+import 'package:equran/widgets/prayer_widget_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1666,12 +1667,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         .resolveLocationForSave(location, previousLocation: _location);
     await _store.saveLocation(resolvedLocation);
     await _rescheduleReminders(location: resolvedLocation);
+    unawaited(PrayerWidgetService.refreshWidget());
     return resolvedLocation;
   }
 
   Future<void> _clearLocation() async {
     await _store.clearLocation();
     await _rescheduleReminders(locationCleared: true);
+    unawaited(PrayerWidgetService.refreshWidget());
     if (!mounted) return;
     setState(() {
       _location = null;
@@ -1681,6 +1684,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   Future<void> _saveSettings(PrayerTimeSettings settings) async {
     await _store.saveSettings(settings);
+    unawaited(PrayerWidgetService.refreshWidget());
     final PrayerNotificationScheduleResult reminderResult =
         await _rescheduleReminders(settings: settings);
     if (mounted) {

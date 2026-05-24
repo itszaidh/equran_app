@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:quran/quran.dart' as quran;
 
 import '../models/hifz_entry.dart';
+import '../models/hifz_unit.dart';
 import '../hifz_limits.dart';
 import '../hifz_surah_data.dart';
 import '../hifz_scheduler.dart';
@@ -21,11 +22,25 @@ import 'package:equran/backend/quran_stream_url.dart';
 import 'package:equran/backend/audio_downloads.dart';
 import 'package:equran/l10n/app_localizations.dart';
 
-enum _Phase { learn, recall, rating }
+enum _Phase { listen, recall, rating }
+
+enum _Track { newAyah, sabqi, manzil }
+
+class _SessionCard {
+  final HifzEntry entry;
+  final _Track track;
+
+  const _SessionCard({required this.entry, required this.track});
+
+  _Phase get startPhase =>
+      track == _Track.newAyah ? _Phase.listen : _Phase.recall;
+}
 
 class HifzSessionPage extends StatefulWidget {
-  final List<HifzEntry> entries;
-  const HifzSessionPage({required this.entries, super.key});
+  final HifzUnit? unit;
+  final List<HifzEntry>? entries;
+
+  const HifzSessionPage({this.unit, this.entries, super.key});
 
   @override
   State<HifzSessionPage> createState() => _HifzSessionPageState();
@@ -33,25 +48,44 @@ class HifzSessionPage extends StatefulWidget {
 
 class _HifzSessionPageState extends State<HifzSessionPage>
     with TickerProviderStateMixin {
-  List<HifzEntry> _queue = [];
+  HifzUnit get _unit => widget.unit ?? _fallbackUnit!;
+  HifzUnit? _fallbackUnit;
+
+  // Session queue — three tracks combined
+  List<_SessionCard> _queue = [];
   int _currentIndex = 0;
-  _Phase _phase = _Phase.learn;
-  bool _showTransliteration = false;
-  bool _showTranslation = false;
-  Set<int> _revealedWordIndices = {};
+
+  // Current card phase
+  _Phase _phase = _Phase.listen;
+
+  // Blanking state
+  List<String> _words = [];
+  int _blankUntilIndex = 0;
+  Set<int> _revealedIndices = {};
   bool _allRevealed = false;
 
-  // Ayah text data
-  String _currentArabicText = '';
+  // Ayah text
+  String _arabicText = '';
+  String _prevAyahEnd = '';
+
+  bool _loadingAyah = true;
+  bool _audioEnabled = true;
+
+  // Preferences & translation
+  bool _showTransliteration = false;
+  bool _showTranslation = false;
   String _currentTransliteration = '';
   String _currentTranslation = '';
-  bool _loadingAyah = true;
 
-  // Audio state
-  AudioPlayer? _audioPlayer;
-  bool _audioPlaying = false;
-  StreamSubscription<PlayerState>? _stateSubscription;
-  StreamSubscription<void>? _completeSubscription;
+  // Session stats
+  final Map<String, int> _ratingCounts = {
+    'again': 0,
+    'hard': 0,
+    'good': 0,
+    'easy': 0,
+  };
+  int _newGraduated = 0;
+  final DateTime _sessionStart = DateTime.now();
 
   // Animation controllers
   late AnimationController _cardSlideController;
@@ -59,18 +93,15 @@ class _HifzSessionPageState extends State<HifzSessionPage>
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
 
-  // Precomputed projected intervals for the rating buttons
-  Map<String, int> _projectedIntervals = {};
+  // Audio players & subscriptions
+  AudioPlayer? _audioPlayer;
+  bool _audioPlaying = false;
+  StreamSubscription<PlayerState>? _stateSubscription;
+  StreamSubscription<void>? _completeSubscription;
 
-  // Session stats tracking
-  final Map<String, int> _ratingCounts = {
-    'again': 0,
-    'hard': 0,
-    'good': 0,
-    'easy': 0,
-  };
+  // Precomputed projected intervals for ratings
+  Map<String, int> _projectedIntervals = {};
   final Map<String, int> _lapseThisSession = {};
-  final DateTime _sessionStart = DateTime.now();
 
   @override
   void initState() {
@@ -78,25 +109,33 @@ class _HifzSessionPageState extends State<HifzSessionPage>
     _buildQueue();
     _initAnimations();
 
-    if (_queue.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pop();
-      });
-    } else {
+    if (_queue.isNotEmpty) {
       _loadAyahData(_queue[0]);
     }
   }
 
   void _buildQueue() {
-    final due = widget.entries.where((e) => e.isDue).toList();
-    final newEntries = widget.entries
-        .where((e) => e.status == 'new')
-        .take(HifzLimits.maxNewPerDay - HifzLimits.todayNewCount)
+    final unitId = _unit.id;
+
+    // Track 1 — New ayahs
+    final newEntries = HifzDB.getNewAyahsForUnit(
+      unitId,
+      HifzLimits.maxNewPerDay - HifzLimits.todayNewCount,
+    ).map((e) => _SessionCard(entry: e, track: _Track.newAyah)).toList();
+
+    // Track 2 — Sabqi (recent revision)
+    final sabqiEntries = HifzDB.getSabqiAyahs(
+      unitId,
+    ).map((e) => _SessionCard(entry: e, track: _Track.sabqi)).toList();
+
+    // Track 3 — Manzil (older SM-2 due)
+    final manzilEntries = HifzDB.getManzilAyahs(unitId)
+        .take(HifzLimits.maxReviewPerDay - HifzLimits.todayReviewCount)
+        .map((e) => _SessionCard(entry: e, track: _Track.manzil))
         .toList();
 
-    // Shuffle review entries, new at end
-    due.shuffle();
-    _queue = [...due, ...newEntries];
+    // Combine in order — never shuffle
+    _queue = [...newEntries, ...sabqiEntries, ...manzilEntries];
   }
 
   void _initAnimations() {
@@ -143,23 +182,60 @@ class _HifzSessionPageState extends State<HifzSessionPage>
     if (_queue.isEmpty || _currentIndex >= _queue.length) return;
     setState(() {
       _projectedIntervals = HifzScheduler.previewIntervals(
-        _queue[_currentIndex],
+        _queue[_currentIndex].entry,
       );
     });
   }
 
-  Future<void> _loadAyahData(HifzEntry entry) async {
+  Future<void> _loadAyahData(_SessionCard card) async {
     setState(() => _loadingAyah = true);
+
+    final entry = card.entry;
 
     try {
       // 1. Fetch Arabic verse text
-      final arabicText = quran.getVerse(entry.surah, entry.ayah);
+      final arabic = quran.getVerse(
+        entry.surah,
+        entry.ayah,
+        verseEndSymbol: false,
+      );
 
-      // 2. Fetch transliteration
+      // 2. Fetch previous ayah end as cue for revision tracks
+      String prevEnd = '';
+      if (card.track != _Track.newAyah && entry.sequenceIndex != null) {
+        final seqIdx = entry.sequenceIndex!;
+        if (seqIdx > 0) {
+          final unitEntries = HifzDB.getUnitEntries(entry.unitId!);
+          final prev = unitEntries.firstWhere(
+            (e) => e.sequenceIndex == seqIdx - 1,
+            orElse: () => entry,
+          );
+          if (prev != entry) {
+            final prevText = quran.getVerse(
+              prev.surah,
+              prev.ayah,
+              verseEndSymbol: false,
+            );
+            final prevWords = prevText.trim().split(' ');
+            prevEnd = prevWords
+                .skip(math.max(0, prevWords.length - 4))
+                .join(' ');
+          }
+        }
+      }
+
+      final words = arabic.trim().split(' ');
+      final blankFrom = _computeInitialBlankFrom(
+        words.length,
+        card.track,
+        entry.introducedRepetitions,
+      );
+
+      // 3. Fetch transliteration
       final transliteration = await QuranTransliterationService.instance
           .verseTransliteration(entry.surah, entry.ayah);
 
-      // 3. Fetch translation
+      // 4. Fetch translation
       final translation = quran.cleanTranslationText(
         quran.getVerseTranslation(
           entry.surah,
@@ -172,72 +248,101 @@ class _HifzSessionPageState extends State<HifzSessionPage>
 
       if (mounted) {
         setState(() {
-          _currentArabicText = arabicText;
-          _currentTransliteration = transliteration;
-          _currentTranslation = translation;
-          _loadingAyah = false;
-          _revealedWordIndices = {};
+          _arabicText = arabic;
+          _prevAyahEnd = prevEnd;
+          _words = words;
+          _blankUntilIndex = blankFrom;
+          _revealedIndices = {};
           _allRevealed = false;
-          _phase = _Phase.learn;
+          _loadingAyah = false;
+          _phase = card.startPhase;
+          _audioEnabled =
+              card.track == _Track.newAyah && _phase == _Phase.listen;
           _showTransliteration = HifzPrefs.showTransliterationByDefault();
           _showTranslation = HifzPrefs.showTranslationByDefault();
+          _currentTransliteration = transliteration;
+          _currentTranslation = translation;
         });
 
         _fadeController.reset();
         unawaited(_fadeController.forward());
         _precomputeIntervals();
 
-        if (HifzPrefs.autoPlayAudioOnLearn()) {
-          unawaited(_playAudio());
+        if (card.track == _Track.newAyah) {
+          final prefsBox = SettingsDB();
+          final autoPlay =
+              prefsBox.get('hifzAutoPlayAudio', defaultValue: false) as bool;
+          if (autoPlay) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _playAudio();
+            });
+          }
         }
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _currentArabicText = 'Error loading ayah: $e';
-          _currentTransliteration = '';
-          _currentTranslation = '';
+          _arabicText = 'Error loading ayah: $e';
+          _prevAyahEnd = '';
+          _words = [];
           _loadingAyah = false;
         });
       }
     }
   }
 
+  int _computeInitialBlankFrom(int wordCount, _Track track, int introReps) {
+    if (track != _Track.newAyah) {
+      // Sabqi/Manzil — blank everything
+      return 0;
+    }
+
+    // Progressive for new ayahs based on reps
+    switch (introReps) {
+      case 0:
+        return wordCount - 1;
+      case 1:
+        return (wordCount / 2).ceil();
+      default:
+        return 0;
+    }
+  }
+
   Future<void> _submitRating(String rating) async {
-    if (_queue.isEmpty || _currentIndex >= _queue.length) return;
-    final entry = _queue[_currentIndex];
+    final card = _queue[_currentIndex];
+    final entry = card.entry;
 
-    // Run SM-2 algorithm
-    final (updatedEntry, log) = HifzScheduler.review(entry, rating);
-
-    // Persist to Hive
-    await HifzDB.saveEntry(updatedEntry);
-    await HifzDB.saveLog(log);
-
-    // Update daily counters
-    if (entry.status == 'new') {
+    if (card.track == _Track.newAyah) {
+      // Learn phase — use recordLearnRepetition not SM-2
+      final graduated = HifzScheduler.recordLearnRepetition(entry);
+      await HifzDB.saveEntry(entry);
       await HifzLimits.incrementNew();
+
+      if (graduated) _newGraduated++;
+
+      // If rated 'again' and not graduated,
+      // re-insert the card 3 positions ahead
+      // so they see it again this session
+      // Cap re-insertions at 3 per card
+      if (rating == 'again' && !graduated) {
+        final key = '${entry.surah}:${entry.ayah}';
+        final lapses = _lapseThisSession[key] ?? 0;
+        if (lapses < 3) {
+          _lapseThisSession[key] = lapses + 1;
+          final insertAt = math.min(_currentIndex + 4, _queue.length);
+          _queue.insert(insertAt, card);
+        }
+      }
     } else {
+      // Sabqi / Manzil — use SM-2
+      final (updatedEntry, log) = HifzScheduler.review(entry, rating);
+      await HifzDB.saveEntry(updatedEntry);
+      await HifzDB.saveLog(log);
       await HifzLimits.incrementReview();
     }
 
-    // Track session stats
     _ratingCounts[rating] = (_ratingCounts[rating] ?? 0) + 1;
 
-    // If rated 'again', re-insert the card later
-    // in the queue so user sees it again this session
-    if (rating == 'again') {
-      final String key = '${entry.surah}:${entry.ayah}';
-      final int lapses = _lapseThisSession[key] ?? 0;
-      if (lapses < 3) {
-        _lapseThisSession[key] = lapses + 1;
-        // Insert a copy 3–5 positions ahead (already capped safely)
-        final insertAt = math.min(_currentIndex + 4, _queue.length);
-        _queue.insert(insertAt, updatedEntry);
-      }
-    }
-
-    // Advance to next card or complete
     await _advanceToNext();
   }
 
@@ -256,6 +361,8 @@ class _HifzSessionPageState extends State<HifzSessionPage>
               ratingCounts: _ratingCounts,
               sessionDuration: duration,
               totalReviewed: _currentIndex + 1,
+              newGraduated: _newGraduated,
+              unit: _unit,
             ),
           ),
         );
@@ -329,9 +436,10 @@ class _HifzSessionPageState extends State<HifzSessionPage>
   }
 
   Future<void> _playAudio() async {
+    if (!_audioEnabled) return;
     if (_loadingAyah || _queue.isEmpty) return;
 
-    final entry = _queue[_currentIndex];
+    final entry = _queue[_currentIndex].entry;
 
     if (_audioPlaying) {
       await _audioPlayer?.stop();
@@ -378,14 +486,61 @@ class _HifzSessionPageState extends State<HifzSessionPage>
 
   @override
   Widget build(BuildContext context) {
-    if (_queue.isEmpty) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     final colors = context.equranColors;
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    final currentEntry = _queue[_currentIndex];
+
+    if (_queue.isEmpty) {
+      return Scaffold(
+        backgroundColor: colors.background,
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  color: colors.primary,
+                  size: 72,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "All done for today!",
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "No new or due ayahs for\n${_unit.displayName} today.",
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colors.primary,
+                    foregroundColor: colors.onPrimary,
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("Back to Hifz"),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final currentCard = _queue[_currentIndex];
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -398,16 +553,29 @@ class _HifzSessionPageState extends State<HifzSessionPage>
           onPressed: _confirmExit,
         ),
         title: Text(
-          l10n.hifzSessionProgress(_currentIndex + 1, _queue.length),
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: colors.textSecondary,
+          _unit.displayName,
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Center(child: _TrackBadge(track: currentEntry.track)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _TrackLabel(track: currentCard.track),
+                const SizedBox(width: 8),
+                Text(
+                  '${_currentIndex + 1}/${_queue.length}',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
         bottom: PreferredSize(
@@ -430,7 +598,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
               position: _cardSlideAnimation,
               child: FadeTransition(
                 opacity: _fadeAnimation,
-                child: _buildCardContent(colors, theme, currentEntry),
+                child: _buildCardContent(colors, theme, currentCard),
               ),
             ),
           ),
@@ -443,9 +611,11 @@ class _HifzSessionPageState extends State<HifzSessionPage>
   Widget _buildCardContent(
     EquranColors colors,
     ThemeData theme,
-    HifzEntry entry,
+    _SessionCard card,
   ) {
     final l10n = AppLocalizations.of(context)!;
+    final entry = card.entry;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
@@ -453,8 +623,14 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         children: [
           Text(
             Localizations.localeOf(context).languageCode == 'ar'
-                ? l10n.hifzStatsNextDueValue(quran.getSurahNameArabic(entry.surah), entry.ayah)
-                : l10n.hifzStatsNextDueValue(HifzSurahData.name(entry.surah), entry.ayah),
+                ? l10n.hifzStatsNextDueValue(
+                    quran.getSurahNameArabic(entry.surah),
+                    entry.ayah,
+                  )
+                : l10n.hifzStatsNextDueValue(
+                    HifzSurahData.name(entry.surah),
+                    entry.ayah,
+                  ),
             style: theme.textTheme.labelMedium?.copyWith(
               color: colors.textSecondary,
             ),
@@ -472,10 +648,10 @@ class _HifzSessionPageState extends State<HifzSessionPage>
               ),
             )
           else ...[
-            if (_phase == _Phase.learn)
-              _buildLearnText(colors)
+            if (_phase == _Phase.listen)
+              _buildListenText(colors)
             else
-              _buildRecallText(colors, entry),
+              _buildRecallText(colors),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -502,14 +678,35 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                   },
                 ),
                 const SizedBox(width: 16),
-                _ToggleButton(
-                  icon: _audioPlaying
-                      ? Icons.stop_circle_outlined
-                      : Icons.volume_up_outlined,
-                  label: l10n.hifzToggleListen,
-                  active: _audioPlaying,
-                  onTap: _playAudio,
-                ),
+                _audioEnabled
+                    ? _ToggleButton(
+                        icon: _audioPlaying
+                            ? Icons.stop_circle_outlined
+                            : Icons.volume_up_outlined,
+                        label: l10n.hifzToggleListen,
+                        active: _audioPlaying,
+                        onTap: _playAudio,
+                      )
+                    : Tooltip(
+                        message: "Audio disabled during recall",
+                        triggerMode: TooltipTriggerMode.tap,
+                        child: Opacity(
+                          opacity: 0.35,
+                          child: _ToggleButton(
+                            icon: Icons.volume_up_outlined,
+                            label: l10n.hifzToggleListen,
+                            active: false,
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Audio disabled during recall"),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
               ],
             ),
             const SizedBox(height: 16),
@@ -557,12 +754,12 @@ class _HifzSessionPageState extends State<HifzSessionPage>
     );
   }
 
-  Widget _buildLearnText(EquranColors colors) {
+  Widget _buildListenText(EquranColors colors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
       child: Text(
-        _currentArabicText,
+        _arabicText,
         style: TextStyle(
           fontFamily: 'Hafs',
           fontSize: 28,
@@ -575,98 +772,115 @@ class _HifzSessionPageState extends State<HifzSessionPage>
     );
   }
 
-  Widget _buildRecallText(EquranColors colors, HifzEntry entry) {
-    final words = _currentArabicText.trim().split(' ');
-    final blankIndices = <int>{};
-    final String blankingLevel =
-        SettingsDB().get('hifzBlankingLevel', defaultValue: 'auto') as String;
+  Widget _buildRecallText(EquranColors colors) {
+    return Column(
+      children: [
+        if (_prevAyahEnd.isNotEmpty) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: colors.surfaceAlt,
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+              border: Border.all(color: colors.border, width: 1),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '...previous ayah...',
+                  style: TextStyle(
+                    fontFamily: 'Hafs',
+                    fontSize: 18,
+                    color: colors.textMuted,
+                    height: 2.0,
+                  ),
+                  textAlign: TextAlign.right,
+                  textDirection: TextDirection.rtl,
+                ),
+                Text(
+                  _prevAyahEnd,
+                  style: TextStyle(
+                    fontFamily: 'Hafs',
+                    fontSize: 22,
+                    color: colors.textSecondary,
+                    height: 2.0,
+                  ),
+                  textAlign: TextAlign.right,
+                  textDirection: TextDirection.rtl,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: _words.asMap().entries.map((e) {
+              final i = e.key;
+              final word = e.value;
 
-    int activeRep;
-    if (blankingLevel == 'easy') {
-      activeRep = 0;
-    } else if (blankingLevel == 'medium') {
-      activeRep = 1;
-    } else if (blankingLevel == 'hard') {
-      activeRep = 2;
-    } else {
-      activeRep = entry.repetitions;
-    }
+              // Words before blank zone — always shown
+              if (i < _blankUntilIndex) {
+                return _RevealedWord(word: word, isJustRevealed: false);
+              }
 
-    final int wordCount = words.length;
-    if (activeRep == 0) {
-      for (int i = 0; i < wordCount; i++) {
-        if (i % 3 == 1) {
-          blankIndices.add(i);
-        }
-      }
-    } else if (activeRep == 1) {
-      for (int i = 0; i < wordCount; i++) {
-        if (i % 2 == 0) {
-          blankIndices.add(i);
-        }
-      }
-    } else {
-      for (int i = 0; i < wordCount; i++) {
-        blankIndices.add(i);
-      }
-    }
+              // Words in blank zone — hidden or revealed
+              final isRevealed = _revealedIndices.contains(i) || _allRevealed;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 12,
-        alignment: WrapAlignment.center,
-        children: words.asMap().entries.map((e) {
-          final index = e.key;
-          final word = e.value;
-          final shouldBlank =
-              blankIndices.contains(index) &&
-              !_revealedWordIndices.contains(index) &&
-              !_allRevealed;
-
-          return shouldBlank
-              ? _BlankWord(
-                  word: word,
-                  onReveal: () {
-                    setState(() {
-                      _revealedWordIndices.add(index);
-                      if (_revealedWordIndices.length >= blankIndices.length) {
-                        _allRevealed = true;
-                        _phase = _Phase.rating;
-                      }
-                    });
-                  },
-                )
-              : _RevealedWord(
-                  word: word,
-                  isJustRevealed: _revealedWordIndices.contains(index),
-                );
-        }).toList(),
-      ),
+              return isRevealed
+                  ? _RevealedWord(
+                      word: word,
+                      isJustRevealed: _revealedIndices.contains(i),
+                    )
+                  : _BlankWord(
+                      word: word,
+                      onReveal: () {
+                        setState(() {
+                          _revealedIndices.add(i);
+                          // Check if all blanks revealed
+                          final totalBlanks = _words.length - _blankUntilIndex;
+                          if (_revealedIndices.length >= totalBlanks) {
+                            _allRevealed = true;
+                            _phase = _Phase.rating;
+                          }
+                        });
+                      },
+                    );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildBottomActionArea(EquranColors colors, ThemeData theme) {
     Widget child;
     final l10n = AppLocalizations.of(context)!;
+    final currentCard = _queue[_currentIndex];
 
-    if (_phase == _Phase.learn) {
+    if (_phase == _Phase.listen) {
       child = SizedBox(
         width: double.infinity,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: colors.primary,
             foregroundColor: colors.onPrimary,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-            ),
+            shape: const StadiumBorder(),
             minimumSize: const Size(double.infinity, 52),
           ),
           onPressed: () {
             setState(() {
               _phase = _Phase.recall;
+              _audioEnabled = false;
             });
+            if (_audioPlaying) {
+              _audioPlayer?.stop();
+            }
           },
           child: Text(
             l10n.hifzImReady,
@@ -683,6 +897,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
           setState(() {
             _allRevealed = true;
             _phase = _Phase.rating;
+            _audioEnabled = false;
           });
         },
         child: Text(
@@ -694,7 +909,61 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         ),
       );
     } else {
-      child = _buildRatingButtons();
+      // _Phase.rating
+      if (currentCard.track == _Track.newAyah) {
+        // Show only two buttons (wider)
+        child = Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _submitRating('again'),
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: colors.surfaceAlt,
+                    border: Border.all(color: colors.border, width: 1),
+                    borderRadius: BorderRadius.circular(AppRadii.large),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Try again",
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _submitRating('good'),
+                child: Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: colors.primary,
+                    borderRadius: BorderRadius.circular(AppRadii.large),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Got it",
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: colors.onPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      } else {
+        // Sabqi / Manzil: show all four SM-2 buttons
+        child = _buildRatingButtons();
+      }
     }
 
     return Container(
@@ -890,9 +1159,11 @@ class _ToggleButton extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: active ? colors.primary.withAlpha(38) : colors.surfaceAlt,
+              color: active
+                  ? colors.primary.withOpacity(0.15)
+                  : colors.surfaceAlt,
               border: Border.all(
-                color: active ? colors.primary.withAlpha(76) : colors.border,
+                color: active ? colors.primary.withOpacity(0.3) : colors.border,
               ),
               borderRadius: BorderRadius.circular(AppRadii.pill),
             ),
@@ -972,43 +1243,47 @@ class _RatingButton extends StatelessWidget {
   }
 }
 
-class _TrackBadge extends StatelessWidget {
-  final String track;
-  const _TrackBadge({required this.track});
+class _TrackLabel extends StatelessWidget {
+  final _Track track;
+  const _TrackLabel({required this.track});
+
+  Color _trackColor(BuildContext context, _Track t) {
+    final colors = context.equranColors;
+    switch (t) {
+      case _Track.newAyah:
+        return colors.primary;
+      case _Track.sabqi:
+        return colors.accentGold;
+      case _Track.manzil:
+        return colors.textSecondary;
+    }
+  }
+
+  String _trackName(_Track t) {
+    switch (t) {
+      case _Track.newAyah:
+        return "New";
+      case _Track.sabqi:
+        return "Revision";
+      case _Track.manzil:
+        return "Maintenance";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.equranColors;
+    final color = _trackColor(context, track);
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
-    Color bgColor;
-    Color textColor;
-    String label;
-
-    if (track == 'Hifz') {
-      bgColor = colors.primary.withAlpha(38);
-      textColor = colors.primary;
-      label = l10n.hifzTitle;
-    } else if (track == 'Murajaah') {
-      bgColor = colors.accentGold.withAlpha(38);
-      textColor = colors.accentGold;
-      label = l10n.hifzTrackRevision;
-    } else {
-      bgColor = colors.surfaceAlt;
-      textColor = colors.textMuted;
-      label = track;
-    }
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Text(
-        label,
+        _trackName(track),
         style: theme.textTheme.labelSmall?.copyWith(
-          color: textColor,
+          color: color,
           fontWeight: FontWeight.w600,
         ),
       ),

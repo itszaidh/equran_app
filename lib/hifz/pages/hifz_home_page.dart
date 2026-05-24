@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quran/quran.dart' as quran;
@@ -19,47 +18,47 @@ class HifzHomePage extends StatefulWidget {
 
 class _HifzHomePageState extends State<HifzHomePage> {
   bool _gridExpanded = false;
-  late final TextEditingController _surahController;
-  int _selectedSurah = 1;
-  int _startAyah = 1;
-  int _endAyah = 7;
+
+  HifzUnitType _selectedType = HifzUnitType.surah;
+  int? _selectedNumber; // surah 1-114 or juz 1-30
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _surahController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _surahController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _addRange() async {
-    final colors = context.equranColors;
-    final l10n = AppLocalizations.of(context)!;
-    await HifzDB.addAyahRange(
-      surah: _selectedSurah,
-      startAyah: _startAyah,
-      endAyah: _endAyah,
-    );
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.hifzAyahsAdded(_endAyah - _startAyah + 1)),
-          backgroundColor: colors.primary,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+  // Derived from search
+  List<int> get _filteredNumbers {
+    final query = _searchQuery.toLowerCase().trim();
+    if (_selectedType == HifzUnitType.surah) {
+      return List.generate(114, (i) => i + 1).where((n) {
+        if (query.isEmpty) return true;
+        final name = HifzSurahData.name(n).toLowerCase();
+        return name.contains(query) || n.toString() == query;
+      }).toList();
+    } else {
+      return List.generate(30, (i) => i + 1).where((n) {
+        if (query.isEmpty) return true;
+        return 'juz $n'.contains(query) || n.toString() == query;
+      }).toList();
     }
   }
 
-  String _dueLabel(AppLocalizations l10n, DateTime dueDate) {
-    final diff = DateTime.now().difference(dueDate);
-    if (diff.isNegative) return l10n.hifzDueNow;
-    return l10n.hifzOverdueDays(diff.inDays);
-  }
+  String _unitId(int n) =>
+      _selectedType == HifzUnitType.surah ? 'surah_$n' : 'juz_$n';
+
+  bool _hasContent(HifzUnit u) =>
+      HifzDB.getNewAyahsForUnit(u.id, 1).isNotEmpty ||
+      HifzDB.getSabqiAyahs(u.id).isNotEmpty ||
+      HifzDB.getManzilAyahs(u.id).isNotEmpty;
 
   void _showSettingsSheet() {
     showModalBottomSheet<void>(
@@ -69,220 +68,32 @@ class _HifzHomePageState extends State<HifzHomePage> {
     );
   }
 
-  void _showAllDueBottomSheet(List<HifzEntry> dueEntries) {
-    final theme = Theme.of(context);
-    final colors = context.equranColors;
-    final l10n = AppLocalizations.of(context)!;
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          builder: (_, scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: colors.surface,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppRadii.xl),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: colors.divider,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Text(
-                    l10n.hifzDueForReview,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: colors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.separated(
-                      controller: scrollController,
-                      itemCount: dueEntries.length,
-                      separatorBuilder: (context, index) =>
-                          Divider(color: colors.divider, height: 1),
-                      itemBuilder: (context, index) {
-                        final e = dueEntries[index];
-                        final isArabic =
-                            Localizations.localeOf(context).languageCode ==
-                            'ar';
-                        final surahName = isArabic
-                            ? quran.getSurahNameArabic(e.surah)
-                            : HifzSurahData.name(e.surah);
-                        return Container(
-                          color: colors.surface,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 14,
-                          ),
-                          child: Row(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l10n.hifzStatsNextDueValue(
-                                      surahName,
-                                      e.ayah,
-                                    ),
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: colors.textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    _dueLabel(l10n, e.dueDate),
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      color: colors.textMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Spacer(),
-                              _TrackBadge(track: e.track),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+  Future<void> _startUnit() async {
+    if (_selectedNumber == null) return;
 
-  Widget _buildQuickAddChip(
-    String label, {
-    int? surah,
-    int? start,
-    int? end,
-    bool isLastTen = false,
-    bool isJuzAmma = false,
-  }) {
-    final colors = context.equranColors;
-    final theme = Theme.of(context);
-    return OutlinedButton(
-      style: OutlinedButton.styleFrom(
-        foregroundColor: colors.primary,
-        side: BorderSide(color: colors.primary.withAlpha(102)),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadii.pill),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-      onPressed: () async {
-        int count = 0;
-        if (isLastTen) {
-          for (int s = 105; s <= 114; s++) {
-            final maxAyah = HifzSurahData.ayahCount(s);
-            await HifzDB.addAyahRange(surah: s, startAyah: 1, endAyah: maxAyah);
-            count += maxAyah;
-          }
-        } else if (isJuzAmma) {
-          for (int s = 78; s <= 114; s++) {
-            final maxAyah = HifzSurahData.ayahCount(s);
-            await HifzDB.addAyahRange(surah: s, startAyah: 1, endAyah: maxAyah);
-            count += maxAyah;
-          }
-        } else if (surah != null && start != null && end != null) {
-          await HifzDB.addAyahRange(
-            surah: surah,
-            startAyah: start,
-            endAyah: end,
-          );
-          count = end - start + 1;
-        }
-        if (mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.hifzAyahsAdded(count)),
-              backgroundColor: colors.primary,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      },
-      child: Text(
-        label,
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: colors.primary,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    // Create unit in DB (idempotent)
+    final unit = await HifzDB.createUnit(
+      type: _selectedType,
+      unitNumber: _selectedNumber!,
     );
-  }
 
-  Widget _buildAyahPicker({
-    required String label,
-    required int value,
-    required int min,
-    required int max,
-    required ValueChanged<int> onChanged,
-  }) {
-    final theme = Theme.of(context);
-    final colors = context.equranColors;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: colors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          decoration: BoxDecoration(
-            color: colors.surfaceAlt,
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.remove, size: 18),
-                color: colors.primary,
-                onPressed: value > min ? () => onChanged(value - 1) : null,
-              ),
-              Text(
-                '$value',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.textPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.add, size: 18),
-                color: colors.primary,
-                onPressed: value < max ? () => onChanged(value + 1) : null,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    // Advance frontier to unlock first batch of new ayahs
+    await HifzDB.advanceFrontier(unit, HifzLimits.maxNewPerDay);
+
+    // Navigate directly to session
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => HifzSessionPage(unit: unit)),
+      );
+    }
+
+    // Reset picker state
+    setState(() {
+      _selectedNumber = null;
+      _searchQuery = '';
+      _searchController.clear();
+    });
   }
 
   Widget _buildSectionLabel(String label) {
@@ -297,6 +108,63 @@ class _HifzHomePageState extends State<HifzHomePage> {
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
         ),
+      ),
+    );
+  }
+
+  Widget _buildSelectedPreview(EquranColors colors, ThemeData theme) {
+    final n = _selectedNumber!;
+    final isAlreadyActive = HifzDB.getUnit(_unitId(n)) != null;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isAlreadyActive
+            ? colors.goldSoft
+            : colors.mint.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(AppRadii.large),
+        border: Border.all(
+          color: isAlreadyActive
+              ? colors.accentGold.withOpacity(0.4)
+              : colors.primary.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isAlreadyActive ? Icons.info_outline : Icons.check_circle_outline,
+            color: isAlreadyActive ? colors.warning : colors.primary,
+            size: 18,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _selectedType == HifzUnitType.surah
+                      ? HifzSurahData.name(n)
+                      : 'Juz $n',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: colors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  isAlreadyActive
+                      ? 'Already in progress'
+                      : _selectedType == HifzUnitType.surah
+                      ? '${HifzSurahData.ayahCount(n)} ayahs'
+                      : '${HifzJuzData.ayahsInJuz(n).length} ayahs',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -338,9 +206,9 @@ class _HifzHomePageState extends State<HifzHomePage> {
             final masteredCount = allEntries
                 .where((e) => e.status == 'mastered')
                 .length;
-            final dueEntries = HifzDB.getDueEntries();
-            final inReviewCount = allEntries
-                .where((e) => e.status == 'review')
+            final activeUnitsCount = HifzDB.getActiveUnits().length;
+            final inProgressCount = allEntries
+                .where((e) => e.status != 'unseen')
                 .length;
             final progressFraction = masteredCount / HifzSurahData.totalAyahs;
 
@@ -360,6 +228,8 @@ class _HifzHomePageState extends State<HifzHomePage> {
                 masteredSurahCount++;
               }
             }
+
+            final activeUnits = HifzDB.getActiveUnits();
 
             return CustomScrollView(
               physics: const BouncingScrollPhysics(),
@@ -472,7 +342,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                       Column(
                                         children: [
                                           Text(
-                                            '${dueEntries.length}',
+                                            '$activeUnitsCount',
                                             style: theme
                                                 .textTheme
                                                 .headlineMedium
@@ -482,7 +352,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                                 ),
                                           ),
                                           Text(
-                                            l10n.hifzDueToday,
+                                            "Active units",
                                             style: theme.textTheme.labelSmall
                                                 ?.copyWith(
                                                   color: colors.onPrimaryMuted,
@@ -493,7 +363,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                       Column(
                                         children: [
                                           Text(
-                                            '$inReviewCount',
+                                            '$inProgressCount',
                                             style: theme
                                                 .textTheme
                                                 .headlineMedium
@@ -503,7 +373,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                                 ),
                                           ),
                                           Text(
-                                            l10n.hifzInReview,
+                                            "In progress",
                                             style: theme.textTheme.labelSmall
                                                 ?.copyWith(
                                                   color: colors.onPrimaryMuted,
@@ -557,9 +427,88 @@ class _HifzHomePageState extends State<HifzHomePage> {
                       ),
                       const SizedBox(height: 24),
 
-                      // SECTION B - DUE TODAY
-                      _buildSectionLabel(l10n.hifzDueForReview),
-                      if (dueEntries.isEmpty)
+                      // SECTION B - REMINDER CARD
+                      if (activeUnits.any(_hasContent)) ...[
+                        Container(
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(AppRadii.large),
+                            border: Border.all(
+                              color: colors.primary.withAlpha(51),
+                            ),
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.local_fire_department_rounded,
+                                color: colors.primary,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Units ready for review",
+                                      style: theme.textTheme.titleSmall
+                                          ?.copyWith(
+                                            color: colors.textPrimary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    Text(
+                                      l10n.hifzStartYourSession,
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: colors.textSecondary,
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colors.primary,
+                                  foregroundColor: colors.onPrimary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadii.pill,
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  final unitWithDue = activeUnits.firstWhere(
+                                    (u) => _hasContent(u),
+                                    orElse: () => activeUnits.first,
+                                  );
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          HifzSessionPage(unit: unitWithDue),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  l10n.hifzStart,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    color: colors.onPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ] else ...[
                         Container(
                           decoration: BoxDecoration(
                             color: colors.surface,
@@ -584,364 +533,298 @@ class _HifzHomePageState extends State<HifzHomePage> {
                               ),
                             ],
                           ),
-                        )
-                      else ...[
-                        Container(
-                          decoration: BoxDecoration(
-                            color: colors.surface,
-                            borderRadius: BorderRadius.circular(AppRadii.large),
-                            border: Border.all(
-                              color: colors.primary.withAlpha(51),
-                            ),
-                          ),
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.local_fire_department_rounded,
-                                color: colors.primary,
-                                size: 22,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // SECTION C - ACTIVE UNITS
+                      _buildSectionLabel("Active Units"),
+                      ValueListenableBuilder<Box<HifzUnit>>(
+                        valueListenable: HifzDB.unitsListenable,
+                        builder: (context, box, _) {
+                          final activeUnitsList = HifzDB.getActiveUnits();
+
+                          if (activeUnitsList.isEmpty) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                color: colors.surface,
+                                border: Border.all(
+                                  color: colors.border,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.large,
+                                ),
                               ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              padding: const EdgeInsets.all(20),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    l10n.hifzAyahsReady(dueEntries.length),
-                                    style: theme.textTheme.titleSmall?.copyWith(
-                                      color: colors.textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                  Icon(
+                                    Icons.menu_book_rounded,
+                                    color: colors.primary,
+                                    size: 20,
                                   ),
+                                  const SizedBox(width: 12),
                                   Text(
-                                    l10n.hifzStartYourSession,
+                                    'No active units — add one below',
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: colors.textSecondary,
                                     ),
                                   ),
                                 ],
                               ),
-                              const Spacer(),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colors.primary,
-                                  foregroundColor: colors.onPrimary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadii.pill,
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                    vertical: 10,
-                                  ),
-                                ),
-                                onPressed: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        HifzSessionPage(entries: dueEntries),
-                                  ),
-                                ),
-                                child: Text(
-                                  l10n.hifzStart,
-                                  style: theme.textTheme.titleSmall?.copyWith(
-                                    color: colors.onPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: math.min(5, dueEntries.length),
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final e = dueEntries[index];
-                            final isArabic =
-                                Localizations.localeOf(context).languageCode ==
-                                'ar';
-                            final surahName = isArabic
-                                ? quran.getSurahNameArabic(e.surah)
-                                : HifzSurahData.name(e.surah);
-                            return Container(
-                              decoration: BoxDecoration(
-                                color: colors.surface,
-                                border: Border.all(color: colors.border),
-                                borderRadius: BorderRadius.circular(
-                                  AppRadii.large,
-                                ),
-                              ),
-                              clipBehavior: Clip.hardEdge,
-                              child: IntrinsicHeight(
-                                child: Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    // Start-side accent bar — RTL-aware via
-                                    // Row's ambient Directionality.
-                                    Container(width: 3, color: colors.mint),
-                                    Expanded(
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsetsDirectional.fromSTEB(
-                                              12,
-                                              12,
-                                              12,
-                                              12,
-                                            ),
-                                        child: Row(
-                                          children: [
-                                            // Leading: soft icon container
-                                            Container(
-                                              width: 36,
-                                              height: 36,
-                                              decoration: BoxDecoration(
-                                                color: colors.primary.withAlpha(
-                                                  20,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppRadii.medium,
-                                                    ),
-                                              ),
-                                              child: Icon(
-                                                Icons.auto_stories_outlined,
-                                                size: 18,
-                                                color: colors.primary,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            // Center: title + due subtitle
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    l10n.hifzStatsNextDueValue(
-                                                      surahName,
-                                                      e.ayah,
-                                                    ),
-                                                    style: theme
-                                                        .textTheme
-                                                        .bodyMedium
-                                                        ?.copyWith(
-                                                          color: colors
-                                                              .textPrimary,
-                                                        ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    _dueLabel(l10n, e.dueDate),
-                                                    style: theme
-                                                        .textTheme
-                                                        .labelSmall
-                                                        ?.copyWith(
-                                                          color:
-                                                              colors.textMuted,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            // Trailing: track status badge
-                                            _TrackBadge(track: e.track),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             );
-                          },
-                        ),
-                        if (dueEntries.length > 5) ...[
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () => _showAllDueBottomSheet(dueEntries),
-                            child: Text(
-                              l10n.hifzShowAll(dueEntries.length),
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colors.textSecondary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                          }
+
+                          return ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: activeUnitsList.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              return _UnitProgressCard(
+                                unit: activeUnitsList[index],
+                              );
+                            },
+                          );
+                        },
+                      ),
                       const SizedBox(height: 24),
 
-                      // SECTION C - ADD NEW AYAHS
-                      _buildSectionLabel(l10n.hifzAddToMemorize),
+                      // SECTION D - ADD A UNIT
+                      _buildSectionLabel("Add a Unit"),
                       Container(
                         decoration: BoxDecoration(
                           color: colors.surface,
+                          border: Border.all(color: colors.border, width: 1),
                           borderRadius: BorderRadius.circular(AppRadii.large),
-                          border: Border.all(color: colors.border),
                         ),
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              l10n.hifzQuickAdd,
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: colors.textMuted,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                _buildQuickAddChip(
-                                  l10n.hifzQuickAlFatiha,
-                                  surah: 1,
-                                  start: 1,
-                                  end: 7,
-                                ),
-                                _buildQuickAddChip(
-                                  l10n.hifzQuickAlKahf,
-                                  surah: 18,
-                                  start: 1,
-                                  end: 110,
-                                ),
-                                _buildQuickAddChip(
-                                  l10n.hifzQuickJuzAmma,
-                                  isJuzAmma: true,
-                                ),
-                                _buildQuickAddChip(
-                                  l10n.hifzQuickLast10,
-                                  isLastTen: true,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Divider(color: colors.divider),
-                            const SizedBox(height: 12),
-                            Text(
-                              l10n.hifzOrChooseSurah,
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: colors.textMuted,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<int>(
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: colors.surface,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadii.medium,
-                                  ),
-                                  borderSide: BorderSide(color: colors.border),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadii.medium,
-                                  ),
-                                  borderSide: BorderSide(color: colors.border),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadii.medium,
-                                  ),
-                                  borderSide: BorderSide(color: colors.primary),
-                                ),
-                              ),
-                              initialValue: _selectedSurah,
-                              dropdownColor: colors.surface,
-                              iconEnabledColor: colors.primary,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colors.textPrimary,
-                              ),
-                              items: List.generate(114, (index) {
-                                final surahNum = index + 1;
-                                final isArabic =
-                                    Localizations.localeOf(
-                                      context,
-                                    ).languageCode ==
-                                    'ar';
-                                final name = isArabic
-                                    ? quran.getSurahNameArabic(surahNum)
-                                    : HifzSurahData.name(surahNum);
-                                final count = HifzSurahData.ayahCount(surahNum);
-                                return DropdownMenuItem<int>(
-                                  value: surahNum,
-                                  child: Text(
-                                    '$surahNum. $name (${l10n.hifzTotalReviewedValue(count)})',
-                                  ),
-                                );
-                              }),
-                              onChanged: (v) {
-                                if (v == null) return;
-                                setState(() {
-                                  _selectedSurah = v;
-                                  _startAyah = 1;
-                                  _endAyah = HifzSurahData.ayahCount(v);
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 12),
+                            // UNIT TYPE TOGGLE
                             Row(
                               children: [
                                 Expanded(
-                                  child: _buildAyahPicker(
-                                    label: l10n.hifzFromAyah,
-                                    value: _startAyah,
-                                    min: 1,
-                                    max: _endAyah,
-                                    onChanged: (v) =>
-                                        setState(() => _startAyah = v),
+                                  child: GestureDetector(
+                                    onTap: () => setState(() {
+                                      _selectedType = HifzUnitType.surah;
+                                      _selectedNumber = null;
+                                      _searchQuery = '';
+                                      _searchController.clear();
+                                    }),
+                                    child: Container(
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            _selectedType == HifzUnitType.surah
+                                            ? colors.primary
+                                            : colors.surfaceAlt,
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(
+                                            AppRadii.pill,
+                                          ),
+                                          bottomLeft: Radius.circular(
+                                            AppRadii.pill,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'Surah',
+                                          style: theme.textTheme.labelLarge
+                                              ?.copyWith(
+                                                color:
+                                                    _selectedType ==
+                                                        HifzUnitType.surah
+                                                    ? colors.onPrimary
+                                                    : colors.textSecondary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 16),
                                 Expanded(
-                                  child: _buildAyahPicker(
-                                    label: l10n.hifzToAyah,
-                                    value: _endAyah,
-                                    min: _startAyah,
-                                    max: HifzSurahData.ayahCount(
-                                      _selectedSurah,
+                                  child: GestureDetector(
+                                    onTap: () => setState(() {
+                                      _selectedType = HifzUnitType.juz;
+                                      _selectedNumber = null;
+                                      _searchQuery = '';
+                                      _searchController.clear();
+                                    }),
+                                    child: Container(
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: _selectedType == HifzUnitType.juz
+                                            ? colors.primary
+                                            : colors.surfaceAlt,
+                                        borderRadius: const BorderRadius.only(
+                                          topRight: Radius.circular(
+                                            AppRadii.pill,
+                                          ),
+                                          bottomRight: Radius.circular(
+                                            AppRadii.pill,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'Juz',
+                                          style: theme.textTheme.labelLarge
+                                              ?.copyWith(
+                                                color:
+                                                    _selectedType ==
+                                                        HifzUnitType.juz
+                                                    ? colors.onPrimary
+                                                    : colors.textSecondary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                        ),
+                                      ),
                                     ),
-                                    onChanged: (v) =>
-                                        setState(() => _endAyah = v),
                                   ),
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 12),
+                            // SEARCH FIELD
+                            TextField(
+                              controller: _searchController,
+                              onChanged: (v) =>
+                                  setState(() => _searchQuery = v),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colors.textPrimary,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: _selectedType == HifzUnitType.surah
+                                    ? 'Search surahs...'
+                                    : 'Search juz...',
+                                hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                                  color: colors.textMuted,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  color: colors.textMuted,
+                                  size: 18,
+                                ),
+                                filled: true,
+                                fillColor: colors.surfaceAlt,
+                                border: const OutlineInputBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(AppRadii.pill),
+                                  ),
+                                  borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            // UNIT PICKER GRID
+                            GridView.count(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              crossAxisCount: 5,
+                              mainAxisSpacing: 8,
+                              crossAxisSpacing: 8,
+                              childAspectRatio: 1.0,
+                              children: _filteredNumbers.map((n) {
+                                final isSelected = _selectedNumber == n;
+                                final alreadyActive =
+                                    HifzDB.getUnit(_unitId(n)) != null;
+
+                                return GestureDetector(
+                                  onTap: () => setState(() {
+                                    _selectedNumber = isSelected ? null : n;
+                                  }),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? colors.primary
+                                          : alreadyActive
+                                          ? colors.primary.withOpacity(0.15)
+                                          : colors.surfaceAlt,
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadii.medium,
+                                      ),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? colors.primary
+                                            : alreadyActive
+                                            ? colors.primary.withOpacity(0.4)
+                                            : colors.border,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            n.toString(),
+                                            style: theme.textTheme.titleSmall
+                                                ?.copyWith(
+                                                  color: isSelected
+                                                      ? colors.onPrimary
+                                                      : colors.textPrimary,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                          if (_selectedType ==
+                                                  HifzUnitType.surah &&
+                                              !isSelected)
+                                            Text(
+                                              HifzSurahData.name(
+                                                n,
+                                              ).split(' ').first,
+                                              style: theme.textTheme.labelSmall
+                                                  ?.copyWith(
+                                                    color: colors.textMuted,
+                                                  ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 12),
+                            // SELECTED UNIT PREVIEW
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: _selectedNumber == null
+                                  ? const SizedBox.shrink()
+                                  : _buildSelectedPreview(colors, theme),
+                            ),
                             const SizedBox(height: 16),
+                            // START BUTTON
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: colors.primary,
                                   foregroundColor: colors.onPrimary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      AppRadii.pill,
-                                    ),
-                                  ),
-                                  minimumSize: const Size.fromHeight(48),
+                                  shape: const StadiumBorder(),
+                                  minimumSize: const Size.fromHeight(52),
                                 ),
-                                onPressed: _addRange,
+                                onPressed: _selectedNumber == null
+                                    ? null
+                                    : _startUnit,
                                 child: Text(
-                                  l10n.hifzAddAyahsButton(
-                                    _endAyah - _startAyah + 1,
-                                  ),
+                                  _selectedNumber == null
+                                      ? 'Select a unit above'
+                                      : 'Start memorizing ${_selectedType == HifzUnitType.surah ? HifzSurahData.name(_selectedNumber!) : 'Juz $_selectedNumber'}',
                                   style: theme.textTheme.titleSmall?.copyWith(
                                     color: colors.onPrimary,
                                     fontWeight: FontWeight.w600,
@@ -954,7 +837,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                       ),
                       const SizedBox(height: 24),
 
-                      // SECTION D - SURAH PROGRESS GRID
+                      // SECTION E - SURAH PROGRESS GRID
                       _buildSectionLabel(l10n.hifzSurahProgress),
                       ClipRect(
                         child: AnimatedSize(
@@ -973,30 +856,52 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                   crossAxisSpacing: 4,
                                   children: List.generate(114, (index) {
                                     final surah = index + 1;
-                                    final entries = entriesBySurah[surah] ?? [];
+                                    final unit = HifzDB.getUnit('surah_$surah');
                                     final total = HifzSurahData.ayahCount(
                                       surah,
                                     );
-                                    final masteredCellCount = entries
-                                        .where((e) => e.status == 'mastered')
-                                        .length;
 
                                     Color cellBg;
                                     Color cellText;
+                                    bool hasActiveDot = false;
 
-                                    if (entries.isEmpty) {
+                                    if (unit == null) {
                                       cellBg = colors.surfaceAlt;
                                       cellText = colors.textMuted;
-                                    } else if (masteredCellCount == total) {
-                                      cellBg = colors.accentGold;
-                                      cellText = const Color(0xFF1a1408);
-                                    } else if (masteredCellCount > 0) {
-                                      cellBg = colors.primary.withAlpha(140);
-                                      cellText = colors.onPrimary;
                                     } else {
-                                      cellBg = colors.primary.withAlpha(64);
-                                      cellText = colors.primary;
+                                      final masteredCellCount =
+                                          entriesBySurah[surah]
+                                              ?.where(
+                                                (e) => e.status == 'mastered',
+                                              )
+                                              .length ??
+                                          0;
+
+                                      if (masteredCellCount == total) {
+                                        cellBg = colors.accentGold;
+                                        cellText = const Color(0xFF1a1408);
+                                      } else if (unit.introducedAyahs == 0) {
+                                        cellBg = colors.primary.withOpacity(
+                                          0.15,
+                                        );
+                                        cellText = colors.primary;
+                                        hasActiveDot = !unit.isComplete;
+                                      } else {
+                                        cellBg = colors.primary.withOpacity(
+                                          0.5,
+                                        );
+                                        cellText = colors.onPrimary;
+                                        hasActiveDot = !unit.isComplete;
+                                      }
                                     }
+
+                                    final masteredCellCount =
+                                        entriesBySurah[surah]
+                                            ?.where(
+                                              (e) => e.status == 'mastered',
+                                            )
+                                            .length ??
+                                        0;
 
                                     final isArabic =
                                         Localizations.localeOf(
@@ -1006,6 +911,37 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                     final surahName = isArabic
                                         ? quran.getSurahNameArabic(surah)
                                         : HifzSurahData.name(surah);
+
+                                    Widget cellChild = Center(
+                                      child: Text(
+                                        '$surah',
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
+                                              color: cellText,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                    );
+
+                                    if (hasActiveDot) {
+                                      cellChild = Stack(
+                                        children: [
+                                          cellChild,
+                                          Positioned(
+                                            top: 4,
+                                            right: 4,
+                                            child: Container(
+                                              width: 3,
+                                              height: 3,
+                                              decoration: BoxDecoration(
+                                                color: colors.accentGold,
+                                                shape: BoxShape.circle,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }
 
                                     return Tooltip(
                                       message:
@@ -1043,16 +979,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                               ),
                                             );
                                           },
-                                          child: Center(
-                                            child: Text(
-                                              '$surah',
-                                              style: theme.textTheme.labelSmall
-                                                  ?.copyWith(
-                                                    color: cellText,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                            ),
-                                          ),
+                                          child: cellChild,
                                         ),
                                       ),
                                     );
@@ -1416,44 +1343,169 @@ class _HifzSettingsSheetState extends State<_HifzSettingsSheet> {
   }
 }
 
-class _TrackBadge extends StatelessWidget {
-  final String track;
-  const _TrackBadge({required this.track});
+class _UnitProgressCard extends StatelessWidget {
+  final HifzUnit unit;
+  const _UnitProgressCard({required this.unit});
+
+  bool _hasSessionContent(HifzUnit unit) {
+    return HifzDB.getNewAyahsForUnit(unit.id, 1).isNotEmpty ||
+        HifzDB.getSabqiAyahs(unit.id).isNotEmpty ||
+        HifzDB.getManzilAyahs(unit.id).isNotEmpty;
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.equranColors;
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context)!;
 
-    Color bgColor;
-    Color textColor;
-    String label;
-
-    if (track == 'sabaq') {
-      bgColor = colors.primary.withAlpha(38);
-      textColor = colors.primary;
-      label = l10n.hifzTrackNew;
-    } else if (track == 'sabqi') {
-      bgColor = colors.accentGold.withAlpha(38);
-      textColor = colors.accentGold;
-      label = l10n.hifzTrackRevision;
-    } else {
-      bgColor = colors.surfaceAlt;
-      textColor = colors.textMuted;
-      label = l10n.hifzTrackMaintenance;
-    }
+    final newCount = HifzDB.getNewAyahsForUnit(unit.id, 999).length;
+    final sabqiCount = HifzDB.getSabqiAyahs(unit.id).length;
+    final manzilCount = HifzDB.getManzilAyahs(unit.id).length;
 
     return Container(
       decoration: BoxDecoration(
-        color: bgColor,
+        color: colors.surface,
+        border: Border.all(color: colors.border, width: 1),
+        borderRadius: BorderRadius.circular(AppRadii.large),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row 1: title + session button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        unit.type == HifzUnitType.surah
+                            ? Icons.menu_book_rounded
+                            : Icons.format_list_numbered,
+                        color: colors.primary,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        unit.type == HifzUnitType.surah ? 'Surah' : 'Juz',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    unit.displayName,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                ),
+                onPressed: _hasSessionContent(unit)
+                    ? () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HifzSessionPage(unit: unit),
+                        ),
+                      )
+                    : null,
+                child: Text(
+                  _hasSessionContent(unit) ? 'Review' : 'Up to date',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colors.onPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Row 2: frontier info
+          Text(
+            'Next: ${HifzSurahData.name(unit.frontierSurah)} · Ayah ${unit.frontierAyah}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Row 3: progress bar + fraction
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                  child: LinearProgressIndicator(
+                    value: unit.progressFraction,
+                    backgroundColor: colors.surfaceAlt,
+                    valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
+                    minHeight: 6,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '${unit.introducedAyahs}/${unit.totalAyahs}',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colors.textMuted,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Row 4: due counts
+          Row(
+            children: [
+              if (newCount > 0) _DueChip('$newCount new', colors.primary),
+              if (sabqiCount > 0)
+                _DueChip('$sabqiCount revision', colors.accentGold),
+              if (manzilCount > 0)
+                _DueChip('$manzilCount maintenance', colors.textSecondary),
+              if (newCount == 0 && sabqiCount == 0 && manzilCount == 0)
+                _DueChip('All caught up', colors.primary),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DueChip extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _DueChip(this.label, this.color);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      margin: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       child: Text(
         label,
         style: theme.textTheme.labelSmall?.copyWith(
-          color: textColor,
+          color: color,
           fontWeight: FontWeight.w600,
         ),
       ),

@@ -128,4 +128,24 @@ class HifzScheduler {
     if (days < 365) return '${(days / 30).round()}mo';
     return '${(days / 365).round()}y';
   }
+
+  // Call when an ayah completes a learn
+  // phase repetition (not SM-2 review)
+  // Returns true when entry is ready to
+  // graduate from learning to review phase
+  static bool recordLearnRepetition(HifzEntry entry) {
+    entry.introducedRepetitions += 1;
+
+    if (entry.introducedRepetitions >= 3) {
+      // Graduate to SM-2 review phase
+      entry.status = 'review';
+      entry.repetitions = 1;
+      entry.interval = 1;
+      entry.dueDate = DateTime.now().add(const Duration(days: 1));
+      return true; // graduated
+    }
+    // Stay in learning, due immediately
+    entry.dueDate = DateTime.now();
+    return false;
+  }
 }

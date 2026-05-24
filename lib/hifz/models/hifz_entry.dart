@@ -34,6 +34,18 @@ class HifzEntry extends HiveObject {
   @HiveField(9)
   late String track; // 'sabaq'|'sabqi'|'manzil'
 
+  @HiveField(10)
+  String? unitId;
+
+  @HiveField(11)
+  int? sequenceIndex;
+
+  @HiveField(12)
+  int introducedRepetitions = 0;
+
+  @HiveField(13)
+  DateTime? firstLearnedAt;
+
   @override
   String get key => '$surah:$ayah';
 

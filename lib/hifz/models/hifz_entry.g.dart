@@ -26,13 +26,17 @@ class HifzEntryAdapter extends TypeAdapter<HifzEntry> {
       ..dueDate = fields[6] as DateTime
       ..lastReviewed = fields[7] as DateTime?
       ..lapses = fields[8] as int
-      ..track = fields[9] as String;
+      ..track = fields[9] as String
+      ..unitId = fields[10] as String?
+      ..sequenceIndex = fields[11] as int?
+      ..introducedRepetitions = (fields[12] as int?) ?? 0
+      ..firstLearnedAt = fields[13] as DateTime?;
   }
 
   @override
   void write(BinaryWriter writer, HifzEntry obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.surah)
       ..writeByte(1)
@@ -52,7 +56,15 @@ class HifzEntryAdapter extends TypeAdapter<HifzEntry> {
       ..writeByte(8)
       ..write(obj.lapses)
       ..writeByte(9)
-      ..write(obj.track);
+      ..write(obj.track)
+      ..writeByte(10)
+      ..write(obj.unitId)
+      ..writeByte(11)
+      ..write(obj.sequenceIndex)
+      ..writeByte(12)
+      ..write(obj.introducedRepetitions)
+      ..writeByte(13)
+      ..write(obj.firstLearnedAt);
   }
 
   @override

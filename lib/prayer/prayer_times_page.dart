@@ -17,6 +17,7 @@ import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/common/equran_components.dart';
+import 'package:equran/widgets/prayer_widget_service.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 
@@ -570,6 +571,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     if (location != null) {
       await _store.saveLocation(location);
       await _rescheduleReminders(location);
+      unawaited(PrayerWidgetService.refreshWidget());
       if (!mounted) return;
       _showMessage('Location saved.');
       return;
@@ -672,6 +674,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         );
     await _store.saveLocation(resolvedLocation);
     await _rescheduleReminders(resolvedLocation);
+    unawaited(PrayerWidgetService.refreshWidget());
   }
 
   Future<void> _rescheduleReminders(PrayerLocation location) async {
@@ -810,6 +813,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       setState(() {
         _now = DateTime.now();
       });
+      unawaited(PrayerWidgetService.refreshWidget());
       _scheduleNextRefresh();
     });
   }

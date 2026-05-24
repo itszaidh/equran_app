@@ -2,14 +2,30 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'models/hifz_entry.dart';
 import 'models/hifz_review_log.dart';
+import 'models/hifz_unit.dart';
+import 'hifz_juz_data.dart';
+import 'hifz_surah_data.dart';
 
 class HifzDB {
   static const String entriesBoxName = 'hifzEntries';
   static const String logsBoxName = 'hifzLogs';
+  static const String unitsBoxName = 'hifzUnits';
 
   static Future<void> init() async {
-    await Hive.openBox<HifzEntry>(entriesBoxName);
-    await Hive.openBox<HifzReviewLog>(logsBoxName);
+    try {
+      await Hive.openBox<HifzEntry>(entriesBoxName);
+      await Hive.openBox<HifzReviewLog>(logsBoxName);
+      await Hive.openBox<HifzUnit>(unitsBoxName);
+    } catch (e) {
+      // Box data is corrupt or has unknown typeIds
+      // Delete and recreate all boxes cleanly
+      await Hive.deleteBoxFromDisk(entriesBoxName);
+      await Hive.deleteBoxFromDisk(logsBoxName);
+      await Hive.deleteBoxFromDisk(unitsBoxName);
+      await Hive.openBox<HifzEntry>(entriesBoxName);
+      await Hive.openBox<HifzReviewLog>(logsBoxName);
+      await Hive.openBox<HifzUnit>(unitsBoxName);
+    }
   }
 
   static Box<HifzEntry> get _entries => Hive.box<HifzEntry>(entriesBoxName);
@@ -47,35 +63,216 @@ class HifzDB {
       });
   }
 
-  // Add a range of ayahs as new entries
-  // Does not overwrite existing entries
-  static Future<void> addAyahRange({
-    required int surah,
-    required int startAyah,
-    required int endAyah,
+  // ── UNIT METHODS ─────────────────────
+
+  static Box<HifzUnit> get _units => Hive.box<HifzUnit>(unitsBoxName);
+
+  static ValueListenable<Box<HifzUnit>> get unitsListenable =>
+      _units.listenable();
+
+  static Future<void> saveUnit(HifzUnit unit) async {
+    await _units.put(unit.id, unit);
+  }
+
+  static HifzUnit? getUnit(String id) => _units.get(id);
+
+  static List<HifzUnit> getAllUnits() =>
+      _units.values.toList()
+        ..sort((a, b) => a.startedAt.compareTo(b.startedAt));
+
+  static List<HifzUnit> getActiveUnits() =>
+      _units.values.where((u) => !u.isComplete).toList()
+        ..sort((a, b) => a.startedAt.compareTo(b.startedAt));
+
+  // Create a new unit and populate HifzEntry
+  // records for all ayahs in the unit
+  // All start as status: 'unseen'
+  static Future<HifzUnit> createUnit({
+    required HifzUnitType type,
+    required int unitNumber,
   }) async {
-    for (int ayah = startAyah; ayah <= endAyah; ayah++) {
-      final key = '$surah:$ayah';
+    final id = type == HifzUnitType.surah
+        ? 'surah_$unitNumber'
+        : 'juz_$unitNumber';
+
+    // Do not duplicate if already exists
+    if (_units.containsKey(id)) {
+      return _units.get(id)!;
+    }
+
+    // Build ordered ayah list
+    final List<(int, int)> ayahs = type == HifzUnitType.surah
+        ? List.generate(
+            HifzSurahData.ayahCount(unitNumber),
+            (i) => (unitNumber, i + 1),
+          )
+        : HifzJuzData.ayahsInJuz(unitNumber);
+
+    final firstAyah = ayahs.first;
+
+    final unit = HifzUnit()
+      ..id = id
+      ..unitType = type == HifzUnitType.surah ? 'surah' : 'juz'
+      ..unitNumber = unitNumber
+      ..frontierSurah = firstAyah.$1
+      ..frontierAyah = firstAyah.$2
+      ..startedAt = DateTime.now()
+      ..completedAt = null
+      ..isComplete = false;
+
+    await _units.put(id, unit);
+
+    // Create HifzEntry for every ayah in unit
+    // with status 'unseen'
+    for (int i = 0; i < ayahs.length; i++) {
+      final (s, a) = ayahs[i];
+      final key = '$s:$a';
       if (_entries.containsKey(key)) continue;
+
       final entry = HifzEntry()
-        ..surah = surah
-        ..ayah = ayah
-        ..status = 'new'
+        ..surah = s
+        ..ayah = a
+        ..status = 'unseen'
         ..interval = 0
         ..easeFactor = 2.5
         ..repetitions = 0
         ..dueDate = DateTime.now()
         ..lastReviewed = null
         ..lapses = 0
-        ..track = 'sabaq';
+        ..track = 'sabaq'
+        ..unitId = id
+        ..sequenceIndex = i
+        ..introducedRepetitions = 0
+        ..firstLearnedAt = null;
+
       await _entries.put(key, entry);
     }
+
+    return unit;
   }
 
-  // Count entries by status
+  // Advance the frontier by n ayahs
+  // Returns the newly unlocked entries
+  // in sequential order
+  static Future<List<HifzEntry>> advanceFrontier(
+    HifzUnit unit,
+    int count,
+  ) async {
+    final List<(int, int)> allAyahs = unit.type == HifzUnitType.surah
+        ? List.generate(
+            HifzSurahData.ayahCount(unit.unitNumber),
+            (i) => (unit.unitNumber, i + 1),
+          )
+        : HifzJuzData.ayahsInJuz(unit.unitNumber);
+
+    // Find current frontier index
+    final frontierIdx = allAyahs.indexWhere(
+      (e) => e.$1 == unit.frontierSurah && e.$2 == unit.frontierAyah,
+    );
+
+    if (frontierIdx < 0) return [];
+
+    final newlyUnlocked = <HifzEntry>[];
+
+    for (
+      int i = frontierIdx;
+      i < frontierIdx + count && i < allAyahs.length;
+      i++
+    ) {
+      final (s, a) = allAyahs[i];
+      final entry = getEntry(s, a);
+      if (entry == null) continue;
+      if (entry.status != 'unseen') continue;
+
+      entry.status = 'learning';
+      entry.firstLearnedAt = DateTime.now();
+      entry.dueDate = DateTime.now();
+      await saveEntry(entry);
+      newlyUnlocked.add(entry);
+    }
+
+    // Update frontier to next unseen
+    final nextIdx = frontierIdx + count;
+    if (nextIdx >= allAyahs.length) {
+      unit.isComplete = true;
+      unit.completedAt = DateTime.now();
+      unit.frontierSurah = allAyahs.last.$1;
+      unit.frontierAyah = allAyahs.last.$2;
+    } else {
+      unit.frontierSurah = allAyahs[nextIdx].$1;
+      unit.frontierAyah = allAyahs[nextIdx].$2;
+    }
+    await saveUnit(unit);
+
+    return newlyUnlocked;
+  }
+
+  // ── SEQUENTIAL SESSION QUERIES ────────
+
+  // Get today's new ayahs for a unit
+  // Returns up to maxNew entries with
+  // status == 'learning' AND
+  // introducedRepetitions == 0
+  // in sequenceIndex ascending order
+  static List<HifzEntry> getNewAyahsForUnit(String unitId, int maxNew) {
+    return _entries.values
+        .where(
+          (e) =>
+              e.unitId == unitId &&
+              e.status == 'learning' &&
+              e.introducedRepetitions == 0,
+        )
+        .toList()
+      ..sort((a, b) => (a.sequenceIndex ?? 0).compareTo(b.sequenceIndex ?? 0))
+      ..take(maxNew).toList();
+  }
+
+  // Get sabqi ayahs — introduced in last 7 days
+  // Returns in sequenceIndex ascending order
+  // grouped by unitId
+  static List<HifzEntry> getSabqiAyahs(String unitId) {
+    final cutoff = DateTime.now().subtract(const Duration(days: 7));
+    return _entries.values
+        .where(
+          (e) =>
+              e.unitId == unitId &&
+              e.status != 'unseen' &&
+              e.firstLearnedAt != null &&
+              e.firstLearnedAt!.isAfter(cutoff),
+        )
+        .toList()
+      ..sort((a, b) => (a.sequenceIndex ?? 0).compareTo(b.sequenceIndex ?? 0));
+  }
+
+  // Get manzil ayahs — older than 7 days
+  // due for SM-2 review today
+  // Returns in sequenceIndex ascending order
+  static List<HifzEntry> getManzilAyahs(String unitId) {
+    final cutoff = DateTime.now().subtract(const Duration(days: 7));
+    final now = DateTime.now().add(const Duration(hours: 1));
+    return _entries.values
+        .where(
+          (e) =>
+              e.unitId == unitId &&
+              (e.status == 'review' || e.status == 'mastered') &&
+              (e.firstLearnedAt == null ||
+                  e.firstLearnedAt!.isBefore(cutoff)) &&
+              e.dueDate.isBefore(now),
+        )
+        .toList()
+      ..sort((a, b) => (a.sequenceIndex ?? 0).compareTo(b.sequenceIndex ?? 0));
+  }
+
+  // Get all entries for a unit in order
+  static List<HifzEntry> getUnitEntries(String unitId) {
+    return _entries.values.where((e) => e.unitId == unitId).toList()
+      ..sort((a, b) => (a.sequenceIndex ?? 0).compareTo(b.sequenceIndex ?? 0));
+  }
+
+  // Update getStatusCounts to include 'unseen'
   static Map<String, int> getStatusCounts() {
     final counts = <String, int>{
-      'new': 0,
+      'unseen': 0,
       'learning': 0,
       'review': 0,
       'mastered': 0,
@@ -144,6 +341,15 @@ class HifzDB {
           l.reviewedAt.month == date.month &&
           l.reviewedAt.day == date.day,
     );
+  }
+
+  // Compatibility shim: maps old UI calls to the new unit-based sequential system
+  static Future<void> addAyahRange({
+    required int surah,
+    required int startAyah,
+    required int endAyah,
+  }) async {
+    await createUnit(type: HifzUnitType.surah, unitNumber: surah);
   }
 
   // Delete a single entry

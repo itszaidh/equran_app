@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/hifz/hifz_db.dart';
+import 'package:equran/hifz/models/hifz_unit.dart';
 import 'hifz_session_page.dart';
 import 'package:equran/l10n/app_localizations.dart';
 
@@ -9,11 +10,15 @@ class HifzCompleteScreen extends StatefulWidget {
   final Map<String, int> ratingCounts;
   final Duration sessionDuration;
   final int totalReviewed;
+  final int newGraduated;
+  final HifzUnit unit;
 
   const HifzCompleteScreen({
     required this.ratingCounts,
     required this.sessionDuration,
     required this.totalReviewed,
+    required this.newGraduated,
+    required this.unit,
     super.key,
   });
 
@@ -219,6 +224,27 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                           ),
                         ],
                       ),
+                      if (widget.newGraduated > 0) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Graduated to review",
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              "${widget.newGraduated} ayah${widget.newGraduated == 1 ? '' : 's'}",
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
 
                       const SizedBox(height: 8),
 
@@ -332,10 +358,9 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                       minimumSize: const Size(double.infinity, 52),
                     ),
                     onPressed: () {
-                      final due = HifzDB.getDueEntries();
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (_) => HifzSessionPage(entries: due),
+                          builder: (_) => HifzSessionPage(unit: widget.unit),
                         ),
                       );
                     },
