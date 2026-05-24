@@ -1,7 +1,7 @@
 export 'models/hifz_entry.dart';
 export 'models/hifz_review_log.dart';
 export 'models/hifz_unit.dart';
-export 'hifz_juz_data.dart';
+export 'hifz_frontier_service.dart';
 export 'hifz_db.dart';
 export 'hifz_scheduler.dart';
 export 'hifz_limits.dart';

@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
+import 'package:quran/quran.dart' as quran;
 import '../hifz_surah_data.dart';
-import '../hifz_juz_data.dart';
 
 part 'hifz_unit.g.dart';
 
@@ -40,7 +40,10 @@ class HifzUnit extends HiveObject {
     if (type == HifzUnitType.surah) {
       return HifzSurahData.ayahCount(unitNumber);
     } else {
-      return HifzJuzData.ayahsInJuz(unitNumber).length;
+      return quran
+          .getSurahAndVersesFromJuz(unitNumber)
+          .values
+          .fold(0, (sum, range) => sum + (range[1] - range[0] + 1));
     }
   }
 
@@ -50,7 +53,15 @@ class HifzUnit extends HiveObject {
     if (type == HifzUnitType.surah) {
       return frontierAyah - 1;
     } else {
-      final all = HifzJuzData.ayahsInJuz(unitNumber);
+      final juzData = quran.getSurahAndVersesFromJuz(unitNumber);
+      final List<(int, int)> all = [];
+      for (final entry in juzData.entries) {
+        final surah = entry.key;
+        final range = entry.value;
+        for (int a = range[0]; a <= range[1]; a++) {
+          all.add((surah, a));
+        }
+      }
       final idx = all.indexWhere(
         (e) => e.$1 == frontierSurah && e.$2 == frontierAyah,
       );
@@ -66,7 +77,7 @@ class HifzUnit extends HiveObject {
     if (type == HifzUnitType.surah) {
       return HifzSurahData.name(unitNumber);
     } else {
-      return HifzJuzData.juzName(unitNumber);
+      return 'Juz $unitNumber';
     }
   }
 }

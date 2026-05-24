@@ -3,7 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'models/hifz_entry.dart';
 import 'models/hifz_review_log.dart';
 import 'models/hifz_unit.dart';
-import 'hifz_juz_data.dart';
+import 'package:quran/quran.dart' as quran;
 import 'hifz_surah_data.dart';
 
 class HifzDB {
@@ -101,12 +101,23 @@ class HifzDB {
     }
 
     // Build ordered ayah list
-    final List<(int, int)> ayahs = type == HifzUnitType.surah
-        ? List.generate(
-            HifzSurahData.ayahCount(unitNumber),
-            (i) => (unitNumber, i + 1),
-          )
-        : HifzJuzData.ayahsInJuz(unitNumber);
+    final List<(int, int)> ayahs;
+    if (type == HifzUnitType.surah) {
+      ayahs = List.generate(
+        HifzSurahData.ayahCount(unitNumber),
+        (i) => (unitNumber, i + 1),
+      );
+    } else {
+      final juzData = quran.getSurahAndVersesFromJuz(unitNumber);
+      ayahs = [];
+      for (final entry in juzData.entries) {
+        final surah = entry.key;
+        final range = entry.value;
+        for (int a = range[0]; a <= range[1]; a++) {
+          ayahs.add((surah, a));
+        }
+      }
+    }
 
     final firstAyah = ayahs.first;
 
@@ -158,12 +169,23 @@ class HifzDB {
     HifzUnit unit,
     int count,
   ) async {
-    final List<(int, int)> allAyahs = unit.type == HifzUnitType.surah
-        ? List.generate(
-            HifzSurahData.ayahCount(unit.unitNumber),
-            (i) => (unit.unitNumber, i + 1),
-          )
-        : HifzJuzData.ayahsInJuz(unit.unitNumber);
+    final List<(int, int)> allAyahs;
+    if (unit.type == HifzUnitType.surah) {
+      allAyahs = List.generate(
+        HifzSurahData.ayahCount(unit.unitNumber),
+        (i) => (unit.unitNumber, i + 1),
+      );
+    } else {
+      final juzData = quran.getSurahAndVersesFromJuz(unit.unitNumber);
+      allAyahs = [];
+      for (final entry in juzData.entries) {
+        final surah = entry.key;
+        final range = entry.value;
+        for (int a = range[0]; a <= range[1]; a++) {
+          allAyahs.add((surah, a));
+        }
+      }
+    }
 
     // Find current frontier index
     final frontierIdx = allAyahs.indexWhere(

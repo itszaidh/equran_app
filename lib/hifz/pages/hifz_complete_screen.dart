@@ -48,8 +48,8 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
 
   String _sessionSubtitle(AppLocalizations l10n) {
     final mins = widget.sessionDuration.inMinutes;
-    if (mins < 1) return l10n.hifzCompletedUnderMinute;
-    return l10n.hifzCompletedInMinutes(mins, mins == 1 ? '' : 's');
+    if (mins < 1) return l10n.hifzCompleteSubtitleUnderMinute;
+    return l10n.hifzCompleteSubtitleMinutes(mins);
   }
 
   String _retentionLabel() {
@@ -63,12 +63,12 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
 
   String _nextDueLabel(AppLocalizations l10n) {
     final due = HifzDB.getDueEntries();
-    if (due.isEmpty) return l10n.hifzAllCaughtUpDue;
+    if (due.isEmpty) return l10n.hifzCompleteAllCaughtUp;
     final next = due.first.dueDate;
     final diff = next.difference(DateTime.now()).inDays;
-    if (diff <= 0) return l10n.hifzNextReviewToday;
-    if (diff == 1) return l10n.hifzNextReviewTomorrow;
-    return l10n.hifzNextReviewInDays(diff);
+    if (diff <= 0) return l10n.hifzCompleteNextDueToday;
+    if (diff == 1) return l10n.hifzCompleteNextDueTomorrow;
+    return l10n.hifzCompleteNextDueInDays(diff);
   }
 
   @override
@@ -120,7 +120,7 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                   curve: const Interval(0.3, 1.0),
                 ),
                 child: Text(
-                  l10n.hifzSessionComplete,
+                  l10n.hifzCompleteTitle,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w700,
@@ -141,6 +141,49 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
               ),
 
               const SizedBox(height: 32),
+              if (widget.unit.isComplete)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        colors.primaryGradientStart,
+                        colors.primaryGradientEnd,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(AppRadii.large),
+                    border: Border.all(
+                      color: colors.accentGold.withAlpha(102),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('🎉', style: TextStyle(fontSize: 36)),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.hifzUnitCompleteTitle(widget.unit.displayName),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: colors.onPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.hifzUnitCompleteSubtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colors.onPrimaryMuted,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
 
               // STATS CARD
               FadeTransition(
@@ -159,7 +202,7 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                   child: Column(
                     children: [
                       Text(
-                        l10n.hifzSummaryTitle,
+                        l10n.hifzCompleteSummaryTitle,
                         style: theme.textTheme.titleSmall?.copyWith(
                           color: colors.textPrimary,
                           fontWeight: FontWeight.w600,
@@ -210,13 +253,15 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            l10n.hifzTotalReviewed,
+                            l10n.hifzCompleteTotalReviewed,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.textSecondary,
                             ),
                           ),
                           Text(
-                            l10n.hifzTotalReviewedValue(widget.totalReviewed),
+                            l10n.hifzCompleteTotalReviewedValue(
+                              widget.totalReviewed,
+                            ),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.textPrimary,
                               fontWeight: FontWeight.w600,
@@ -230,13 +275,15 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "Graduated to review",
+                              l10n.hifzCompleteGraduated,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: colors.textSecondary,
                               ),
                             ),
                             Text(
-                              "${widget.newGraduated} ayah${widget.newGraduated == 1 ? '' : 's'}",
+                              l10n.hifzCompleteGraduatedValue(
+                                widget.newGraduated,
+                              ),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: colors.textPrimary,
                                 fontWeight: FontWeight.w600,
@@ -252,7 +299,7 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            l10n.hifzRetentionRate,
+                            l10n.hifzCompleteRetentionRate,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.textSecondary,
                             ),
@@ -273,7 +320,7 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            l10n.hifzNextReviewDue,
+                            l10n.hifzCompleteNextDue,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.textSecondary,
                             ),
@@ -309,7 +356,7 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                   ),
                 ),
                 child: Text(
-                  l10n.hifzHadithQuote,
+                  l10n.hifzCompleteHadith,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.warning,
                     fontStyle: FontStyle.italic,
@@ -336,7 +383,7 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                     (route) => route.isFirst || route.settings.name == '/hifz',
                   ),
                   child: Text(
-                    l10n.hifzBackToHifz,
+                    l10n.hifzCompleteBackButton,
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: colors.onPrimary,
                       fontWeight: FontWeight.w600,
@@ -365,7 +412,9 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                       );
                     },
                     child: Text(
-                      l10n.hifzKeepReviewing(HifzDB.getDueEntries().length),
+                      l10n.hifzCompleteKeepReviewing(
+                        HifzDB.getDueEntries().length,
+                      ),
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: colors.textSecondary,
                         fontWeight: FontWeight.w600,

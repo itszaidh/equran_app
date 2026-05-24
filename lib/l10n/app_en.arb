@@ -1466,5 +1466,190 @@
   "hifzSettingsBlankingEasy": "Easy",
   "hifzSettingsBlankingMedium": "Medium",
   "hifzSettingsBlankingHard": "Hard",
-  "hifzSettingsDone": "Done"
+  "hifzSettingsDone": "Done",
+  "hifzActiveUnits": "Active units",
+  "hifzInProgress": "In progress",
+  "hifzActiveUnitsSection": "Active Units",
+  "hifzNoActiveUnits": "No active units — add one below",
+  "hifzUnitTypeSurah": "Surah",
+  "hifzUnitTypeJuz": "Juz",
+  "hifzUnitNextAyah": "Next: {surah} · Ayah {ayah}",
+  "@hifzUnitNextAyah": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzUnitProgress": "{introduced}/{total}",
+  "@hifzUnitProgress": {
+    "placeholders": {
+      "introduced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzUnitReview": "Review",
+  "hifzUnitUpToDate": "Up to date",
+  "hifzDueNew": "{count} new",
+  "@hifzDueNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueRevision": "{count} revision",
+  "@hifzDueRevision": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueMaintenance": "{count} maintenance",
+  "@hifzDueMaintenance": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueAllCaughtUp": "All caught up",
+  "hifzAddUnitSection": "Add a Unit",
+  "hifzSearchSurahs": "Search surahs...",
+  "hifzSearchJuz": "Search juz...",
+  "hifzSelectAbove": "Select a unit above",
+  "hifzStartMemorizingSurah": "Start memorizing {name}",
+  "@hifzStartMemorizingSurah": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzStartMemorizingJuz": "Start memorizing Juz {number}",
+  "@hifzStartMemorizingJuz": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzUnitAlreadyActive": "Already in progress",
+  "hifzUnitAyahCount": "{count} ayahs",
+  "@hifzUnitAyahCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzSurahsMasteredCount": "{count} / 114 Surahs mastered",
+  "@hifzSurahsMasteredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzTrackNewLabel": "New",
+  "hifzTrackRevisionLabel": "Revision",
+  "hifzTrackMaintenanceLabel": "Maintenance",
+  "hifzListenPhaseButton": "I'm ready",
+  "hifzRevealAllButton": "Reveal all",
+  "hifzAudioDisabledTooltip": "Audio disabled during recall",
+  "hifzPrevAyahCueLabel": "...previous ayah...",
+  "hifzRatingTryAgain": "Try again",
+  "hifzRatingGotIt": "Got it",
+  "hifzEmptySessionTitle": "All done for today!",
+  "hifzEmptySessionBody": "No new or due ayahs for {unit} today.",
+  "@hifzEmptySessionBody": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzEmptySessionButton": "Back to Hifz",
+  "hifzExitSessionTitle": "Exit session?",
+  "hifzCompleteTitle": "Session Complete",
+  "hifzCompleteSubtitleUnderMinute": "Completed in under a minute",
+  "hifzCompleteSubtitleMinutes": "Completed in {minutes} minutes",
+  "@hifzCompleteSubtitleMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzCompleteSummaryTitle": "Summary",
+  "hifzCompleteTotalReviewed": "Total reviewed",
+  "hifzCompleteTotalReviewedValue": "{count} ayahs",
+  "@hifzCompleteTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzCompleteRetentionRate": "Retention rate",
+  "hifzCompleteNextDue": "Next review due",
+  "hifzCompleteNextDueToday": "Today",
+  "hifzCompleteNextDueTomorrow": "Tomorrow",
+  "hifzCompleteNextDueInDays": "In {days} days",
+  "@hifzCompleteNextDueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzCompleteAllCaughtUp": "All caught up",
+  "hifzCompleteGraduated": "Graduated to review",
+  "hifzCompleteGraduatedValue": "{count} ayahs",
+  "@hifzCompleteGraduatedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzCompleteHadith": "\"The best of you are those who learn the Quran and teach it.\" — Al-Bukhari",
+  "hifzCompleteBackButton": "Back to Hifz",
+  "hifzCompleteKeepReviewing": "Keep reviewing ({count} left)",
+  "@hifzCompleteKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzUnitCompleteTitle": "You have introduced all ayahs in {unit}!",
+  "@hifzUnitCompleteTitle": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzUnitCompleteSubtitle": "Continue revising to fully master them.",
+  "hifzSettingsSheetTitle": "Hifz Settings",
+  "hifzMorePageTitle": "Hifz",
+  "hifzMorePageSubtitle": "Memorize the Quran with smart review",
+  "hifzReminderTitle": "{count} ayahs due for Hifz review",
+  "@hifzReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzReminderButton": "Review"
 }

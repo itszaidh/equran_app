@@ -115,6 +115,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
   Widget _buildSelectedPreview(EquranColors colors, ThemeData theme) {
     final n = _selectedNumber!;
     final isAlreadyActive = HifzDB.getUnit(_unitId(n)) != null;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -145,7 +146,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                 Text(
                   _selectedType == HifzUnitType.surah
                       ? HifzSurahData.name(n)
-                      : 'Juz $n',
+                      : l10n.juzNumber(n),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -153,10 +154,18 @@ class _HifzHomePageState extends State<HifzHomePage> {
                 ),
                 Text(
                   isAlreadyActive
-                      ? 'Already in progress'
+                      ? l10n.hifzUnitAlreadyActive
                       : _selectedType == HifzUnitType.surah
-                      ? '${HifzSurahData.ayahCount(n)} ayahs'
-                      : '${HifzJuzData.ayahsInJuz(n).length} ayahs',
+                      ? l10n.hifzUnitAyahCount(HifzSurahData.ayahCount(n))
+                      : l10n.hifzUnitAyahCount(
+                          quran
+                              .getSurahAndVersesFromJuz(n)
+                              .values
+                              .fold(
+                                0,
+                                (sum, range) => sum + (range[1] - range[0] + 1),
+                              ),
+                        ),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.textSecondary,
                   ),
@@ -352,7 +361,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                                 ),
                                           ),
                                           Text(
-                                            "Active units",
+                                            l10n.hifzActiveUnits,
                                             style: theme.textTheme.labelSmall
                                                 ?.copyWith(
                                                   color: colors.onPrimaryMuted,
@@ -373,7 +382,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                                 ),
                                           ),
                                           Text(
-                                            "In progress",
+                                            l10n.hifzInProgress,
                                             style: theme.textTheme.labelSmall
                                                 ?.copyWith(
                                                   color: colors.onPrimaryMuted,
@@ -451,7 +460,9 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Units ready for review",
+                                      l10n.hifzReminderTitle(
+                                        HifzFrontierService.totalDueCount(),
+                                      ),
                                       style: theme.textTheme.titleSmall
                                           ?.copyWith(
                                             color: colors.textPrimary,
@@ -538,7 +549,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                       ],
 
                       // SECTION C - ACTIVE UNITS
-                      _buildSectionLabel("Active Units"),
+                      _buildSectionLabel(l10n.hifzActiveUnitsSection),
                       ValueListenableBuilder<Box<HifzUnit>>(
                         valueListenable: HifzDB.unitsListenable,
                         builder: (context, box, _) {
@@ -567,7 +578,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    'No active units — add one below',
+                                    l10n.hifzNoActiveUnits,
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: colors.textSecondary,
                                     ),
@@ -594,7 +605,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                       const SizedBox(height: 24),
 
                       // SECTION D - ADD A UNIT
-                      _buildSectionLabel("Add a Unit"),
+                      _buildSectionLabel(l10n.hifzAddUnitSection),
                       Container(
                         decoration: BoxDecoration(
                           color: colors.surface,
@@ -634,7 +645,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                       ),
                                       child: Center(
                                         child: Text(
-                                          'Surah',
+                                          l10n.hifzUnitTypeSurah,
                                           style: theme.textTheme.labelLarge
                                               ?.copyWith(
                                                 color:
@@ -674,7 +685,7 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                       ),
                                       child: Center(
                                         child: Text(
-                                          'Juz',
+                                          l10n.hifzUnitTypeJuz,
                                           style: theme.textTheme.labelLarge
                                               ?.copyWith(
                                                 color:
@@ -702,8 +713,8 @@ class _HifzHomePageState extends State<HifzHomePage> {
                               ),
                               decoration: InputDecoration(
                                 hintText: _selectedType == HifzUnitType.surah
-                                    ? 'Search surahs...'
-                                    : 'Search juz...',
+                                    ? l10n.hifzSearchSurahs
+                                    : l10n.hifzSearchJuz,
                                 hintStyle: theme.textTheme.bodyMedium?.copyWith(
                                   color: colors.textMuted,
                                 ),
@@ -823,8 +834,14 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                     : _startUnit,
                                 child: Text(
                                   _selectedNumber == null
-                                      ? 'Select a unit above'
-                                      : 'Start memorizing ${_selectedType == HifzUnitType.surah ? HifzSurahData.name(_selectedNumber!) : 'Juz $_selectedNumber'}',
+                                      ? l10n.hifzSelectAbove
+                                      : _selectedType == HifzUnitType.surah
+                                      ? l10n.hifzStartMemorizingSurah(
+                                          HifzSurahData.name(_selectedNumber!),
+                                        )
+                                      : l10n.hifzStartMemorizingJuz(
+                                          _selectedNumber!,
+                                        ),
                                   style: theme.textTheme.titleSmall?.copyWith(
                                     color: colors.onPrimary,
                                     fontWeight: FontWeight.w600,
@@ -1122,7 +1139,7 @@ class _HifzSettingsSheetState extends State<_HifzSettingsSheet> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.hifzSettingsTitle,
+                    l10n.hifzSettingsSheetTitle,
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: colors.textPrimary,
                       fontWeight: FontWeight.w700,
@@ -1357,6 +1374,7 @@ class _UnitProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.equranColors;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     final newCount = HifzDB.getNewAyahsForUnit(unit.id, 999).length;
     final sabqiCount = HifzDB.getSabqiAyahs(unit.id).length;
@@ -1390,7 +1408,9 @@ class _UnitProgressCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        unit.type == HifzUnitType.surah ? 'Surah' : 'Juz',
+                        unit.type == HifzUnitType.surah
+                            ? l10n.hifzUnitTypeSurah
+                            : l10n.hifzUnitTypeJuz,
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: colors.textMuted,
                         ),
@@ -1426,7 +1446,9 @@ class _UnitProgressCard extends StatelessWidget {
                       )
                     : null,
                 child: Text(
-                  _hasSessionContent(unit) ? 'Review' : 'Up to date',
+                  _hasSessionContent(unit)
+                      ? l10n.hifzUnitReview
+                      : l10n.hifzUnitUpToDate,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: colors.onPrimary,
                     fontWeight: FontWeight.w600,
@@ -1438,7 +1460,10 @@ class _UnitProgressCard extends StatelessWidget {
           const SizedBox(height: 12),
           // Row 2: frontier info
           Text(
-            'Next: ${HifzSurahData.name(unit.frontierSurah)} · Ayah ${unit.frontierAyah}',
+            l10n.hifzUnitNextAyah(
+              HifzSurahData.name(unit.frontierSurah),
+              unit.frontierAyah,
+            ),
             style: theme.textTheme.bodySmall?.copyWith(
               color: colors.textSecondary,
             ),
@@ -1460,7 +1485,7 @@ class _UnitProgressCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                '${unit.introducedAyahs}/${unit.totalAyahs}',
+                l10n.hifzUnitProgress(unit.introducedAyahs, unit.totalAyahs),
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: colors.textMuted,
                 ),
@@ -1471,13 +1496,17 @@ class _UnitProgressCard extends StatelessWidget {
           // Row 4: due counts
           Row(
             children: [
-              if (newCount > 0) _DueChip('$newCount new', colors.primary),
+              if (newCount > 0)
+                _DueChip(l10n.hifzDueNew(newCount), colors.primary),
               if (sabqiCount > 0)
-                _DueChip('$sabqiCount revision', colors.accentGold),
+                _DueChip(l10n.hifzDueRevision(sabqiCount), colors.accentGold),
               if (manzilCount > 0)
-                _DueChip('$manzilCount maintenance', colors.textSecondary),
+                _DueChip(
+                  l10n.hifzDueMaintenance(manzilCount),
+                  colors.textSecondary,
+                ),
               if (newCount == 0 && sabqiCount == 0 && manzilCount == 0)
-                _DueChip('All caught up', colors.primary),
+                _DueChip(l10n.hifzDueAllCaughtUp, colors.primary),
             ],
           ),
         ],

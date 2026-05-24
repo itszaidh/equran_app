@@ -116,8 +116,11 @@ class PrayerWidgetService {
       HomeWidget.saveWidgetData<String>('last_updated', lastUpdated),
     ]);
 
-    // Trigger widget to redraw
-    await HomeWidget.updateWidget(androidName: 'PrayerTimesWidgetReceiver');
+    // Trigger widgets to redraw
+    await Future.wait([
+      HomeWidget.updateWidget(androidName: 'PrayerTimesWidgetReceiver'),
+      HomeWidget.updateWidget(androidName: 'NextPrayerWidgetReceiver'),
+    ]);
   }
 
   // Determine which prayer comes next

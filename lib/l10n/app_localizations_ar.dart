@@ -2998,4 +2998,218 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hifzSettingsDone => 'تم';
+
+  @override
+  String get hifzActiveUnits => 'الوحدات النشطة';
+
+  @override
+  String get hifzInProgress => 'قيد التعلم';
+
+  @override
+  String get hifzActiveUnitsSection => 'الوحدات النشطة';
+
+  @override
+  String get hifzNoActiveUnits => 'لا توجد وحدات نشطة — أضف واحدة أدناه';
+
+  @override
+  String get hifzUnitTypeSurah => 'سورة';
+
+  @override
+  String get hifzUnitTypeJuz => 'جزء';
+
+  @override
+  String hifzUnitNextAyah(String surah, int ayah) {
+    return 'التالي: $surah · الآية $ayah';
+  }
+
+  @override
+  String hifzUnitProgress(int introduced, int total) {
+    return '$introduced/$total';
+  }
+
+  @override
+  String get hifzUnitReview => 'مراجعة';
+
+  @override
+  String get hifzUnitUpToDate => 'محدّث';
+
+  @override
+  String hifzDueNew(int count) {
+    return '$count جديد';
+  }
+
+  @override
+  String hifzDueRevision(int count) {
+    return '$count مراجعة';
+  }
+
+  @override
+  String hifzDueMaintenance(int count) {
+    return '$count صيانة';
+  }
+
+  @override
+  String get hifzDueAllCaughtUp => 'لا يوجد مستحق';
+
+  @override
+  String get hifzAddUnitSection => 'أضف وحدة';
+
+  @override
+  String get hifzSearchSurahs => 'ابحث عن سورة...';
+
+  @override
+  String get hifzSearchJuz => 'ابحث عن جزء...';
+
+  @override
+  String get hifzSelectAbove => 'اختر وحدة أعلاه';
+
+  @override
+  String hifzStartMemorizingSurah(String name) {
+    return 'ابدأ حفظ $name';
+  }
+
+  @override
+  String hifzStartMemorizingJuz(int number) {
+    return 'ابدأ حفظ جزء $number';
+  }
+
+  @override
+  String get hifzUnitAlreadyActive => 'قيد التعلم بالفعل';
+
+  @override
+  String hifzUnitAyahCount(int count) {
+    return '$count آيات';
+  }
+
+  @override
+  String hifzSurahsMasteredCount(int count) {
+    return '$count / 114 سورة محفوظة';
+  }
+
+  @override
+  String get hifzTrackNewLabel => 'جديد';
+
+  @override
+  String get hifzTrackRevisionLabel => 'مراجعة';
+
+  @override
+  String get hifzTrackMaintenanceLabel => 'صيانة';
+
+  @override
+  String get hifzListenPhaseButton => 'أنا مستعد';
+
+  @override
+  String get hifzRevealAllButton => 'اكشف الكل';
+
+  @override
+  String get hifzAudioDisabledTooltip => 'الصوت معطل أثناء الاسترجاع';
+
+  @override
+  String get hifzPrevAyahCueLabel => '...الآية السابقة...';
+
+  @override
+  String get hifzRatingTryAgain => 'حاول مجدداً';
+
+  @override
+  String get hifzRatingGotIt => 'حفظتها';
+
+  @override
+  String get hifzEmptySessionTitle => 'أحسنت! انتهيت لليوم';
+
+  @override
+  String hifzEmptySessionBody(String unit) {
+    return 'لا توجد آيات جديدة أو مستحقة لـ $unit اليوم.';
+  }
+
+  @override
+  String get hifzEmptySessionButton => 'العودة للحفظ';
+
+  @override
+  String get hifzExitSessionTitle => 'إنهاء الجلسة؟';
+
+  @override
+  String get hifzCompleteTitle => 'اكتملت الجلسة';
+
+  @override
+  String get hifzCompleteSubtitleUnderMinute => 'اكتملت في أقل من دقيقة';
+
+  @override
+  String hifzCompleteSubtitleMinutes(int minutes) {
+    return 'اكتملت في $minutes دقيقة';
+  }
+
+  @override
+  String get hifzCompleteSummaryTitle => 'الملخص';
+
+  @override
+  String get hifzCompleteTotalReviewed => 'إجمالي المراجعة';
+
+  @override
+  String hifzCompleteTotalReviewedValue(int count) {
+    return '$count آيات';
+  }
+
+  @override
+  String get hifzCompleteRetentionRate => 'معدل الاحتفاظ';
+
+  @override
+  String get hifzCompleteNextDue => 'موعد المراجعة القادمة';
+
+  @override
+  String get hifzCompleteNextDueToday => 'اليوم';
+
+  @override
+  String get hifzCompleteNextDueTomorrow => 'غداً';
+
+  @override
+  String hifzCompleteNextDueInDays(int days) {
+    return 'بعد $days أيام';
+  }
+
+  @override
+  String get hifzCompleteAllCaughtUp => 'لا توجد مراجعات متبقية';
+
+  @override
+  String get hifzCompleteGraduated => 'انتقلت للمراجعة';
+
+  @override
+  String hifzCompleteGraduatedValue(int count) {
+    return '$count آيات';
+  }
+
+  @override
+  String get hifzCompleteHadith => '«خيركم من تعلّم القرآن وعلّمه» — البخاري';
+
+  @override
+  String get hifzCompleteBackButton => 'العودة للحفظ';
+
+  @override
+  String hifzCompleteKeepReviewing(int count) {
+    return 'استمر في المراجعة ($count متبقية)';
+  }
+
+  @override
+  String hifzUnitCompleteTitle(String unit) {
+    return 'لقد قدّمت جميع آيات $unit!';
+  }
+
+  @override
+  String get hifzUnitCompleteSubtitle => 'استمر في المراجعة حتى تتقنها تماماً.';
+
+  @override
+  String get hifzSettingsSheetTitle => 'إعدادات الحفظ';
+
+  @override
+  String get hifzMorePageTitle => 'الحفظ';
+
+  @override
+  String get hifzMorePageSubtitle => 'احفظ القرآن بمراجعة ذكية';
+
+  @override
+  String hifzReminderTitle(int count) {
+    return '$count آيات مستحقة لمراجعة الحفظ';
+  }
+
+  @override
+  String get hifzReminderButton => 'مراجعة';
 }

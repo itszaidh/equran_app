@@ -12,6 +12,7 @@ import '../hifz_surah_data.dart';
 import '../hifz_scheduler.dart';
 import '../hifz_db.dart';
 import 'hifz_complete_screen.dart';
+import '../hifz_frontier_service.dart';
 
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -106,12 +107,29 @@ class _HifzSessionPageState extends State<HifzSessionPage>
   @override
   void initState() {
     super.initState();
+    _initSession();
+  }
+
+  Future<void> _initSession() async {
+    // Ensure frontier has content ready
+    try {
+      final unit = widget.unit ?? _fallbackUnit;
+      if (unit != null) {
+        await HifzFrontierService.ensureFrontierReady(unit);
+      }
+    } catch (_) {}
+
+    // Now build the queue with fresh data
     _buildQueue();
     _initAnimations();
 
-    if (_queue.isNotEmpty) {
-      _loadAyahData(_queue[0]);
+    if (_queue.isEmpty) {
+      // Still empty — show empty state
+      setState(() => _loadingAyah = false);
+      return;
     }
+
+    await _loadAyahData(_queue[0]);
   }
 
   void _buildQueue() {
@@ -355,6 +373,14 @@ class _HifzSessionPageState extends State<HifzSessionPage>
     if (_currentIndex >= _queue.length - 1) {
       if (mounted) {
         final duration = DateTime.now().difference(_sessionStart);
+        // BEFORE navigating to complete screen:
+        await HifzFrontierService.advanceAfterSession(
+          unit: _unit,
+          graduatedToday: _newGraduated,
+        );
+
+        // THEN navigate:
+        if (!mounted) return;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => HifzCompleteScreen(
@@ -398,7 +424,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
             borderRadius: BorderRadius.circular(AppRadii.medium),
           ),
           title: Text(
-            dialogL10n.hifzExitSession,
+            dialogL10n.hifzExitSessionTitle,
             style: theme.textTheme.titleLarge?.copyWith(
               color: colors.textPrimary,
             ),
@@ -488,6 +514,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
   Widget build(BuildContext context) {
     final colors = context.equranColors;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     if (_queue.isEmpty) {
       return Scaffold(
@@ -504,7 +531,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  "All done for today!",
+                  l10n.hifzEmptySessionTitle,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     color: colors.textPrimary,
                     fontWeight: FontWeight.w600,
@@ -513,7 +540,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "No new or due ayahs for\n${_unit.displayName} today.",
+                  l10n.hifzEmptySessionBody(_unit.displayName),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colors.textSecondary,
                   ),
@@ -531,7 +558,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                     ),
                   ),
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("Back to Hifz"),
+                  child: Text(l10n.hifzEmptySessionButton),
                 ),
               ],
             ),
@@ -688,7 +715,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                         onTap: _playAudio,
                       )
                     : Tooltip(
-                        message: "Audio disabled during recall",
+                        message: l10n.hifzAudioDisabledTooltip,
                         triggerMode: TooltipTriggerMode.tap,
                         child: Opacity(
                           opacity: 0.35,
@@ -698,9 +725,9 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                             active: false,
                             onTap: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Audio disabled during recall"),
-                                  duration: Duration(seconds: 1),
+                                SnackBar(
+                                  content: Text(l10n.hifzAudioDisabledTooltip),
+                                  duration: const Duration(seconds: 1),
                                 ),
                               );
                             },
@@ -773,6 +800,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
   }
 
   Widget _buildRecallText(EquranColors colors) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         if (_prevAyahEnd.isNotEmpty) ...[
@@ -788,7 +816,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '...previous ayah...',
+                  l10n.hifzPrevAyahCueLabel,
                   style: TextStyle(
                     fontFamily: 'Hafs',
                     fontSize: 18,
@@ -926,7 +954,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                   ),
                   child: Center(
                     child: Text(
-                      "Try again",
+                      l10n.hifzRatingTryAgain,
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: colors.textSecondary,
                         fontWeight: FontWeight.w600,
@@ -948,7 +976,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                   ),
                   child: Center(
                     child: Text(
-                      "Got it",
+                      l10n.hifzRatingGotIt,
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: colors.onPrimary,
                         fontWeight: FontWeight.w600,
@@ -1259,21 +1287,24 @@ class _TrackLabel extends StatelessWidget {
     }
   }
 
-  String _trackName(_Track t) {
-    switch (t) {
-      case _Track.newAyah:
-        return "New";
-      case _Track.sabqi:
-        return "Revision";
-      case _Track.manzil:
-        return "Maintenance";
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = _trackColor(context, track);
     final theme = Theme.of(context);
+    String trackName;
+    switch (track) {
+      case _Track.newAyah:
+        trackName = l10n.hifzTrackNewLabel;
+        break;
+      case _Track.sabqi:
+        trackName = l10n.hifzTrackRevisionLabel;
+        break;
+      case _Track.manzil:
+        trackName = l10n.hifzTrackMaintenanceLabel;
+        break;
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -1281,7 +1312,7 @@ class _TrackLabel extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Text(
-        _trackName(track),
+        trackName,
         style: theme.textTheme.labelSmall?.copyWith(
           color: color,
           fontWeight: FontWeight.w600,

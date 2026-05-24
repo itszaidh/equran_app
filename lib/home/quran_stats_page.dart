@@ -406,7 +406,24 @@ class StatisticsRepository {
         DateTime.now(),
       ).length;
       final retention = HifzDB.getRetentionRate();
-      final due = HifzDB.getDueEntries();
+      // Find the next due ayah across all units
+      // in sequential order (lowest sequenceIndex
+      // of the unit with earliest dueDate)
+      HifzEntry? nextDue;
+      for (final unit in HifzDB.getActiveUnits()) {
+        final unitDue = [
+          ...HifzDB.getNewAyahsForUnit(unit.id, 1),
+          ...HifzDB.getSabqiAyahs(unit.id).take(1),
+          ...HifzDB.getManzilAyahs(unit.id).take(1),
+        ];
+        if (unitDue.isNotEmpty) {
+          final candidate = unitDue.first;
+          if (nextDue == null || candidate.dueDate.isBefore(nextDue.dueDate)) {
+            nextDue = candidate;
+          }
+        }
+      }
+
       final masteredMap = HifzDB.getMasteredPerSurah();
       final streak = _computeHifzStreak();
 
@@ -415,7 +432,7 @@ class StatisticsRepository {
         totalReviews: totalReviews,
         currentStreak: streak,
         retentionRate: retention,
-        nextDueEntry: due.isEmpty ? null : due.first,
+        nextDueEntry: nextDue,
         masteredPerSurah: masteredMap,
       );
     })();
@@ -6411,7 +6428,9 @@ class _HifzProgressCell extends StatelessWidget {
         ? colors.surfaceAlt
         : (progress == 1.0
               ? colors.primary
-              : colors.primary.withAlpha(((0.1 + 0.6 * progress) * 255).round()));
+              : colors.primary.withAlpha(
+                  ((0.1 + 0.6 * progress) * 255).round(),
+                ));
 
     final Color foreground = progress == 0.0
         ? colors.textMuted

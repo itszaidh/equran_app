@@ -648,10 +648,7 @@ class _MainPageState extends State<MainPage>
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ?lastRead,
-        const _HifzReminderCard(),
-      ],
+      children: [?lastRead, const _HifzReminderCard()],
     );
   }
 
@@ -672,8 +669,6 @@ class _MainPageState extends State<MainPage>
   }
 }
 
-
-
 class _HifzReminderCard extends StatelessWidget {
   const _HifzReminderCard();
 
@@ -686,12 +681,19 @@ class _HifzReminderCard extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: HifzDB.entriesListenable,
       builder: (context, box, child) {
-        final dueEntries = HifzDB.getDueEntries();
-        if (dueEntries.isEmpty) {
+        final showCard =
+            HifzDB.getActiveUnits().isNotEmpty &&
+            HifzFrontierService.totalDueCount() > 0;
+        if (!showCard) {
           return const SizedBox.shrink();
         }
-
-        final count = dueEntries.length;
+        final count = HifzFrontierService.totalDueCount();
+        final List<HifzEntry> dueEntries = [];
+        for (final unit in HifzDB.getActiveUnits()) {
+          dueEntries.addAll(HifzDB.getNewAyahsForUnit(unit.id, 999));
+          dueEntries.addAll(HifzDB.getSabqiAyahs(unit.id));
+          dueEntries.addAll(HifzDB.getManzilAyahs(unit.id));
+        }
         final radius = BorderRadius.circular(AppRadii.large);
 
         return Padding(
@@ -786,10 +788,7 @@ class _HifzReminderCard extends StatelessWidget {
 }
 
 class _QuranPageList extends StatelessWidget {
-  const _QuranPageList({
-    required this.searchQuery,
-    required this.ascending,
-  });
+  const _QuranPageList({required this.searchQuery, required this.ascending});
 
   final String searchQuery;
   final bool ascending;

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:equran/backend/settings_db.dart';
 
 class HifzLimits {
@@ -23,6 +24,10 @@ class HifzLimits {
 
   static int get todayNewCount =>
       prefsBox.get(_todayKey('hifzNew'), defaultValue: 0) as int;
+
+  // Returns how many new ayahs can still
+  // be unlocked today across all units
+  static int get remainingNewToday => max(0, maxNewPerDay - todayNewCount);
 
   static int get todayReviewCount =>
       prefsBox.get(_todayKey('hifzReview'), defaultValue: 0) as int;

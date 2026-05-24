@@ -3056,4 +3056,220 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hifzSettingsDone => 'Done';
+
+  @override
+  String get hifzActiveUnits => 'Active units';
+
+  @override
+  String get hifzInProgress => 'In progress';
+
+  @override
+  String get hifzActiveUnitsSection => 'Active Units';
+
+  @override
+  String get hifzNoActiveUnits => 'No active units — add one below';
+
+  @override
+  String get hifzUnitTypeSurah => 'Surah';
+
+  @override
+  String get hifzUnitTypeJuz => 'Juz';
+
+  @override
+  String hifzUnitNextAyah(String surah, int ayah) {
+    return 'Next: $surah · Ayah $ayah';
+  }
+
+  @override
+  String hifzUnitProgress(int introduced, int total) {
+    return '$introduced/$total';
+  }
+
+  @override
+  String get hifzUnitReview => 'Review';
+
+  @override
+  String get hifzUnitUpToDate => 'Up to date';
+
+  @override
+  String hifzDueNew(int count) {
+    return '$count new';
+  }
+
+  @override
+  String hifzDueRevision(int count) {
+    return '$count revision';
+  }
+
+  @override
+  String hifzDueMaintenance(int count) {
+    return '$count maintenance';
+  }
+
+  @override
+  String get hifzDueAllCaughtUp => 'All caught up';
+
+  @override
+  String get hifzAddUnitSection => 'Add a Unit';
+
+  @override
+  String get hifzSearchSurahs => 'Search surahs...';
+
+  @override
+  String get hifzSearchJuz => 'Search juz...';
+
+  @override
+  String get hifzSelectAbove => 'Select a unit above';
+
+  @override
+  String hifzStartMemorizingSurah(String name) {
+    return 'Start memorizing $name';
+  }
+
+  @override
+  String hifzStartMemorizingJuz(int number) {
+    return 'Start memorizing Juz $number';
+  }
+
+  @override
+  String get hifzUnitAlreadyActive => 'Already in progress';
+
+  @override
+  String hifzUnitAyahCount(int count) {
+    return '$count ayahs';
+  }
+
+  @override
+  String hifzSurahsMasteredCount(int count) {
+    return '$count / 114 Surahs mastered';
+  }
+
+  @override
+  String get hifzTrackNewLabel => 'New';
+
+  @override
+  String get hifzTrackRevisionLabel => 'Revision';
+
+  @override
+  String get hifzTrackMaintenanceLabel => 'Maintenance';
+
+  @override
+  String get hifzListenPhaseButton => 'I\'m ready';
+
+  @override
+  String get hifzRevealAllButton => 'Reveal all';
+
+  @override
+  String get hifzAudioDisabledTooltip => 'Audio disabled during recall';
+
+  @override
+  String get hifzPrevAyahCueLabel => '...previous ayah...';
+
+  @override
+  String get hifzRatingTryAgain => 'Try again';
+
+  @override
+  String get hifzRatingGotIt => 'Got it';
+
+  @override
+  String get hifzEmptySessionTitle => 'All done for today!';
+
+  @override
+  String hifzEmptySessionBody(String unit) {
+    return 'No new or due ayahs for $unit today.';
+  }
+
+  @override
+  String get hifzEmptySessionButton => 'Back to Hifz';
+
+  @override
+  String get hifzExitSessionTitle => 'Exit session?';
+
+  @override
+  String get hifzCompleteTitle => 'Session Complete';
+
+  @override
+  String get hifzCompleteSubtitleUnderMinute => 'Completed in under a minute';
+
+  @override
+  String hifzCompleteSubtitleMinutes(int minutes) {
+    return 'Completed in $minutes minutes';
+  }
+
+  @override
+  String get hifzCompleteSummaryTitle => 'Summary';
+
+  @override
+  String get hifzCompleteTotalReviewed => 'Total reviewed';
+
+  @override
+  String hifzCompleteTotalReviewedValue(int count) {
+    return '$count ayahs';
+  }
+
+  @override
+  String get hifzCompleteRetentionRate => 'Retention rate';
+
+  @override
+  String get hifzCompleteNextDue => 'Next review due';
+
+  @override
+  String get hifzCompleteNextDueToday => 'Today';
+
+  @override
+  String get hifzCompleteNextDueTomorrow => 'Tomorrow';
+
+  @override
+  String hifzCompleteNextDueInDays(int days) {
+    return 'In $days days';
+  }
+
+  @override
+  String get hifzCompleteAllCaughtUp => 'All caught up';
+
+  @override
+  String get hifzCompleteGraduated => 'Graduated to review';
+
+  @override
+  String hifzCompleteGraduatedValue(int count) {
+    return '$count ayahs';
+  }
+
+  @override
+  String get hifzCompleteHadith =>
+      '\"The best of you are those who learn the Quran and teach it.\" — Al-Bukhari';
+
+  @override
+  String get hifzCompleteBackButton => 'Back to Hifz';
+
+  @override
+  String hifzCompleteKeepReviewing(int count) {
+    return 'Keep reviewing ($count left)';
+  }
+
+  @override
+  String hifzUnitCompleteTitle(String unit) {
+    return 'You have introduced all ayahs in $unit!';
+  }
+
+  @override
+  String get hifzUnitCompleteSubtitle =>
+      'Continue revising to fully master them.';
+
+  @override
+  String get hifzSettingsSheetTitle => 'Hifz Settings';
+
+  @override
+  String get hifzMorePageTitle => 'Hifz';
+
+  @override
+  String get hifzMorePageSubtitle => 'Memorize the Quran with smart review';
+
+  @override
+  String hifzReminderTitle(int count) {
+    return '$count ayahs due for Hifz review';
+  }
+
+  @override
+  String get hifzReminderButton => 'Review';
 }

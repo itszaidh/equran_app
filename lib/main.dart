@@ -66,6 +66,20 @@ Future<void> main() async {
   await DuaFavouritesDB().initBox();
   await initCompanionStorageBoxes();
   await HifzDB.init();
+
+  try {
+    final prefsBox = SettingsDB();
+    final lastCheck =
+        prefsBox.get('hifzFrontierLastCheck', defaultValue: '') as String;
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+
+    if (lastCheck != today) {
+      await HifzFrontierService.dailyFrontierCheck();
+      await prefsBox.put('hifzFrontierLastCheck', today);
+    }
+  } catch (e) {
+    // Silent fail on all frontier operations
+  }
   await SchemaMigrationService.instance.runSafeMigrations();
   await quran.initializeQuran();
   await QuranTranslationService.instance.preloadSelectedTranslation();
