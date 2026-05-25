@@ -62,6 +62,24 @@ void _callbackDispatcher() {
         final madhabStr = await HomeWidget.getWidgetData<String>(
           'widget_madhab',
         );
+        final localeStr =
+            await HomeWidget.getWidgetData<String>('widget_locale') ?? 'en';
+
+        // Sync localized labels in background
+        final t = widgetTranslations[localeStr] ?? widgetTranslations['en']!;
+        await Future.wait([
+          HomeWidget.saveWidgetData<String>('label_header', t['header']!),
+          HomeWidget.saveWidgetData<String>('label_fajr', t['fajr']!),
+          HomeWidget.saveWidgetData<String>('label_dhuhr', t['dhuhr']!),
+          HomeWidget.saveWidgetData<String>('label_asr', t['asr']!),
+          HomeWidget.saveWidgetData<String>('label_maghrib', t['maghrib']!),
+          HomeWidget.saveWidgetData<String>('label_isha', t['isha']!),
+          HomeWidget.saveWidgetData<String>('label_updated', t['updated']!),
+          HomeWidget.saveWidgetData<String>(
+            'label_placeholder',
+            t['placeholder']!,
+          ),
+        ]);
 
         // No coordinates saved yet — skip update
         if (latStr == null || lngStr == null) {

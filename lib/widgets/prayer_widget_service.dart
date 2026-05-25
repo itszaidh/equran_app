@@ -1,7 +1,32 @@
+import 'dart:ui';
+import 'package:equran/backend/library.dart' show SettingsDB;
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:home_widget/home_widget.dart';
+
+const Map<String, Map<String, String>> widgetTranslations = {
+  'en': {
+    'header': 'Prayer Times',
+    'fajr': 'Fajr',
+    'dhuhr': 'Dhuhr',
+    'asr': 'Asr',
+    'maghrib': 'Maghrib',
+    'isha': 'Isha',
+    'updated': 'Updated',
+    'placeholder': 'Tap to load prayer times',
+  },
+  'ar': {
+    'header': 'مواقيت الصلاة',
+    'fajr': 'الفجر',
+    'dhuhr': 'الظهر',
+    'asr': 'العصر',
+    'maghrib': 'المغرب',
+    'isha': 'العشاء',
+    'updated': 'تحديث',
+    'placeholder': 'افتح التطبيق لتحميل مواقيت الصلاة',
+  },
+};
 
 class PrayerWidgetService {
   static const String _appGroupId = 'com.app.equran';
@@ -10,6 +35,18 @@ class PrayerWidgetService {
   static Future<void> init() async {
     await HomeWidget.setAppGroupId(_appGroupId);
     await HomeWidget.registerInteractivityCallback(_backgroundCallback);
+  }
+
+  static String getLanguageCode() {
+    try {
+      final dynamic lang = SettingsDB().get("locale");
+      if (lang == null || lang == "system") {
+        return PlatformDispatcher.instance.locale.languageCode;
+      }
+      return lang.toString();
+    } catch (_) {
+      return PlatformDispatcher.instance.locale.languageCode;
+    }
   }
 
   static Future<void> saveCoordinates({
@@ -48,6 +85,22 @@ class PrayerWidgetService {
       calculationMethod: effectiveMethod.name,
       madhab: settings.asrMethod.name,
     );
+
+    // Sync localized strings
+    final langCode = getLanguageCode();
+    final t = widgetTranslations[langCode] ?? widgetTranslations['en']!;
+
+    await Future.wait([
+      HomeWidget.saveWidgetData<String>('label_header', t['header']!),
+      HomeWidget.saveWidgetData<String>('label_fajr', t['fajr']!),
+      HomeWidget.saveWidgetData<String>('label_dhuhr', t['dhuhr']!),
+      HomeWidget.saveWidgetData<String>('label_asr', t['asr']!),
+      HomeWidget.saveWidgetData<String>('label_maghrib', t['maghrib']!),
+      HomeWidget.saveWidgetData<String>('label_isha', t['isha']!),
+      HomeWidget.saveWidgetData<String>('label_updated', t['updated']!),
+      HomeWidget.saveWidgetData<String>('label_placeholder', t['placeholder']!),
+      HomeWidget.saveWidgetData<String>('widget_locale', langCode),
+    ]);
 
     final now = DateTime.now();
     final todayDate = service.calendarDateForInstant(

@@ -54,13 +54,23 @@ class PrayerTimesWidget : GlanceAppWidget() {
     val loc     = prefs.getString("location_name","")   ?: ""
     val updated = prefs.getString("last_updated", "")   ?: ""
 
+    // Read localized labels
+    val headerLabel = prefs.getString("label_header", "Prayer Times") ?: "Prayer Times"
+    val fajrLabel   = prefs.getString("label_fajr",   "Fajr") ?: "Fajr"
+    val dhuhrLabel  = prefs.getString("label_dhuhr",  "Dhuhr") ?: "Dhuhr"
+    val asrLabel    = prefs.getString("label_asr",    "Asr") ?: "Asr"
+    val maghribLabel= prefs.getString("label_maghrib","Maghrib") ?: "Maghrib"
+    val ishaLabel   = prefs.getString("label_isha",   "Isha") ?: "Isha"
+    val updatedLabel= prefs.getString("label_updated","Updated") ?: "Updated"
+    val placeholderLabel = prefs.getString("label_placeholder", "Tap to load prayer times") ?: "Tap to load prayer times"
+
     // provideContent in Glance 1.1.0
     // is called as a member function
     // (not a top-level extension)
     provideContent {
       GlanceTheme {
         if (fajr == null) {
-          WidgetPlaceholder()
+          WidgetPlaceholder(placeholderLabel)
         } else {
           WidgetContent(
             fajr    = fajr,
@@ -71,6 +81,13 @@ class PrayerTimesWidget : GlanceAppWidget() {
             next    = next,
             loc     = loc,
             updated = updated,
+            headerLabel = headerLabel,
+            fajrLabel = fajrLabel,
+            dhuhrLabel = dhuhrLabel,
+            asrLabel = asrLabel,
+            maghribLabel = maghribLabel,
+            ishaLabel = ishaLabel,
+            updatedLabel = updatedLabel,
           )
         }
       }
@@ -89,7 +106,7 @@ private val GoldColor   = Color(0xFFD6A84FL)
 private val NextBgColor = Color(0xFF1E3A2EL)
 
 @Composable
-private fun WidgetPlaceholder() {
+private fun WidgetPlaceholder(label: String) {
   Box(
     modifier = GlanceModifier
       .fillMaxSize()
@@ -111,7 +128,7 @@ private fun WidgetPlaceholder() {
           fontWeight = FontWeight.Bold))
       Spacer(GlanceModifier.height(6.dp))
       Text(
-        text = "Tap to load prayer times",
+        text = label,
         style = TextStyle(
           color = ColorProvider(MutedColor),
           fontSize = 10.sp,
@@ -130,6 +147,13 @@ private fun WidgetContent(
   next: String,
   loc: String,
   updated: String,
+  headerLabel: String,
+  fajrLabel: String,
+  dhuhrLabel: String,
+  asrLabel: String,
+  maghribLabel: String,
+  ishaLabel: String,
+  updatedLabel: String,
 ) {
   Box(
     modifier = GlanceModifier
@@ -153,7 +177,7 @@ private fun WidgetContent(
           Alignment.CenterVertically,
       ) {
         Text(
-          text = "Prayer Times",
+          text = headerLabel,
           style = TextStyle(
             color = ColorProvider(TextColor),
             fontSize = 13.sp,
@@ -176,21 +200,21 @@ private fun WidgetContent(
           .padding(bottom = 6.dp),
       ) {
         PrayerCell(
-          name = "Fajr",
+          name = fajrLabel,
           time = fajr,
           isNext = next == "fajr",
           modifier = GlanceModifier
             .defaultWeight())
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
-          name = "Dhuhr",
+          name = dhuhrLabel,
           time = dhuhr,
           isNext = next == "dhuhr",
           modifier = GlanceModifier
             .defaultWeight())
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
-          name = "Asr",
+          name = asrLabel,
           time = asr,
           isNext = next == "asr",
           modifier = GlanceModifier
@@ -202,36 +226,26 @@ private fun WidgetContent(
         modifier = GlanceModifier.fillMaxWidth(),
       ) {
         PrayerCell(
-          name = "Maghrib",
+          name = maghribLabel,
           time = maghrib,
           isNext = next == "maghrib",
           modifier = GlanceModifier
             .defaultWeight())
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
-          name = "Isha",
+          name = ishaLabel,
           time = isha,
           isNext = next == "isha",
           modifier = GlanceModifier
             .defaultWeight())
         Spacer(GlanceModifier.width(6.dp))
-        // Updated cell
-        Box(
+        // Redesigned Updated cell matching standard PrayerCell
+        PrayerCell(
+          name = updatedLabel,
+          time = if (updated.isNotEmpty()) updated else "--:--",
+          isNext = false,
           modifier = GlanceModifier
-            .defaultWeight()
-            .height(52.dp)
-            .background(CardColor)
-            .padding(4.dp),
-          contentAlignment = Alignment.Center,
-        ) {
-          Text(
-            text = if (updated.isNotEmpty())
-              updated else "eQuran",
-            style = TextStyle(
-              color = ColorProvider(MutedColor),
-              fontSize = 9.sp,
-              textAlign = TextAlign.Center))
-        }
+            .defaultWeight())
       }
     }
   }
@@ -249,7 +263,7 @@ private fun PrayerCell(
 
   Box(
     modifier = modifier
-      .height(52.dp)
+      .height(60.dp)
       .background(bg)
       .padding(4.dp),
     contentAlignment = Alignment.Center,
