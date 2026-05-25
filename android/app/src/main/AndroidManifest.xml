@@ -76,15 +76,15 @@
                 android:resource="@xml/prayer_widget_info" />
         </receiver>
 
+
+
         <receiver
-            android:name="com.app.equran.NextPrayerWidgetReceiver"
+            android:name=".BootReceiver"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/next_prayer_widget_info" />
         </receiver>
 
         <meta-data

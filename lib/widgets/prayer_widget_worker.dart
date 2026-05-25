@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/widgets.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:adhan_dart/adhan_dart.dart';
@@ -43,10 +44,12 @@ class PrayerWidgetWorker {
 @pragma('vm:entry-point')
 void _callbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
+    // MUST be first — before any Flutter API
+    WidgetsFlutterBinding.ensureInitialized();
+    DartPluginRegistrant.ensureInitialized();
+
     if (taskName == _prayerWidgetTask ||
         taskName.startsWith('${_prayerWidgetTask}_')) {
-      // REQUIRED: initialize Flutter bindings in background isolate before anything else
-      WidgetsFlutterBinding.ensureInitialized();
       await HomeWidget.setAppGroupId('com.app.equran');
 
       try {
@@ -100,8 +103,10 @@ void _callbackDispatcher() {
 
         // Format times in 24hr by default for background isolate
         String fmt(DateTime dt) {
-          final h = dt.hour.toString().padLeft(2, '0');
-          final m = dt.minute.toString().padLeft(2, '0');
+          // Convert UTC to device local time
+          final local = dt.toLocal();
+          final h = local.hour.toString().padLeft(2, '0');
+          final m = local.minute.toString().padLeft(2, '0');
           return '$h:$m';
         }
 
@@ -113,7 +118,12 @@ void _callbackDispatcher() {
           isha: fmt(prayerTimes.isha),
           nextPrayer: nextPrayer,
           locationName: '',
-          lastUpdated: fmt(DateTime.now()),
+          lastUpdated: () {
+            final now = DateTime.now().toLocal();
+            final h = now.hour.toString().padLeft(2, '0');
+            final m = now.minute.toString().padLeft(2, '0');
+            return '$h:$m';
+          }(),
         );
 
         // Chain the midnight task if this was the midnight run

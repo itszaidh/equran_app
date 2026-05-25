@@ -94,7 +94,7 @@ private fun WidgetPlaceholder() {
     modifier = GlanceModifier
       .fillMaxSize()
       .background(BgColor)
-      .padding(16.dp)
+      .padding(12.dp)
       .clickable(
         actionStartActivity<MainActivity>()),
     contentAlignment = Alignment.Center,
@@ -109,9 +109,9 @@ private fun WidgetPlaceholder() {
           color = ColorProvider(PrimaryColor),
           fontSize = 14.sp,
           fontWeight = FontWeight.Bold))
-      Spacer(GlanceModifier.height(4.dp))
+      Spacer(GlanceModifier.height(6.dp))
       Text(
-        text = "Open app to load prayer times",
+        text = "Tap to load prayer times",
         style = TextStyle(
           color = ColorProvider(MutedColor),
           fontSize = 10.sp,

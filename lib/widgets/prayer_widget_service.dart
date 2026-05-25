@@ -117,10 +117,7 @@ class PrayerWidgetService {
     ]);
 
     // Trigger widgets to redraw
-    await Future.wait([
-      HomeWidget.updateWidget(androidName: 'PrayerTimesWidgetReceiver'),
-      HomeWidget.updateWidget(androidName: 'NextPrayerWidgetReceiver'),
-    ]);
+    await HomeWidget.updateWidget(androidName: 'PrayerTimesWidgetReceiver');
   }
 
   // Determine which prayer comes next
@@ -144,14 +141,15 @@ class PrayerWidgetService {
   // Format DateTime to display time string
   // Respects 12hr/24hr based on device locale
   static String formatTime(DateTime dt, bool use24hr) {
+    final local = dt.toLocal();
     if (use24hr) {
-      final h = dt.hour.toString().padLeft(2, '0');
-      final m = dt.minute.toString().padLeft(2, '0');
+      final h = local.hour.toString().padLeft(2, '0');
+      final m = local.minute.toString().padLeft(2, '0');
       return '$h:$m';
     } else {
-      final hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-      final minute = dt.minute.toString().padLeft(2, '0');
-      final period = dt.hour < 12 ? 'AM' : 'PM';
+      final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
+      final minute = local.minute.toString().padLeft(2, '0');
+      final period = local.hour < 12 ? 'AM' : 'PM';
       return '$hour:$minute $period';
     }
   }
