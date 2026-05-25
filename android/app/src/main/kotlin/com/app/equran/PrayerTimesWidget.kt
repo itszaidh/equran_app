@@ -18,7 +18,6 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.defaultWeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -188,9 +187,7 @@ private fun WidgetContent(
           style = TextStyle(
             color = ColorProvider(TextColor),
             fontSize = 12.sp,
-            fontWeight = FontWeight.Bold),
-          modifier = GlanceModifier
-            .defaultWeight())
+            fontWeight = FontWeight.Bold),)
         if (loc.isNotEmpty()) {
           Text(
             text = loc,
@@ -209,23 +206,17 @@ private fun WidgetContent(
         PrayerCell(
           name = fajrLabel,
           time = fajr,
-          isNext = next == "fajr",
-          modifier = GlanceModifier
-            .defaultWeight())
+          isNext = next == "fajr")
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = sunriseLabel,
           time = sunrise,
-          isNext = false,
-          modifier = GlanceModifier
-            .defaultWeight())
+          isNext = false)
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = dhuhrLabel,
           time = dhuhr,
-          isNext = next == "dhuhr",
-          modifier = GlanceModifier
-            .defaultWeight())
+          isNext = next == "dhuhr")
       }
 
       // ROW 2: Asr | Maghrib | Isha
@@ -236,26 +227,20 @@ private fun WidgetContent(
         PrayerCell(
           name = asrLabel,
           time = asr,
-          isNext = next == "asr",
-          modifier = GlanceModifier
-            .defaultWeight())
+          isNext = next == "asr")
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = maghribLabel,
           time = maghrib,
-          isNext = next == "maghrib",
-          modifier = GlanceModifier
-            .defaultWeight())
+          isNext = next == "maghrib")
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = ishaLabel,
           time = isha,
-          isNext = next == "isha",
-          modifier = GlanceModifier
-            .defaultWeight())
+          isNext = next == "isha")
       }
 
-      Spacer(GlanceModifier.defaultWeight())
+      Spacer(GlanceModifier.height(6.dp))
       Text(
         text = "$updatedLabel: ${if (updated.isNotEmpty()) updated else "--:--"}",
         modifier = GlanceModifier.fillMaxWidth(),
