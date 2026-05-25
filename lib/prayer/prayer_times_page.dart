@@ -20,6 +20,7 @@ import 'package:equran/widgets/common/equran_components.dart';
 import 'package:equran/widgets/prayer_widget_service.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 class PrayerTimesPage extends StatefulWidget {
   const PrayerTimesPage({
@@ -197,7 +198,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                             heroSubtitleOverride ??
                             (isViewingToday
                                 ? null
-                                : _formatDate(selectedDay.date)),
+                                : _formatDate(selectedDate, localizations)),
                         onTap: _openPrayerSettings,
                       ),
                       const SizedBox(height: 14),
@@ -392,7 +393,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     final localizations = AppLocalizations.of(context)!;
     final String dateLabel = isViewingToday
         ? localizations.today
-        : _formatDate(day.date);
+        : _formatDate(day.date, localizations);
     final BorderRadius dateButtonRadius = BorderRadius.circular(
       AppRadii.medium,
     );
@@ -528,6 +529,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildDisclaimer(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colors.surface.withAlpha(110),
@@ -543,7 +545,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Prayer times are calculated locally. Verify with your local mosque if needed.',
+                localizations.prayerTimesDisclaimer,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.textMuted,
                   height: 1.35,
@@ -573,7 +575,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       await _rescheduleReminders(location);
       unawaited(PrayerWidgetService.refreshWidget());
       if (!mounted) return;
-      _showMessage('Location saved.');
+      final AppLocalizations localizations = AppLocalizations.of(context)!;
+      _showMessage(localizations.locationSaved);
       return;
     }
 
@@ -614,7 +617,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     if (location == null) return;
     await _saveResolvedLocation(location);
     if (!mounted) return;
-    _showMessage('Location saved.');
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    _showMessage(localizations.locationSaved);
   }
 
   Future<void> _chooseOnMap(PrayerLocation? initialLocation) async {
@@ -624,7 +628,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     if (location == null) return;
     await _saveResolvedLocation(location);
     if (!mounted) return;
-    _showMessage('Location saved.');
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    _showMessage(localizations.locationSaved);
   }
 
   // ignore: unused_element
@@ -654,7 +659,8 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             );
             if (!mounted || !sheetContext.mounted) return;
             Navigator.of(sheetContext).pop();
-            _showMessage('Location saved.');
+            final AppLocalizations localizations = AppLocalizations.of(context)!;
+            _showMessage(localizations.locationSaved);
           },
         );
       },
@@ -691,14 +697,14 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         ),
       );
       if (!mounted) return;
-      _showMessage('Notification permission is off. Reminders were disabled.');
+      final AppLocalizations localizations = AppLocalizations.of(context)!;
+      _showMessage(localizations.notificationPermissionOffWarning);
     } else if (result.status ==
             PrayerNotificationScheduleStatus.exactAlarmDenied &&
         settings.reminderSettings.remindersEnabled) {
       if (!mounted) return;
-      _showMessage(
-        'Exact alarm permission is disabled. Prayer reminders may be delayed.',
-      );
+      final AppLocalizations localizations = AppLocalizations.of(context)!;
+      _showMessage(localizations.exactAlarmPermissionOffWarning);
     }
   }
 
@@ -982,6 +988,7 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final EdgeInsets viewInsets = MediaQuery.viewInsetsOf(context);
 
     return SingleChildScrollView(
@@ -1011,7 +1018,7 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Location details',
+                      localizations.locationDetails,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -1024,8 +1031,8 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
               const SizedBox(height: 14),
               _LocationActionRow(
                 icon: Icons.my_location_rounded,
-                title: 'Update current location',
-                subtitle: 'Use this device location',
+                title: localizations.updateCurrentLocation,
+                subtitle: localizations.useThisDeviceLocation,
                 onTap: widget.isLocating || _isSaving
                     ? null
                     : widget.onUpdateCurrentLocation,
@@ -1033,8 +1040,8 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
               const SizedBox(height: 8),
               _LocationActionRow(
                 icon: Icons.map_outlined,
-                title: 'Choose on map',
-                subtitle: 'Move the map pin to a place',
+                title: localizations.chooseOnMap,
+                subtitle: localizations.moveMapPinDescription,
                 onTap: _isSaving ? null : widget.onChooseMap,
               ),
               const SizedBox(height: 14),
@@ -1057,7 +1064,7 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
                                   ),
                                 )
                               : const Icon(Icons.check_rounded),
-                          label: const Text('Save changes'),
+                          label: Text(localizations.saveChanges),
                         ),
                       )
                     : const SizedBox.shrink(),
@@ -1072,6 +1079,7 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
   Widget _buildAdvancedCoordinates(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -1093,7 +1101,7 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
           },
           leading: Icon(Icons.tune_rounded, color: colors.primary),
           title: Text(
-            'Advanced coordinates',
+            localizations.advancedCoordinates,
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w800,
             ),
@@ -1101,7 +1109,7 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
           subtitle: _advancedExpanded
               ? null
               : Text(
-                  'Edit only if you need precise coordinates',
+                  localizations.advancedCoordinatesEditSubtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
@@ -1110,10 +1118,10 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
             TextFormField(
               controller: _labelController,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: 'Location label',
-                hintText: 'Home, work, or city name',
-                prefixIcon: Icon(Icons.label_outline_rounded),
+              decoration: InputDecoration(
+                labelText: localizations.locationLabel,
+                hintText: localizations.locationLabelHint,
+                prefixIcon: const Icon(Icons.label_outline_rounded),
               ),
             ),
             const SizedBox(height: 12),
@@ -1124,17 +1132,18 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
                 decimal: true,
               ),
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: 'Latitude',
-                helperText: 'Use a value between -90 and 90.',
-                prefixIcon: Icon(Icons.explore_outlined),
+              decoration: InputDecoration(
+                labelText: localizations.latitude,
+                helperText: localizations.latitudeHelperText,
+                prefixIcon: const Icon(Icons.explore_outlined),
               ),
               validator: _advancedExpanded
                   ? (String? value) => validatePrayerCoordinate(
                       value,
                       min: -90,
                       max: 90,
-                      label: 'Latitude',
+                      label: localizations.latitude,
+                      localizations: localizations,
                     )
                   : null,
             ),
@@ -1146,17 +1155,18 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
                 decimal: true,
               ),
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(
-                labelText: 'Longitude',
-                helperText: 'Use a value between -180 and 180.',
-                prefixIcon: Icon(Icons.public_rounded),
+              decoration: InputDecoration(
+                labelText: localizations.longitude,
+                helperText: localizations.longitudeHelperText,
+                prefixIcon: const Icon(Icons.public_rounded),
               ),
               validator: _advancedExpanded
                   ? (String? value) => validatePrayerCoordinate(
                       value,
                       min: -180,
                       max: 180,
-                      label: 'Longitude',
+                      label: localizations.longitude,
+                      localizations: localizations,
                     )
                   : null,
               onFieldSubmitted: (_) {
@@ -1170,6 +1180,7 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
   }
 
   Future<void> _save() async {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (!_advancedExpanded && !_hasFieldChanges) return;
     if (_formKey.currentState?.validate() != true) return;
     setState(() {
@@ -1191,7 +1202,7 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
         location: PrayerLocation(
           latitude: latitude,
           longitude: longitude,
-          label: coordinatesChanged && !labelChanged ? 'Saved location' : label,
+          label: coordinatesChanged && !labelChanged ? localizations.savedLocationFallback : label,
           mode: coordinatesChanged
               ? PrayerLocationMode.manual
               : widget.location.mode,
@@ -1239,6 +1250,7 @@ class _SavedLocationPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -1266,7 +1278,7 @@ class _SavedLocationPanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    _locationPrivacyText(location),
+                    _locationPrivacyText(location, localizations),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onSurfaceVariant,
                       height: 1.35,
@@ -1282,12 +1294,12 @@ class _SavedLocationPanel extends StatelessWidget {
   }
 }
 
-String _locationPrivacyText(PrayerLocation location) {
+String _locationPrivacyText(PrayerLocation location, AppLocalizations localizations) {
   final String? timezoneId = location.timezoneId;
   final String timezoneText = timezoneId == null || timezoneId.isEmpty
       ? ''
       : ' Timezone: $timezoneId.';
-  return 'Used locally for prayer-time calculation. Coordinates are stored on this device.$timezoneText';
+  return localizations.coordinatesPrivacyDescription(timezoneText);
 }
 
 class _LocationActionRow extends StatelessWidget {
@@ -1553,45 +1565,23 @@ String _formatTime(
   return '$displayHour:${_two(minute)} $period';
 }
 
-String formatPrayerCountdownLabel(Duration duration, {bool isNow = false}) {
-  if (isNow || duration == Duration.zero || duration.isNegative) return 'Now';
-  if (duration < const Duration(minutes: 5)) return 'Very soon';
+String formatPrayerCountdownLabel(Duration duration, AppLocalizations localizations, {bool isNow = false}) {
+  if (isNow || duration == Duration.zero || duration.isNegative) return localizations.countdownNow;
+  if (duration < const Duration(minutes: 5)) return localizations.countdownVerySoon;
 
   final int totalMinutes = (duration.inSeconds / 60).ceil();
   final int hours = totalMinutes ~/ 60;
   if (hours > 0) {
     final int minutes = totalMinutes.remainder(60);
-    return minutes == 0 ? 'In ${hours}h' : 'In ${hours}h ${minutes}m';
+    return minutes == 0
+        ? localizations.countdownInHours(hours)
+        : localizations.countdownInHoursMinutes(hours, minutes);
   }
-  return 'In ${totalMinutes}m';
+  return localizations.countdownInMinutes(totalMinutes);
 }
 
-String _formatDate(DateTime date) {
-  const List<String> weekdays = <String>[
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun',
-  ];
-  const List<String> months = <String>[
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
-
-  return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}, ${date.year}';
+String _formatDate(DateTime date, AppLocalizations localizations) {
+  return DateFormat.yMMMMEEEEd(localizations.localeName).format(date);
 }
 
 String _two(int value) => value.toString().padLeft(2, '0');

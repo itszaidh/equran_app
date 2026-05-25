@@ -42,7 +42,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tasbih => 'التسبيح';
 
   @override
-  String get asmaUlHusna => 'الأسماء الحسنى';
+  String get asmaUlHusna => 'أسماء الحسنى';
 
   @override
   String get language => 'اللغة';
@@ -55,6 +55,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get arabic => 'العربية';
+
+  @override
+  String get indonesian => 'الإندونيسية';
+
+  @override
+  String get urdu => 'الأردية';
+
+  @override
+  String get turkish => 'التركية';
+
+  @override
+  String get bengali => 'البنغالية';
 
   @override
   String get vibration => 'الاهتزاز';
@@ -781,7 +793,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get useCurrentLocation => 'استخدام الموقع الحالي';
 
   @override
-  String get chooseOnMap => 'اختيار من الخريطة';
+  String get chooseOnMap => 'اختر على الخريطة';
 
   @override
   String get enterCoordinatesManually => 'إدخال الإحداثيات يدوياً';
@@ -1852,7 +1864,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get todaysPortionComplete => 'اكتمل ورد اليوم';
+  String get todaysPortionComplete => 'الجزء اليوم كامل';
 
   @override
   String catchUpAyahsIncluded(Object count) {
@@ -3212,4 +3224,315 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hifzReminderButton => 'مراجعة';
+
+  @override
+  String get hifz => 'حفظ';
+
+  @override
+  String get hifzSubtitle => 'احفظ القرآن بالمراجعة الذكية';
+
+  @override
+  String get licenses => 'التراخيص';
+
+  @override
+  String get buildQuranRoutine => 'بناء روتين القرآن';
+
+  @override
+  String get chooseGentlePlan => 'اختر خطة لطيفة ودع اليوم يحصل على جزء واضح.';
+
+  @override
+  String routineCompletedAyahs(int completed, int total) {
+    return '$completed من $total آية مكتملة';
+  }
+
+  @override
+  String get plansReadyNotice => 'خطط 7 أيام و30 يومًا و60 يومًا جاهزة.';
+
+  @override
+  String finishTargetDate(String date) {
+    return 'هدف النهاية: $date';
+  }
+
+  @override
+  String get allLabel => 'الجميع';
+
+  @override
+  String get doneLabel => 'منتهي';
+
+  @override
+  String get ongoingLabel => 'مستمر';
+
+  @override
+  String get skippedLabel => 'تم تخطيه';
+
+  @override
+  String get noActiveRoutine => 'لا يوجد روتين نشط';
+
+  @override
+  String get startBalancedPlanDescription =>
+      'ابدأ بخطة متوازنة لمدة 30 يومًا، أو اختر روتينًا أسرع أو أكثر لطفًا أدناه.';
+
+  @override
+  String get start30DayPlan => 'ابدأ خطة الـ 30 يومًا';
+
+  @override
+  String get todayReading => 'قراءة اليوم';
+
+  @override
+  String get todayCompleted => 'اكتمل اليوم';
+
+  @override
+  String todaysPortionAyahs(int count) {
+    return 'جزء اليوم: $count آيات';
+  }
+
+  @override
+  String includesCatchUpAyahs(int count) {
+    return 'يتضمن $count آيات اللحاق بالركب';
+  }
+
+  @override
+  String ayahRangeConnector(String start, String end) {
+    return '$start إلى $end';
+  }
+
+  @override
+  String dailyPercentCompleteRemaining(int percent, int remaining) {
+    return '$percent% مكتمل • $remaining آيات متبقية اليوم';
+  }
+
+  @override
+  String get routineHistory => 'التاريخ الروتيني';
+
+  @override
+  String get currentRoutine => 'الروتين الحالي';
+
+  @override
+  String get noCurrentRoutine => 'لا يوجد روتين الحالي.';
+
+  @override
+  String get pastRoutines => 'الروتينات الماضية';
+
+  @override
+  String get pastRoutine => 'روتين الماضي';
+
+  @override
+  String get deleteRoutineTooltip => 'حذف الروتين';
+
+  @override
+  String get deleteCurrentRoutineQuestion => 'هل تريد حذف الروتين الحالي؟';
+
+  @override
+  String get deleteRoutineQuestion => 'هل تريد حذف الروتين؟';
+
+  @override
+  String deleteRoutineWarning(String title) {
+    return 'يؤدي هذا إلى إزالة \"$title\" من سجلك الروتيني.';
+  }
+
+  @override
+  String get choosePlan => 'اختر خطة';
+
+  @override
+  String get preset7DaysTitle => 'القرآن كاملا في 7 أيام';
+
+  @override
+  String get preset7DaysSubtitle => 'روتين أسبوعي مركز';
+
+  @override
+  String get preset30DaysTitle => 'القرآن كاملا في 30 يوما';
+
+  @override
+  String get preset30DaysSubtitle => 'حصص يومية متوازنة';
+
+  @override
+  String get preset60DaysTitle => 'القرآن كاملا في 60 يوما';
+
+  @override
+  String get preset60DaysSubtitle => 'قراءة لطيفة طويلة';
+
+  @override
+  String routineStartedMessage(String title) {
+    return 'بدأ $title';
+  }
+
+  @override
+  String get prayerTimesDisclaimer =>
+      'يتم احتساب أوقات الصلاة محليا. تحقق مع مسجدك المحلي إذا لزم الأمر.';
+
+  @override
+  String get locationSaved => 'تم حفظ الموقع.';
+
+  @override
+  String get notificationPermissionOffWarning =>
+      'إذن الإخطار معطل. تم تعطيل التذكيرات.';
+
+  @override
+  String get exactAlarmPermissionOffWarning =>
+      'تم تعطيل إذن التنبيه الدقيق. قد تتأخر تذكيرات الصلاة.';
+
+  @override
+  String get locationDetails => 'تفاصيل الموقع';
+
+  @override
+  String get updateCurrentLocation => 'تحديث الموقع الحالي';
+
+  @override
+  String get useThisDeviceLocation => 'استخدم موقع الجهاز هذا';
+
+  @override
+  String get moveMapPinDescription => 'حرك دبوس الخريطة إلى مكان ما';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get advancedCoordinates => 'الإحداثيات المتقدمة';
+
+  @override
+  String get advancedCoordinatesEditSubtitle =>
+      'قم بالتحرير فقط إذا كنت بحاجة إلى إحداثيات دقيقة';
+
+  @override
+  String get locationLabel => 'تسمية الموقع';
+
+  @override
+  String get locationLabelHint => 'اسم المنزل أو العمل أو المدينة';
+
+  @override
+  String get latitude => 'خط العرض';
+
+  @override
+  String get latitudeHelperText => 'استخدم قيمة بين -90 و90.';
+
+  @override
+  String get longitude => 'خط الطول';
+
+  @override
+  String get longitudeHelperText => 'استخدم قيمة بين -180 و180.';
+
+  @override
+  String get savedLocationFallback => 'الموقع المحفوظ';
+
+  @override
+  String coordinatesPrivacyDescription(String timezoneText) {
+    return 'يستخدم محليا لحساب وقت الصلاة. يتم تخزين الإحداثيات على هذا الجهاز.$timezoneText';
+  }
+
+  @override
+  String get countdownNow => 'الآن';
+
+  @override
+  String get countdownVerySoon => 'قريبا جدا';
+
+  @override
+  String countdownInHours(int hours) {
+    return 'في ${hours}h';
+  }
+
+  @override
+  String countdownInHoursMinutes(int hours, int minutes) {
+    return 'في ${hours}h ${minutes}m';
+  }
+
+  @override
+  String countdownInMinutes(int minutes) {
+    return 'في $minutesم';
+  }
+
+  @override
+  String get resume => 'متابعة';
+
+  @override
+  String get routineComplete => 'اكتمل الورد';
+
+  @override
+  String get routineDeleted => 'تم حذف الورد';
+
+  @override
+  String get chooseLocationManually => 'اختر الموقع يدويًا';
+
+  @override
+  String get saveLocation => 'حفظ الموقع';
+
+  @override
+  String get coordinatesForPrayerTimes => 'إحداثيات أوقات الصلاة';
+
+  @override
+  String get manualLocationDescription =>
+      'أدخل خط الطول وخط العرض للمدينة أو المنطقة أو العنوان الذي تريد استخدامه.';
+
+  @override
+  String get manualLocationPrivacyNotice =>
+      'يتم حفظه على هذا الجهاز ويستخدم فقط لحساب أوقات الصلاة المحلية.';
+
+  @override
+  String get manualLocation => 'الموقع اليدوي';
+
+  @override
+  String get savedLocation => 'الموقع المحفوظ';
+
+  @override
+  String get useThisLocation => 'استخدم هذا الموقع';
+
+  @override
+  String get selectedLocation => 'الموقع المحدد';
+
+  @override
+  String get openStreetMapContributors => 'المساهمين في OpenStreetMap';
+
+  @override
+  String validationEnterField(String field) {
+    return 'أدخل $field.';
+  }
+
+  @override
+  String validationShouldBeNumber(String field) {
+    return '$field يجب أن يكون رقمًا.';
+  }
+
+  @override
+  String validationMustBeBetween(String field, String min, String max) {
+    return 'يجب أن يكون $field بين $min و$max.';
+  }
+
+  @override
+  String completedTodayQuota(int completed, int total) {
+    return '$completed / $total آيات اليوم';
+  }
+
+  @override
+  String completedAyahsRatio(int completed, int total) {
+    return '$completed/$total آيات';
+  }
+
+  @override
+  String get the99BeautifulNamesOfAllah => '99 أسماء الله الحسنى';
+
+  @override
+  String allNamesCount(int count) {
+    return 'جميع الأسماء · $count';
+  }
+
+  @override
+  String get reciteThisNameInDua => 'اقرء هذا الاسم في دعاءك';
+
+  @override
+  String get searchNames => 'بحث في الأسماء';
+
+  @override
+  String get searchNamesHint => 'بحث في الأسماء...';
+
+  @override
+  String get namesUnavailable => 'الأسماء غير متوفرة';
+
+  @override
+  String get unableLoadAsmaUlHusna => 'غير قادر على تحميل أسماء الحسنى الآن.';
+
+  @override
+  String get noNamesFound => 'لم يتم العثور على أسماء';
+
+  @override
+  String get tryAnotherAsmaSearch =>
+      'جرّب اسمًا عربيًا آخر أو ترجمة صوتية أو معنى آخر.';
 }

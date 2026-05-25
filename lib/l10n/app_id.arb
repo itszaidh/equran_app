@@ -1,0 +1,1888 @@
+{
+  "@@locale": "id",
+  "@dailyQuranGoalSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@removeDownloadFromOffline": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@deletedDownload": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteAllDownloadsBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@surahAyahSummary": {
+    "placeholders": {
+      "surahCount": {
+        "type": "int"
+      },
+      "ayahCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@downloadTranslationQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@translationNotInstalled": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@installedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteResourceQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@deletedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@backupSavedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@restoredBackupSummary": {
+    "placeholders": {
+      "favouritesCount": {
+        "type": "int"
+      },
+      "readingHistoryCount": {
+        "type": "int"
+      },
+      "settingsCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@downloadEquranShareText": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "@ayahRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "@juzNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@prayerTimeTitle": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      }
+    }
+  },
+  "@prayerBeginsIn": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@hoursMinutesShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@prohibitedTimeEndsIn": {
+    "placeholders": {
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "@compassAccuracyLowWithDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@bearingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@targetDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@headingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@turnRightDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@turnLeftDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@kilometersToKaaba": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "@dhikrComplete": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@dhikrSessionCounted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@minutesAfterMaghrib": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@sunriseProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@zawalProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@sunsetProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@minutesBefore": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@positiveOrNegativeMinutes": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "@minutesBeforePrayer": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@savedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@surahLabel": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    },
+    "ayah": {
+      "type": "int"
+    }
+  },
+  "@arabicCategoriesDuasOffline": {
+    "placeholders": {
+      "categoryCount": {
+        "type": "int"
+      },
+      "duaCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@savedDuasCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@duaCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "label": {
+      "type": "String"
+    }
+  },
+  "@reciterNeedsTimings": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@installedLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@downloadAllAyahsConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@timingsNeedToBeDownloaded": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@autoAdvancesToNextPreset": {
+    "placeholders": {
+      "nextPreset": {
+        "type": "String"
+      }
+    }
+  },
+  "@counts33To33To34": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "@onStreakDay": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "@jumpToAyahIn": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    }
+  },
+  "@ayahLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@versesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@surahVerseCount": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzNewTodayLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsMemorized": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzOverdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAddAyahsButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSurahsMastered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSessionProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzExitSessionBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompletedInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzNextReviewInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStatsNextDueValue": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStatsNextDueDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStatsRetentionSuffix": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStatsPill": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzReminderDueCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitNextAyah": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitProgress": {
+    "placeholders": {
+      "introduced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueRevision": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueMaintenance": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStartMemorizingSurah": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStartMemorizingJuz": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitAyahCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSurahsMasteredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzEmptySessionBody": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzCompleteSubtitleMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteNextDueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteGraduatedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitCompleteTitle": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appTitle": "eQuran",
+  "home": "Rumah",
+  "quran": "Alquran",
+  "prayer": "Doa",
+  "duas": "Doa",
+  "more": "Lagi",
+  "settings": "Pengaturan",
+  "downloads": "Unduhan",
+  "statistics": "Statistik",
+  "qibla": "Kiblat",
+  "tasbih": "Tasbih",
+  "asmaUlHusna": "Asmaul Husna",
+  "language": "Bahasa",
+  "systemDefault": "Bawaan sistem",
+  "english": "Bahasa inggris",
+  "arabic": "Arab",
+  "indonesian": "Indonesia",
+  "urdu": "bahasa Urdu",
+  "turkish": "Turki",
+  "bengali": "Benggala",
+  "vibration": "Getaran",
+  "vibrationSubtitle": "Aktifkan umpan balik haptik saat bernavigasi.",
+  "showReadingHistory": "Tampilkan riwayat bacaan",
+  "showReadingHistorySubtitle": "Menampilkan hingga 7 Surat yang terakhir dibaca.",
+  "general": "Umum",
+  "generalSubtitle": "Perilaku dan riwayat aplikasi",
+  "reading": "Membaca",
+  "readingSubtitle": "Tampilan dan terjemahan Alquran",
+  "cardView": "Tampilan Kartu",
+  "cardViewSubtitle": "Menampilkan setiap ayat secara terpisah, atau semuanya dalam satu halaman.",
+  "displayTranslation": "Menampilkan Terjemahan",
+  "displayTranslationSubtitle": "Tampilkan terjemahan untuk setiap ayat dalam tampilan kartu.",
+  "displayTransliteration": "Tampilan Transliterasi",
+  "displayTransliterationSubtitle": "Tampilkan transliterasi untuk setiap ayat dalam tampilan kartu.",
+  "dailyQuranGoal": "Tujuan Al-Quran harian",
+  "dailyQuranGoalSubtitle": "{count} ayah per hari",
+  "translation": "Terjemahan",
+  "reciter": "Tukang deklamasi",
+  "audio": "Audio",
+  "audioSubtitle": "Pembaca dan pemutaran",
+  "downloadableResources": "Sumber Daya yang Dapat Diunduh",
+  "downloadableResourcesSubtitle": "Paket waktu tafsir dan audio",
+  "prayerTimesSettings": "Pengaturan Waktu Sholat",
+  "prayerTimesSettingsSubtitle": "Kelola lokasi, metode, Asar, format waktu, dan offset.",
+  "appearance": "Penampilan",
+  "appearanceSubtitle": "Tema, warna, dan mode tampilan",
+  "themeMode": "Modus tema",
+  "colorScheme": "Skema warna",
+  "data": "Data",
+  "dataSubtitle": "Cadangkan, pulihkan, atau hapus data lokal yang disimpan",
+  "backupData": "Cadangan data",
+  "backupDataSubtitle": "Ekspor favorit, riwayat bacaan, pembaca, ukuran teks, dan semua pengaturan.",
+  "restoreData": "Pulihkan data",
+  "restoreDataSubtitle": "Mengembalikan favorit, riwayat bacaan, pembaca, ukuran teks, dan pengaturan yang disimpan dari file cadangan.",
+  "clearReadingHistory": "Hapus riwayat membaca",
+  "clearReadingHistorySubtitle": "Menghapus pembacaan terakhir, posisi melanjutkan, dan kemajuan membaca Al-Quran.",
+  "clearFavourites": "Hapus Favorit",
+  "clearFavouritesSubtitle": "Menghapus ayah, folder, catatan, tag, dan favorit yang disimpan.",
+  "cancel": "Membatalkan",
+  "save": "Menyimpan",
+  "delete": "Menghapus",
+  "download": "Unduh",
+  "update": "Memperbarui",
+  "retry": "Mencoba kembali",
+  "continueReading": "Lanjutkan Membaca",
+  "lastRead": "Bacaan Terakhir",
+  "beginWithQuran": "Membaca Alquran",
+  "startReadingSubtitle": "Mulailah membaca dan tempat Anda akan muncul di sini.",
+  "startReading": "Mulailah membaca",
+  "continueListening": "Lanjutkan Mendengarkan",
+  "beginListeningSubtitle": "Dengarkan bacaannya dan tempat Anda akan muncul di sini.",
+  "startReadingRoutine": "Mulailah rutinitas membaca",
+  "buildDailyQuranHabit": "Bangun kebiasaan membaca Quran setiap hari",
+  "start": "Awal",
+  "readingRoutine": "Membaca Rutin",
+  "continueRoutine": "Lanjutkan Rutin",
+  "dailyQuranCompanion": "Sahabat Quran Harian",
+  "dailyQuranCompanionSubtitle": "Ambil bacaan dan peralatan harian Anda",
+  "dailyTools": "Alat Sehari-hari",
+  "dailyToolsSubtitle": "Akses cepat ke hal-hal penting",
+  "exploreAllFeatures": "Jelajahi semua fitur",
+  "dailyAyah": "Ayah Harian",
+  "seeAll": "Lihat semuanya",
+  "surahs": "Surat",
+  "juz": "Juz",
+  "pages": "Halaman",
+  "saved": "Disimpan",
+  "quranJourney": "Perjalanan Alquran",
+  "nextPrayer": "Doa Selanjutnya",
+  "prayerTimes": "Waktu Sholat",
+  "exploreQibla": "Jelajahi Kiblat",
+  "tasbihCounter": "Penghitung Tasbih",
+  "duasAndAzkar": "Duas & Azkar",
+  "readingPlans": "Rencana Bacaan",
+  "quranStatistics": "Statistik Alquran",
+  "search": "Mencari",
+  "dua": "Dua",
+  "player": "Pemain",
+  "searchQuran": "Cari Alquran",
+  "searchHintSurah": "Nama atau nomor surat...",
+  "searchHintJuz": "Nomor juz atau nama surah...",
+  "searchHintPage": "Nomor halaman, surah, atau juz...",
+  "searchHintSaved": "Ayat, surah, catatan, atau nomor yang disimpan...",
+  "searchHintText": "Cari Quran Arab atau terjemahan...",
+  "savedAyahs": "Ayah yang Disimpan",
+  "ayahNumber": "Ayah {number}",
+  "play": "Bermain",
+  "pause": "Berhenti sebentar",
+  "next": "Berikutnya",
+  "previous": "Sebelumnya",
+  "repeat": "Mengulang",
+  "audioOptions": "Opsi Audio",
+  "dismissPlayer": "Singkirkan pemain",
+  "playbackOptions": "Opsi pemutaran",
+  "previousAyah": "Ayah sebelumnya",
+  "nextAyah": "Ayah berikutnya",
+  "autoPlayback": "Pemutaran Otomatis",
+  "repeatInterval": "Interval Pengulangan",
+  "downloadSurahAudio": "Unduh Surah Audio",
+  "deleteDownloadedAudio": "Hapus Audio yang Diunduh",
+  "deleteDownloadQuestion": "Hapus Unduhan?",
+  "removeDownloadFromOffline": "Hapus {title} dari penyimpanan offline?",
+  "deletedDownload": "Dihapus {title}",
+  "deleteAllDownloadsQuestion": "Hapus Semua Unduhan?",
+  "deleteAllDownloadsBody": "Ini akan menghapus {count} file audio yang diunduh ({size}).",
+  "deleteAll": "Hapus Semua",
+  "deletedAllDownloadedAudio": "Menghapus semua audio yang diunduh.",
+  "offlineAudio": "Audio Luar Talian",
+  "surahAyahSummary": "{surahCount} surah • {ayahCount} ayah",
+  "clearAll": "Hapus Semua",
+  "cleanupPreview": "Pratinjau pembersihan",
+  "downloadedSurahs": "Surat yang diunduh",
+  "downloadedAyahs": "Ayah yang diunduh",
+  "potentialSpaceToFree": "Ruang potensial untuk dikosongkan",
+  "cleanupDoesNotRemoveData": "Pembersihan tidak pernah menghapus favorit, catatan, rencana bacaan, teks Alquran, atau pengaturan.",
+  "reviewDeletion": "Tinjau penghapusan",
+  "noDownloadedAudioYet": "Belum ada audio yang diunduh.",
+  "downloadedAudioEmpty": "Surat dan ayah yang diunduh akan muncul di sini dikelompokkan berdasarkan pembacanya.",
+  "ayahs": "Ayah",
+  "deleteDownload": "Hapus unduhan",
+  "playbackSpeed": "Kecepatan Pemutaran",
+  "locationPermissionRequired": "Izin lokasi diperlukan",
+  "unableToReconnect": "Tidak dapat menyambung kembali",
+  "reciterOptions": "Opsi Pembaca",
+  "close": "Menutup",
+  "theme": "Tema",
+  "themeModeDark": "Gelap",
+  "themeModeLight": "Lampu",
+  "themeModeSystem": "Mobil",
+  "themeModeDialogTitle": "Modus Tema",
+  "themeModeDarkSubtitle": "Selalu gunakan mode malam.",
+  "themeModeLightSubtitle": "Selalu gunakan mode terang.",
+  "themeModeSystemSubtitle": "Ikuti tema sistem.",
+  "colorSchemeDialogTitle": "Skema Warna",
+  "translationLanguage": "Bahasa terjemahan",
+  "notDownloaded": "Tidak diunduh",
+  "playbackRate": "Tingkat Pemutaran",
+  "arabicTextSize": "Ukuran teks arab",
+  "translationTextSize": "Ukuran teks terjemahan",
+  "resourcesUnavailable": "Sumber daya tidak tersedia",
+  "resourcesManifestUnavailable": "Tidak dapat memuat manifes sumber daya.",
+  "tafsir": "Tafsir",
+  "audioTimings": "Pengaturan Waktu Audio",
+  "translations": "Terjemahan",
+  "refreshManifest": "Segarkan manifes",
+  "checkGithubReleases": "Periksa rilis GitHub untuk mengetahui perubahannya",
+  "noResourcesListed": "Tidak ada sumber daya yang tercantum dalam manifes.",
+  "selected": "Terpilih",
+  "translationUnsupported": "Terjemahan ini belum didukung.",
+  "translationNotInManifest": "Terjemahan ini tidak ada dalam manifes sumber daya.",
+  "downloadTranslationQuestion": "Unduh {name}?",
+  "translationNotInstalled": "Terjemahan ini tidak diinstal pada perangkat ini. {size}",
+  "installedResource": "Menginstal {name}.",
+  "unableInstallResource": "Tidak dapat memasang sumber daya ini.",
+  "deleteResourceQuestion": "Hapus {name}?",
+  "deleteResourceBody": "Ini akan menghapus file yang diunduh dari perangkat ini.",
+  "deletedResource": "Menghapus {name}.",
+  "ayahsPerDay": "Ayah per hari",
+  "enterGoalRange": "Masukkan sasaran dari 1 hingga 1000 ayah",
+  "clearReadingHistoryWarning": "PERINGATAN: Ini akan menghapus pembacaan terakhir, melanjutkan posisi, statistik, dan kemajuan harian rutin.",
+  "clearFavouritesWarning": "PERINGATAN: Ini akan menghapus setiap ayat, folder, catatan, tag, dan favorit yang disimpan.",
+  "no": "TIDAK",
+  "yes": "YA",
+  "restoreBackup": "Pulihkan cadangan",
+  "restoreBackupWarning": "Ini akan menggantikan favorit Anda saat ini, riwayat bacaan, dan pengaturan yang disimpan dengan konten file cadangan.",
+  "restore": "Memulihkan",
+  "backupReadyToShare": "File cadangan siap dibagikan.",
+  "backupSavedTo": "Cadangan disimpan ke {path}",
+  "unableCreateBackup": "Tidak dapat membuat file cadangan.",
+  "restoredBackupSummary": "Memulihkan {favouritesCount} favorit, {readingHistoryCount} entri riwayat, dan {settingsCount} pengaturan.",
+  "unableRestoreBackup": "Tidak dapat memulihkan cadangan yang dipilih.",
+  "locationAndCalculationSettings": "Pengaturan lokasi dan perhitungan",
+  "quranSearch": "Pencarian Alquran",
+  "searchArabicAndTranslation": "Cari bahasa Arab dan terjemahannya",
+  "recitationsAndAudioControls": "Bacaan dan kontrol audio",
+  "compassAndDirection": "Kompas dan arah",
+  "offlineAudioAndCleanup": "Audio dan pembersihan offline",
+  "plansGoalsProgress": "Rencana, tujuan, dan kemajuan",
+  "calmDhikrCounter": "Penghitung dzikir yang tenang",
+  "the99BeautifulNames": "99 Nama Indah",
+  "worshipTrendsAndStreaks": "Menyembah tren dan coretan",
+  "fontsReciterAppBehavior": "Font, pembaca, perilaku aplikasi",
+  "switchLightOrNightMode": "Ganti mode lampu atau malam",
+  "yourIslamicCompanion": "Sahabat Islami Anda",
+  "moreHeroSubtitle": "Kiblat, unduhan, pengaturan, rencana, dan alat berkumpul di satu tempat yang tenang.",
+  "openRoutine": "Rutinitas terbuka",
+  "aboutAppBody": "eQuran adalah pendamping Quran modern yang dirancang untuk membaca, mendengarkan, dan refleksi harian dengan fokus.",
+  "versionLabel": "Versi {version}",
+  "downloadEquran": "Unduh eQuran",
+  "downloadEquranShareText": "Unduh eQuran di F-Droid: {url}",
+  "unableOpenShareSheet": "Tidak dapat membuka lembar berbagi.",
+  "aboutThisApp": "Tentang aplikasi ini",
+  "appDetailsAndVersion": "Detail dan versi aplikasi",
+  "shareApp": "Bagikan aplikasi",
+  "shareAppSubtitle": "Kirim eQuran ke orang lain",
+  "feedbackContact": "Umpan Balik / Kontak",
+  "feedbackContactSubtitle": "Laporkan masalah atau dukungan email",
+  "reportIssues": "Laporkan masalah",
+  "reportIssuesSubtitle": "Buka pelacak masalah GitHub.",
+  "unableOpenIssueTracker": "Tidak dapat membuka pelacak masalah.",
+  "emailSupport": "Dukungan email",
+  "unableOpenEmailClient": "Tidak dapat membuka klien email.",
+  "feedbackThanks": "Kami menghargai masukan dan saran Anda.",
+  "browseBySurah": "Telusuri berdasarkan Surat",
+  "browseByJuz": "Telusuri berdasarkan Juz",
+  "browseByPage": "Jelajahi berdasarkan halaman",
+  "closeSearch": "Tutup pencarian",
+  "noSurahsFound": "Tidak ada surat yang ditemukan.",
+  "ayahRange": "Ayah {start}-{end}",
+  "juzNumber": "Juz {number}",
+  "prayerNameFajr": "Subuh",
+  "prayerNameSunrise": "Matahari terbit",
+  "prayerNameDhuhr": "Dhuhur",
+  "prayerNameAsr": "Asar",
+  "prayerNameMaghrib": "Maghrib",
+  "prayerNameIsha": "Isya",
+  "today": "Hari ini",
+  "previousDay": "Hari sebelumnya",
+  "nextDay": "Keesokan harinya",
+  "middleOfNight": "Tengah malam",
+  "lastThirdStarts": "Permulaan ketiga terakhir",
+  "useCurrentLocation": "Gunakan lokasi saat ini",
+  "chooseOnMap": "Pilih di peta",
+  "enterCoordinatesManually": "Masukkan koordinat secara manual",
+  "locationUseNotice": "Lokasi Anda hanya digunakan untuk perhitungan waktu sholat.",
+  "timesCalculatedLocally": "Waktu dihitung secara lokal di perangkat Anda.",
+  "prayerTimesNeedLocation": "Waktu sholat memerlukan lokasi",
+  "prayerTimesLocationSubtitle": "Hitung Fajar, Dhuhur, Ashar, Maghrib dan Isya untuk lokasi tepat Anda.",
+  "setUpLocation": "Siapkan lokasi",
+  "chooseLocationForNextPrayer": "Pilih lokasi untuk menampilkan waktu sholat berikutnya di sini.",
+  "prayerTimeTitle": "{prayer} Waktu",
+  "prayerBeginsIn": "{prayer} dimulai pada {countdown}",
+  "minutesShort": "{minutes} menit",
+  "hoursMinutesShort": "{hours}jam {minutes}m",
+  "exactAlarmPermissionOff": "Izin alarm sebenarnya tidak aktif. Pengingat doa mungkin tertunda.",
+  "zawal": "Zawal",
+  "sunset": "Matahari terbenam",
+  "morning": "Pagi",
+  "prohibitedTimeEndsIn": "Waktu yang dilarang berakhir pada {countdown}",
+  "selectPrayerDate": "Pilih tanggal sholat",
+  "appSettings": "Pengaturan aplikasi",
+  "unableGetLocation": "Tidak dapat memperoleh lokasi.",
+  "qiblaBearingUnavailable": "Koordinat lokasi saat ini tidak tersedia.",
+  "currentLocationTimedOut": "Waktu lokasi saat ini habis. Periksa layanan lokasi dan coba lagi.",
+  "compassUnavailable": "Kompas tidak tersedia. Gunakan bantalan yang ditunjukkan.",
+  "qiblaCalibrationHint": "Untuk akurasi terbaik, pegang ponsel Anda secara mendatar dan gerakkan dalam bentuk angka 8 untuk melakukan kalibrasi.",
+  "compassAccuracyLow": "Akurasi kompas mungkin rendah.",
+  "compassAccuracyLowWithDegrees": "Akurasi kompas mungkin rendah ({degrees}°).",
+  "qiblaLocationServicesDisabled": "Aktifkan layanan lokasi untuk menggunakan Kiblat.",
+  "qiblaLocationPermissionNeeded": "Izin lokasi diperlukan untuk menghitung Kiblat dari lokasi perangkat Anda saat ini.",
+  "qiblaLocationPermissionBlocked": "Izin lokasi diblokir. Aktifkan dari pengaturan aplikasi untuk menggunakan Kiblat.",
+  "qiblaLocationUnavailableMessage": "Kami tidak dapat membaca lokasi Anda saat ini. Periksa layanan lokasi dan coba lagi.",
+  "bearingDegrees": "Bantalan {degrees}°",
+  "targetDegrees": "Sasaran {degrees}°",
+  "headingDegrees": "Judul {degrees}°",
+  "heading": "Menuju",
+  "facingQibla": "Menghadap Kiblat",
+  "turnRightDegrees": "Belok kanan {degrees}°",
+  "turnLeftDegrees": "Belok kiri {degrees}°",
+  "refreshCurrentLocation": "Segarkan lokasi saat ini",
+  "findingYourLocation": "Menemukan lokasi Anda",
+  "currentLocationRequired": "Lokasi saat ini diperlukan",
+  "qiblaRequiresLocation": "Kiblat memerlukan lokasi terkini dari perangkat ini. Aktifkan layanan lokasi dan izin untuk melanjutkan.",
+  "findingLocation": "Menemukan lokasi",
+  "currentLocationUnavailable": "Lokasi saat ini tidak tersedia",
+  "currentLocation": "Lokasi saat ini",
+  "distanceUnavailable": "Jarak tidak tersedia",
+  "kilometersToKaaba": "{distance} km ke Ka'bah",
+  "resetCounter": "Setel ulang penghitung",
+  "recentSessions": "Sesi terbaru",
+  "haptics": "Haptik",
+  "countSomeDhikrFirst": "Hitunglah beberapa dzikir terlebih dahulu",
+  "dhikrSessionSaved": "Sesi dzikir disimpan",
+  "postPrayerDhikr": "Dzikir pasca shalat",
+  "postPrayerDhikrComplete": "Dzikir pasca sholat selesai",
+  "dhikrComplete": "{label} selesai",
+  "todayMetric": "Hari ini",
+  "rounds": "Putaran",
+  "streak": "Garis",
+  "savedDhikrSessionsEmpty": "Sesi dzikir yang disimpan akan muncul di sini.",
+  "dhikrSessionCounted": "{count} dari {target} dihitung • {time}",
+  "location": "Lokasi",
+  "locationSubtitle": "Hanya digunakan untuk perhitungan waktu sholat",
+  "useCurrentLocationDescription": "Simpan lokasi perangkat ini untuk perhitungan sholat.",
+  "moveMapUnderPin": "Pindahkan peta di bawah pin tengah.",
+  "enterLatitudeAndLongitude": "Masukkan lintang dan bujur.",
+  "clearSavedLocation": "Hapus lokasi yang disimpan",
+  "clearSavedLocationSubtitle": "Waktu sholat akan dijeda sampai Anda memilih lagi.",
+  "calculation": "Perhitungan",
+  "calculationSubtitle": "Metode, Asar, lintang tinggi, dan format waktu",
+  "calculationMethod": "Metode perhitungan",
+  "asrMethod": "metode Asar",
+  "highLatitudeAdjustment": "Penyesuaian lintang tinggi",
+  "highLatitudeAdjustmentSubtitle": "Digunakan ketika Subuh atau Isya sulit dihitung di lokasi jauh di utara atau selatan.",
+  "timeFormat": "Format waktu",
+  "useLocationTimezone": "Gunakan zona waktu lokasi",
+  "locationTimezoneSubtitle": "Gunakan zona waktu lokasi yang disimpan, bukan zona waktu perangkat ini.",
+  "customMethod": "Metode Kustom",
+  "fajrAngle": "Sudut Fajar",
+  "ishaMode": "Modus Isya",
+  "maghribAngle": "Sudut Maghrib",
+  "leaveBlankToUseSunset": "Biarkan kosong untuk menggunakan matahari terbenam.",
+  "fixedIshaTime": "Memperbaiki waktu Isya",
+  "latestIshaTime": "Waktu Isya terbaru",
+  "baseIshaAngle": "Sudut dasar Isya",
+  "baseIshaInterval": "Interval dasar Isya",
+  "ishaAngle": "Sudut Isya",
+  "ishaInterval": "selang waktu Isya",
+  "leaveBlankToUseBaseIshaAngle": "Biarkan kosong untuk menggunakan sudut dasar Isya.",
+  "useIshaAngle": "Gunakan sudut Isya",
+  "minutesAfterMaghrib": "{minutes} menit setelah Maghrib",
+  "prohibitedTimes": "Waktu yang Dilarang",
+  "prohibitedTimesSubtitle": "Jendela Sunrise, Zawal dan Sunset",
+  "sunriseProhibitedTime": "Waktu matahari terbit dilarang",
+  "sunriseProhibitedTimeMinutes": "{minutes} menit setelah Matahari terbit",
+  "zawalProhibitedTime": "Zawal melarang waktu",
+  "zawalProhibitedTimeMinutes": "{minutes} menit sebelum Zuhur",
+  "sunsetProhibitedTime": "Waktu matahari terbenam dilarang",
+  "sunsetProhibitedTimeMinutes": "{minutes} menit sebelum Maghrib",
+  "prayerReminders": "Pengingat Doa",
+  "prayerRemindersSubtitle": "Pemberitahuan sebelum setiap doa",
+  "prayerRemindersEnabled": "Pengingat doa",
+  "prayerRemindersEnabledSubtitle": "Dapatkan pemberitahuan sebelum setiap waktu sholat.",
+  "notificationsPermission": "Izin pemberitahuan",
+  "exactAlarmPermission": "Izin alarm / alarm & pengingat yang tepat",
+  "enable": "Memungkinkan",
+  "open": "Membuka",
+  "notificationPermissionOff": "Izin notifikasi tidak aktif.",
+  "exactAlarmPermissionDisabled": "Izin alarm yang tepat dinonaktifkan. Pengingat doa mungkin tertunda.",
+  "openAppSettings": "Buka pengaturan aplikasi",
+  "requestPermission": "Minta izin",
+  "openAlarmPermissionSettings": "Buka pengaturan izin alarm",
+  "chooseLocationBeforeReminders": "Pilih lokasi sebelum pengingat dapat dijadwalkan.",
+  "notifyAtSavedPrayerTime": "Beritahukan pada waktu sholat yang disimpan.",
+  "reminderTime": "Waktu pengingat",
+  "atPrayerTime": "Pada waktu sholat",
+  "minutesBefore": "{minutes} menit sebelumnya",
+  "schedule1MinuteExactTest": "Jadwalkan tes eksak 1 menit",
+  "schedule1MinuteExactTestSubtitle": "Menggunakan penjadwal pengingat doa.",
+  "offsetsAreAppliedAfterBaseCalculation": "Offset diterapkan setelah perhitungan dasar. Gunakan menit positif atau negatif hanya jika Anda perlu mencocokkan jadwal lokal yang terpercaya.",
+  "manualOffsets": "Offset Manual",
+  "manualOffsetsSubtitle": "Sempurnakan waktu yang dihitung",
+  "noManualAdjustment": "Tidak ada penyesuaian manual",
+  "positiveOrNegativeMinutes": "{value} menit",
+  "prayerTimesExperimental": "Waktu sholat saat ini masih bersifat eksperimental dan mungkin berbeda dari masjid setempat atau jadwal resmi. Harap verifikasi sebelum mengandalkannya.",
+  "bestMethodAfterLocationSaved": "Metode terbaik setelah lokasi disimpan",
+  "minutesBeforePrayer": "{minutes} menit sebelum sholat",
+  "clear": "Jernih",
+  "enablePrayerTracking": "Aktifkan pelacakan doa",
+  "trackYourDailyPrayers": "Lacak doa harian Anda",
+  "trackYourDailyPrayersDescription": "Catat setiap doa secara pribadi di perangkat Anda. Data Anda tidak pernah keluar dari ponsel Anda.",
+  "maybeLater": "mungkin nanti",
+  "logEachPrayerPrivately": "Catat setiap doa secara pribadi di perangkat Anda. Data Anda tidak pernah keluar dari ponsel Anda.",
+  "enablePrayerTrackingLabel": "Aktifkan pelacakan doa →",
+  "somePrayersNotYetAvailable": "Beberapa doa belum tersedia dan tidak disimpan.",
+  "prayerLogSaved": "Catatan doa disimpan",
+  "addNewFolder": "Folder Baru",
+  "editNote": "Sunting catatan",
+  "moveToFolder": "Pindah ke map",
+  "editTags": "Sunting tag",
+  "savedAyah": "Ayah yang disimpan",
+  "removeSavedAyah": "Hapus ayah yang disimpan?",
+  "removeSavedAyahBody": "Ini akan menghapus ayat tersebut dari perpustakaan simpanan Anda.",
+  "remove": "Menghapus",
+  "personalLibrary": "Perpustakaan Pribadi",
+  "savedCount": "{count} disimpan",
+  "all": "Semua",
+  "favourites": "Favorit",
+  "notes": "Catatan",
+  "folders": "Folder",
+  "tags": "Tag",
+  "manageFolders": "Mengelola",
+  "surahLabel": "{surahName} • Ayah {ayah}",
+  "showTafsir": "Tampilkan tafsir",
+  "saveToLibrary": "Simpan ke perpustakaan",
+  "folderTagsAndNote": "Folder, tag, dan catatan pribadi",
+  "ayahDetails": "Detail Ayah",
+  "newFolder": "Folder baru",
+  "create": "Membuat",
+  "translationOption": "Terjemahan",
+  "showAyahTranslation": "Tampilkan terjemahan ayah",
+  "transliterationOption": "Transliterasi",
+  "showAyahTransliteration": "Tampilkan transliterasi ayat",
+  "cardViewOption": "Tampilan Kartu",
+  "readOneAyahPerCard": "Baca satu ayat per kartu",
+  "chooseAnAction": "Pilih suatu tindakan",
+  "playThisAyah": "Mainkan ayat ini",
+  "shareImage": "Bagikan gambar",
+  "searchCategories": "Kategori pencarian",
+  "clearSearch": "Hapus pencarian",
+  "categories": "Kategori",
+  "noMatchingCategories": "Tidak ada kategori yang cocok",
+  "trySearchingArabicWord": "Coba telusuri dengan kata atau frasa Arab lainnya.",
+  "duasUnavailable": "Doa tidak tersedia",
+  "hisnAlMuslimNotLoaded": "Hisn al Muslim tidak dapat dimuat dari aset offline.",
+  "retryAction": "Mencoba kembali",
+  "noDuasFound": "Tidak ada doa yang ditemukan",
+  "offlineHisnAlMuslimEmpty": "File Hisn al Muslim offline tidak berisi doa apa pun.",
+  "hisnAlMuslim": "Hisnul Muslim",
+  "arabicCategoriesDuasOffline": "{categoryCount} Kategori Arab - {duaCount} doa offline",
+  "favouriteDuas": "Doa favorit",
+  "favourite": "Favorit",
+  "removeFavourite": "Hapus favorit",
+  "saveDuasHere": "Simpan doa di sini untuk akses cepat",
+  "savedDuasCount": "{count} disimpan {label}",
+  "tasbihAndDhikr": "Tasbih dan dzikir",
+  "calmCounterDailyPresets": "Penghitung yang tenang dengan preset harian",
+  "duaCount": "{count} {label}",
+  "favouriteDuasPage": "Doa favorit",
+  "favouritesUnavailable": "Favorit tidak tersedia",
+  "savedDuasNotLoaded": "Doa yang disimpan tidak dapat dimuat saat ini.",
+  "noFavouriteDuasYet": "Belum ada doa favorit.",
+  "tapHeartToSave": "Ketuk hati pada kartu doa mana pun untuk menyimpannya di sini.",
+  "categoryUnavailable": "Kategori tidak tersedia",
+  "categoryNotLoaded": "Kategori Hisn al Muslim ini tidak dapat dimuat.",
+  "categoryNoDuas": "Tidak ada doa yang ditemukan",
+  "categoryDoesNotContainDuas": "Kategori ini tidak mengandung doa apa pun.",
+  "downloadTimings": "Waktu pengunduhan?",
+  "reciterNeedsTimings": "Pembaca ini memerlukan pengaturan waktu audio sebelum teks ayat yang disinkronkan dapat ditampilkan. {size}",
+  "timingsUnavailable": "Pengaturan waktu tidak tersedia untuk pembaca ini.",
+  "timingsUnavailableSurah": "Pengaturan waktu tidak tersedia untuk surah ini.",
+  "unableToInstallTimings": "Tidak dapat memasang pengaturan waktu.",
+  "installedLabel": "Menginstal {name}.",
+  "installed": "Dipasang",
+  "noTafsirSourcesSelected": "Tidak ada sumber Tafsir yang dipilih",
+  "chooseTafsirSourcesFirst": "Pilihlah satu atau lebih sumber Tafsir terlebih dahulu.",
+  "choose": "Memilih",
+  "go": "Pergi",
+  "deleteDownloadedMp3": "Hapus MP3 yang diunduh",
+  "deleteDownloadedAyah": "Hapus Ayah yang Diunduh?",
+  "downloadAllAyahs": "Unduh Semua Ayah?",
+  "downloadAllAyahsConfirm": "Ini akan mengunduh audio untuk semua {count} ayah dalam surah ini ({size}).",
+  "surahOption": "Surat",
+  "reciterOption": "Tukang deklamasi",
+  "sleepTimerOption": "Pengatur waktu tidur",
+  "shuffleOption": "Acak",
+  "shuffleSubtitle": "Acak setelah surah berakhir",
+  "loopCurrentSurah": "Ulangi surah saat ini",
+  "loopSubtitle": "Ulangi surah saat ini",
+  "downloadTimingsResource": "Waktu pengunduhan",
+  "timingsNeedToBeDownloaded": "Pembaca ini memerlukan pengaturan waktu audio sebelum teks ayat yang disinkronkan dapat ditampilkan. {size}",
+  "intervalOption": "Selang",
+  "intervalRepeatOption": "Ulangi interval",
+  "repeatEachAyahOption": "Ulangi setiap ayat",
+  "resetPlaybackOptions": "Setel ulang opsi pemutaran",
+  "surahOptionLabel": "Surat",
+  "searchCategoriesDua": "Kategori pencarian",
+  "savedAyahLibrary": "Menyelamatkan Ayah",
+  "autoAdvancesToNextPreset": "Maju otomatis ke {nextPreset}",
+  "previousDhikr": "Dzikir sebelumnya",
+  "nextDhikr": "Dzikir selanjutnya",
+  "counts33To33To34": "{target} hitungan • 33 → 33 → 34",
+  "assalamuAlaikum": "Assalamu alaikum",
+  "continueYourJourneyToday": "Lanjutkan perjalanan Anda hari ini",
+  "onStreakDay": "Anda mengalami {streak} hari berturut-turut — teruskan",
+  "todaysWorship": "Ibadah hari ini",
+  "ayahsLabel": "Ayah",
+  "dhikrLabel": "Dzikir",
+  "duasLabel": "Doa",
+  "salahLabel": "Salah",
+  "dayStreakLabel": "Hari berturut-turut",
+  "dailyQuranGoalLabel": "TUJUAN QURAN HARIAN",
+  "salah": "Salah",
+  "quranLabel": "Alquran",
+  "tasbihLabel": "Tasbih",
+  "activityHistory": "Riwayat Aktivitas",
+  "streaksLabel": "coretan",
+  "weekRange": "Pekan",
+  "monthRange": "Bulan",
+  "yearRange": "Tahun",
+  "allTimeRange": "Sepanjang waktu",
+  "noPrayerYet": "Belum ada doa",
+  "noDayYet": "Belum ada hari",
+  "noSurahYet": "Belum ada surat",
+  "noDhikrYet": "Belum ada dzikir",
+  "noCategoryYet": "Belum ada kategori",
+  "dhikrLabelSimple": "Dzikir",
+  "readingOptions": "Pilihan membaca",
+  "navigation": "Navigasi",
+  "goToAyah": "Pergi ke ayah",
+  "jumpToAyahIn": "Lompat ke ayat di {surahName}",
+  "displayAndSharing": "Tampilkan dan bagikan",
+  "showLatinTransliteration": "Tampilkan transliterasi Latin",
+  "chooseTranslationShownOnCards": "Pilih terjemahan yang ditampilkan pada kartu",
+  "chooseDownloadedExplanations": "Pilih penjelasan yang diunduh",
+  "shareCurrentAyah": "Bagikan ayah saat ini",
+  "createImageForThisAyah": "Buatlah gambar untuk ayat ini",
+  "tafsirSources": "Sumber Tafsir",
+  "setPrayerLocation": "Tetapkan lokasi sholat",
+  "ayahLabel": "Ayah {number}",
+  "versesCount": "{count} ayat",
+  "surahVerseCount": "{surahName} • {count} ayat",
+  "noJuzResultsFound": "Hasil juz tidak ditemukan.",
+  "surahCount": "{count, plural, =1{1 surah} other{{count} surah}}",
+  "surahRange": "{startSurah} {startVerse} - {endSurah} {endVerse}",
+  "recentQuranTextSearches": "Pencarian teks Alquran terkini",
+  "searchResultCount": "{count, plural, =1{1 hasil} other{{count} hasil}}",
+  "searchQuranText": "Cari teks Alquran",
+  "searchQuranTextEmptyMessage": "Gunakan tab ini untuk kata-kata Arab atau teks terjemahan. Pencarian Surah tetap berada di tab Surahs.",
+  "noQuranTextResults": "Tidak ada hasil teks Quran",
+  "noAyahSearchResults": "Tidak ada ayah yang cocok dengan \"{query}\". Coba kata atau frasa Arab lainnya.",
+  "optionalNote": "Catatan opsional...",
+  "ayahOfTotal": "Ayah {current} dari {total}",
+  "noMatchingSavedAyahs": "Tidak ada ayah tersimpan yang cocok.",
+  "saveAyahsNotesHere": "Simpan ayah, catatan, dan renungan di sini.",
+  "savedAyahLibraryHint": "Favorit ayah dengan cepat, atau tambahkan folder, tag, dan catatan pribadi dari opsi membaca.",
+  "privateNote": "Catatan pribadi",
+  "writeReflectionHint": "Tulis refleksi...",
+  "createFolder": "Buat folder",
+  "tagsHint": "terima kasih, doa",
+  "unsorted": "Tidak disortir",
+  "removeSavedAyahDetailsBody": "Ini akan menghapus catatan, tag, folder, dan status favorit untuk ayat ini.",
+  "folderName": "Nama folder",
+  "folderNameHint": "Refleksi",
+  "libraryFolders": "Folder perpustakaan",
+  "defaultSavedAyahDestination": "Tujuan default untuk ayah yang disimpan",
+  "savedAyahCollection": "Koleksi ayah yang disimpan",
+  "renameFolder": "Ganti nama folder",
+  "rename": "Ganti nama",
+  "deleteFolderQuestion": "Hapus {folder}?",
+  "deleteFolderBody": "Ayah yang disimpan dalam folder ini akan dipindahkan ke Tidak Disortir.",
+  "quranRecitation": "Pemutar Alquran",
+  "openPlayer": "Buka Pemain",
+  "resumeRecitation": "Lanjutkan pengajian{progress}",
+  "ayahsToday": "ayah hari ini",
+  "lettersCount": "{count} huruf",
+  "dayStreakCount": "{count, plural, =1{1 hari beruntun} other{{count} hari beruntun}}",
+  "ayahsCount": "{count, plural, =1{1 ayat} other{{count} ayat}}",
+  "daysCount": "{count, plural, =1{1 hari} other{{count} hari}}",
+  "todaysPortionComplete": "Porsi hari ini selesai",
+  "catchUpAyahsIncluded": "Termasuk {count} ayah mengejar ketinggalan",
+  "ayahsRemainingToday": "{count} ayah tersisa hari ini",
+  "todaysPortion": "Porsi hari ini: {count} ayahs",
+  "surahIntroMeta": "{revelation} · {verseCount} AYAT · JUZ' {juz}",
+  "makkah": "MAKKAH",
+  "madinah": "MADINAH",
+  "currentAyahOnly": "Hanya ayah saat ini",
+  "surahAyahRange": "{surahName} {startAyah} → {endAyah}",
+  "intervalEndBeforeStartError": "Pilihlah ayat akhir yang sama dengan atau setelah ayat awal.",
+  "intervalRange": "Rentang interval",
+  "intervalRangeHint": "Pilih ayat awal dan akhir. Kisaran bisa melintasi surah.",
+  "end": "Akhir",
+  "apply": "Menerapkan",
+  "customizeRecitationBehavior": "Sesuaikan perilaku pembacaan",
+  "recitation": "Pembacaan",
+  "timing": "Waktu",
+  "ayahDelay": "Keterlambatan ayah",
+  "audioDownloads": "Unduhan audio",
+  "surahAudioDownloaded": "Audio surah diunduh",
+  "allAyahsAvailableOffline": "Semua ayah tersedia secara offline",
+  "downloadEveryAyahInSurah": "Unduh setiap ayat dalam surah ini",
+  "downloadingCurrentAyah": "Mengunduh ayat saat ini",
+  "deleteCurrentAyahAudio": "Hapus audio ayah saat ini",
+  "downloadCurrentAyah": "Unduh ayah saat ini",
+  "intervalPickerTitle": "{position} {kind}",
+  "noDelay": "Tidak ada penundaan",
+  "secondsCount": "{count, plural, =1{1 detik} other{{count} detik}}",
+  "tafsirNeedsDownload": "Tafsir ini perlu diunduh terlebih dahulu. {size}",
+  "downloading": "Mengunduh",
+  "noTafsirTextForAyah": "Tidak ada teks tafsir yang tersedia untuk ayat ini.",
+  "noTafsirResourcesAvailable": "Tidak ada sumber Tafsir yang tersedia",
+  "enterAyahRange": "Masukkan nomor ayat dari 1 hingga {total}",
+  "ayahNumberHint": "nomor ayah",
+  "downloadingSurahAyahs": "Mengunduh {surahName} ayah",
+  "downloadedSurahAyahs": "Mengunduh {surahName} ayah",
+  "downloadedAllAyahsFor": "Mengunduh semua ayah untuk {surahName}",
+  "failedDownloadSurahAyahs": "Gagal mengunduh {surahName} ayah.",
+  "downloadAllAyahsForSurah": "Unduh semua audio ayah untuk {surahName} untuk didengarkan secara offline?",
+  "removedFromFavourites": "Dihapus dari favorit.",
+  "savedAyahsOrganizedHint": "Ayah yang disimpan dapat diatur ke dalam folder dan tag.",
+  "playerOptions": "Opsi pemain",
+  "chooseSurah": "Pilih Surat",
+  "offline": "Luring",
+  "downloadMp3": "Unduh MP3",
+  "availableOffline": "Tersedia offline",
+  "notSaved": "Tidak disimpan",
+  "playback": "Pemutaran",
+  "sleepTimerOptions": "Opsi pengatur waktu tidur",
+  "endOfSurah": "Akhir surah",
+  "enabled": "Diaktifkan",
+  "disabled": "Dengan disabilitas",
+  "off": "Mati",
+  "sleepingSoon": "segera tidur",
+  "sleepingInMinutes": "tidur dalam {minutes, plural, =1{1 menit} other{{minutes} menit}}",
+  "pendingLabel": "{label} tertunda",
+  "loadingSyncedAyah": "Memuat ayah yang disinkronkan",
+  "syncedAyahUnavailableReciter": "Tampilan ayat yang disinkronkan tidak tersedia untuk pembaca ini",
+  "syncedAyahUnavailableSurah": "Tampilan ayat yang disinkronkan tidak tersedia untuk surah ini",
+  "downloadTimingsToSyncAyahs": "Unduh timing untuk menyinkronkan ayahs untuk pembaca ini",
+  "unableToPlaySurahAudio": "Tidak dapat memutar audio surah.",
+  "downloadingName": "Mengunduh {name}",
+  "downloadedName": "Diunduh {name}",
+  "failedDownloadName": "Gagal mengunduh {name}",
+  "failedDownloadSurahAudio": "Gagal mengunduh audio surah.",
+  "deletedMp3Name": "Menghapus {name} MP3",
+  "failedDeleteDownloadedSurah": "Gagal menghapus surah yang diunduh.",
+  "deleteDownloadedMp3Question": "Hapus MP3 yang Diunduh?",
+  "removeSurahFromOffline": "Ini akan menghapus {name} dari penyimpanan offline.",
+  "offlineReady": "Offline siap",
+  "streaming": "Mengalir",
+  "showAyahText": "Tampilkan teks ayah",
+  "hideAyahText": "Sembunyikan teks ayah",
+  "themeSchemeEmeraldGreen": "Hijau Zamrud",
+  "themeSchemeEmeraldGreenSubtitle": "Palet eQuran asli yang tenang.",
+  "themeSchemeSapphireBlue": "Biru Safir",
+  "themeSchemeSapphireBlueSubtitle": "Warna biru tua dengan aksen safir dan cyan kalem.",
+  "themeSchemeRoyalPurple": "Ungu Kerajaan",
+  "themeSchemeRoyalPurpleSubtitle": "Ungu tengah malam dengan highlight royal violet.",
+  "themeSchemeSepia": "Warna coklat tua",
+  "themeSchemeSepiaSubtitle": "Perkamen hangat, coklat, dan warna emas lembut.",
+  "themeSchemeBlack": "Hitam",
+  "themeSchemeBlackSubtitle": "AMOLED berwarna hitam dengan aksen teal yang tertahan.",
+  "themeSchemeRubyRed": "Merah Ruby",
+  "themeSchemeRubyRedSubtitle": "Permukaan merah marun dengan highlight rubi yang elegan.",
+  "enterLatitudeLongitude": "Masukkan lintang dan bujur.",
+  "chooseLocationBeforeCalculating": "Pilih lokasi sebelum menghitung",
+  "usingDeviceTimezone": "Menggunakan zona waktu perangkat ini.",
+  "usingDeviceTimezoneUntilLocationAvailable": "Menggunakan zona waktu perangkat hingga zona waktu lokasi tersedia.",
+  "displayPrayerTimesUsingTimezone": "Tampilkan waktu sholat menggunakan {timezone}.",
+  "remindersOff": "Pengingat tidak aktif",
+  "remindersOnWaitingLocation": "Aktif, menunggu lokasi",
+  "allPrayerRemindersOn": "Semua pengingat doa aktif",
+  "remindersEnabledCount": "{count} pengingat diaktifkan",
+  "checkingNotificationPermission": "Memeriksa izin notifikasi...",
+  "permissionStatusNeedsRetry": "Status izin perlu dicoba lagi.",
+  "localNotificationsScheduled": "Notifikasi lokal dijadwalkan di perangkat ini.",
+  "notificationPermissionGranted": "Izin pemberitahuan diberikan.",
+  "notificationPermissionOffEnable": "Izin notifikasi tidak aktif. Aktifkan untuk menerima pengingat doa.",
+  "prayerRemindersUnsupported": "Pengingat doa tidak didukung pada platform ini.",
+  "checkingExactAlarmPermission": "Memeriksa izin alarm yang tepat...",
+  "exactAlarmStatusNeedsRetry": "Status alarm yang tepat perlu dicoba lagi.",
+  "alarmPermissionGranted": "Izin alarm & pengingat diberikan.",
+  "exactAlarmPermissionNotRequired": "Izin alarm yang tepat tidak diperlukan pada platform ini.",
+  "hisnCategoryCouldNotLoad": "Kategori Hisn al Muslim ini tidak dapat dimuat.",
+  "categoryContainsNoDuas": "Kategori ini tidak mengandung doa apa pun.",
+  "couldNotUpdateDua": "Tidak dapat memperbarui doa favorit.",
+  "moreActions": "Lebih banyak tindakan",
+  "duaCopied": "Dua disalin.",
+  "hisnAlMuslimDua": "Doa Hisnul Muslim",
+  "copyText": "Salin teks",
+  "shareText": "Bagikan teks",
+  "prayerStats": "Statistik Doa",
+  "quranStats": "Statistik Alquran",
+  "tasbihStats": "Statistik Tasbih",
+  "duaStats": "Statistik Dua",
+  "thisWeek": "Minggu ini",
+  "thisMonth": "Bulan ini",
+  "thisYear": "Tahun ini",
+  "allTime": "Sepanjang waktu",
+  "onTime": "Tepat waktu",
+  "late": "Terlambat",
+  "missed": "Dirindukan",
+  "log": "Catatan",
+  "fajr": "Subuh",
+  "dhuhr": "Dhuhur",
+  "asr": "Asar",
+  "maghrib": "Maghrib",
+  "isha": "Isya",
+  "notYet": "Belum",
+  "onTimeThisWeek": "Tepat waktu minggu ini",
+  "lateThisWeek": "Akhir minggu ini",
+  "bestPrayer": "Doa terbaik",
+  "currentFajrStreak": "Garis Subuh saat ini",
+  "startLoggingFajr": "Mulailah mencatat Fajr untuk melacak kemajuan Anda.",
+  "fajrVeryConsistent": "Mashallah, Subuhmu sangat konsisten.",
+  "fajrGettingStronger": "Usaha yang bagus, Subuh semakin kuat.",
+  "fajrEveryAttemptCounts": "Fajar adalah sebuah tantangan, setiap upaya berarti.",
+  "fajrConsistency": "Konsistensi Fajar",
+  "todaysPrayers": "Doa Hari Ini",
+  "saving": "Penghematan",
+  "availableAfter": "Tersedia setelah {time}",
+  "quranActivity": "aktivitas Alquran",
+  "ayahsRead": "Ayah Baca",
+  "lettersRead": "Surat Baca",
+  "activeDays": "Hari-hari aktif",
+  "mostActiveDay": "Hari paling aktif",
+  "ayahsReadCount": "{count} ayah dibaca",
+  "recitationsCount": "{count} bacaan",
+  "surahProgress": "Kemajuan Surat",
+  "surahsComplete": "{completed} / {total} Surat selesai",
+  "showLess": "Tampilkan lebih sedikit",
+  "showAllSurahs": "Tampilkan semua surah {count}",
+  "quranCompletions": "Penyelesaian Alquran",
+  "fullCompletions": "Penyelesaian penuh",
+  "completeAllSurahsForFirstKhatm": "Lengkapi semua {count} Surat untuk mencatat Khatm pertama Anda",
+  "khatmDateLabel": "Khatm {number} · {date}",
+  "startFirstTasbihSession": "Mulailah sesi Tasbih pertama Anda",
+  "totalDhikr": "Dzikir total",
+  "dailyAverage": "Rata-rata harian",
+  "openDuaToBeginHistory": "Buka doa untuk memulai sejarah Duas Anda",
+  "duasViewed": "Duas dilihat",
+  "viewsCount": "{count} penayangan",
+  "previousMonth": "Bulan sebelumnya",
+  "nextMonth": "Bulan depan",
+  "activeDaysCount": "{count, plural, =1{1 hari aktif} other{{count} hari aktif}}",
+  "monthlyActivitySummary": "{activeDays} · Hari terbaik: {bestDay} · {totalActions} total tindakan",
+  "dhikrCount": "{count} dzikir",
+  "duasCount": "{count} doa",
+  "quranStreak": "coretan Alquran",
+  "tasbihStreak": "Garis Tasbih",
+  "overallStreak": "Pukulan keseluruhan",
+  "dayWorshipStreak": "{count} hari ibadah berturut-turut",
+  "weekShortLabel": "W{week}",
+  "youReadMostOn": "Anda paling banyak membaca di {day}",
+  "startReadingToUnlockInsights": "Mulailah membaca untuk membuka wawasan",
+  "readingUpFromLastWeek": "Membaca {percent}% dari minggu lalu",
+  "readingDownFromLastWeek": "Membaca turun {percent}% dari minggu lalu",
+  "youVisitSurahMostOften": "Anda paling sering mengunjungi {surahName}",
+  "monday": "Senin",
+  "tuesday": "Selasa",
+  "wednesday": "Rabu",
+  "thursday": "Kamis",
+  "friday": "Jumat",
+  "saturday": "Sabtu",
+  "sunday": "Minggu",
+  "mondayShort": "Senin",
+  "tuesdayShort": "Selasa",
+  "wednesdayShort": "Menikahi",
+  "thursdayShort": "Kam",
+  "fridayShort": "Jumat",
+  "saturdayShort": "Duduk",
+  "sundayShort": "Matahari",
+  "mondayInitial": "M",
+  "tuesdayInitial": "T",
+  "wednesdayInitial": "W",
+  "thursdayInitial": "T",
+  "fridayInitial": "F",
+  "saturdayInitial": "S",
+  "sundayInitial": "S",
+  "mondays": "Senin",
+  "tuesdays": "Selasa",
+  "wednesdays": "Rabu",
+  "thursdays": "Kamis",
+  "fridays": "hari Jumat",
+  "saturdays": "hari Sabtu",
+  "sundays": "hari Minggu",
+  "january": "Januari",
+  "february": "Februari",
+  "march": "Berbaris",
+  "april": "April",
+  "may": "Mungkin",
+  "june": "Juni",
+  "july": "Juli",
+  "august": "Agustus",
+  "september": "September",
+  "october": "Oktober",
+  "november": "November",
+  "december": "Desember",
+  "januaryShort": "Januari",
+  "februaryShort": "Februari",
+  "marchShort": "Merusak",
+  "aprilShort": "April",
+  "mayShort": "Mungkin",
+  "juneShort": "Juni",
+  "julyShort": "Juli",
+  "augustShort": "Agustus",
+  "septemberShort": "September",
+  "octoberShort": "Oktober",
+  "novemberShort": "November",
+  "decemberShort": "Desember",
+  "dailyQuoteSmallDeeds": "Perbuatan kecil yang dilakukan dengan ikhlas akan tumbuh dengan indah.",
+  "dailyQuoteBeginAgain": "Mulailah lagi dengan zikir dan syukur.",
+  "dailyQuoteSteadyHeart": "Hati yang mantap kembali kepada Allah setiap hari.",
+  "dailyQuoteGentleConsistent": "Biarlah ibadah hari ini lembut dan konsisten.",
+  "dailyQuoteEveryAyah": "Setiap ayat yang dibaca adalah ringan untuk perjalanan.",
+  "dailyWorshipComplete": "Mashallah! Ibadah harian selesai",
+  "greatProgressKeepGoing": "Kemajuan besar, teruskan",
+  "everyDeedCountsKeepGoing": "Setiap perbuatan penting, teruskan",
+  "startYourWorshipForToday": "Mulailah ibadah Anda hari ini",
+  "totalRead": "Jumlah yang dibaca",
+  "estimatedLettersRead": "Perkiraan surat dibaca",
+  "rewardIsWithAllah": "Pahala ada di sisi Allah.",
+  "totalZakahWealth": "Total kekayaan harus minimal 200 untuk menghitung Zakat.",
+  "hifzTitle": "Hifz",
+  "hifzJourneyTitle": "Perjalanan Hifz Anda",
+  "hifzNewTodayLabel": "{count}/{max} baru hari ini",
+  "hifzMemorized": "Hafal",
+  "hifzDueToday": "Jatuh tempo hari ini",
+  "hifzInReview": "Dalam ulasan",
+  "hifzAyahsMemorized": "{count} / 6.236 ayah hafal",
+  "hifzDueForReview": "Karena untuk Peninjauan",
+  "hifzAllCaughtUp": "Semua sudah tercakup — tidak ada ulasan yang harus diselesaikan",
+  "hifzAyahsReady": "{count} ayah sudah siap",
+  "hifzStartYourSession": "Mulai sesi ulasan Anda",
+  "hifzStart": "Awal",
+  "hifzDueNow": "Jatuh tempo sekarang",
+  "hifzOverdueDays": "Terlambat {days}d",
+  "hifzShowAll": "Tampilkan semua {count} →",
+  "hifzAddToMemorize": "Tambahkan ke Hafalan",
+  "hifzQuickAdd": "Tambah cepat",
+  "hifzQuickAlFatiha": "Al-Fatihah",
+  "hifzQuickAlKahf": "Al-Kahfi",
+  "hifzQuickJuzAmma": "Juz Amma",
+  "hifzQuickLast10": "10 Surat terakhir",
+  "hifzOrChooseSurah": "Atau pilih surah",
+  "hifzFromAyah": "Dari ayah",
+  "hifzToAyah": "Untuk ayah",
+  "hifzAddAyahsButton": "Tambahkan {count} ayahs ke Hifz",
+  "hifzAyahsAdded": "{count} ayah ditambahkan",
+  "hifzSurahProgress": "Kemajuan Surat",
+  "hifzShowAllSurahs": "Tampilkan semua 114 surah",
+  "hifzShowLess": "Tampilkan lebih sedikit",
+  "hifzSurahsMastered": "{count} / 114 Surat dikuasai",
+  "hifzSettingsTitle": "Pengaturan Hifz",
+  "hifzTrackNew": "Baru",
+  "hifzTrackRevision": "Revisi",
+  "hifzTrackMaintenance": "Pemeliharaan",
+  "hifzSessionProgress": "{current} / {total}",
+  "hifzExitSession": "Keluar dari sesi?",
+  "hifzExitSessionBody": "Anda telah meninjau {count} dari {total} ayah.\nKemajuan sejauh ini akan terselamatkan.",
+  "hifzExitCancel": "Membatalkan",
+  "hifzExitConfirm": "KELUAR",
+  "hifzImReady": "saya siap",
+  "hifzRevealAll": "Ungkapkan semuanya",
+  "hifzToggleTransliteration": "Transliterasi",
+  "hifzToggleTranslation": "Terjemahan",
+  "hifzToggleListen": "Mendengarkan",
+  "hifzRatingAgain": "Lagi",
+  "hifzRatingHard": "Keras",
+  "hifzRatingGood": "Bagus",
+  "hifzRatingEasy": "Mudah",
+  "hifzSessionComplete": "Sesi Selesai",
+  "hifzCompletedUnderMinute": "Selesai dalam waktu kurang dari satu menit",
+  "hifzCompletedInMinutes": "Selesai dalam {minutes} menit{plural}",
+  "hifzSummaryTitle": "Ringkasan",
+  "hifzTotalReviewed": "Total ditinjau",
+  "hifzTotalReviewedValue": "{count} ayah",
+  "hifzRetentionRate": "Tingkat retensi",
+  "hifzNextReviewDue": "Tinjauan selanjutnya harus dilakukan",
+  "hifzNextReviewToday": "Hari ini",
+  "hifzNextReviewTomorrow": "Besok",
+  "hifzNextReviewInDays": "Dalam {days} hari",
+  "hifzAllCaughtUpDue": "Semua tertangkap",
+  "hifzHadithQuote": "“Sebaik-baik kalian adalah yang mempelajari Al-Qur’an dan mengajarkannya.” — Al-Bukhari",
+  "hifzBackToHifz": "Kembali ke Hifz",
+  "hifzKeepReviewing": "Terus tinjau ({count} kiri)",
+  "hifzDueReminderTitle": "{count} ayah harus ditinjau Hifz",
+  "hifzSettingsComingSoon": "Pengaturan Hifz — segera hadir",
+  "hifzStatsSection": "Hifz",
+  "hifzStatsTotalMemorized": "Total hafal",
+  "hifzStatsDailyStreak": "Pukulan harian",
+  "hifzStatsRetentionRate": "Tingkat retensi",
+  "hifzStatsTotalReviews": "Jumlah ulasan",
+  "hifzStatsNextDue": "Ulasan berikutnya",
+  "hifzStatsNextDueValue": "{surah} · Ayah {ayah}",
+  "hifzStatsNextDueDate": "Jatuh tempo {date}",
+  "hifzStatsNoEntries": "Mulailah menghafal untuk melihat statistik Hifz Anda",
+  "hifzStatsSurahProgress": "Kemajuan Surat",
+  "hifzStatsRetentionSuffix": "{value}%",
+  "hifzStatsPill": "{count} hafal",
+  "hifzReminderDueCount": "{count} ayah harus ditinjau Hifz",
+  "hifzReminderReview": "Tinjauan",
+  "hifzSettingsNewPerDay": "Ayah baru setiap hari",
+  "hifzSettingsReviewsPerDay": "Ulasan per hari",
+  "hifzSettingsShowTranslit": "Tampilkan transliterasi secara default",
+  "hifzSettingsShowTranslation": "Tampilkan terjemahan secara default",
+  "hifzSettingsAutoPlayAudio": "Putar audio secara otomatis pada fase belajar",
+  "hifzSettingsBlankingLevel": "Tingkat pengosongan",
+  "hifzSettingsBlankingAuto": "Mobil",
+  "hifzSettingsBlankingEasy": "Mudah",
+  "hifzSettingsBlankingMedium": "Sedang",
+  "hifzSettingsBlankingHard": "Keras",
+  "hifzSettingsDone": "Selesai",
+  "hifzActiveUnits": "Unit aktif",
+  "hifzInProgress": "Sedang berlangsung",
+  "hifzActiveUnitsSection": "Unit Aktif",
+  "hifzNoActiveUnits": "Tidak ada unit aktif — tambahkan satu di bawah",
+  "hifzUnitTypeSurah": "Surat",
+  "hifzUnitTypeJuz": "Juz",
+  "hifzUnitNextAyah": "Berikutnya: {surah} · Ayah {ayah}",
+  "hifzUnitProgress": "{introduced}/{total}",
+  "hifzUnitReview": "Tinjauan",
+  "hifzUnitUpToDate": "Terkini",
+  "hifzDueNew": "{count} baru",
+  "hifzDueRevision": "{count} revisi",
+  "hifzDueMaintenance": "{count} pemeliharaan",
+  "hifzDueAllCaughtUp": "Semua tertangkap",
+  "hifzAddUnitSection": "Tambahkan Satuan",
+  "hifzSearchSurahs": "Cari surah...",
+  "hifzSearchJuz": "Cari juz...",
+  "hifzSelectAbove": "Pilih satuan di atas",
+  "hifzStartMemorizingSurah": "Mulai menghafal {name}",
+  "hifzStartMemorizingJuz": "Mulailah menghafal Juz {number}",
+  "hifzUnitAlreadyActive": "Sudah dalam proses",
+  "hifzUnitAyahCount": "{count} ayah",
+  "hifzSurahsMasteredCount": "{count} / 114 Surat dikuasai",
+  "hifzTrackNewLabel": "Baru",
+  "hifzTrackRevisionLabel": "Revisi",
+  "hifzTrackMaintenanceLabel": "Pemeliharaan",
+  "hifzListenPhaseButton": "saya siap",
+  "hifzRevealAllButton": "Ungkapkan semuanya",
+  "hifzAudioDisabledTooltip": "Audio dinonaktifkan selama pemanggilan kembali",
+  "hifzPrevAyahCueLabel": "...ayah sebelumnya...",
+  "hifzRatingTryAgain": "Coba lagi",
+  "hifzRatingGotIt": "Mengerti",
+  "hifzEmptySessionTitle": "Semuanya selesai untuk hari ini!",
+  "hifzEmptySessionBody": "Tidak ada ayah baru atau yang sudah jatuh tempo untuk {unit} hari ini.",
+  "hifzEmptySessionButton": "Kembali ke Hifz",
+  "hifzExitSessionTitle": "Keluar dari sesi?",
+  "hifzCompleteTitle": "Sesi Selesai",
+  "hifzCompleteSubtitleUnderMinute": "Selesai dalam waktu kurang dari satu menit",
+  "hifzCompleteSubtitleMinutes": "Selesai dalam {minutes} menit",
+  "hifzCompleteSummaryTitle": "Ringkasan",
+  "hifzCompleteTotalReviewed": "Total ditinjau",
+  "hifzCompleteTotalReviewedValue": "{count} ayah",
+  "hifzCompleteRetentionRate": "Tingkat retensi",
+  "hifzCompleteNextDue": "Tinjauan selanjutnya harus dilakukan",
+  "hifzCompleteNextDueToday": "Hari ini",
+  "hifzCompleteNextDueTomorrow": "Besok",
+  "hifzCompleteNextDueInDays": "Dalam {days} hari",
+  "hifzCompleteAllCaughtUp": "Semua tertangkap",
+  "hifzCompleteGraduated": "Lulus untuk meninjau",
+  "hifzCompleteGraduatedValue": "{count} ayah",
+  "hifzCompleteHadith": "“Sebaik-baik kalian adalah yang mempelajari Al-Qur’an dan mengajarkannya.” — Al-Bukhari",
+  "hifzCompleteBackButton": "Kembali ke Hifz",
+  "hifzCompleteKeepReviewing": "Terus tinjau ({count} kiri)",
+  "hifzUnitCompleteTitle": "Anda telah memperkenalkan semua ayah di {unit}!",
+  "hifzUnitCompleteSubtitle": "Lanjutkan merevisi untuk menguasainya sepenuhnya.",
+  "hifzSettingsSheetTitle": "Pengaturan Hifz",
+  "hifzMorePageTitle": "Hifz",
+  "hifzMorePageSubtitle": "Hafal Al-Quran dengan ulasan cerdas",
+  "hifzReminderTitle": "{count} ayah harus ditinjau Hifz",
+  "hifzReminderButton": "Tinjauan",
+  "hifz": "Hifz",
+  "hifzSubtitle": "Hafal Al-Quran dengan ulasan cerdas",
+  "licenses": "Lisensi",
+  "buildQuranRoutine": "Bangun rutinitas Al-Quran",
+  "chooseGentlePlan": "Pilih rencana yang lembut dan biarkan hari ini memiliki porsi yang jelas.",
+  "routineCompletedAyahs": "{completed} dari {total} ayah selesai",
+  "plansReadyNotice": "Paket 7 hari, 30 hari, dan 60 hari sudah siap.",
+  "finishTargetDate": "Target selesai: {date}",
+  "allLabel": "Semua",
+  "doneLabel": "Selesai",
+  "ongoingLabel": "Sedang berlangsung",
+  "skippedLabel": "Dilewati",
+  "noActiveRoutine": "Tidak ada rutinitas aktif",
+  "startBalancedPlanDescription": "Mulailah dengan rencana 30 hari yang seimbang, atau pilih rutinitas yang lebih cepat atau lebih lembut di bawah ini.",
+  "start30DayPlan": "Mulai paket 30 hari",
+  "todayReading": "Bacaan hari ini",
+  "todayCompleted": "Hari ini selesai",
+  "todaysPortionAyahs": "Porsi hari ini: {count} ayahs",
+  "includesCatchUpAyahs": "Termasuk {count} ayah mengejar ketinggalan",
+  "ayahRangeConnector": "{start} hingga {end}",
+  "dailyPercentCompleteRemaining": "{percent}% selesai • {remaining} ayah tersisa hari ini",
+  "routineHistory": "Sejarah rutin",
+  "currentRoutine": "Rutinitas saat ini",
+  "noCurrentRoutine": "Tidak ada rutinitas saat ini.",
+  "pastRoutines": "Rutinitas masa lalu",
+  "pastRoutine": "Rutinitas masa lalu",
+  "deleteRoutineTooltip": "Hapus rutinitas",
+  "deleteCurrentRoutineQuestion": "Hapus rutinitas saat ini?",
+  "deleteRoutineQuestion": "Hapus rutinitas?",
+  "deleteRoutineWarning": "Tindakan ini menghapus \"{title}\" dari riwayat rutin Anda.",
+  "choosePlan": "Pilih rencana",
+  "preset7DaysTitle": "Menyelesaikan Quran dalam 7 hari",
+  "preset7DaysSubtitle": "Rutinitas mingguan yang terfokus",
+  "preset30DaysTitle": "Menyelesaikan Quran dalam 30 hari",
+  "preset30DaysSubtitle": "Porsi harian seimbang",
+  "preset60DaysTitle": "Menyelesaikan Quran dalam 60 hari",
+  "preset60DaysSubtitle": "Pembacaan jangka panjang yang lembut",
+  "routineStartedMessage": "{title} dimulai",
+  "prayerTimesDisclaimer": "Waktu sholat dihitung secara lokal. Verifikasi dengan masjid setempat Anda jika diperlukan.",
+  "locationSaved": "Lokasi disimpan.",
+  "notificationPermissionOffWarning": "Izin notifikasi tidak aktif. Pengingat dinonaktifkan.",
+  "exactAlarmPermissionOffWarning": "Izin alarm yang tepat dinonaktifkan. Pengingat doa mungkin tertunda.",
+  "locationDetails": "Detail lokasi",
+  "updateCurrentLocation": "Perbarui lokasi saat ini",
+  "useThisDeviceLocation": "Gunakan lokasi perangkat ini",
+  "moveMapPinDescription": "Pindahkan pin peta ke suatu tempat",
+  "saveChanges": "Simpan perubahan",
+  "advancedCoordinates": "Koordinat lanjutan",
+  "advancedCoordinatesEditSubtitle": "Edit hanya jika Anda memerlukan koordinat yang tepat",
+  "locationLabel": "Label lokasi",
+  "locationLabelHint": "Nama rumah, kantor, atau kota",
+  "latitude": "Lintang",
+  "latitudeHelperText": "Gunakan nilai antara -90 dan 90.",
+  "longitude": "Garis bujur",
+  "longitudeHelperText": "Gunakan nilai antara -180 dan 180.",
+  "savedLocationFallback": "Lokasi yang disimpan",
+  "coordinatesPrivacyDescription": "Digunakan secara lokal untuk perhitungan waktu sholat. Koordinat disimpan di perangkat ini.{timezoneText}",
+  "countdownNow": "Sekarang",
+  "countdownVerySoon": "Segera",
+  "countdownInHours": "Dalam {hours}jam",
+  "countdownInHoursMinutes": "Dalam {hours}h {minutes}m",
+  "countdownInMinutes": "Dalam {minutes}m",
+  "@routineCompletedAyahs": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@finishTargetDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@todaysPortionAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@includesCatchUpAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahRangeConnector": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyPercentCompleteRemaining": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+  "@deleteRoutineWarning": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@routineStartedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@coordinatesPrivacyDescription": {
+    "placeholders": {
+      "timezoneText": {
+        "type": "String"
+      }
+    }
+  },
+  "@countdownInHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "resume": "Lanjutkan",
+  "routineComplete": "Rutinitas selesai",
+  "routineDeleted": "Rutinitas dihapus",
+  "chooseLocationManually": "Pilih lokasi secara manual",
+  "saveLocation": "Simpan lokasi",
+  "coordinatesForPrayerTimes": "Koordinat waktu sholat",
+  "manualLocationDescription": "Masukkan garis lintang dan bujur kota, wilayah, atau alamat yang ingin Anda gunakan.",
+  "manualLocationPrivacyNotice": "Disimpan di perangkat ini dan hanya digunakan untuk perhitungan waktu sholat setempat.",
+  "manualLocation": "Lokasi manual",
+  "savedLocation": "Lokasi yang disimpan",
+  "useThisLocation": "Gunakan lokasi ini",
+  "selectedLocation": "Lokasi yang dipilih",
+  "openStreetMapContributors": "Kontributor OpenStreetMap",
+  "validationEnterField": "Masukkan {field}.",
+  "validationShouldBeNumber": "{field} harus berupa angka.",
+  "validationMustBeBetween": "{field} harus berada di antara {min} dan {max}.",
+  "@validationEnterField": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationShouldBeNumber": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationMustBeBetween": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "completedTodayQuota": "{completed} / {total} ayah hari ini",
+  "completedAyahsRatio": "{completed}/{total} ayah",
+  "the99BeautifulNamesOfAllah": "99 Nama Indah Allah",
+  "allNamesCount": "Semua Nama · {count}",
+  "reciteThisNameInDua": "Ucapkan nama ini dalam doamu",
+  "searchNames": "Cari nama",
+  "searchNamesHint": "Cari nama...",
+  "namesUnavailable": "Nama tidak tersedia",
+  "unableLoadAsmaUlHusna": "Tidak dapat memuat Asma ul Husna saat ini.",
+  "noNamesFound": "Tidak ada nama yang ditemukan",
+  "tryAnotherAsmaSearch": "Coba nama, transliterasi, atau makna Arab lainnya.",
+  "@completedTodayQuota": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@completedAyahsRatio": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@allNamesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

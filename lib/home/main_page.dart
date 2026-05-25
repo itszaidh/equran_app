@@ -122,50 +122,7 @@ class _MainPageState extends State<MainPage>
             ),
             child: _buildSectionHeader(theme),
           ),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPadding,
-              0,
-              horizontalPadding,
-              10,
-            ),
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colors.primary,
-                side: BorderSide(color: colors.primary.withAlpha(77)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                minimumSize: const Size.fromHeight(40),
-              ),
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const HifzHomePage(),
-                  ),
-                );
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.menu_book_rounded,
-                    color: colors.primary,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Hifz Mode',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: colors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          
           Expanded(child: _buildSegmentPager(horizontalPadding)),
         ],
       ),

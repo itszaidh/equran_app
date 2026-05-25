@@ -1299,6 +1299,10 @@ class _SettingsPageState extends State<SettingsPage> {
     return switch (lang) {
       "en" => localizations.english,
       "ar" => localizations.arabic,
+      "id" => localizations.indonesian,
+      "ur" => localizations.urdu,
+      "tr" => localizations.turkish,
+      "bn" => localizations.bengali,
       _ => localizations.systemDefault,
     };
   }
@@ -1332,6 +1336,30 @@ class _SettingsPageState extends State<SettingsPage> {
           value: "ar",
           title: localizations.arabic,
           subtitle: "العربية / Arabic",
+          leading: const Icon(Icons.translate_rounded),
+        ),
+        AppSelectionOption<String>(
+          value: "id",
+          title: localizations.indonesian,
+          subtitle: "Bahasa Indonesia / Indonesian",
+          leading: const Icon(Icons.translate_rounded),
+        ),
+        AppSelectionOption<String>(
+          value: "ur",
+          title: localizations.urdu,
+          subtitle: "اردو / Urdu",
+          leading: const Icon(Icons.translate_rounded),
+        ),
+        AppSelectionOption<String>(
+          value: "tr",
+          title: localizations.turkish,
+          subtitle: "Türkçe / Turkish",
+          leading: const Icon(Icons.translate_rounded),
+        ),
+        AppSelectionOption<String>(
+          value: "bn",
+          title: localizations.bengali,
+          subtitle: "বাংলা / Bengali",
           leading: const Icon(Icons.translate_rounded),
         ),
       ],

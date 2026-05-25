@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
+import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -127,6 +129,7 @@ class _AsmaUlHusnaPageState extends State<AsmaUlHusnaPage> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -146,9 +149,9 @@ class _AsmaUlHusnaPageState extends State<AsmaUlHusnaPage> {
                       controller: _searchController,
                       focusNode: _searchFocusNode,
                     )
-                  : const Text(
-                      'Asma ul Husna',
-                      key: ValueKey<String>('asma-title'),
+                  : Text(
+                      localizations.asmaUlHusna,
+                      key: const ValueKey<String>('asma-title'),
                     ),
             ),
             centerTitle: !_searchActive,
@@ -168,7 +171,7 @@ class _AsmaUlHusnaPageState extends State<AsmaUlHusnaPage> {
                 duration: const Duration(milliseconds: 220),
                 child: IconButton(
                   key: ValueKey<bool>(_searchActive),
-                  tooltip: _searchActive ? 'Close search' : 'Search names',
+                  tooltip: _searchActive ? localizations.closeSearch : localizations.searchNames,
                   onPressed: _searchActive ? _closeSearch : _focusSearch,
                   icon: Icon(
                     _searchActive ? Icons.close_rounded : Icons.search_rounded,
@@ -195,9 +198,9 @@ class _AsmaUlHusnaPageState extends State<AsmaUlHusnaPage> {
                       return const _AsmaLoadingState();
                     }
                     if (snapshot.hasError || names.isEmpty) {
-                      return const _AsmaMessageState(
-                        title: 'Names unavailable',
-                        message: 'Unable to load Asma ul Husna right now.',
+                      return _AsmaMessageState(
+                        title: localizations.namesUnavailable,
+                        message: localizations.unableLoadAsmaUlHusna,
                       );
                     }
 
@@ -235,6 +238,7 @@ class _NavSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return TextField(
       controller: controller,
       focusNode: focusNode,
@@ -244,7 +248,7 @@ class _NavSearchField extends StatelessWidget {
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
-        hintText: 'Search names...',
+        hintText: localizations.searchNamesHint,
         hintStyle: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
         prefixIcon: Icon(Icons.search_rounded, color: colors.textMuted),
         filled: true,
@@ -278,6 +282,7 @@ class _AsmaNamesContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -289,7 +294,7 @@ class _AsmaNamesContent extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 22, 16, 8),
           child: Text(
-            'All Names · ${names.length}'.toUpperCase(),
+            localizations.allNamesCount(names.length).toUpperCase(),
             style: theme.textTheme.labelMedium?.copyWith(
               color: colors.textMuted,
               letterSpacing: 1.2,
@@ -298,9 +303,9 @@ class _AsmaNamesContent extends StatelessWidget {
           ),
         ),
         if (visibleNames.isEmpty)
-          const _AsmaMessageState(
-            title: 'No names found',
-            message: 'Try another Arabic name, transliteration, or meaning.',
+          _AsmaMessageState(
+            title: localizations.noNamesFound,
+            message: localizations.tryAnotherAsmaSearch,
           )
         else
           LayoutBuilder(
@@ -352,6 +357,7 @@ class _AsmaHeaderCard extends StatelessWidget {
     final EquranColors colors = context.equranColors;
     final Color ornamentColor = colors.accentGold.withValues(alpha: 0.50);
     final Color referenceColor = colors.accentGold.withValues(alpha: 0.80);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -393,7 +399,7 @@ class _AsmaHeaderCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'The 99 Beautiful Names of Allah',
+                    localizations.the99BeautifulNamesOfAllah,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.onPrimaryMuted,
@@ -424,7 +430,7 @@ class _AsmaHeaderCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    "Al-A'raf 7:180",
+                    localizedSurahAyahLabel(localizations, 7, 180),
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: referenceColor,
@@ -641,6 +647,7 @@ Future<void> _showNameSheet(BuildContext context, AsmaUlHusnaName name) async {
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) {
+      final AppLocalizations localizations = AppLocalizations.of(context)!;
       return SafeArea(
         top: false,
         child: Container(
@@ -661,20 +668,20 @@ Future<void> _showNameSheet(BuildContext context, AsmaUlHusnaName name) async {
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.amiri(
-                  textStyle: theme.textTheme.displayMedium,
+                  fontSize: 52,
                   color: colors.textPrimary,
-                  fontSize: 56,
                   fontWeight: FontWeight.w700,
-                  height: 1.25,
+                  height: 1.35,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 2),
               Text(
                 name.transliteration,
                 textAlign: TextAlign.center,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  color: colors.primary,
-                  fontWeight: FontWeight.w800,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.accentGold,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
                 ),
               ),
               const SizedBox(height: 8),
@@ -697,7 +704,7 @@ Future<void> _showNameSheet(BuildContext context, AsmaUlHusnaName name) async {
               ),
               const SizedBox(height: 18),
               Text(
-                'Recite this name in your dua',
+                localizations.reciteThisNameInDua,
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colors.textMuted,
@@ -714,7 +721,7 @@ Future<void> _showNameSheet(BuildContext context, AsmaUlHusnaName name) async {
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                   ),
                 ),
-                child: const Text('Close'),
+                child: Text(localizations.close),
               ),
             ],
           ),

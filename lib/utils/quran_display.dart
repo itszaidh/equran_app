@@ -9,9 +9,12 @@ bool isArabicLocalizations(AppLocalizations localizations) =>
     localizations.localeName == 'ar';
 
 String localizedSurahName(AppLocalizations localizations, int surah) {
-  return isArabicLocalizations(localizations)
-      ? quran.getSurahNameArabic(surah)
-      : quran.getSurahName(surah);
+  if (localizations.localeName == 'ar') {
+    return quran.getSurahNameArabic(surah);
+  } else if (localizations.localeName == 'tr') {
+    return quran.getSurahNameTurkish(surah);
+  }
+  return quran.getSurahName(surah);
 }
 
 String localizedSurahNameFromValues(

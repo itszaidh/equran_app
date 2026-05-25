@@ -90,21 +90,22 @@ class EquranTextStyles {
   }
 
   static ThemeData localizeTheme(ThemeData theme, Locale locale) {
-    if (locale.languageCode != 'ar') return theme;
-
-    return theme.copyWith(
-      textTheme: GoogleFonts.notoNaskhArabicTextTheme(theme.textTheme),
-      primaryTextTheme: GoogleFonts.notoNaskhArabicTextTheme(
-        theme.primaryTextTheme,
-      ),
-    );
+    if (locale.languageCode == 'ar' || locale.languageCode == 'ur') {
+      return theme.copyWith(
+        textTheme: GoogleFonts.notoNaskhArabicTextTheme(theme.textTheme),
+        primaryTextTheme: GoogleFonts.notoNaskhArabicTextTheme(
+          theme.primaryTextTheme,
+        ),
+      );
+    }
+    return theme;
   }
 
   static TextTheme _baseFontTextThemeForLocale(
     TextTheme textTheme,
     Locale? locale,
   ) {
-    if (locale?.languageCode == 'ar') {
+    if (locale?.languageCode == 'ar' || locale?.languageCode == 'ur') {
       return GoogleFonts.notoNaskhArabicTextTheme(textTheme);
     }
     return GoogleFonts.interTextTheme(textTheme);

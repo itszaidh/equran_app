@@ -1,3 +1,4 @@
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/prayer/manual_prayer_location_page.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/theme/equran_colors.dart';
@@ -27,11 +28,12 @@ Future<PrayerLocation?> showPrayerMapLocationPicker(
 PrayerLocation prayerLocationFromMapSelection({
   required double latitude,
   required double longitude,
+  required AppLocalizations localizations,
 }) {
   return PrayerLocation(
     latitude: latitude,
     longitude: longitude,
-    label: 'Saved location',
+    label: localizations.savedLocation,
     mode: PrayerLocationMode.manual,
   );
 }
@@ -62,10 +64,11 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
     final EquranColors equranColors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Choose on map'),
+        title: Text(localizations.chooseOnMap),
         backgroundColor: equranColors.background,
         foregroundColor: equranColors.textPrimary,
         elevation: 0,
@@ -104,7 +107,7 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
               RichAttributionWidget(
                 attributions: <SourceAttribution>[
                   TextSourceAttribution(
-                    'OpenStreetMap contributors',
+                    localizations.openStreetMapContributors,
                     textStyle: theme.textTheme.labelSmall?.copyWith(
                       color: colors.onSurfaceVariant,
                     ),
@@ -171,7 +174,7 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Text(
-                        'Selected location',
+                        localizations.selectedLocation,
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
@@ -190,13 +193,13 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                       FilledButton.icon(
                         onPressed: _useSelectedLocation,
                         icon: const Icon(Icons.check_rounded),
-                        label: const Text('Use this location'),
+                        label: Text(localizations.useThisLocation),
                       ),
                       const SizedBox(height: 6),
                       TextButton.icon(
                         onPressed: _enterCoordinatesManually,
                         icon: const Icon(Icons.edit_location_alt_outlined),
-                        label: const Text('Enter coordinates manually'),
+                        label: Text(localizations.enterCoordinatesManually),
                       ),
                     ],
                   ),
@@ -210,21 +213,25 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
   }
 
   void _useSelectedLocation() {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     Navigator.of(context).pop(
       prayerLocationFromMapSelection(
         latitude: _selectedCenter.latitude,
         longitude: _selectedCenter.longitude,
+        localizations: localizations,
       ),
     );
   }
 
   Future<void> _enterCoordinatesManually() async {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerLocation? location = await Navigator.of(context).push(
       MaterialPageRoute<PrayerLocation>(
         builder: (BuildContext context) => ManualPrayerLocationPage(
           initialLocation: prayerLocationFromMapSelection(
             latitude: _selectedCenter.latitude,
             longitude: _selectedCenter.longitude,
+            localizations: localizations,
           ),
         ),
       ),

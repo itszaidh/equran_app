@@ -6,7 +6,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_ar.dart';
+import 'app_localizations_bn.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_id.dart';
+import 'app_localizations_tr.dart';
+import 'app_localizations_ur.dart';
 
 // ignore_for_file: type=lint
 
@@ -95,7 +99,11 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
+    Locale('bn'),
     Locale('en'),
+    Locale('id'),
+    Locale('tr'),
+    Locale('ur'),
   ];
 
   /// No description provided for @appTitle.
@@ -167,7 +175,7 @@ abstract class AppLocalizations {
   /// No description provided for @asmaUlHusna.
   ///
   /// In en, this message translates to:
-  /// **'Asma-ul-Husna'**
+  /// **'Asma ul Husna'**
   String get asmaUlHusna;
 
   /// No description provided for @language.
@@ -193,6 +201,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Arabic'**
   String get arabic;
+
+  /// No description provided for @indonesian.
+  ///
+  /// In en, this message translates to:
+  /// **'Indonesian'**
+  String get indonesian;
+
+  /// No description provided for @urdu.
+  ///
+  /// In en, this message translates to:
+  /// **'Urdu'**
+  String get urdu;
+
+  /// No description provided for @turkish.
+  ///
+  /// In en, this message translates to:
+  /// **'Turkish'**
+  String get turkish;
+
+  /// No description provided for @bengali.
+  ///
+  /// In en, this message translates to:
+  /// **'Bengali'**
+  String get bengali;
 
   /// No description provided for @vibration.
   ///
@@ -5744,6 +5776,540 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review'**
   String get hifzReminderButton;
+
+  /// No description provided for @hifz.
+  ///
+  /// In en, this message translates to:
+  /// **'Hifz'**
+  String get hifz;
+
+  /// No description provided for @hifzSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Memorize the Quran with smart review'**
+  String get hifzSubtitle;
+
+  /// No description provided for @licenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Licenses'**
+  String get licenses;
+
+  /// No description provided for @buildQuranRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Build a Quran routine'**
+  String get buildQuranRoutine;
+
+  /// No description provided for @chooseGentlePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a gentle plan and let today have a clear portion.'**
+  String get chooseGentlePlan;
+
+  /// No description provided for @routineCompletedAyahs.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {total} ayahs completed'**
+  String routineCompletedAyahs(int completed, int total);
+
+  /// No description provided for @plansReadyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'7-day, 30-day, and 60-day plans are ready.'**
+  String get plansReadyNotice;
+
+  /// No description provided for @finishTargetDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish target: {date}'**
+  String finishTargetDate(String date);
+
+  /// No description provided for @allLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allLabel;
+
+  /// No description provided for @doneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get doneLabel;
+
+  /// No description provided for @ongoingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get ongoingLabel;
+
+  /// No description provided for @skippedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped'**
+  String get skippedLabel;
+
+  /// No description provided for @noActiveRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'No active routine'**
+  String get noActiveRoutine;
+
+  /// No description provided for @startBalancedPlanDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with a balanced 30-day plan, or choose a faster or gentler routine below.'**
+  String get startBalancedPlanDescription;
+
+  /// No description provided for @start30DayPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Start 30-day plan'**
+  String get start30DayPlan;
+
+  /// No description provided for @todayReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s reading'**
+  String get todayReading;
+
+  /// No description provided for @todayCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Today completed'**
+  String get todayCompleted;
+
+  /// No description provided for @todaysPortionAyahs.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s portion: {count} ayahs'**
+  String todaysPortionAyahs(int count);
+
+  /// No description provided for @includesCatchUpAyahs.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes {count} catch-up ayahs'**
+  String includesCatchUpAyahs(int count);
+
+  /// No description provided for @ayahRangeConnector.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} to {end}'**
+  String ayahRangeConnector(String start, String end);
+
+  /// No description provided for @dailyPercentCompleteRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% complete • {remaining} ayahs remaining today'**
+  String dailyPercentCompleteRemaining(int percent, int remaining);
+
+  /// No description provided for @routineHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Routine history'**
+  String get routineHistory;
+
+  /// No description provided for @currentRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Current routine'**
+  String get currentRoutine;
+
+  /// No description provided for @noCurrentRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'No current routine.'**
+  String get noCurrentRoutine;
+
+  /// No description provided for @pastRoutines.
+  ///
+  /// In en, this message translates to:
+  /// **'Past routines'**
+  String get pastRoutines;
+
+  /// No description provided for @pastRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Past routine'**
+  String get pastRoutine;
+
+  /// No description provided for @deleteRoutineTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete routine'**
+  String get deleteRoutineTooltip;
+
+  /// No description provided for @deleteCurrentRoutineQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete current routine?'**
+  String get deleteCurrentRoutineQuestion;
+
+  /// No description provided for @deleteRoutineQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete routine?'**
+  String get deleteRoutineQuestion;
+
+  /// No description provided for @deleteRoutineWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes \"{title}\" from your routine history.'**
+  String deleteRoutineWarning(String title);
+
+  /// No description provided for @choosePlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a plan'**
+  String get choosePlan;
+
+  /// No description provided for @preset7DaysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Quran in 7 days'**
+  String get preset7DaysTitle;
+
+  /// No description provided for @preset7DaysSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A focused weekly routine'**
+  String get preset7DaysSubtitle;
+
+  /// No description provided for @preset30DaysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Quran in 30 days'**
+  String get preset30DaysTitle;
+
+  /// No description provided for @preset30DaysSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced daily portions'**
+  String get preset30DaysSubtitle;
+
+  /// No description provided for @preset60DaysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Quran in 60 days'**
+  String get preset60DaysTitle;
+
+  /// No description provided for @preset60DaysSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle long-form reading'**
+  String get preset60DaysSubtitle;
+
+  /// No description provided for @routineStartedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} started'**
+  String routineStartedMessage(String title);
+
+  /// No description provided for @prayerTimesDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer times are calculated locally. Verify with your local mosque if needed.'**
+  String get prayerTimesDisclaimer;
+
+  /// No description provided for @locationSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Location saved.'**
+  String get locationSaved;
+
+  /// No description provided for @notificationPermissionOffWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission is off. Reminders were disabled.'**
+  String get notificationPermissionOffWarning;
+
+  /// No description provided for @exactAlarmPermissionOffWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact alarm permission is disabled. Prayer reminders may be delayed.'**
+  String get exactAlarmPermissionOffWarning;
+
+  /// No description provided for @locationDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Location details'**
+  String get locationDetails;
+
+  /// No description provided for @updateCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Update current location'**
+  String get updateCurrentLocation;
+
+  /// No description provided for @useThisDeviceLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this device location'**
+  String get useThisDeviceLocation;
+
+  /// No description provided for @moveMapPinDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map pin to a place'**
+  String get moveMapPinDescription;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get saveChanges;
+
+  /// No description provided for @advancedCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced coordinates'**
+  String get advancedCoordinates;
+
+  /// No description provided for @advancedCoordinatesEditSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit only if you need precise coordinates'**
+  String get advancedCoordinatesEditSubtitle;
+
+  /// No description provided for @locationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location label'**
+  String get locationLabel;
+
+  /// No description provided for @locationLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Home, work, or city name'**
+  String get locationLabelHint;
+
+  /// No description provided for @latitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Latitude'**
+  String get latitude;
+
+  /// No description provided for @latitudeHelperText.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a value between -90 and 90.'**
+  String get latitudeHelperText;
+
+  /// No description provided for @longitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Longitude'**
+  String get longitude;
+
+  /// No description provided for @longitudeHelperText.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a value between -180 and 180.'**
+  String get longitudeHelperText;
+
+  /// No description provided for @savedLocationFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved location'**
+  String get savedLocationFallback;
+
+  /// No description provided for @coordinatesPrivacyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Used locally for prayer-time calculation. Coordinates are stored on this device.{timezoneText}'**
+  String coordinatesPrivacyDescription(String timezoneText);
+
+  /// No description provided for @countdownNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get countdownNow;
+
+  /// No description provided for @countdownVerySoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Very soon'**
+  String get countdownVerySoon;
+
+  /// No description provided for @countdownInHours.
+  ///
+  /// In en, this message translates to:
+  /// **'In {hours}h'**
+  String countdownInHours(int hours);
+
+  /// No description provided for @countdownInHoursMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'In {hours}h {minutes}m'**
+  String countdownInHoursMinutes(int hours, int minutes);
+
+  /// No description provided for @countdownInMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'In {minutes}m'**
+  String countdownInMinutes(int minutes);
+
+  /// No description provided for @resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resume;
+
+  /// No description provided for @routineComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Routine complete'**
+  String get routineComplete;
+
+  /// No description provided for @routineDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Routine deleted'**
+  String get routineDeleted;
+
+  /// No description provided for @chooseLocationManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose location manually'**
+  String get chooseLocationManually;
+
+  /// No description provided for @saveLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Save location'**
+  String get saveLocation;
+
+  /// No description provided for @coordinatesForPrayerTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'Coordinates for prayer times'**
+  String get coordinatesForPrayerTimes;
+
+  /// No description provided for @manualLocationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the latitude and longitude for the city, area, or address you want to use.'**
+  String get manualLocationDescription;
+
+  /// No description provided for @manualLocationPrivacyNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this device and used only for local prayer-time calculation.'**
+  String get manualLocationPrivacyNotice;
+
+  /// No description provided for @manualLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual location'**
+  String get manualLocation;
+
+  /// No description provided for @savedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved location'**
+  String get savedLocation;
+
+  /// No description provided for @useThisLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this location'**
+  String get useThisLocation;
+
+  /// No description provided for @selectedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected location'**
+  String get selectedLocation;
+
+  /// No description provided for @openStreetMapContributors.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenStreetMap contributors'**
+  String get openStreetMapContributors;
+
+  /// No description provided for @validationEnterField.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter {field}.'**
+  String validationEnterField(String field);
+
+  /// No description provided for @validationShouldBeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} should be a number.'**
+  String validationShouldBeNumber(String field);
+
+  /// No description provided for @validationMustBeBetween.
+  ///
+  /// In en, this message translates to:
+  /// **'{field} must be between {min} and {max}.'**
+  String validationMustBeBetween(String field, String min, String max);
+
+  /// No description provided for @completedTodayQuota.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} / {total} ayahs today'**
+  String completedTodayQuota(int completed, int total);
+
+  /// No description provided for @completedAyahsRatio.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed}/{total} ayahs'**
+  String completedAyahsRatio(int completed, int total);
+
+  /// No description provided for @the99BeautifulNamesOfAllah.
+  ///
+  /// In en, this message translates to:
+  /// **'The 99 Beautiful Names of Allah'**
+  String get the99BeautifulNamesOfAllah;
+
+  /// No description provided for @allNamesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'All Names · {count}'**
+  String allNamesCount(int count);
+
+  /// No description provided for @reciteThisNameInDua.
+  ///
+  /// In en, this message translates to:
+  /// **'Recite this name in your dua'**
+  String get reciteThisNameInDua;
+
+  /// No description provided for @searchNames.
+  ///
+  /// In en, this message translates to:
+  /// **'Search names'**
+  String get searchNames;
+
+  /// No description provided for @searchNamesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search names...'**
+  String get searchNamesHint;
+
+  /// No description provided for @namesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Names unavailable'**
+  String get namesUnavailable;
+
+  /// No description provided for @unableLoadAsmaUlHusna.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load Asma ul Husna right now.'**
+  String get unableLoadAsmaUlHusna;
+
+  /// No description provided for @noNamesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No names found'**
+  String get noNamesFound;
+
+  /// No description provided for @tryAnotherAsmaSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another Arabic name, transliteration, or meaning.'**
+  String get tryAnotherAsmaSearch;
 }
 
 class _AppLocalizationsDelegate
@@ -5756,8 +6322,14 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['ar', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'ar',
+    'bn',
+    'en',
+    'id',
+    'tr',
+    'ur',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -5768,8 +6340,16 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'ar':
       return AppLocalizationsAr();
+    case 'bn':
+      return AppLocalizationsBn();
     case 'en':
       return AppLocalizationsEn();
+    case 'id':
+      return AppLocalizationsId();
+    case 'tr':
+      return AppLocalizationsTr();
+    case 'ur':
+      return AppLocalizationsUr();
   }
 
   throw FlutterError(

@@ -5005,6 +5005,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Widget _buildRoutineProgressBar(double marginValue) {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ReadingPlanEntry? plan = _routinePlanForPage();
     if (plan == null) {
       return Padding(
@@ -5041,14 +5042,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: <Widget>[
                   Text(
-                    'Reading Routine',
+                    localizations.readingRoutine,
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: colors.textPrimary,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   Text(
-                    '$completedToday / $todayQuota ayahs today',
+                    localizations.completedTodayQuota(completedToday, todayQuota),
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colors.textSecondary,
                       fontWeight: FontWeight.w800,
@@ -5066,7 +5067,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           vertical: 3,
                         ),
                         child: Text(
-                          'Includes ${progress.catchUpAyahs} catch-up ayahs',
+                          localizations.includesCatchUpAyahs(progress.catchUpAyahs),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: colors.primary,
                             fontWeight: FontWeight.w900,

@@ -1,0 +1,1888 @@
+{
+  "@@locale": "bn",
+  "@dailyQuranGoalSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@removeDownloadFromOffline": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@deletedDownload": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteAllDownloadsBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@surahAyahSummary": {
+    "placeholders": {
+      "surahCount": {
+        "type": "int"
+      },
+      "ayahCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@downloadTranslationQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@translationNotInstalled": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@installedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteResourceQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@deletedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@backupSavedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@restoredBackupSummary": {
+    "placeholders": {
+      "favouritesCount": {
+        "type": "int"
+      },
+      "readingHistoryCount": {
+        "type": "int"
+      },
+      "settingsCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@downloadEquranShareText": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "@ayahRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "@juzNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@prayerTimeTitle": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      }
+    }
+  },
+  "@prayerBeginsIn": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@hoursMinutesShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@prohibitedTimeEndsIn": {
+    "placeholders": {
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "@compassAccuracyLowWithDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@bearingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@targetDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@headingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@turnRightDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@turnLeftDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@kilometersToKaaba": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "@dhikrComplete": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@dhikrSessionCounted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@minutesAfterMaghrib": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@sunriseProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@zawalProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@sunsetProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@minutesBefore": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@positiveOrNegativeMinutes": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "@minutesBeforePrayer": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@savedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@surahLabel": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    },
+    "ayah": {
+      "type": "int"
+    }
+  },
+  "@arabicCategoriesDuasOffline": {
+    "placeholders": {
+      "categoryCount": {
+        "type": "int"
+      },
+      "duaCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@savedDuasCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@duaCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "label": {
+      "type": "String"
+    }
+  },
+  "@reciterNeedsTimings": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@installedLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@downloadAllAyahsConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@timingsNeedToBeDownloaded": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@autoAdvancesToNextPreset": {
+    "placeholders": {
+      "nextPreset": {
+        "type": "String"
+      }
+    }
+  },
+  "@counts33To33To34": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "@onStreakDay": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "@jumpToAyahIn": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    }
+  },
+  "@ayahLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@versesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@surahVerseCount": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzNewTodayLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsMemorized": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzOverdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAddAyahsButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSurahsMastered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSessionProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzExitSessionBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompletedInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzNextReviewInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStatsNextDueValue": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStatsNextDueDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStatsRetentionSuffix": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStatsPill": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzReminderDueCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitNextAyah": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitProgress": {
+    "placeholders": {
+      "introduced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueRevision": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueMaintenance": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStartMemorizingSurah": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStartMemorizingJuz": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitAyahCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSurahsMasteredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzEmptySessionBody": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzCompleteSubtitleMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteNextDueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteGraduatedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitCompleteTitle": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appTitle": "ইকোরান",
+  "home": "বাড়ি",
+  "quran": "কুরআন",
+  "prayer": "প্রার্থনা",
+  "duas": "দুআস",
+  "more": "আরও",
+  "settings": "সেটিংস",
+  "downloads": "ডাউনলোড",
+  "statistics": "পরিসংখ্যান",
+  "qibla": "কিবলা",
+  "tasbih": "তসবিহ",
+  "asmaUlHusna": "আসমা উল হুসনা",
+  "language": "ভাষা",
+  "systemDefault": "সিস্টেম ডিফল্ট",
+  "english": "ইংরেজি",
+  "arabic": "আরবি",
+  "indonesian": "ইন্দোনেশিয়ান",
+  "urdu": "উর্দু",
+  "turkish": "তুর্কি",
+  "bengali": "বাংলা",
+  "vibration": "কম্পন",
+  "vibrationSubtitle": "নেভিগেট করার সময় হ্যাপটিক প্রতিক্রিয়া সক্ষম করুন।",
+  "showReadingHistory": "পড়ার ইতিহাস দেখান",
+  "showReadingHistorySubtitle": "আপনাকে 7টি শেষ পঠিত সূরা পর্যন্ত দেখায়।",
+  "general": "সাধারণ",
+  "generalSubtitle": "অ্যাপের আচরণ এবং ইতিহাস",
+  "reading": "পড়া",
+  "readingSubtitle": "কুরআন প্রদর্শন ও অনুবাদ",
+  "cardView": "কার্ড ভিউ",
+  "cardViewSubtitle": "প্রতিটি শ্লোক আলাদাভাবে প্রদর্শন করে, অথবা সমস্ত এক পৃষ্ঠায়।",
+  "displayTranslation": "প্রদর্শন অনুবাদ",
+  "displayTranslationSubtitle": "কার্ড ভিউতে প্রতিটি আয়াতের জন্য অনুবাদ প্রদর্শন করুন।",
+  "displayTransliteration": "ট্রান্সলিটারেশন প্রদর্শন করুন",
+  "displayTransliterationSubtitle": "কার্ড ভিউতে প্রতিটি পদের জন্য প্রতিবর্ণীকরণ দেখান।",
+  "dailyQuranGoal": "প্রতিদিনের কুরআন লক্ষ্য",
+  "dailyQuranGoalSubtitle": "প্রতিদিন {count} আয়াত",
+  "translation": "অনুবাদ",
+  "reciter": "আবৃত্তিকারী",
+  "audio": "অডিও",
+  "audioSubtitle": "আবৃত্তিকার এবং প্লেব্যাক",
+  "downloadableResources": "ডাউনলোডযোগ্য সম্পদ",
+  "downloadableResourcesSubtitle": "তাফসির এবং অডিও টাইমিং প্যাক",
+  "prayerTimesSettings": "নামাজের সময় সেটিংস",
+  "prayerTimesSettingsSubtitle": "অবস্থান, পদ্ধতি, আসর, সময় বিন্যাস, এবং অফসেটগুলি পরিচালনা করুন।",
+  "appearance": "চেহারা",
+  "appearanceSubtitle": "থিম, রঙ এবং প্রদর্শন মোড",
+  "themeMode": "থিম মোড",
+  "colorScheme": "রঙের স্কিম",
+  "data": "ডেটা",
+  "dataSubtitle": "সংরক্ষিত স্থানীয় ডেটা ব্যাকআপ, পুনরুদ্ধার বা সাফ করুন",
+  "backupData": "ব্যাকআপ ডেটা",
+  "backupDataSubtitle": "প্রিয়, পড়ার ইতিহাস, পাঠক, পাঠ্যের আকার এবং সমস্ত সেটিংস রপ্তানি করে।",
+  "restoreData": "ডেটা পুনরুদ্ধার করুন",
+  "restoreDataSubtitle": "একটি ব্যাকআপ ফাইল থেকে প্রিয়, পড়ার ইতিহাস, পাঠক, পাঠ্যের আকার এবং সংরক্ষিত সেটিংস পুনরুদ্ধার করে।",
+  "clearReadingHistory": "পড়ার ইতিহাস পরিষ্কার করুন",
+  "clearReadingHistorySubtitle": "শেষ পঠিত, পুনঃসূচনা অবস্থান এবং কুরআন পড়ার অগ্রগতি সরিয়ে দেয়।",
+  "clearFavourites": "সাফ প্রিয়",
+  "clearFavouritesSubtitle": "সংরক্ষিত আয়াত, ফোল্ডার, নোট, ট্যাগ এবং পছন্দসই সরিয়ে দেয়।",
+  "cancel": "বাতিল করুন",
+  "save": "সংরক্ষণ করুন",
+  "delete": "মুছুন",
+  "download": "ডাউনলোড করুন",
+  "update": "আপডেট",
+  "retry": "আবার চেষ্টা করুন",
+  "continueReading": "পড়া চালিয়ে যান",
+  "lastRead": "শেষ পড়া",
+  "beginWithQuran": "কুরআন পাঠ",
+  "startReadingSubtitle": "পড়া শুরু করুন এবং আপনার স্থান এখানে প্রদর্শিত হবে.",
+  "startReading": "পড়া শুরু করুন",
+  "continueListening": "শোনা চালিয়ে যান",
+  "beginListeningSubtitle": "আবৃত্তি শুনুন এবং আপনার স্থান এখানে প্রদর্শিত হবে.",
+  "startReadingRoutine": "একটি পড়ার রুটিন শুরু করুন",
+  "buildDailyQuranHabit": "প্রতিদিন কুরআন পড়ার অভ্যাস গড়ে তুলুন",
+  "start": "শুরু করুন",
+  "readingRoutine": "পড়ার রুটিন",
+  "continueRoutine": "রুটিন চালিয়ে যান",
+  "dailyQuranCompanion": "প্রতিদিনের কুরআন সঙ্গী",
+  "dailyQuranCompanionSubtitle": "আপনার আবৃত্তি এবং প্রতিদিনের সরঞ্জামগুলি নিন",
+  "dailyTools": "দৈনিক সরঞ্জাম",
+  "dailyToolsSubtitle": "প্রয়োজনীয় জিনিসগুলিতে দ্রুত অ্যাক্সেস",
+  "exploreAllFeatures": "সমস্ত বৈশিষ্ট্য অন্বেষণ",
+  "dailyAyah": "দৈনিক আয়াহ",
+  "seeAll": "সব দেখুন",
+  "surahs": "সূরাগুলো",
+  "juz": "জুজ",
+  "pages": "পাতা",
+  "saved": "সংরক্ষিত",
+  "quranJourney": "কুরআন যাত্রা",
+  "nextPrayer": "পরবর্তী প্রার্থনা",
+  "prayerTimes": "নামাজের সময়",
+  "exploreQibla": "কিবলা অন্বেষণ করুন",
+  "tasbihCounter": "তাসবিহ কাউন্টার",
+  "duasAndAzkar": "দোয়া ও আজকার",
+  "readingPlans": "পড়ার পরিকল্পনা",
+  "quranStatistics": "কুরআন পরিসংখ্যান",
+  "search": "অনুসন্ধান করুন",
+  "dua": "দুআ",
+  "player": "প্লেয়ার",
+  "searchQuran": "কুরআন অনুসন্ধান করুন",
+  "searchHintSurah": "সূরার নাম বা সংখ্যা...",
+  "searchHintJuz": "জুজ নম্বর বা সূরার নাম...",
+  "searchHintPage": "পৃষ্ঠা নম্বর, সূরা বা জুজ...",
+  "searchHintSaved": "সংরক্ষিত আয়াত, সূরা, নোট, বা নম্বর...",
+  "searchHintText": "কুরআন আরবি বা অনুবাদ অনুসন্ধান করুন...",
+  "savedAyahs": "সংরক্ষিত আয়াত",
+  "ayahNumber": "আয়াহ {number}",
+  "play": "খেলা",
+  "pause": "বিরতি",
+  "next": "পরবর্তী",
+  "previous": "আগের",
+  "repeat": "পুনরাবৃত্তি করুন",
+  "audioOptions": "অডিও বিকল্প",
+  "dismissPlayer": "খেলোয়াড়কে বরখাস্ত করুন",
+  "playbackOptions": "প্লেব্যাক বিকল্প",
+  "previousAyah": "আগের আয়াত",
+  "nextAyah": "পরবর্তী আয়াত",
+  "autoPlayback": "অটো প্লেব্যাক",
+  "repeatInterval": "ব্যবধান পুনরাবৃত্তি করুন",
+  "downloadSurahAudio": "সূরা অডিও ডাউনলোড করুন",
+  "deleteDownloadedAudio": "ডাউনলোড করা অডিও মুছুন",
+  "deleteDownloadQuestion": "ডাউনলোড মুছবেন?",
+  "removeDownloadFromOffline": "অফলাইন স্টোরেজ থেকে {title} সরাবেন?",
+  "deletedDownload": "মুছে ফেলা হয়েছে {title}",
+  "deleteAllDownloadsQuestion": "সব ডাউনলোড মুছবেন?",
+  "deleteAllDownloadsBody": "এটি {count} ডাউনলোড করা অডিও ফাইল ({size}) সরিয়ে দেবে।",
+  "deleteAll": "সব মুছুন",
+  "deletedAllDownloadedAudio": "সমস্ত ডাউনলোড করা অডিও মুছে ফেলা হয়েছে৷",
+  "offlineAudio": "অফলাইন অডিও",
+  "surahAyahSummary": "{surahCount} সূরাসমূহ • {ayahCount} আয়াত",
+  "clearAll": "সমস্ত সাফ করুন",
+  "cleanupPreview": "পরিচ্ছন্নতার পূর্বরূপ",
+  "downloadedSurahs": "ডাউনলোড করা সূরা",
+  "downloadedAyahs": "ডাউনলোড করা আয়াত",
+  "potentialSpaceToFree": "মুক্ত করার জন্য সম্ভাব্য স্থান",
+  "cleanupDoesNotRemoveData": "ক্লিনআপ কখনই পছন্দসই, নোট, পড়ার পরিকল্পনা, কুরআন পাঠ বা সেটিংস সরিয়ে দেয় না।",
+  "reviewDeletion": "পর্যালোচনা মুছে ফেলা",
+  "noDownloadedAudioYet": "এখনও কোন ডাউনলোড করা অডিও.",
+  "downloadedAudioEmpty": "ডাউনলোড করা সূরা এবং আয়াত এখানে পাঠকারী দ্বারা গোষ্ঠীবদ্ধভাবে প্রদর্শিত হবে।",
+  "ayahs": "আয়াত",
+  "deleteDownload": "ডাউনলোড মুছুন",
+  "playbackSpeed": "প্লেব্যাক গতি",
+  "locationPermissionRequired": "অবস্থান অনুমতি প্রয়োজন",
+  "unableToReconnect": "পুনরায় সংযোগ করতে অক্ষম৷",
+  "reciterOptions": "আবৃত্তিকারী বিকল্প",
+  "close": "বন্ধ",
+  "theme": "থিম",
+  "themeModeDark": "অন্ধকার",
+  "themeModeLight": "আলো",
+  "themeModeSystem": "অটো",
+  "themeModeDialogTitle": "থিম মোড",
+  "themeModeDarkSubtitle": "সবসময় নাইট মোড ব্যবহার করুন।",
+  "themeModeLightSubtitle": "সর্বদা লাইট মোড ব্যবহার করুন।",
+  "themeModeSystemSubtitle": "সিস্টেম থিম অনুসরণ করুন.",
+  "colorSchemeDialogTitle": "রঙের স্কিম",
+  "translationLanguage": "অনুবাদের ভাষা",
+  "notDownloaded": "ডাউনলোড করা হয়নি",
+  "playbackRate": "প্লেব্যাক রেট",
+  "arabicTextSize": "আরবি পাঠ্য আকার",
+  "translationTextSize": "অনুবাদ পাঠের আকার",
+  "resourcesUnavailable": "সম্পদ অনুপলব্ধ",
+  "resourcesManifestUnavailable": "রিসোর্স ম্যানিফেস্ট লোড করতে অক্ষম৷",
+  "tafsir": "তাফসির",
+  "audioTimings": "অডিও সময়",
+  "translations": "অনুবাদ",
+  "refreshManifest": "ম্যানিফেস্ট রিফ্রেশ করুন",
+  "checkGithubReleases": "পরিবর্তনের জন্য GitHub রিলিজ চেক করুন",
+  "noResourcesListed": "ম্যানিফেস্টে তালিকাভুক্ত কোনো সম্পদ নেই।",
+  "selected": "নির্বাচিত",
+  "translationUnsupported": "এই অনুবাদ এখনও সমর্থিত নয়.",
+  "translationNotInManifest": "এই অনুবাদ রিসোর্স ম্যানিফেস্টে নেই।",
+  "downloadTranslationQuestion": "{name} ডাউনলোড করবেন?",
+  "translationNotInstalled": "এই অনুবাদটি এই ডিভাইসে ইনস্টল করা নেই৷ {size}",
+  "installedResource": "{name} ইনস্টল করা হয়েছে।",
+  "unableInstallResource": "এই সম্পদ ইনস্টল করতে অক্ষম.",
+  "deleteResourceQuestion": "{name} মুছবেন?",
+  "deleteResourceBody": "এটি এই ডিভাইস থেকে ডাউনলোড করা ফাইলগুলিকে সরিয়ে দেয়৷",
+  "deletedResource": "{name} মুছে ফেলা হয়েছে।",
+  "ayahsPerDay": "প্রতিদিন আয়াত",
+  "enterGoalRange": "1 থেকে 1000 আয়াত পর্যন্ত একটি লক্ষ্য লিখুন",
+  "clearReadingHistoryWarning": "সতর্কতা: এটি শেষ পঠিত, পুনরায় শুরু করার অবস্থান, পরিসংখ্যান এবং নিয়মিত দিনের অগ্রগতি পরিষ্কার করবে।",
+  "clearFavouritesWarning": "সতর্কতা: এটি প্রতিটি সংরক্ষিত আয়াত, ফোল্ডার, নোট, ট্যাগ এবং পছন্দসই পরিষ্কার করবে।",
+  "no": "না",
+  "yes": "হ্যাঁ",
+  "restoreBackup": "ব্যাকআপ পুনরুদ্ধার করুন",
+  "restoreBackupWarning": "এটি ব্যাকআপ ফাইলের বিষয়বস্তুর সাথে আপনার বর্তমান পছন্দ, পড়ার ইতিহাস এবং সংরক্ষিত সেটিংস প্রতিস্থাপন করবে।",
+  "restore": "পুনরুদ্ধার করুন",
+  "backupReadyToShare": "ব্যাকআপ ফাইল শেয়ার করার জন্য প্রস্তুত।",
+  "backupSavedTo": "ব্যাকআপ {path} এ সংরক্ষণ করা হয়েছে",
+  "unableCreateBackup": "ব্যাকআপ ফাইল তৈরি করতে অক্ষম৷",
+  "restoredBackupSummary": "পুনরুদ্ধার করা হয়েছে {favouritesCount} প্রিয়, {readingHistoryCount} ইতিহাস এন্ট্রি, এবং {settingsCount} সেটিংস।",
+  "unableRestoreBackup": "নির্বাচিত ব্যাকআপ পুনরুদ্ধার করতে অক্ষম৷",
+  "locationAndCalculationSettings": "অবস্থান এবং গণনা সেটিংস",
+  "quranSearch": "কুরআন অনুসন্ধান",
+  "searchArabicAndTranslation": "আরবি এবং অনুবাদ অনুসন্ধান করুন",
+  "recitationsAndAudioControls": "আবৃত্তি এবং অডিও নিয়ন্ত্রণ",
+  "compassAndDirection": "কম্পাস এবং দিকনির্দেশ",
+  "offlineAudioAndCleanup": "অফলাইন অডিও এবং পরিষ্কার",
+  "plansGoalsProgress": "পরিকল্পনা, লক্ষ্য এবং অগ্রগতি",
+  "calmDhikrCounter": "শান্ত জিকির পাল্টা",
+  "the99BeautifulNames": "99টি সুন্দর নাম",
+  "worshipTrendsAndStreaks": "উপাসনা প্রবণতা এবং streaks",
+  "fontsReciterAppBehavior": "হরফ, আবৃত্তিকারী, অ্যাপ আচরণ",
+  "switchLightOrNightMode": "লাইট বা নাইট মোড পরিবর্তন করুন",
+  "yourIslamicCompanion": "আপনার ইসলামিক সঙ্গী",
+  "moreHeroSubtitle": "কিবলা, ডাউনলোড, সেটিংস, প্ল্যান এবং টুলস এক নিরিবিলি জায়গায় জড়ো হয়েছে।",
+  "openRoutine": "খোলা রুটিন",
+  "aboutAppBody": "eQuran হল একটি আধুনিক কুরআন সহচর যা মনোযোগ দিয়ে পড়া, শোনা এবং প্রতিদিনের প্রতিফলনের জন্য ডিজাইন করা হয়েছে।",
+  "versionLabel": "সংস্করণ {version}",
+  "downloadEquran": "ইকোরান ডাউনলোড করুন",
+  "downloadEquranShareText": "এফ-ড্রয়েডে ইকোরান ডাউনলোড করুন: {url}",
+  "unableOpenShareSheet": "শেয়ার শীট খুলতে অক্ষম.",
+  "aboutThisApp": "এই অ্যাপ সম্পর্কে",
+  "appDetailsAndVersion": "অ্যাপের বিবরণ এবং সংস্করণ",
+  "shareApp": "অ্যাপ শেয়ার করুন",
+  "shareAppSubtitle": "অন্যদের কাছে ইকুরআন পাঠান",
+  "feedbackContact": "প্রতিক্রিয়া / যোগাযোগ",
+  "feedbackContactSubtitle": "সমস্যা বা ইমেল সমর্থন রিপোর্ট করুন",
+  "reportIssues": "সমস্যা রিপোর্ট করুন",
+  "reportIssuesSubtitle": "GitHub সমস্যা ট্র্যাকার খুলুন।",
+  "unableOpenIssueTracker": "সমস্যা ট্র্যাকার খুলতে অক্ষম।",
+  "emailSupport": "ইমেল সমর্থন",
+  "unableOpenEmailClient": "ইমেল ক্লায়েন্ট খুলতে অক্ষম।",
+  "feedbackThanks": "আমরা আপনার প্রতিক্রিয়া এবং পরামর্শের প্রশংসা করি।",
+  "browseBySurah": "সূরা দ্বারা ব্রাউজ করুন",
+  "browseByJuz": "Juz দ্বারা ব্রাউজ করুন",
+  "browseByPage": "পৃষ্ঠা দ্বারা ব্রাউজ করুন",
+  "closeSearch": "অনুসন্ধান বন্ধ করুন",
+  "noSurahsFound": "কোন সূরা পাওয়া যায়নি।",
+  "ayahRange": "আয়াহ {start}-{end}",
+  "juzNumber": "জুজ {number}",
+  "prayerNameFajr": "ফজর",
+  "prayerNameSunrise": "সূর্যোদয়",
+  "prayerNameDhuhr": "ধুহর",
+  "prayerNameAsr": "আসর",
+  "prayerNameMaghrib": "মাগরিব",
+  "prayerNameIsha": "ইশা",
+  "today": "আজ",
+  "previousDay": "আগের দিন",
+  "nextDay": "পরের দিন",
+  "middleOfNight": "মধ্যরাত",
+  "lastThirdStarts": "শেষ তৃতীয় শুরু",
+  "useCurrentLocation": "বর্তমান অবস্থান ব্যবহার করুন",
+  "chooseOnMap": "মানচিত্রে চয়ন করুন",
+  "enterCoordinatesManually": "ম্যানুয়ালি স্থানাঙ্ক লিখুন",
+  "locationUseNotice": "আপনার অবস্থান শুধুমাত্র প্রার্থনা সময় গণনার জন্য ব্যবহার করা হয়.",
+  "timesCalculatedLocally": "আপনার ডিভাইসে স্থানীয়ভাবে সময় গণনা করা হয়।",
+  "prayerTimesNeedLocation": "নামাজের সময় একটি অবস্থান প্রয়োজন",
+  "prayerTimesLocationSubtitle": "আপনার সঠিক অবস্থানের জন্য ফজর, ধুহর, আসর, মাগরিব এবং ইশা গণনা করুন।",
+  "setUpLocation": "অবস্থান সেট আপ করুন",
+  "chooseLocationForNextPrayer": "এখানে পরবর্তী প্রার্থনার সময় দেখানোর জন্য একটি স্থান চয়ন করুন।",
+  "prayerTimeTitle": "{prayer} সময়",
+  "prayerBeginsIn": "{prayer} শুরু হয় {countdown} এ",
+  "minutesShort": "{minutes} মিনিট",
+  "hoursMinutesShort": "{hours}ঘণ্টা {minutes}মি",
+  "exactAlarmPermissionOff": "সঠিক অ্যালার্ম অনুমতি বন্ধ আছে. প্রার্থনা অনুস্মারক বিলম্বিত হতে পারে.",
+  "zawal": "জাওয়াল",
+  "sunset": "সূর্যাস্ত",
+  "morning": "সকাল",
+  "prohibitedTimeEndsIn": "নিষিদ্ধ সময় {countdown} এ শেষ হবে",
+  "selectPrayerDate": "প্রার্থনার তারিখ নির্বাচন করুন",
+  "appSettings": "অ্যাপ সেটিংস",
+  "unableGetLocation": "অবস্থান পেতে অক্ষম.",
+  "qiblaBearingUnavailable": "বর্তমান অবস্থান স্থানাঙ্ক অনুপলব্ধ.",
+  "currentLocationTimedOut": "বর্তমান অবস্থানের সময় শেষ হয়েছে৷ অবস্থান পরিষেবাগুলি পরীক্ষা করুন এবং আবার চেষ্টা করুন৷",
+  "compassUnavailable": "কম্পাস অনুপলব্ধ. দেখানো ভারবহন ব্যবহার করুন.",
+  "qiblaCalibrationHint": "সর্বোত্তম নির্ভুলতার জন্য, আপনার ফোনটিকে ফ্ল্যাট ধরে রাখুন এবং ক্যালিব্রেট করতে এটিকে একটি চিত্র-8-এ সরান।",
+  "compassAccuracyLow": "কম্পাস নির্ভুলতা কম হতে পারে।",
+  "compassAccuracyLowWithDegrees": "কম্পাস নির্ভুলতা কম হতে পারে ({degrees}°)।",
+  "qiblaLocationServicesDisabled": "কিবলা ব্যবহার করতে অবস্থান পরিষেবা চালু করুন।",
+  "qiblaLocationPermissionNeeded": "আপনার বর্তমান ডিভাইসের অবস্থান থেকে কিবলা গণনা করার জন্য অবস্থানের অনুমতি প্রয়োজন।",
+  "qiblaLocationPermissionBlocked": "অবস্থানের অনুমতি ব্লক করা হয়েছে। কিবলা ব্যবহার করতে অ্যাপ সেটিংস থেকে এটি সক্রিয় করুন।",
+  "qiblaLocationUnavailableMessage": "আমরা আপনার বর্তমান অবস্থান পড়তে পারিনি. অবস্থান পরিষেবাগুলি পরীক্ষা করুন এবং আবার চেষ্টা করুন৷",
+  "bearingDegrees": "বিয়ারিং {degrees}°",
+  "targetDegrees": "লক্ষ্য {degrees}°",
+  "headingDegrees": "শিরোনাম {degrees}°",
+  "heading": "শিরোনাম",
+  "facingQibla": "কিবলামুখী",
+  "turnRightDegrees": "ডান দিকে ঘুরুন {degrees}°",
+  "turnLeftDegrees": "বাম দিকে ঘুরুন {degrees}°",
+  "refreshCurrentLocation": "বর্তমান অবস্থান রিফ্রেশ করুন",
+  "findingYourLocation": "আপনার অবস্থান খোঁজা",
+  "currentLocationRequired": "বর্তমান অবস্থান প্রয়োজন",
+  "qiblaRequiresLocation": "এই ডিভাইস থেকে কিবলার লাইভ বর্তমান অবস্থান প্রয়োজন। অবস্থান পরিষেবা এবং চালিয়ে যাওয়ার অনুমতি সক্ষম করুন৷",
+  "findingLocation": "অবস্থান খোঁজা হচ্ছে",
+  "currentLocationUnavailable": "বর্তমান অবস্থান অনুপলব্ধ",
+  "currentLocation": "বর্তমান অবস্থান",
+  "distanceUnavailable": "দূরত্ব অনুপলব্ধ",
+  "kilometersToKaaba": "কাবা থেকে {distance} কিমি",
+  "resetCounter": "কাউন্টার রিসেট করুন",
+  "recentSessions": "সাম্প্রতিক সেশন",
+  "haptics": "হ্যাপটিক্স",
+  "countSomeDhikrFirst": "প্রথমে কিছু যিকির গণনা করুন",
+  "dhikrSessionSaved": "Dhikr অধিবেশন সংরক্ষিত",
+  "postPrayerDhikr": "নামাজের পরের জিকির",
+  "postPrayerDhikrComplete": "নামাজের পরের জিকির সম্পূর্ণ",
+  "dhikrComplete": "{label} সম্পূর্ণ",
+  "todayMetric": "আজ",
+  "rounds": "রাউন্ড",
+  "streak": "স্ট্রিক",
+  "savedDhikrSessionsEmpty": "সংরক্ষিত dhikr সেশন এখানে প্রদর্শিত হবে.",
+  "dhikrSessionCounted": "{target} এর {count} গণনা করা হয়েছে • {time}",
+  "location": "অবস্থান",
+  "locationSubtitle": "শুধুমাত্র প্রার্থনার সময় গণনার জন্য ব্যবহৃত হয়",
+  "useCurrentLocationDescription": "প্রার্থনা গণনার জন্য এই ডিভাইসের অবস্থান সংরক্ষণ করুন.",
+  "moveMapUnderPin": "একটি কেন্দ্রীভূত পিনের নীচে মানচিত্রটি সরান৷",
+  "enterLatitudeAndLongitude": "অক্ষাংশ এবং দ্রাঘিমাংশ লিখুন।",
+  "clearSavedLocation": "সংরক্ষিত অবস্থান সাফ করুন",
+  "clearSavedLocationSubtitle": "আপনি আবার নির্বাচন না করা পর্যন্ত প্রার্থনার সময় বিরতি দেওয়া হবে।",
+  "calculation": "হিসাব",
+  "calculationSubtitle": "পদ্ধতি, আসর, উচ্চ অক্ষাংশ, এবং সময়ের বিন্যাস",
+  "calculationMethod": "গণনা পদ্ধতি",
+  "asrMethod": "আসর পদ্ধতি",
+  "highLatitudeAdjustment": "উচ্চ অক্ষাংশ সমন্বয়",
+  "highLatitudeAdjustmentSubtitle": "যখন ফজর বা ইশা দূর উত্তর বা দক্ষিণের অবস্থানে গণনা করা কঠিন হয় তখন ব্যবহৃত হয়।",
+  "timeFormat": "সময়ের বিন্যাস",
+  "useLocationTimezone": "অবস্থানের সময় অঞ্চল ব্যবহার করুন",
+  "locationTimezoneSubtitle": "এই ডিভাইসের টাইমজোনের পরিবর্তে সেভ করা লোকেশনের টাইমজোন ব্যবহার করুন।",
+  "customMethod": "কাস্টম পদ্ধতি",
+  "fajrAngle": "ফজর কোণ",
+  "ishaMode": "ইশা মোড",
+  "maghribAngle": "মাগরিব কোণ",
+  "leaveBlankToUseSunset": "সূর্যাস্ত ব্যবহার করার জন্য ফাঁকা ছেড়ে দিন।",
+  "fixedIshaTime": "এশার নির্দিষ্ট সময়",
+  "latestIshaTime": "সর্বশেষ ইশার সময়",
+  "baseIshaAngle": "বেস ইশা কোণ",
+  "baseIshaInterval": "বেস ইশার ব্যবধান",
+  "ishaAngle": "ইশা কোণ",
+  "ishaInterval": "ইশার ব্যবধান",
+  "leaveBlankToUseBaseIshaAngle": "বেস ইশা কোণ ব্যবহার করতে ফাঁকা ছেড়ে দিন।",
+  "useIshaAngle": "ইশা কোণ ব্যবহার করুন",
+  "minutesAfterMaghrib": "মাগরিবের পর {minutes} মিনিট",
+  "prohibitedTimes": "নিষিদ্ধ সময়",
+  "prohibitedTimesSubtitle": "সূর্যোদয়, জাওয়াল এবং সূর্যাস্ত জানালা",
+  "sunriseProhibitedTime": "সূর্যোদয়ের নিষেধ সময়",
+  "sunriseProhibitedTimeMinutes": "সূর্যোদয়ের পর {minutes} মিনিট",
+  "zawalProhibitedTime": "জাওয়াল নিষিদ্ধ সময়",
+  "zawalProhibitedTimeMinutes": "ধুহরের আগে {minutes} মিনিট",
+  "sunsetProhibitedTime": "সূর্যাস্ত নিষিদ্ধ সময়",
+  "sunsetProhibitedTimeMinutes": "মাগরিবের {minutes} মিনিট আগে",
+  "prayerReminders": "প্রার্থনা অনুস্মারক",
+  "prayerRemindersSubtitle": "প্রতিটি নামাজের আগে বিজ্ঞপ্তি",
+  "prayerRemindersEnabled": "প্রার্থনা অনুস্মারক",
+  "prayerRemindersEnabledSubtitle": "প্রতিটি নামাজের সময় আগে বিজ্ঞপ্তি পান।",
+  "notificationsPermission": "বিজ্ঞপ্তি অনুমতি",
+  "exactAlarmPermission": "সঠিক অ্যালার্ম / অ্যালার্ম এবং অনুস্মারক অনুমতি",
+  "enable": "সক্ষম করুন",
+  "open": "খোলা",
+  "notificationPermissionOff": "বিজ্ঞপ্তি অনুমতি বন্ধ আছে.",
+  "exactAlarmPermissionDisabled": "সঠিক অ্যালার্ম অনুমতি অক্ষম করা হয়েছে। প্রার্থনা অনুস্মারক বিলম্বিত হতে পারে.",
+  "openAppSettings": "অ্যাপ সেটিংস খুলুন",
+  "requestPermission": "অনুমতির অনুরোধ করুন",
+  "openAlarmPermissionSettings": "অ্যালার্ম অনুমতি সেটিংস খুলুন",
+  "chooseLocationBeforeReminders": "অনুস্মারক নির্ধারিত হওয়ার আগে একটি অবস্থান চয়ন করুন৷",
+  "notifyAtSavedPrayerTime": "সংরক্ষিত নামাজের সময় অবহিত করুন।",
+  "reminderTime": "অনুস্মারক সময়",
+  "atPrayerTime": "নামাজের সময়",
+  "minutesBefore": "{minutes} মিনিট আগে",
+  "schedule1MinuteExactTest": "1 মিনিটের সঠিক পরীক্ষার সময়সূচী",
+  "schedule1MinuteExactTestSubtitle": "প্রার্থনা অনুস্মারক সময়সূচী ব্যবহার করে.",
+  "offsetsAreAppliedAfterBaseCalculation": "বেস গণনার পরে অফসেট প্রয়োগ করা হয়। শুধুমাত্র যখন আপনার একটি বিশ্বস্ত স্থানীয় সময়সূচী মেলাতে হবে তখনই ইতিবাচক বা নেতিবাচক মিনিট ব্যবহার করুন।",
+  "manualOffsets": "ম্যানুয়াল অফসেট",
+  "manualOffsetsSubtitle": "সূক্ষ্ম সুর গণনা বার",
+  "noManualAdjustment": "ম্যানুয়াল সামঞ্জস্য নেই",
+  "positiveOrNegativeMinutes": "{value} মিনিট",
+  "prayerTimesExperimental": "নামাজের সময়গুলি বর্তমানে পরীক্ষামূলক এবং স্থানীয় মসজিদ বা অফিসিয়াল সময়সূচী থেকে আলাদা হতে পারে। তাদের উপর নির্ভর করার আগে যাচাই করুন.",
+  "bestMethodAfterLocationSaved": "অবস্থান সংরক্ষণ করার পরে সেরা পদ্ধতি",
+  "minutesBeforePrayer": "নামাজের {minutes} মিনিট আগে",
+  "clear": "পরিষ্কার",
+  "enablePrayerTracking": "প্রার্থনা ট্র্যাকিং সক্ষম করুন",
+  "trackYourDailyPrayers": "আপনার দৈনন্দিন প্রার্থনা ট্র্যাক",
+  "trackYourDailyPrayersDescription": "আপনার ডিভাইসে প্রতিটি প্রার্থনা ব্যক্তিগতভাবে লগ করুন। আপনার ডেটা কখনই আপনার ফোন থেকে যায় না।",
+  "maybeLater": "হয়তো পরে",
+  "logEachPrayerPrivately": "আপনার ডিভাইসে প্রতিটি প্রার্থনা ব্যক্তিগতভাবে লগ করুন। আপনার ডেটা কখনই আপনার ফোন থেকে যায় না।",
+  "enablePrayerTrackingLabel": "প্রার্থনা ট্র্যাকিং সক্ষম করুন →",
+  "somePrayersNotYetAvailable": "কিছু প্রার্থনা এখনও পাওয়া যায় নি এবং সংরক্ষিত হয়নি।",
+  "prayerLogSaved": "প্রার্থনা লগ সংরক্ষিত",
+  "addNewFolder": "নতুন ফোল্ডার",
+  "editNote": "নোট সম্পাদনা করুন",
+  "moveToFolder": "ফোল্ডারে সরান",
+  "editTags": "ট্যাগ সম্পাদনা করুন",
+  "savedAyah": "সংরক্ষিত আয়াত",
+  "removeSavedAyah": "সংরক্ষিত আয়াত সরান?",
+  "removeSavedAyahBody": "এটি আপনার সংরক্ষিত লাইব্রেরি থেকে আয়াতটি মুছে ফেলবে।",
+  "remove": "সরান",
+  "personalLibrary": "ব্যক্তিগত লাইব্রেরি",
+  "savedCount": "{count} সংরক্ষিত",
+  "all": "সব",
+  "favourites": "প্রিয়",
+  "notes": "নোট",
+  "folders": "ফোল্ডার",
+  "tags": "ট্যাগ",
+  "manageFolders": "পরিচালনা করুন",
+  "surahLabel": "{surahName} • আয়াহ {ayah}",
+  "showTafsir": "তাফসির দেখান",
+  "saveToLibrary": "লাইব্রেরিতে সংরক্ষণ করুন",
+  "folderTagsAndNote": "ফোল্ডার, ট্যাগ এবং ব্যক্তিগত নোট",
+  "ayahDetails": "আয়াত বিস্তারিত",
+  "newFolder": "নতুন ফোল্ডার",
+  "create": "তৈরি করুন",
+  "translationOption": "অনুবাদ",
+  "showAyahTranslation": "আয়াত অনুবাদ দেখান",
+  "transliterationOption": "ট্রান্সলিটারেশন",
+  "showAyahTransliteration": "আয়াত প্রতিবর্ণীকরণ দেখান",
+  "cardViewOption": "কার্ড ভিউ",
+  "readOneAyahPerCard": "কার্ড প্রতি একটি আয়াত পড়ুন",
+  "chooseAnAction": "একটি কর্ম চয়ন করুন",
+  "playThisAyah": "এই আয়াত বাজান",
+  "shareImage": "ছবি শেয়ার করুন",
+  "searchCategories": "অনুসন্ধান বিভাগ",
+  "clearSearch": "সাফ অনুসন্ধান",
+  "categories": "ক্যাটাগরি",
+  "noMatchingCategories": "কোনো মিলে যাওয়া বিভাগ নেই",
+  "trySearchingArabicWord": "অন্য আরবি শব্দ বা বাক্যাংশ দিয়ে অনুসন্ধান করার চেষ্টা করুন।",
+  "duasUnavailable": "দোয়া অনুপলব্ধ",
+  "hisnAlMuslimNotLoaded": "হিসন আল মুসলিম অফলাইন সম্পদ থেকে লোড করা যাবে না.",
+  "retryAction": "আবার চেষ্টা করুন",
+  "noDuasFound": "কোন দুআ পাওয়া যায়নি",
+  "offlineHisnAlMuslimEmpty": "অফলাইন হিসন আল মুসলিম ফাইলে কোন দুআ ছিল না।",
+  "hisnAlMuslim": "হিসান আল মুসলিম",
+  "arabicCategoriesDuasOffline": "{categoryCount} আরবি বিভাগ - {duaCount} duas অফলাইন",
+  "favouriteDuas": "প্রিয় দুআ",
+  "favourite": "প্রিয়",
+  "removeFavourite": "প্রিয় সরান",
+  "saveDuasHere": "দ্রুত অ্যাক্সেসের জন্য এখানে দোয়া সংরক্ষণ করুন",
+  "savedDuasCount": "{count} সংরক্ষিত {label}",
+  "tasbihAndDhikr": "তাসবিহ ও যিকির",
+  "calmCounterDailyPresets": "প্রতিদিনের প্রিসেট সহ একটি শান্ত কাউন্টার",
+  "duaCount": "{count} {label}",
+  "favouriteDuasPage": "প্রিয় দুআ",
+  "favouritesUnavailable": "প্রিয় অনুপলব্ধ",
+  "savedDuasNotLoaded": "সংরক্ষিত দুআ এই মুহূর্তে লোড করা যাবে না.",
+  "noFavouriteDuasYet": "এখনো কোন প্রিয় দুআ নেই।",
+  "tapHeartToSave": "যেকোন দুয়া কার্ডে হার্টে ট্যাপ করে সেটি এখানে সেভ করুন।",
+  "categoryUnavailable": "বিভাগ অনুপলব্ধ",
+  "categoryNotLoaded": "এই হিসান আল মুসলিম বিভাগ লোড করা যায়নি।",
+  "categoryNoDuas": "কোন দুআ পাওয়া যায়নি",
+  "categoryDoesNotContainDuas": "এই বিভাগে কোন দুআ নেই।",
+  "downloadTimings": "ডাউনলোডের সময়?",
+  "reciterNeedsTimings": "সিঙ্ক করা আয়াত পাঠ দেখানোর আগে এই পাঠকের অডিও সময় প্রয়োজন। {size}",
+  "timingsUnavailable": "এই আবৃত্তিকারের জন্য সময় অনুপলব্ধ।",
+  "timingsUnavailableSurah": "এই সূরার জন্য সময় অনুপলব্ধ।",
+  "unableToInstallTimings": "টাইমিং ইনস্টল করতে অক্ষম।",
+  "installedLabel": "{name} ইনস্টল করা হয়েছে।",
+  "installed": "ইনস্টল করা হয়েছে",
+  "noTafsirSourcesSelected": "কোনো তাফসির সূত্র নির্বাচিত হয়নি",
+  "chooseTafsirSourcesFirst": "প্রথমে এক বা একাধিক তাফসির সূত্র বেছে নিন।",
+  "choose": "বেছে নিন",
+  "go": "যাও",
+  "deleteDownloadedMp3": "ডাউনলোড করা MP3 মুছুন",
+  "deleteDownloadedAyah": "ডাউনলোড করা মুছবেন?",
+  "downloadAllAyahs": "সমস্ত আয়াত ডাউনলোড করুন?",
+  "downloadAllAyahsConfirm": "এটি এই সূরার ({size}) সমস্ত {count} আয়াতের জন্য অডিও ডাউনলোড করবে।",
+  "surahOption": "সূরা",
+  "reciterOption": "আবৃত্তিকারী",
+  "sleepTimerOption": "ঘুমের টাইমার",
+  "shuffleOption": "এলোমেলো",
+  "shuffleSubtitle": "সূরা শেষ হওয়ার পর এলোমেলো করুন",
+  "loopCurrentSurah": "লুপ বর্তমান সূরা",
+  "loopSubtitle": "বর্তমান সূরাটি পুনরাবৃত্তি করুন",
+  "downloadTimingsResource": "ডাউনলোডের সময়",
+  "timingsNeedToBeDownloaded": "সিঙ্ক করা আয়াত পাঠ দেখানোর আগে এই পাঠকের অডিও সময় প্রয়োজন। {size}",
+  "intervalOption": "ব্যবধান",
+  "intervalRepeatOption": "ব্যবধান পুনরাবৃত্তি",
+  "repeatEachAyahOption": "প্রতিটি আয়াতের পুনরাবৃত্তি করুন",
+  "resetPlaybackOptions": "প্লেব্যাক বিকল্পগুলি রিসেট করুন",
+  "surahOptionLabel": "সূরা",
+  "searchCategoriesDua": "অনুসন্ধান বিভাগ",
+  "savedAyahLibrary": "সংরক্ষিত আয়াহ",
+  "autoAdvancesToNextPreset": "{nextPreset} এ স্বয়ংক্রিয়ভাবে অগ্রসর হয়",
+  "previousDhikr": "আগের dhikr",
+  "nextDhikr": "পরবর্তী যিকির",
+  "counts33To33To34": "{target} গণনা • 33 → 33 → 34",
+  "assalamuAlaikum": "আসসালামু আলাইকুম",
+  "continueYourJourneyToday": "আজ আপনার যাত্রা চালিয়ে যান",
+  "onStreakDay": "আপনি একটি {streak}-দিনের ধারায় আছেন — চালিয়ে যান",
+  "todaysWorship": "আজকের পুজো",
+  "ayahsLabel": "আয়াত",
+  "dhikrLabel": "ধিকর",
+  "duasLabel": "দুআস",
+  "salahLabel": "সালাহ",
+  "dayStreakLabel": "দিনের ধারা",
+  "dailyQuranGoalLabel": "দৈনিক কোরআনের লক্ষ্য",
+  "salah": "সালাহ",
+  "quranLabel": "কুরআন",
+  "tasbihLabel": "তসবিহ",
+  "activityHistory": "কার্যকলাপ ইতিহাস",
+  "streaksLabel": "স্ট্রিকস",
+  "weekRange": "সপ্তাহ",
+  "monthRange": "মাস",
+  "yearRange": "বছর",
+  "allTimeRange": "সব সময়",
+  "noPrayerYet": "এখনও প্রার্থনা নেই",
+  "noDayYet": "এখনো কোনো দিন নেই",
+  "noSurahYet": "এখনো কোনো সূরা নেই",
+  "noDhikrYet": "এখনো কোনো ধিক্কার নেই",
+  "noCategoryYet": "এখনো কোনো বিভাগ নেই",
+  "dhikrLabelSimple": "ধিকর",
+  "readingOptions": "পড়ার বিকল্প",
+  "navigation": "নেভিগেশন",
+  "goToAyah": "আয়াতে যান",
+  "jumpToAyahIn": "{surahName} এ আয়াতে যান",
+  "displayAndSharing": "প্রদর্শন এবং ভাগ করা",
+  "showLatinTransliteration": "ল্যাটিন প্রতিবর্ণীকরণ দেখান",
+  "chooseTranslationShownOnCards": "কার্ডে দেখানো অনুবাদ বেছে নিন",
+  "chooseDownloadedExplanations": "ডাউনলোড করা ব্যাখ্যা বেছে নিন",
+  "shareCurrentAyah": "বর্তমান আয়াত শেয়ার করুন",
+  "createImageForThisAyah": "এই আয়াতের জন্য একটি চিত্র তৈরি করুন",
+  "tafsirSources": "তাফসির সূত্র",
+  "setPrayerLocation": "প্রার্থনার স্থান নির্ধারণ করুন",
+  "ayahLabel": "আয়াহ {number}",
+  "versesCount": "{count} আয়াত",
+  "surahVerseCount": "{surahName} • {count} আয়াত",
+  "noJuzResultsFound": "কোন juz ফলাফল পাওয়া যায়নি.",
+  "surahCount": "{count, plural, =1{১টি সূরা} other{{count}টি সূরা}}",
+  "surahRange": "{startSurah} {startVerse} - {endSurah} {endVerse}",
+  "recentQuranTextSearches": "সাম্প্রতিক কুরআন পাঠ অনুসন্ধান",
+  "searchResultCount": "{count, plural, =1{১টি ফলাফল} other{{count}টি ফলাফল}}",
+  "searchQuranText": "কুরআন পাঠ অনুসন্ধান করুন",
+  "searchQuranTextEmptyMessage": "আরবি শব্দ বা অনুবাদ পাঠের জন্য এই ট্যাবটি ব্যবহার করুন। সূরা অনুসন্ধান সূরা ট্যাবে থাকে।",
+  "noQuranTextResults": "কুরআন পাঠের ফলাফল নেই",
+  "noAyahSearchResults": "\"{query}\" এর সাথে কোনো আয়াত মেলেনি। অন্য আরবি শব্দ বা বাক্যাংশ ব্যবহার করে দেখুন।",
+  "optionalNote": "ঐচ্ছিক নোট...",
+  "ayahOfTotal": "আয়াত {current} এর {total}",
+  "noMatchingSavedAyahs": "কোন মিল সংরক্ষিত আয়াত.",
+  "saveAyahsNotesHere": "এখানে আয়াত, নোট এবং প্রতিফলন সংরক্ষণ করুন।",
+  "savedAyahLibraryHint": "প্রিয় আয়াত দ্রুত, অথবা পড়ার বিকল্প থেকে ফোল্ডার, ট্যাগ এবং ব্যক্তিগত নোট যোগ করুন।",
+  "privateNote": "ব্যক্তিগত নোট",
+  "writeReflectionHint": "একটি প্রতিফলন লিখুন...",
+  "createFolder": "ফোল্ডার তৈরি করুন",
+  "tagsHint": "কৃতজ্ঞতা, দুআ",
+  "unsorted": "সাজানো হয়নি",
+  "removeSavedAyahDetailsBody": "এটি এই আয়াতের জন্য নোট, ট্যাগ, ফোল্ডার এবং প্রিয় অবস্থা মুছে ফেলবে।",
+  "folderName": "ফোল্ডারের নাম",
+  "folderNameHint": "প্রতিফলন",
+  "libraryFolders": "লাইব্রেরি ফোল্ডার",
+  "defaultSavedAyahDestination": "সংরক্ষিত আয়াতের জন্য ডিফল্ট গন্তব্য",
+  "savedAyahCollection": "সংরক্ষিত আয়াত সংগ্রহ",
+  "renameFolder": "ফোল্ডারের নাম পরিবর্তন করুন",
+  "rename": "নাম পরিবর্তন করুন",
+  "deleteFolderQuestion": "{folder} মুছবেন?",
+  "deleteFolderBody": "এই ফোল্ডারে সংরক্ষিত আয়াতগুলি Unsorted-এ সরানো হবে।",
+  "quranRecitation": "কোরআন প্লেয়ার",
+  "openPlayer": "প্লেয়ার খুলুন",
+  "resumeRecitation": "আবৃত্তি পুনরায় শুরু করুন{progress}",
+  "ayahsToday": "আয়াত আজ",
+  "lettersCount": "{count} অক্ষর",
+  "dayStreakCount": "{count, plural, =1{১ দিনের ধারাবাহিকতা} other{{count} দিনের ধারাবাহিকতা}}",
+  "ayahsCount": "{count, plural, =1{১টি আয়াত} other{{count}টি আয়াত}}",
+  "daysCount": "{count, plural, =1{১ দিন} other{{count} দিন}}",
+  "todaysPortionComplete": "আজকের অংশ সম্পূর্ণ",
+  "catchUpAyahsIncluded": "{count} ক্যাচ-আপ আয়াত অন্তর্ভুক্ত",
+  "ayahsRemainingToday": "{count} আজ বাকি আয়াত",
+  "todaysPortion": "আজকের অংশ: {count} আয়াত",
+  "surahIntroMeta": "{revelation} · {verseCount} আয়াত · JUZ' {juz}",
+  "makkah": "মক্কা",
+  "madinah": "মদিনা",
+  "currentAyahOnly": "শুধুমাত্র বর্তমান আয়াত",
+  "surahAyahRange": "{surahName} {startAyah} → {endAyah}",
+  "intervalEndBeforeStartError": "একটি শেষ আয়াত চয়ন করুন যা শুরুর আয়াতের মতো বা পরে।",
+  "intervalRange": "ব্যবধান পরিসীমা",
+  "intervalRangeHint": "একটি শুরু এবং শেষ আয়াত নির্বাচন করুন. রেঞ্জ সূরা অতিক্রম করতে পারেন.",
+  "end": "শেষ",
+  "apply": "আবেদন করুন",
+  "customizeRecitationBehavior": "আবৃত্তি আচরণ কাস্টমাইজ করুন",
+  "recitation": "আবৃত্তি",
+  "timing": "টাইমিং",
+  "ayahDelay": "আয়ে বিলম্ব",
+  "audioDownloads": "অডিও ডাউনলোড",
+  "surahAudioDownloaded": "সূরা অডিও ডাউনলোড",
+  "allAyahsAvailableOffline": "সমস্ত আয়াত অফলাইনে উপলব্ধ",
+  "downloadEveryAyahInSurah": "এই সূরার প্রতিটি আয়াত ডাউনলোড করুন",
+  "downloadingCurrentAyah": "বর্তমান আয়াত ডাউনলোড করা হচ্ছে",
+  "deleteCurrentAyahAudio": "বর্তমান আয়াত অডিও মুছুন",
+  "downloadCurrentAyah": "বর্তমান আয়াত ডাউনলোড করুন",
+  "intervalPickerTitle": "{position} {kind}",
+  "noDelay": "বিলম্ব নেই",
+  "secondsCount": "{count, plural, =1{১ সেকেন্ড} other{{count} সেকেন্ড}}",
+  "tafsirNeedsDownload": "এই তাফসিরটি প্রথমে ডাউনলোড করতে হবে। {size}",
+  "downloading": "ডাউনলোড হচ্ছে",
+  "noTafsirTextForAyah": "এই আয়াতের জন্য কোন তাফসির পাঠ্য উপলব্ধ নেই।",
+  "noTafsirResourcesAvailable": "কোন তাফসীর সম্পদ উপলব্ধ",
+  "enterAyahRange": "1 থেকে {total} পর্যন্ত একটি আয়াত নম্বর লিখুন",
+  "ayahNumberHint": "আয়াত নম্বর",
+  "downloadingSurahAyahs": "ডাউনলোড হচ্ছে {surahName} আয়াত",
+  "downloadedSurahAyahs": "ডাউনলোড করা হয়েছে {surahName} আয়াত",
+  "downloadedAllAyahsFor": "{surahName} এর জন্য সমস্ত আয়াত ডাউনলোড করা হয়েছে",
+  "failedDownloadSurahAyahs": "{surahName} আয়াত ডাউনলোড করতে ব্যর্থ হয়েছে৷",
+  "downloadAllAyahsForSurah": "অফলাইনে শোনার জন্য {surahName} এর জন্য সমস্ত আয়াত অডিও ডাউনলোড করবেন?",
+  "removedFromFavourites": "ফেভারিট থেকে সরানো হয়েছে।",
+  "savedAyahsOrganizedHint": "সংরক্ষিত আয়াতগুলি ফোল্ডার এবং ট্যাগে সংগঠিত করা যেতে পারে।",
+  "playerOptions": "প্লেয়ার বিকল্প",
+  "chooseSurah": "সূরা নির্বাচন করুন",
+  "offline": "অফলাইন",
+  "downloadMp3": "MP3 ডাউনলোড করুন",
+  "availableOffline": "অফলাইনে উপলব্ধ",
+  "notSaved": "সংরক্ষিত হয়নি",
+  "playback": "প্লেব্যাক",
+  "sleepTimerOptions": "স্লিপ টাইমার বিকল্প",
+  "endOfSurah": "সূরা শেষ",
+  "enabled": "সক্রিয়",
+  "disabled": "অক্ষম",
+  "off": "বন্ধ",
+  "sleepingSoon": "তাড়াতাড়ি ঘুমাচ্ছে",
+  "sleepingInMinutes": "{minutes, plural, =1{১ মিনিট} other{{minutes} মিনিট}} এর মধ্যে বন্ধ হবে",
+  "pendingLabel": "{label} মুলতুবি",
+  "loadingSyncedAyah": "সিঙ্ক করা আয়াত লোড হচ্ছে",
+  "syncedAyahUnavailableReciter": "এই পাঠকের জন্য সিঙ্ক করা আয়াত প্রদর্শন অনুপলব্ধ৷",
+  "syncedAyahUnavailableSurah": "এই সূরার জন্য সিঙ্ক করা আয়াত প্রদর্শন অনুপলব্ধ",
+  "downloadTimingsToSyncAyahs": "এই তিলাওয়াতকারীর জন্য আয়াত সিঙ্ক করার সময় ডাউনলোড করুন",
+  "unableToPlaySurahAudio": "সূরা অডিও চালাতে অক্ষম।",
+  "downloadingName": "ডাউনলোড হচ্ছে {name}",
+  "downloadedName": "ডাউনলোড করা হয়েছে {name}",
+  "failedDownloadName": "{name} ডাউনলোড করতে ব্যর্থ হয়েছে",
+  "failedDownloadSurahAudio": "সূরা অডিও ডাউনলোড করতে ব্যর্থ হয়েছে.",
+  "deletedMp3Name": "{name} MP3 মুছে ফেলা হয়েছে",
+  "failedDeleteDownloadedSurah": "ডাউনলোড করা সূরা মুছতে ব্যর্থ।",
+  "deleteDownloadedMp3Question": "ডাউনলোড করা MP3 মুছবেন?",
+  "removeSurahFromOffline": "এটি অফলাইন সঞ্চয়স্থান থেকে {name} কে সরিয়ে দেবে।",
+  "offlineReady": "অফলাইন প্রস্তুত",
+  "streaming": "স্ট্রিমিং",
+  "showAyahText": "আয়াত টেক্সট দেখান",
+  "hideAyahText": "আয়াত টেক্সট লুকান",
+  "themeSchemeEmeraldGreen": "পান্না সবুজ",
+  "themeSchemeEmeraldGreenSubtitle": "আসল শান্ত ইকোরান প্যালেট।",
+  "themeSchemeSapphireBlue": "স্যাফায়ার ব্লু",
+  "themeSchemeSapphireBlueSubtitle": "নীলকান্তমণি এবং নিঃশব্দ সায়ান উচ্চারণ সহ গভীর নৌবাহিনী।",
+  "themeSchemeRoyalPurple": "রাজকীয় বেগুনি",
+  "themeSchemeRoyalPurpleSubtitle": "রাজকীয় বেগুনি হাইলাইট সহ মধ্যরাত বেগুনি।",
+  "themeSchemeSepia": "সেপিয়া",
+  "themeSchemeSepiaSubtitle": "উষ্ণ পার্চমেন্ট, বাদামী, এবং নরম সোনার টোন।",
+  "themeSchemeBlack": "কালো",
+  "themeSchemeBlackSubtitle": "সংযত টিল উচ্চারণ সহ AMOLED কালো।",
+  "themeSchemeRubyRed": "রুবি রেড",
+  "themeSchemeRubyRedSubtitle": "মার্জিত রুবি হাইলাইট সহ গভীর মেরুন পৃষ্ঠ।",
+  "enterLatitudeLongitude": "অক্ষাংশ এবং দ্রাঘিমাংশ লিখুন।",
+  "chooseLocationBeforeCalculating": "গণনা করার আগে একটি অবস্থান চয়ন করুন",
+  "usingDeviceTimezone": "এই ডিভাইস টাইমজোন ব্যবহার করে.",
+  "usingDeviceTimezoneUntilLocationAvailable": "অবস্থান টাইমজোন উপলব্ধ না হওয়া পর্যন্ত ডিভাইস টাইমজোন ব্যবহার করা।",
+  "displayPrayerTimesUsingTimezone": "{timezone} ব্যবহার করে প্রার্থনার সময় প্রদর্শন করুন।",
+  "remindersOff": "অনুস্মারক বন্ধ",
+  "remindersOnWaitingLocation": "চালু, অবস্থানের জন্য অপেক্ষা করছে",
+  "allPrayerRemindersOn": "সমস্ত প্রার্থনা অনুস্মারক চালু",
+  "remindersEnabledCount": "{count} অনুস্মারক সক্ষম",
+  "checkingNotificationPermission": "বিজ্ঞপ্তির অনুমতি পরীক্ষা করা হচ্ছে...",
+  "permissionStatusNeedsRetry": "অনুমতি স্থিতি একটি পুনরায় চেষ্টা প্রয়োজন.",
+  "localNotificationsScheduled": "এই ডিভাইসে স্থানীয় বিজ্ঞপ্তিগুলি নির্ধারিত হয়৷",
+  "notificationPermissionGranted": "বিজ্ঞপ্তির অনুমতি দেওয়া হয়েছে।",
+  "notificationPermissionOffEnable": "বিজ্ঞপ্তি অনুমতি বন্ধ আছে. প্রার্থনা অনুস্মারক পেতে এটি সক্ষম করুন।",
+  "prayerRemindersUnsupported": "এই প্ল্যাটফর্মে প্রার্থনা অনুস্মারক সমর্থিত নয়।",
+  "checkingExactAlarmPermission": "সঠিক অ্যালার্ম অনুমতি পরীক্ষা করা হচ্ছে...",
+  "exactAlarmStatusNeedsRetry": "সঠিক অ্যালার্ম স্থিতি একটি পুনরায় চেষ্টা করা প্রয়োজন.",
+  "alarmPermissionGranted": "অ্যালার্ম এবং অনুস্মারক অনুমতি দেওয়া হয়েছে.",
+  "exactAlarmPermissionNotRequired": "এই প্ল্যাটফর্মে সঠিক অ্যালার্ম অনুমতির প্রয়োজন নেই।",
+  "hisnCategoryCouldNotLoad": "এই হিসান আল মুসলিম বিভাগ লোড করা যায়নি।",
+  "categoryContainsNoDuas": "এই বিভাগে কোন দুআ নেই।",
+  "couldNotUpdateDua": "দুআ প্রিয় আপডেট করা যায়নি.",
+  "moreActions": "আরো কর্ম",
+  "duaCopied": "দুআ কপি।",
+  "hisnAlMuslimDua": "হিসানুল মুসলিমের দুয়া",
+  "copyText": "পাঠ্য অনুলিপি করুন",
+  "shareText": "টেক্সট শেয়ার করুন",
+  "prayerStats": "প্রার্থনা পরিসংখ্যান",
+  "quranStats": "কুরআন পরিসংখ্যান",
+  "tasbihStats": "তসবিহ পরিসংখ্যান",
+  "duaStats": "দুয়ার পরিসংখ্যান",
+  "thisWeek": "এই সপ্তাহে",
+  "thisMonth": "এই মাসে",
+  "thisYear": "এই বছর",
+  "allTime": "সব সময়",
+  "onTime": "যথাসময়ে",
+  "late": "দেরী",
+  "missed": "মিস",
+  "log": "লগ",
+  "fajr": "ফজর",
+  "dhuhr": "ধুহর",
+  "asr": "আসর",
+  "maghrib": "মাগরিব",
+  "isha": "ইশা",
+  "notYet": "এখনো না",
+  "onTimeThisWeek": "এই সপ্তাহে যথাসময়ে",
+  "lateThisWeek": "এই সপ্তাহের শেষের দিকে",
+  "bestPrayer": "শ্রেষ্ঠ প্রার্থনা",
+  "currentFajrStreak": "বর্তমান ফজরের ধারা",
+  "startLoggingFajr": "আপনার অগ্রগতি ট্র্যাক করতে Fajr লগ করা শুরু করুন.",
+  "fajrVeryConsistent": "মাশাআল্লাহ, আপনার ফজর খুবই সামঞ্জস্যপূর্ণ।",
+  "fajrGettingStronger": "ভালো প্রচেষ্টা, ফজর জোরালো হচ্ছে।",
+  "fajrEveryAttemptCounts": "ফজর একটি চ্যালেঞ্জ, প্রতিটি প্রচেষ্টা গণনা করা হয়।",
+  "fajrConsistency": "ফজরের ধারাবাহিকতা",
+  "todaysPrayers": "আজকের নামাজ",
+  "saving": "সংরক্ষণ",
+  "availableAfter": "{time} এর পরে উপলব্ধ",
+  "quranActivity": "কুরআন কার্যকলাপ",
+  "ayahsRead": "আয়াত পড়ুন",
+  "lettersRead": "চিঠি পড়া",
+  "activeDays": "সক্রিয় দিন",
+  "mostActiveDay": "সবচেয়ে সক্রিয় দিন",
+  "ayahsReadCount": "{count} আয়াত পড়া",
+  "recitationsCount": "{count} আবৃত্তি",
+  "surahProgress": "সূরা অগ্রগতি",
+  "surahsComplete": "{completed} / {total} সূরাগুলো সম্পূর্ণ",
+  "showLess": "কম দেখান",
+  "showAllSurahs": "সমস্ত {count} সূরা দেখান",
+  "quranCompletions": "কুরআন সমাপ্তি",
+  "fullCompletions": "সম্পূর্ণ সমাপ্তি",
+  "completeAllSurahsForFirstKhatm": "আপনার প্রথম খতম রেকর্ড করতে সমস্ত {count} সূরা সম্পূর্ণ করুন",
+  "khatmDateLabel": "খতম {number} · {date}",
+  "startFirstTasbihSession": "আপনার প্রথম তাসবিহ সেশন শুরু করুন",
+  "totalDhikr": "মোট যিকির",
+  "dailyAverage": "দৈনিক গড়",
+  "openDuaToBeginHistory": "আপনার দুআ ইতিহাস শুরু করতে একটি দুআ খুলুন",
+  "duasViewed": "দুআ দেখা গেছে",
+  "viewsCount": "{count} ভিউ",
+  "previousMonth": "আগের মাস",
+  "nextMonth": "পরের মাসে",
+  "activeDaysCount": "{count, plural, =1{১টি সক্রিয় দিন} other{{count}টি সক্রিয় দিন}}",
+  "monthlyActivitySummary": "{activeDays} · সেরা দিন: {bestDay} · {totalActions} মোট কর্ম",
+  "dhikrCount": "{count} জিকির",
+  "duasCount": "{count} দোয়া",
+  "quranStreak": "কুরআনের ধারা",
+  "tasbihStreak": "তসবিহ ধারা",
+  "overallStreak": "সামগ্রিক ধারা",
+  "dayWorshipStreak": "{count} দিনের পূজার ধারা",
+  "weekShortLabel": "W{week}",
+  "youReadMostOn": "আপনি {day} এ সবচেয়ে বেশি পড়েছেন",
+  "startReadingToUnlockInsights": "অন্তর্দৃষ্টি আনলক করতে পড়া শুরু করুন",
+  "readingUpFromLastWeek": "গত সপ্তাহ থেকে {percent}% বেড়েছে",
+  "readingDownFromLastWeek": "গত সপ্তাহ থেকে {percent}% কম হচ্ছে",
+  "youVisitSurahMostOften": "আপনি প্রায়শই {surahName} এ যান",
+  "monday": "সোমবার",
+  "tuesday": "মঙ্গলবার",
+  "wednesday": "বুধবার",
+  "thursday": "বৃহস্পতিবার",
+  "friday": "শুক্রবার",
+  "saturday": "শনিবার",
+  "sunday": "রবিবার",
+  "mondayShort": "সোম",
+  "tuesdayShort": "মঙ্গল",
+  "wednesdayShort": "বুধ",
+  "thursdayShort": "বৃহ",
+  "fridayShort": "শুক্র",
+  "saturdayShort": "শনি",
+  "sundayShort": "সূর্য",
+  "mondayInitial": "এম",
+  "tuesdayInitial": "টি",
+  "wednesdayInitial": "ডব্লিউ",
+  "thursdayInitial": "টি",
+  "fridayInitial": "চ",
+  "saturdayInitial": "এস",
+  "sundayInitial": "এস",
+  "mondays": "সোমবার",
+  "tuesdays": "মঙ্গলবার",
+  "wednesdays": "বুধবার",
+  "thursdays": "বৃহস্পতিবার",
+  "fridays": "শুক্রবার",
+  "saturdays": "শনিবার",
+  "sundays": "রবিবার",
+  "january": "জানুয়ারি",
+  "february": "ফেব্রুয়ারি",
+  "march": "মার্চ",
+  "april": "এপ্রিল",
+  "may": "মে",
+  "june": "জুন",
+  "july": "জুলাই",
+  "august": "আগস্ট",
+  "september": "সেপ্টেম্বর",
+  "october": "অক্টোবর",
+  "november": "নভেম্বর",
+  "december": "ডিসেম্বর",
+  "januaryShort": "জান",
+  "februaryShort": "ফেব্রুয়ারী",
+  "marchShort": "মার",
+  "aprilShort": "এপ্রিল",
+  "mayShort": "মে",
+  "juneShort": "জুন",
+  "julyShort": "জুল",
+  "augustShort": "অগাস্ট",
+  "septemberShort": "সেপ্টেম্বর",
+  "octoberShort": "অক্টো",
+  "novemberShort": "নভেম্বর",
+  "decemberShort": "ডিসেম্বর",
+  "dailyQuoteSmallDeeds": "ছোট কাজ, আন্তরিকভাবে সম্পন্ন, সুন্দরভাবে বৃদ্ধি.",
+  "dailyQuoteBeginAgain": "স্মরণ এবং কৃতজ্ঞতা দিয়ে আবার শুরু করুন।",
+  "dailyQuoteSteadyHeart": "স্থির হৃদয় প্রতিদিন আল্লাহর কাছে ফিরে আসে।",
+  "dailyQuoteGentleConsistent": "আজকের পূজা মৃদু ও ধারাবাহিক হোক।",
+  "dailyQuoteEveryAyah": "প্রতিটি আয়াত পঠিত সফরের জন্য হালকা।",
+  "dailyWorshipComplete": "মাশাল্লাহ! নিত্যপূজা সম্পন্ন",
+  "greatProgressKeepGoing": "দুর্দান্ত অগ্রগতি, চালিয়ে যান",
+  "everyDeedCountsKeepGoing": "প্রতিটি কাজ গণনা করে, চালিয়ে যান",
+  "startYourWorshipForToday": "আজকের জন্য আপনার পূজা শুরু করুন",
+  "totalRead": "মোট পড়া",
+  "estimatedLettersRead": "আনুমানিক চিঠি পড়া",
+  "rewardIsWithAllah": "পুরস্কার আল্লাহর কাছে।",
+  "totalZakahWealth": "যাকাত হিসাব করার জন্য মোট সম্পদ কমপক্ষে 200 হতে হবে।",
+  "hifzTitle": "হিফজ",
+  "hifzJourneyTitle": "আপনার হিফজ যাত্রা",
+  "hifzNewTodayLabel": "{count}/{max} আজ নতুন",
+  "hifzMemorized": "মুখস্থ",
+  "hifzDueToday": "আজ বকেয়া",
+  "hifzInReview": "পর্যালোচনায়",
+  "hifzAyahsMemorized": "{count} / 6,236 আয়াত মুখস্ত",
+  "hifzDueForReview": "রিভিউ করার জন্য বাকি",
+  "hifzAllCaughtUp": "সব ধরা পড়েছে — কোনো রিভিউ নেই",
+  "hifzAyahsReady": "{count} আয়াত প্রস্তুত",
+  "hifzStartYourSession": "আপনার পর্যালোচনা সেশন শুরু করুন",
+  "hifzStart": "শুরু করুন",
+  "hifzDueNow": "এখন বকেয়া",
+  "hifzOverdueDays": "ওভারডি {days}দিন",
+  "hifzShowAll": "সমস্ত {count} → দেখান",
+  "hifzAddToMemorize": "মেমোরাইজে যোগ করুন",
+  "hifzQuickAdd": "দ্রুত যোগ করুন",
+  "hifzQuickAlFatiha": "আল-ফাতিহা",
+  "hifzQuickAlKahf": "আল-কাহফ",
+  "hifzQuickJuzAmma": "জুজ আম্মা",
+  "hifzQuickLast10": "শেষ ১০টি সূরা",
+  "hifzOrChooseSurah": "অথবা একটি সূরা চয়ন করুন",
+  "hifzFromAyah": "আয়াত থেকে",
+  "hifzToAyah": "আয়াতে",
+  "hifzAddAyahsButton": "হিফজে {count} আয়াত যোগ করুন",
+  "hifzAyahsAdded": "{count} আয়াত যোগ করা হয়েছে",
+  "hifzSurahProgress": "সূরা অগ্রগতি",
+  "hifzShowAllSurahs": "সমস্ত 114টি সূরা দেখান",
+  "hifzShowLess": "কম দেখান",
+  "hifzSurahsMastered": "{count} / 114টি সূরা আয়ত্ত করা",
+  "hifzSettingsTitle": "হিফজ সেটিংস",
+  "hifzTrackNew": "নতুন",
+  "hifzTrackRevision": "রিভিশন",
+  "hifzTrackMaintenance": "রক্ষণাবেক্ষণ",
+  "hifzSessionProgress": "{current} / {total}",
+  "hifzExitSession": "অধিবেশন থেকে প্রস্থান করবেন?",
+  "hifzExitSessionBody": "আপনি {total} আয়াতের মধ্যে {count} পর্যালোচনা করেছেন।\nএ পর্যন্ত অগ্রগতি সংরক্ষণ করা হবে।",
+  "hifzExitCancel": "বাতিল করুন",
+  "hifzExitConfirm": "প্রস্থান করুন",
+  "hifzImReady": "আমি প্রস্তুত",
+  "hifzRevealAll": "সব প্রকাশ করুন",
+  "hifzToggleTransliteration": "ট্রান্সলিটারেশন",
+  "hifzToggleTranslation": "অনুবাদ",
+  "hifzToggleListen": "শুনুন",
+  "hifzRatingAgain": "আবার",
+  "hifzRatingHard": "কঠিন",
+  "hifzRatingGood": "ভাল",
+  "hifzRatingEasy": "সহজ",
+  "hifzSessionComplete": "সেশন সম্পূর্ণ",
+  "hifzCompletedUnderMinute": "এক মিনিটের মধ্যে সম্পূর্ণ",
+  "hifzCompletedInMinutes": "{minutes} মিনিট{plural} এ সম্পন্ন হয়েছে",
+  "hifzSummaryTitle": "সারাংশ",
+  "hifzTotalReviewed": "মোট পর্যালোচনা",
+  "hifzTotalReviewedValue": "{count} আয়াত",
+  "hifzRetentionRate": "ধরে রাখার হার",
+  "hifzNextReviewDue": "পরবর্তী পর্যালোচনা বাকি",
+  "hifzNextReviewToday": "আজ",
+  "hifzNextReviewTomorrow": "কাল",
+  "hifzNextReviewInDays": "{days} দিনের মধ্যে",
+  "hifzAllCaughtUpDue": "সব ধরা",
+  "hifzHadithQuote": "\"তোমাদের মধ্যে সর্বোত্তম তারা যারা কুরআন শিখে এবং শিক্ষা দেয়।\" -আল-বুখারী",
+  "hifzBackToHifz": "হিফজে ফেরত যান",
+  "hifzKeepReviewing": "পর্যালোচনা করতে থাকুন ({count} বাকি)",
+  "hifzDueReminderTitle": "{count} আয়াত হিফজ পর্যালোচনার জন্য বাকি আছে",
+  "hifzSettingsComingSoon": "হিফজ সেটিংস — শীঘ্রই আসছে",
+  "hifzStatsSection": "হিফজ",
+  "hifzStatsTotalMemorized": "মোট মুখস্ত",
+  "hifzStatsDailyStreak": "প্রতিদিনের ধারা",
+  "hifzStatsRetentionRate": "ধরে রাখার হার",
+  "hifzStatsTotalReviews": "মোট পর্যালোচনা",
+  "hifzStatsNextDue": "পরবর্তী পর্যালোচনা",
+  "hifzStatsNextDueValue": "{surah} · আয়াহ {ayah}",
+  "hifzStatsNextDueDate": "বাকি {date}",
+  "hifzStatsNoEntries": "আপনার হিফজ পরিসংখ্যান দেখতে মুখস্থ করা শুরু করুন",
+  "hifzStatsSurahProgress": "সূরা অগ্রগতি",
+  "hifzStatsRetentionSuffix": "{value}%",
+  "hifzStatsPill": "{count} মুখস্থ",
+  "hifzReminderDueCount": "{count} আয়াত হিফজ পর্যালোচনার জন্য বাকি আছে",
+  "hifzReminderReview": "পর্যালোচনা",
+  "hifzSettingsNewPerDay": "প্রতিদিন নতুন আয়াত",
+  "hifzSettingsReviewsPerDay": "প্রতিদিন পর্যালোচনা",
+  "hifzSettingsShowTranslit": "ডিফল্টরূপে প্রতিবর্ণীকরণ দেখান",
+  "hifzSettingsShowTranslation": "ডিফল্টরূপে অনুবাদ দেখান",
+  "hifzSettingsAutoPlayAudio": "শেখার পর্যায়ে অটো-প্লে অডিও",
+  "hifzSettingsBlankingLevel": "ফাঁকা স্তর",
+  "hifzSettingsBlankingAuto": "অটো",
+  "hifzSettingsBlankingEasy": "সহজ",
+  "hifzSettingsBlankingMedium": "মাঝারি",
+  "hifzSettingsBlankingHard": "কঠিন",
+  "hifzSettingsDone": "সম্পন্ন",
+  "hifzActiveUnits": "সক্রিয় ইউনিট",
+  "hifzInProgress": "চলছে",
+  "hifzActiveUnitsSection": "সক্রিয় ইউনিট",
+  "hifzNoActiveUnits": "কোন সক্রিয় ইউনিট নেই — নীচে একটি যোগ করুন",
+  "hifzUnitTypeSurah": "সূরা",
+  "hifzUnitTypeJuz": "জুজ",
+  "hifzUnitNextAyah": "পরবর্তী: {surah} · আয়াহ {ayah}",
+  "hifzUnitProgress": "{introduced}/{total}",
+  "hifzUnitReview": "পর্যালোচনা",
+  "hifzUnitUpToDate": "আপ টু ডেট",
+  "hifzDueNew": "{count} নতুন",
+  "hifzDueRevision": "{count} সংশোধন",
+  "hifzDueMaintenance": "{count} রক্ষণাবেক্ষণ",
+  "hifzDueAllCaughtUp": "সব ধরা",
+  "hifzAddUnitSection": "একটি ইউনিট যোগ করুন",
+  "hifzSearchSurahs": "সূরা অনুসন্ধান করুন...",
+  "hifzSearchJuz": "জুজ অনুসন্ধান করুন...",
+  "hifzSelectAbove": "উপরে একটি ইউনিট নির্বাচন করুন",
+  "hifzStartMemorizingSurah": "মনে রাখা শুরু করুন {name}",
+  "hifzStartMemorizingJuz": "Juz {number} মনে রাখা শুরু করুন",
+  "hifzUnitAlreadyActive": "ইতিমধ্যেই চলছে",
+  "hifzUnitAyahCount": "{count} আয়াত",
+  "hifzSurahsMasteredCount": "{count} / 114টি সূরা আয়ত্ত করা",
+  "hifzTrackNewLabel": "নতুন",
+  "hifzTrackRevisionLabel": "রিভিশন",
+  "hifzTrackMaintenanceLabel": "রক্ষণাবেক্ষণ",
+  "hifzListenPhaseButton": "আমি প্রস্তুত",
+  "hifzRevealAllButton": "সব প্রকাশ করুন",
+  "hifzAudioDisabledTooltip": "প্রত্যাহার সময় অডিও নিষ্ক্রিয়",
+  "hifzPrevAyahCueLabel": "...আগের আয়াত...",
+  "hifzRatingTryAgain": "আবার চেষ্টা করুন",
+  "hifzRatingGotIt": "বুঝেছি",
+  "hifzEmptySessionTitle": "আজকের জন্য সব সম্পন্ন!",
+  "hifzEmptySessionBody": "আজকের {unit}-এর জন্য কোনো নতুন বা উপযুক্ত আয়াত নেই।",
+  "hifzEmptySessionButton": "হিফজে ফেরত যান",
+  "hifzExitSessionTitle": "অধিবেশন থেকে প্রস্থান করবেন?",
+  "hifzCompleteTitle": "সেশন সম্পূর্ণ",
+  "hifzCompleteSubtitleUnderMinute": "এক মিনিটের মধ্যে সম্পূর্ণ",
+  "hifzCompleteSubtitleMinutes": "{minutes} মিনিটে সম্পন্ন হয়েছে",
+  "hifzCompleteSummaryTitle": "সারাংশ",
+  "hifzCompleteTotalReviewed": "মোট পর্যালোচনা",
+  "hifzCompleteTotalReviewedValue": "{count} আয়াত",
+  "hifzCompleteRetentionRate": "ধরে রাখার হার",
+  "hifzCompleteNextDue": "পরবর্তী পর্যালোচনা বাকি",
+  "hifzCompleteNextDueToday": "আজ",
+  "hifzCompleteNextDueTomorrow": "কাল",
+  "hifzCompleteNextDueInDays": "{days} দিনের মধ্যে",
+  "hifzCompleteAllCaughtUp": "সব ধরা",
+  "hifzCompleteGraduated": "পর্যালোচনা করতে স্নাতক",
+  "hifzCompleteGraduatedValue": "{count} আয়াত",
+  "hifzCompleteHadith": "\"তোমাদের মধ্যে সর্বোত্তম তারা যারা কুরআন শিখে এবং শিক্ষা দেয়।\" -আল-বুখারী",
+  "hifzCompleteBackButton": "হিফজে ফেরত যান",
+  "hifzCompleteKeepReviewing": "পর্যালোচনা করতে থাকুন ({count} বাকি)",
+  "hifzUnitCompleteTitle": "আপনি {unit} এ সমস্ত আয়াত প্রবর্তন করেছেন!",
+  "hifzUnitCompleteSubtitle": "তাদের সম্পূর্ণরূপে আয়ত্ত করতে পুনর্বিবেচনা চালিয়ে যান।",
+  "hifzSettingsSheetTitle": "হিফজ সেটিংস",
+  "hifzMorePageTitle": "হিফজ",
+  "hifzMorePageSubtitle": "স্মার্ট রিভিউ দিয়ে কুরআন মুখস্ত করুন",
+  "hifzReminderTitle": "{count} আয়াত হিফজ পর্যালোচনার জন্য বাকি আছে",
+  "hifzReminderButton": "পর্যালোচনা",
+  "hifz": "হিফজ",
+  "hifzSubtitle": "স্মার্ট রিভিউ দিয়ে কুরআন মুখস্ত করুন",
+  "licenses": "লাইসেন্স",
+  "buildQuranRoutine": "কুরআনের রুটিন তৈরি করুন",
+  "chooseGentlePlan": "একটি মৃদু পরিকল্পনা চয়ন করুন এবং আজ একটি পরিষ্কার অংশ আছে.",
+  "routineCompletedAyahs": "{total} আয়াতের মধ্যে {completed} সম্পূর্ণ হয়েছে",
+  "plansReadyNotice": "7-দিন, 30-দিন, এবং 60-দিনের পরিকল্পনা প্রস্তুত।",
+  "finishTargetDate": "লক্ষ্য শেষ করুন: {date}",
+  "allLabel": "সব",
+  "doneLabel": "সম্পন্ন",
+  "ongoingLabel": "চলমান",
+  "skippedLabel": "এড়িয়ে গেছে",
+  "noActiveRoutine": "কোনো সক্রিয় রুটিন নেই",
+  "startBalancedPlanDescription": "একটি ভারসাম্যপূর্ণ 30-দিনের পরিকল্পনা দিয়ে শুরু করুন, অথবা নীচে একটি দ্রুত বা মৃদু রুটিন বেছে নিন।",
+  "start30DayPlan": "30 দিনের পরিকল্পনা শুরু করুন",
+  "todayReading": "আজকের পড়া",
+  "todayCompleted": "আজ সম্পন্ন হয়েছে",
+  "todaysPortionAyahs": "আজকের অংশ: {count} আয়াত",
+  "includesCatchUpAyahs": "{count} ক্যাচ-আপ আয়াত অন্তর্ভুক্ত",
+  "ayahRangeConnector": "{start} থেকে {end}",
+  "dailyPercentCompleteRemaining": "{percent}% সম্পূর্ণ • {remaining} আয়াত আজ বাকি",
+  "routineHistory": "রুটিন ইতিহাস",
+  "currentRoutine": "বর্তমান রুটিন",
+  "noCurrentRoutine": "বর্তমান রুটিন নেই।",
+  "pastRoutines": "অতীতের রুটিন",
+  "pastRoutine": "অতীতের রুটিন",
+  "deleteRoutineTooltip": "রুটিন মুছুন",
+  "deleteCurrentRoutineQuestion": "বর্তমান রুটিন মুছবেন?",
+  "deleteRoutineQuestion": "রুটিন মুছবেন?",
+  "deleteRoutineWarning": "এটি আপনার রুটিন ইতিহাস থেকে \"{title}\" সরিয়ে দেয়।",
+  "choosePlan": "একটি পরিকল্পনা চয়ন করুন",
+  "preset7DaysTitle": "7 দিনে সম্পূর্ণ কুরআন",
+  "preset7DaysSubtitle": "একটি ফোকাসড সাপ্তাহিক রুটিন",
+  "preset30DaysTitle": "30 দিনে সম্পূর্ণ কুরআন",
+  "preset30DaysSubtitle": "সুষম দৈনিক অংশ",
+  "preset60DaysTitle": "60 দিনে সম্পূর্ণ কুরআন",
+  "preset60DaysSubtitle": "মৃদু দীর্ঘ ফর্ম পড়া",
+  "routineStartedMessage": "{title} শুরু হয়েছে",
+  "prayerTimesDisclaimer": "নামাজের সময় স্থানীয়ভাবে গণনা করা হয়। প্রয়োজনে আপনার স্থানীয় মসজিদের সাথে যাচাই করুন।",
+  "locationSaved": "অবস্থান সংরক্ষিত.",
+  "notificationPermissionOffWarning": "বিজ্ঞপ্তি অনুমতি বন্ধ আছে. অনুস্মারক অক্ষম করা হয়েছে৷",
+  "exactAlarmPermissionOffWarning": "সঠিক অ্যালার্ম অনুমতি অক্ষম করা হয়েছে। প্রার্থনা অনুস্মারক বিলম্বিত হতে পারে.",
+  "locationDetails": "অবস্থানের বিবরণ",
+  "updateCurrentLocation": "বর্তমান অবস্থান আপডেট করুন",
+  "useThisDeviceLocation": "এই ডিভাইস অবস্থান ব্যবহার করুন",
+  "moveMapPinDescription": "মানচিত্রের পিনটিকে একটি জায়গায় সরান৷",
+  "saveChanges": "পরিবর্তনগুলি সংরক্ষণ করুন",
+  "advancedCoordinates": "উন্নত স্থানাঙ্ক",
+  "advancedCoordinatesEditSubtitle": "আপনার সুনির্দিষ্ট স্থানাঙ্ক প্রয়োজন হলেই সম্পাদনা করুন",
+  "locationLabel": "অবস্থান লেবেল",
+  "locationLabelHint": "বাড়ি, কাজের বা শহরের নাম",
+  "latitude": "অক্ষাংশ",
+  "latitudeHelperText": "-90 এবং 90 এর মধ্যে একটি মান ব্যবহার করুন।",
+  "longitude": "দ্রাঘিমাংশ",
+  "longitudeHelperText": "-180 এবং 180 এর মধ্যে একটি মান ব্যবহার করুন।",
+  "savedLocationFallback": "সংরক্ষিত অবস্থান",
+  "coordinatesPrivacyDescription": "প্রার্থনা-সময় গণনার জন্য স্থানীয়ভাবে ব্যবহৃত হয়। স্থানাঙ্কগুলি এই ডিভাইসে সংরক্ষণ করা হয়৷{timezoneText}",
+  "countdownNow": "এখন",
+  "countdownVerySoon": "খুব তাড়াতাড়ি",
+  "countdownInHours": "{hours}ঘন্টার মধ্যে",
+  "countdownInHoursMinutes": "{hours}ঘণ্টা {minutes}মি মধ্যে",
+  "countdownInMinutes": "{minutes} মিনিটের মধ্যে",
+  "@routineCompletedAyahs": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@finishTargetDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@todaysPortionAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@includesCatchUpAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahRangeConnector": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyPercentCompleteRemaining": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+  "@deleteRoutineWarning": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@routineStartedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@coordinatesPrivacyDescription": {
+    "placeholders": {
+      "timezoneText": {
+        "type": "String"
+      }
+    }
+  },
+  "@countdownInHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "resume": "পুনরায় শুরু করুন",
+  "routineComplete": "রুটিন সম্পূর্ণ",
+  "routineDeleted": "রুটিন মুছে ফেলা হয়েছে",
+  "chooseLocationManually": "ম্যানুয়ালি অবস্থান নির্বাচন করুন",
+  "saveLocation": "অবস্থান সংরক্ষণ করুন",
+  "coordinatesForPrayerTimes": "নামাজের সময়ের জন্য স্থানাঙ্ক",
+  "manualLocationDescription": "আপনি যে শহর, এলাকা বা ঠিকানা ব্যবহার করতে চান তার জন্য অক্ষাংশ এবং দ্রাঘিমাংশ লিখুন।",
+  "manualLocationPrivacyNotice": "এই ডিভাইসে সংরক্ষিত এবং শুধুমাত্র স্থানীয় প্রার্থনা-সময় গণনার জন্য ব্যবহার করা হয়।",
+  "manualLocation": "ম্যানুয়াল অবস্থান",
+  "savedLocation": "সংরক্ষিত অবস্থান",
+  "useThisLocation": "এই অবস্থান ব্যবহার করুন",
+  "selectedLocation": "নির্বাচিত অবস্থান",
+  "openStreetMapContributors": "OpenStreetMap অবদানকারী",
+  "validationEnterField": "{field} লিখুন।",
+  "validationShouldBeNumber": "{field} একটি সংখ্যা হওয়া উচিত।",
+  "validationMustBeBetween": "{field} অবশ্যই {min} এবং {max} এর মধ্যে হতে হবে।",
+  "@validationEnterField": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationShouldBeNumber": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationMustBeBetween": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "completedTodayQuota": "{completed} / {total} আজকে আয়াত",
+  "completedAyahsRatio": "{completed}/{total} আয়াত",
+  "the99BeautifulNamesOfAllah": "আল্লাহর 99টি সুন্দর নাম",
+  "allNamesCount": "সব নাম · {count}",
+  "reciteThisNameInDua": "আপনার দুআতে এই নামটি পাঠ করুন",
+  "searchNames": "নাম অনুসন্ধান করুন",
+  "searchNamesHint": "নাম অনুসন্ধান করুন...",
+  "namesUnavailable": "নাম অনুপলব্ধ",
+  "unableLoadAsmaUlHusna": "এই মুহূর্তে আসমা উল হুসনা লোড করা যাচ্ছে না।",
+  "noNamesFound": "কোন নাম পাওয়া যায়নি",
+  "tryAnotherAsmaSearch": "অন্য আরবি নাম, প্রতিবর্ণীকরণ বা অর্থ চেষ্টা করুন।",
+  "@completedTodayQuota": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@completedAyahsRatio": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@allNamesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

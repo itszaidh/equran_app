@@ -1,14 +1,17 @@
 import 'dart:io';
 
+import 'package:equran/l10n/app_localizations_en.dart';
 import 'package:equran/prayer/prayer_map_location_page.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('creates a saveable prayer location from map coordinates', () {
+    final AppLocalizationsEn localizations = AppLocalizationsEn();
     final PrayerLocation location = prayerLocationFromMapSelection(
       latitude: 12.34567,
       longitude: 76.54321,
+      localizations: localizations,
     );
 
     expect(location.latitude, 12.34567);

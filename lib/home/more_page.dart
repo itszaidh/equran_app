@@ -115,8 +115,8 @@ class MorePage extends StatelessWidget {
                       ),
                       _MoreAction(
                         icon: Icons.menu_book_rounded,
-                        title: 'Hifz',
-                        subtitle: 'Memorize the Quran with smart review',
+                        title: localizations.hifz,
+                        subtitle: localizations.hifzSubtitle,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
@@ -724,14 +724,14 @@ class _CustomAboutDialogState extends State<_CustomAboutDialog> {
             );
           },
           child: Text(
-            localizations.localeName == 'ar' ? 'التراخيص' : 'Licenses',
+            localizations.licenses,
             style: TextStyle(color: theme.colorScheme.primary),
           ),
         ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            localizations.localeName == 'ar' ? 'إغلاق' : 'Close',
+            localizations.close,
             style: TextStyle(color: theme.colorScheme.primary),
           ),
         ),

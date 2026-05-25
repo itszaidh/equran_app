@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:equran/home/library.dart' show HomePage;
+import 'package:equran/features/splash/splash_screen.dart' show SplashScreen;
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
@@ -157,11 +157,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Locale? _getSavedLocale() {
     final dynamic lang = SettingsDB().get("locale");
     if (lang == null || lang == "system") return null;
-    return switch (lang.toString()) {
-      'en' => const Locale('en'),
-      'ar' => const Locale('ar'),
-      _ => null,
-    };
+    return Locale(lang.toString());
   }
 
   void setLocale(Locale? locale) {
@@ -226,7 +222,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             child: themedChild,
           );
         },
-        home: const HomePage(),
+        home: const SplashScreen(),
       ),
     );
   }

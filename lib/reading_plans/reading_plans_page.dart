@@ -1,11 +1,13 @@
 import 'package:equran/backend/library.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/reading_plans/routine_progress.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:quran/quran.dart' as quran;
 
 const String _routineDesignAsset = 'assets/media/images/app/design.webp';
@@ -16,11 +18,12 @@ class ReadingPlansPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        title: const Text('Reading Routine'),
+        title: Text(localizations.readingRoutine),
         centerTitle: true,
         backgroundColor: colors.background,
         foregroundColor: colors.textPrimary,
@@ -95,6 +98,7 @@ class ReadingPlansPage extends StatelessWidget {
     _PlanPreset preset,
   ) async {
     final DateTime now = DateTime.now();
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final List<ReadingPlanEntry> existingPlans = ReadingPlansDB().box.values
         .whereType<ReadingPlanEntry>()
         .toList(growable: false);
@@ -120,7 +124,7 @@ class ReadingPlansPage extends StatelessWidget {
     final ReadingPlanEntry newPlan = ReadingPlanEntry(
       id: 'plan:${preset.type}:${now.microsecondsSinceEpoch}',
       type: preset.type,
-      title: preset.title,
+      title: preset.title(localizations),
       startedAt: DateTime(now.year, now.month, now.day),
       finishBy: DateTime(now.year, now.month, now.day + preset.days - 1),
       startGlobalAyah: 1,
@@ -132,8 +136,21 @@ class ReadingPlansPage extends StatelessWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text('${preset.title} started')));
+    ).showSnackBar(SnackBar(
+      content: Text(
+        localizations.routineStartedMessage(preset.title(localizations)),
+      ),
+    ));
   }
+}
+
+String _localizedPlanTitle(ReadingPlanEntry plan, AppLocalizations localizations) {
+  return switch (plan.type) {
+    'complete_7_days' => localizations.preset7DaysTitle,
+    'complete_30_days' => localizations.preset30DaysTitle,
+    'complete_60_days' => localizations.preset60DaysTitle,
+    _ => plan.title,
+  };
 }
 
 ReadingPlanEntry? _activePlan(List<ReadingPlanEntry> plans) {
@@ -152,6 +169,7 @@ class _RoutineHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final _PlanProgress? progress = plan == null ? null : _planProgress(plan!);
 
     return EquranGradientCard(
@@ -181,7 +199,9 @@ class _RoutineHero extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      plan?.title ?? 'Build a Quran routine',
+                      plan == null
+                          ? localizations.buildQuranRoutine
+                          : _localizedPlanTitle(plan!, localizations),
                       style: theme.textTheme.headlineSmall?.copyWith(
                         color: colors.onPrimary,
                         fontWeight: FontWeight.w900,
@@ -193,8 +213,8 @@ class _RoutineHero extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 plan == null
-                    ? 'Choose a gentle plan and let today have a clear portion.'
-                    : '${progress!.completedAyahs} of ${progress.totalAyahs} ayahs completed',
+                    ? localizations.chooseGentlePlan
+                    : localizations.routineCompletedAyahs(progress!.completedAyahs, progress.totalAyahs),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.onPrimaryMuted,
                   height: 1.35,
@@ -214,8 +234,8 @@ class _RoutineHero extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 plan == null
-                    ? '7-day, 30-day, and 60-day plans are ready.'
-                    : 'Finish target: ${_shortDate(plan!.finishBy)}',
+                    ? localizations.plansReadyNotice
+                    : localizations.finishTargetDate(_shortDate(plan!.finishBy, localizations.localeName)),
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: colors.onPrimaryMuted,
                 ),
@@ -235,12 +255,13 @@ class _ActivitySummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final bool done = plan != null && routineProgressSummary(plan!).isTodayDone;
     final List<_SummaryPillData> items = <_SummaryPillData>[
-      _SummaryPillData('All', plan == null ? 0 : 1),
-      _SummaryPillData('Done', done ? 1 : 0),
-      _SummaryPillData('Ongoing', plan != null && !done ? 1 : 0),
-      const _SummaryPillData('Skipped', 0),
+      _SummaryPillData(localizations.allLabel, plan == null ? 0 : 1),
+      _SummaryPillData(localizations.doneLabel, done ? 1 : 0),
+      _SummaryPillData(localizations.ongoingLabel, plan != null && !done ? 1 : 0),
+      _SummaryPillData(localizations.skippedLabel, 0),
     ];
 
     return Wrap(
@@ -292,13 +313,14 @@ class _EmptyRoutineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return EquranSurfaceCard(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'No active routine',
+            localizations.noActiveRoutine,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: colors.textPrimary,
               fontWeight: FontWeight.w900,
@@ -306,7 +328,7 @@ class _EmptyRoutineCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Start with a balanced 30-day plan, or choose a faster or gentler routine below.',
+            localizations.startBalancedPlanDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: colors.textSecondary,
               height: 1.35,
@@ -316,7 +338,7 @@ class _EmptyRoutineCard extends StatelessWidget {
           FilledButton.icon(
             onPressed: () => onCreate(context),
             icon: const Icon(Icons.add_rounded),
-            label: const Text('Start 30-day plan'),
+            label: Text(localizations.start30DayPlan),
           ),
         ],
       ),
@@ -333,6 +355,7 @@ class _TodayTaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final RoutineProgressSummary progress = routineProgressSummary(plan);
     final _AyahRef start = _ayahRefFromGlobalIndex(
       progress.todayStartGlobalAyah,
@@ -362,10 +385,10 @@ class _TodayTaskCard extends StatelessWidget {
                   children: <Widget>[
                     Text(
                       progress.isRoutineDone
-                          ? 'Routine complete'
+                          ? localizations.routineComplete
                           : done
-                          ? 'Today completed'
-                          : 'Today\'s reading',
+                          ? localizations.todayCompleted
+                          : localizations.todayReading,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: colors.textPrimary,
                         fontWeight: FontWeight.w900,
@@ -374,8 +397,8 @@ class _TodayTaskCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       progress.isRoutineDone
-                          ? 'All ${progress.totalAyahs} ayahs completed'
-                          : 'Today\'s portion: ${progress.todayPortionAyahs} ayahs',
+                          ? localizations.routineCompletedAyahs(progress.totalAyahs, progress.totalAyahs)
+                          : localizations.todaysPortionAyahs(progress.todayPortionAyahs),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.textSecondary,
                       ),
@@ -384,7 +407,7 @@ class _TodayTaskCard extends StatelessWidget {
                         progress.catchUpAyahs > 0) ...<Widget>[
                       const SizedBox(height: 2),
                       Text(
-                        'Includes ${progress.catchUpAyahs} catch-up ayahs',
+                        localizations.includesCatchUpAyahs(progress.catchUpAyahs),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.textSecondary,
                           fontWeight: FontWeight.w700,
@@ -393,7 +416,7 @@ class _TodayTaskCard extends StatelessWidget {
                     ] else if (!progress.isRoutineDone) ...<Widget>[
                       const SizedBox(height: 2),
                       Text(
-                        '${_refLabel(start)} to ${_refLabel(end)}',
+                        localizations.ayahRangeConnector(_refLabel(start), _refLabel(end)),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.textSecondary,
                         ),
@@ -417,8 +440,8 @@ class _TodayTaskCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             done
-                ? 'Today\'s portion complete'
-                : '$percentComplete% complete • ${progress.todayRemainingAyahs} ayahs remaining today',
+                ? localizations.todaysPortionComplete
+                : localizations.dailyPercentCompleteRemaining(percentComplete, progress.todayRemainingAyahs),
             style: theme.textTheme.bodySmall?.copyWith(
               color: colors.textSecondary,
               fontWeight: FontWeight.w700,
@@ -430,7 +453,7 @@ class _TodayTaskCard extends StatelessWidget {
                 ? null
                 : () => _openContinue(context),
             icon: const Icon(Icons.play_arrow_rounded),
-            label: Text(progress.isRoutineDone ? 'Routine complete' : 'Resume'),
+            label: Text(progress.isRoutineDone ? localizations.routineComplete : localizations.resume),
           ),
         ],
       ),
@@ -465,6 +488,7 @@ class _RoutineHistorySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final List<ReadingPlanEntry> pastPlans = plans
         .where((ReadingPlanEntry plan) => !plan.active)
         .toList(growable: false);
@@ -475,7 +499,7 @@ class _RoutineHistorySection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Routine history',
+            localizations.routineHistory,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: colors.textPrimary,
               fontWeight: FontWeight.w900,
@@ -485,12 +509,12 @@ class _RoutineHistorySection extends StatelessWidget {
           if (activePlan != null)
             _RoutineHistoryTile(
               plan: activePlan!,
-              label: 'Current routine',
+              label: localizations.currentRoutine,
               onDelete: () => _deleteRoutine(context, activePlan!),
             )
           else
             Text(
-              'No current routine.',
+              localizations.noCurrentRoutine,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: colors.textSecondary),
@@ -501,7 +525,7 @@ class _RoutineHistorySection extends StatelessWidget {
               tilePadding: EdgeInsets.zero,
               childrenPadding: EdgeInsets.zero,
               title: Text(
-                'Past routines',
+                localizations.pastRoutines,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: colors.textPrimary,
                   fontWeight: FontWeight.w900,
@@ -511,7 +535,7 @@ class _RoutineHistorySection extends StatelessWidget {
                 for (final ReadingPlanEntry plan in pastPlans)
                   _RoutineHistoryTile(
                     plan: plan,
-                    label: 'Past routine',
+                    label: localizations.pastRoutine,
                     onDelete: () => _deleteRoutine(context, plan),
                   ),
               ],
@@ -538,6 +562,7 @@ class _RoutineHistoryTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final _PlanProgress progress = _planProgress(plan);
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -545,12 +570,12 @@ class _RoutineHistoryTile extends StatelessWidget {
         icon: plan.active ? Icons.route_outlined : Icons.history_rounded,
         size: 38,
       ),
-      title: Text(plan.title),
+      title: Text(_localizedPlanTitle(plan, localizations)),
       subtitle: Text(
-        '$label • ${progress.completedAyahs}/${progress.totalAyahs} ayahs • ${_shortDate(plan.startedAt)}',
+        '$label • ${localizations.completedAyahsRatio(progress.completedAyahs, progress.totalAyahs)} • ${_shortDate(plan.startedAt, localizations.localeName)}',
       ),
       trailing: IconButton(
-        tooltip: 'Delete routine',
+        tooltip: localizations.deleteRoutineTooltip,
         onPressed: onDelete,
         color: colors.textMuted,
         icon: const Icon(Icons.delete_outline_rounded),
@@ -560,11 +585,12 @@ class _RoutineHistoryTile extends StatelessWidget {
 }
 
 Future<void> _deleteRoutine(BuildContext context, ReadingPlanEntry plan) async {
+  final AppLocalizations localizations = AppLocalizations.of(context)!;
   final bool confirmed = await _confirmRoutineAction(
     context: context,
-    title: plan.active ? 'Delete current routine?' : 'Delete routine?',
-    message: 'This removes "${plan.title}" from your routine history.',
-    confirmLabel: 'Delete',
+    title: plan.active ? localizations.deleteCurrentRoutineQuestion : localizations.deleteRoutineQuestion,
+    message: localizations.deleteRoutineWarning(_localizedPlanTitle(plan, localizations)),
+    confirmLabel: localizations.delete,
     destructive: true,
   );
   if (!confirmed) return;
@@ -573,7 +599,7 @@ Future<void> _deleteRoutine(BuildContext context, ReadingPlanEntry plan) async {
   if (!context.mounted) return;
   ScaffoldMessenger.of(
     context,
-  ).showSnackBar(const SnackBar(content: Text('Routine deleted')));
+  ).showSnackBar(SnackBar(content: Text(localizations.routineDeleted)));
 }
 
 Future<bool> _confirmRoutineAction({
@@ -583,6 +609,7 @@ Future<bool> _confirmRoutineAction({
   required String confirmLabel,
   bool destructive = false,
 }) async {
+  final AppLocalizations localizations = AppLocalizations.of(context)!;
   final bool? confirmed = await showDialog<bool>(
     context: context,
     builder: (context) {
@@ -592,7 +619,7 @@ Future<bool> _confirmRoutineAction({
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(localizations.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -618,6 +645,7 @@ class _PlanPresetGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final List<_PlanPreset> presets = <_PlanPreset>[
       _PlanPreset.sevenDays,
       _PlanPreset.thirtyDays,
@@ -628,7 +656,7 @@ class _PlanPresetGrid extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          'Choose a plan',
+          localizations.choosePlan,
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
@@ -670,6 +698,7 @@ class _PlanPresetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     return EquranSurfaceCard(
       onTap: onTap,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -683,7 +712,7 @@ class _PlanPresetCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(
-                  preset.title,
+                  preset.title(localizations),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -693,7 +722,7 @@ class _PlanPresetCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  preset.subtitle,
+                  preset.subtitle(localizations),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(
@@ -713,38 +742,46 @@ class _PlanPresetCard extends StatelessWidget {
 class _PlanPreset {
   const _PlanPreset({
     required this.type,
-    required this.title,
-    required this.subtitle,
     required this.days,
     required this.icon,
   });
 
   final String type;
-  final String title;
-  final String subtitle;
   final int days;
   final IconData icon;
 
+  String title(AppLocalizations localizations) {
+    return switch (type) {
+      'complete_7_days' => localizations.preset7DaysTitle,
+      'complete_30_days' => localizations.preset30DaysTitle,
+      'complete_60_days' => localizations.preset60DaysTitle,
+      _ => '',
+    };
+  }
+
+  String subtitle(AppLocalizations localizations) {
+    return switch (type) {
+      'complete_7_days' => localizations.preset7DaysSubtitle,
+      'complete_30_days' => localizations.preset30DaysSubtitle,
+      'complete_60_days' => localizations.preset60DaysSubtitle,
+      _ => '',
+    };
+  }
+
   static const _PlanPreset sevenDays = _PlanPreset(
     type: 'complete_7_days',
-    title: 'Complete Quran in 7 days',
-    subtitle: 'A focused weekly routine',
     days: 7,
     icon: Icons.bolt_outlined,
   );
 
   static const _PlanPreset thirtyDays = _PlanPreset(
     type: 'complete_30_days',
-    title: 'Complete Quran in 30 days',
-    subtitle: 'Balanced daily portions',
     days: 30,
     icon: Icons.calendar_month_outlined,
   );
 
   static const _PlanPreset sixtyDays = _PlanPreset(
     type: 'complete_60_days',
-    title: 'Complete Quran in 60 days',
-    subtitle: 'Gentle long-form reading',
     days: 60,
     icon: Icons.auto_stories_outlined,
   );
@@ -793,20 +830,6 @@ String _refLabel(_AyahRef ref) {
   return '${quran.getSurahName(ref.surah)} ${ref.verse}';
 }
 
-String _shortDate(DateTime date) {
-  const List<String> months = <String>[
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${months[(date.month - 1).clamp(0, 11).toInt()]} ${date.day}, ${date.year}';
+String _shortDate(DateTime date, String locale) {
+  return DateFormat.MMMd(locale).format(date);
 }

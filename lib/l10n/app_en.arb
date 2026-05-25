@@ -11,11 +11,15 @@
   "statistics": "Statistics",
   "qibla": "Qibla",
   "tasbih": "Tasbih",
-  "asmaUlHusna": "Asma-ul-Husna",
+  "asmaUlHusna": "Asma ul Husna",
   "language": "Language",
   "systemDefault": "System default",
   "english": "English",
   "arabic": "Arabic",
+  "indonesian": "Indonesian",
+  "urdu": "Urdu",
+  "turkish": "Turkish",
+  "bengali": "Bengali",
   "vibration": "Vibration",
   "vibrationSubtitle": "Enable haptic feedback when navigating.",
   "showReadingHistory": "Show reading history",
@@ -45,7 +49,7 @@
   "audioSubtitle": "Reciter and playback",
   "downloadableResources": "Downloadable Resources",
   "downloadableResourcesSubtitle": "Tafsir and audio timing packs",
-  "prayerTimesSettings": "Prayer Times settings",
+  "prayerTimesSettings": "Prayer Times Settings",
   "prayerTimesSettingsSubtitle": "Manage location, method, Asr, time format, and offsets.",
   "appearance": "Appearance",
   "appearanceSubtitle": "Theme, color, and display mode",
@@ -541,7 +545,6 @@
       }
     }
   },
-  "prayerTimesSettings": "Prayer Times Settings",
   "location": "Location",
   "locationSubtitle": "Used only for prayer time calculations",
   "useCurrentLocationDescription": "Save this device's location for prayer calculations.",
@@ -616,11 +619,10 @@
   "exactAlarmPermission": "Exact alarm / alarms & reminders permission",
   "enable": "Enable",
   "open": "Open",
-  "notificationPermissionOff": "Notification permission is off. Enable it to receive prayer reminders.",
+  "notificationPermissionOff": "Notification permission is off.",
   "exactAlarmPermissionDisabled": "Exact alarm permission is disabled. Prayer reminders may be delayed.",
   "openAppSettings": "Open app settings",
   "requestPermission": "Request permission",
-  "retry": "Retry",
   "openAlarmPermissionSettings": "Open alarm permission settings",
   "chooseLocationBeforeReminders": "Choose a location before reminders can be scheduled.",
   "notifyAtSavedPrayerTime": "Notify at the saved prayer time.",
@@ -658,7 +660,6 @@
       }
     }
   },
-  "save": "Save",
   "clear": "Clear",
   "enablePrayerTracking": "Enable prayer tracking",
   "trackYourDailyPrayers": "Track your daily prayers",
@@ -801,7 +802,7 @@
   "chooseTafsirSourcesFirst": "Choose one or more Tafsir sources first.",
   "choose": "Choose",
   "go": "Go",
-  "deleteDownloadedMp3": "Delete Downloaded MP3?",
+  "deleteDownloadedMp3": "Delete downloaded MP3",
   "deleteDownloadedAyah": "Delete Downloaded Ayah?",
   "downloadAllAyahs": "Download All Ayahs?",
   "downloadAllAyahsConfirm": "This will download audio for all {count} ayahs in this surah ({size}).",
@@ -866,7 +867,7 @@
       }
     }
   },
-  "todaysWorship": "TODAY'S WORSHIP",
+  "todaysWorship": "Today's worship",
   "ayahsLabel": "Ayahs",
   "dhikrLabel": "Dhikr",
   "duasLabel": "Duas",
@@ -906,7 +907,6 @@
   "shareCurrentAyah": "Share current ayah",
   "createImageForThisAyah": "Create an image for this ayah",
   "tafsirSources": "Tafsir Sources",
-  "currentLocation": "Current location",
   "setPrayerLocation": "Set prayer location",
   "ayahLabel": "Ayah {number}",
   "@ayahLabel": {
@@ -1017,7 +1017,6 @@
   "chooseSurah": "Choose Surah",
   "offline": "Offline",
   "downloadMp3": "Download MP3",
-  "deleteDownloadedMp3": "Delete downloaded MP3",
   "availableOffline": "Available offline",
   "notSaved": "Not saved",
   "playback": "Playback",
@@ -1071,14 +1070,12 @@
   "permissionStatusNeedsRetry": "Permission status needs a retry.",
   "localNotificationsScheduled": "Local notifications are scheduled on this device.",
   "notificationPermissionGranted": "Notification permission granted.",
-  "notificationPermissionOff": "Notification permission is off.",
   "notificationPermissionOffEnable": "Notification permission is off. Enable it to receive prayer reminders.",
   "prayerRemindersUnsupported": "Prayer reminders are not supported on this platform.",
   "checkingExactAlarmPermission": "Checking exact alarm permission...",
   "exactAlarmStatusNeedsRetry": "Exact alarm status needs a retry.",
   "alarmPermissionGranted": "Alarms & reminders permission granted.",
   "exactAlarmPermissionNotRequired": "Exact alarm permission is not required on this platform.",
-  "categoryUnavailable": "Category unavailable",
   "hisnCategoryCouldNotLoad": "This Hisn al Muslim category could not be loaded.",
   "categoryContainsNoDuas": "This category does not contain any duas.",
   "couldNotUpdateDua": "Could not update dua favourite.",
@@ -1104,8 +1101,6 @@
   "asr": "Asr",
   "maghrib": "Maghrib",
   "isha": "Isha",
-  "todaysWorship": "Today's worship",
-  "assalamuAlaikum": "Assalamu Alaikum",
   "notYet": "Not yet",
   "onTimeThisWeek": "On time this week",
   "lateThisWeek": "Late this week",
@@ -1455,7 +1450,6 @@
     }
   },
   "hifzReminderReview": "Review",
-  "hifzSettingsTitle": "Hifz Settings",
   "hifzSettingsNewPerDay": "New ayahs per day",
   "hifzSettingsReviewsPerDay": "Reviews per day",
   "hifzSettingsShowTranslit": "Show transliteration by default",
@@ -1651,5 +1645,244 @@
       }
     }
   },
-  "hifzReminderButton": "Review"
+  "hifzReminderButton": "Review",
+  "hifz": "Hifz",
+  "hifzSubtitle": "Memorize the Quran with smart review",
+  "licenses": "Licenses",
+  "buildQuranRoutine": "Build a Quran routine",
+  "chooseGentlePlan": "Choose a gentle plan and let today have a clear portion.",
+  "routineCompletedAyahs": "{completed} of {total} ayahs completed",
+  "plansReadyNotice": "7-day, 30-day, and 60-day plans are ready.",
+  "finishTargetDate": "Finish target: {date}",
+  "allLabel": "All",
+  "doneLabel": "Done",
+  "ongoingLabel": "Ongoing",
+  "skippedLabel": "Skipped",
+  "noActiveRoutine": "No active routine",
+  "startBalancedPlanDescription": "Start with a balanced 30-day plan, or choose a faster or gentler routine below.",
+  "start30DayPlan": "Start 30-day plan",
+  "todayReading": "Today's reading",
+  "todayCompleted": "Today completed",
+  "todaysPortionAyahs": "Today's portion: {count} ayahs",
+  "includesCatchUpAyahs": "Includes {count} catch-up ayahs",
+  "ayahRangeConnector": "{start} to {end}",
+  "dailyPercentCompleteRemaining": "{percent}% complete • {remaining} ayahs remaining today",
+  "routineHistory": "Routine history",
+  "currentRoutine": "Current routine",
+  "noCurrentRoutine": "No current routine.",
+  "pastRoutines": "Past routines",
+  "pastRoutine": "Past routine",
+  "deleteRoutineTooltip": "Delete routine",
+  "deleteCurrentRoutineQuestion": "Delete current routine?",
+  "deleteRoutineQuestion": "Delete routine?",
+  "deleteRoutineWarning": "This removes \"{title}\" from your routine history.",
+  "choosePlan": "Choose a plan",
+  "preset7DaysTitle": "Complete Quran in 7 days",
+  "preset7DaysSubtitle": "A focused weekly routine",
+  "preset30DaysTitle": "Complete Quran in 30 days",
+  "preset30DaysSubtitle": "Balanced daily portions",
+  "preset60DaysTitle": "Complete Quran in 60 days",
+  "preset60DaysSubtitle": "Gentle long-form reading",
+  "routineStartedMessage": "{title} started",
+  "prayerTimesDisclaimer": "Prayer times are calculated locally. Verify with your local mosque if needed.",
+  "locationSaved": "Location saved.",
+  "notificationPermissionOffWarning": "Notification permission is off. Reminders were disabled.",
+  "exactAlarmPermissionOffWarning": "Exact alarm permission is disabled. Prayer reminders may be delayed.",
+  "locationDetails": "Location details",
+  "updateCurrentLocation": "Update current location",
+  "useThisDeviceLocation": "Use this device location",
+  "moveMapPinDescription": "Move the map pin to a place",
+  "saveChanges": "Save changes",
+  "advancedCoordinates": "Advanced coordinates",
+  "advancedCoordinatesEditSubtitle": "Edit only if you need precise coordinates",
+  "locationLabel": "Location label",
+  "locationLabelHint": "Home, work, or city name",
+  "latitude": "Latitude",
+  "latitudeHelperText": "Use a value between -90 and 90.",
+  "longitude": "Longitude",
+  "longitudeHelperText": "Use a value between -180 and 180.",
+  "savedLocationFallback": "Saved location",
+  "coordinatesPrivacyDescription": "Used locally for prayer-time calculation. Coordinates are stored on this device.{timezoneText}",
+  "countdownNow": "Now",
+  "countdownVerySoon": "Very soon",
+  "countdownInHours": "In {hours}h",
+  "countdownInHoursMinutes": "In {hours}h {minutes}m",
+  "countdownInMinutes": "In {minutes}m",
+  "@routineCompletedAyahs": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@finishTargetDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@todaysPortionAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@includesCatchUpAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahRangeConnector": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyPercentCompleteRemaining": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+  "@deleteRoutineWarning": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@routineStartedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@coordinatesPrivacyDescription": {
+    "placeholders": {
+      "timezoneText": {
+        "type": "String"
+      }
+    }
+  },
+  "@countdownInHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "resume": "Resume",
+  "routineComplete": "Routine complete",
+  "routineDeleted": "Routine deleted",
+  "chooseLocationManually": "Choose location manually",
+  "saveLocation": "Save location",
+  "coordinatesForPrayerTimes": "Coordinates for prayer times",
+  "manualLocationDescription": "Enter the latitude and longitude for the city, area, or address you want to use.",
+  "manualLocationPrivacyNotice": "Saved on this device and used only for local prayer-time calculation.",
+  "manualLocation": "Manual location",
+  "savedLocation": "Saved location",
+  "useThisLocation": "Use this location",
+  "selectedLocation": "Selected location",
+  "openStreetMapContributors": "OpenStreetMap contributors",
+  "validationEnterField": "Enter {field}.",
+  "validationShouldBeNumber": "{field} should be a number.",
+  "validationMustBeBetween": "{field} must be between {min} and {max}.",
+  "@validationEnterField": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationShouldBeNumber": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationMustBeBetween": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "completedTodayQuota": "{completed} / {total} ayahs today",
+  "completedAyahsRatio": "{completed}/{total} ayahs",
+  "the99BeautifulNamesOfAllah": "The 99 Beautiful Names of Allah",
+  "allNamesCount": "All Names · {count}",
+  "reciteThisNameInDua": "Recite this name in your dua",
+  "searchNames": "Search names",
+  "searchNamesHint": "Search names...",
+  "namesUnavailable": "Names unavailable",
+  "unableLoadAsmaUlHusna": "Unable to load Asma ul Husna right now.",
+  "noNamesFound": "No names found",
+  "tryAnotherAsmaSearch": "Try another Arabic name, transliteration, or meaning.",
+  "@completedTodayQuota": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@completedAyahsRatio": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@allNamesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

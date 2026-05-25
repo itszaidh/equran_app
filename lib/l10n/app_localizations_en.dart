@@ -42,7 +42,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tasbih => 'Tasbih';
 
   @override
-  String get asmaUlHusna => 'Asma-ul-Husna';
+  String get asmaUlHusna => 'Asma ul Husna';
 
   @override
   String get language => 'Language';
@@ -55,6 +55,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get arabic => 'Arabic';
+
+  @override
+  String get indonesian => 'Indonesian';
+
+  @override
+  String get urdu => 'Urdu';
+
+  @override
+  String get turkish => 'Turkish';
+
+  @override
+  String get bengali => 'Bengali';
 
   @override
   String get vibration => 'Vibration';
@@ -3272,4 +3284,316 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hifzReminderButton => 'Review';
+
+  @override
+  String get hifz => 'Hifz';
+
+  @override
+  String get hifzSubtitle => 'Memorize the Quran with smart review';
+
+  @override
+  String get licenses => 'Licenses';
+
+  @override
+  String get buildQuranRoutine => 'Build a Quran routine';
+
+  @override
+  String get chooseGentlePlan =>
+      'Choose a gentle plan and let today have a clear portion.';
+
+  @override
+  String routineCompletedAyahs(int completed, int total) {
+    return '$completed of $total ayahs completed';
+  }
+
+  @override
+  String get plansReadyNotice => '7-day, 30-day, and 60-day plans are ready.';
+
+  @override
+  String finishTargetDate(String date) {
+    return 'Finish target: $date';
+  }
+
+  @override
+  String get allLabel => 'All';
+
+  @override
+  String get doneLabel => 'Done';
+
+  @override
+  String get ongoingLabel => 'Ongoing';
+
+  @override
+  String get skippedLabel => 'Skipped';
+
+  @override
+  String get noActiveRoutine => 'No active routine';
+
+  @override
+  String get startBalancedPlanDescription =>
+      'Start with a balanced 30-day plan, or choose a faster or gentler routine below.';
+
+  @override
+  String get start30DayPlan => 'Start 30-day plan';
+
+  @override
+  String get todayReading => 'Today\'s reading';
+
+  @override
+  String get todayCompleted => 'Today completed';
+
+  @override
+  String todaysPortionAyahs(int count) {
+    return 'Today\'s portion: $count ayahs';
+  }
+
+  @override
+  String includesCatchUpAyahs(int count) {
+    return 'Includes $count catch-up ayahs';
+  }
+
+  @override
+  String ayahRangeConnector(String start, String end) {
+    return '$start to $end';
+  }
+
+  @override
+  String dailyPercentCompleteRemaining(int percent, int remaining) {
+    return '$percent% complete • $remaining ayahs remaining today';
+  }
+
+  @override
+  String get routineHistory => 'Routine history';
+
+  @override
+  String get currentRoutine => 'Current routine';
+
+  @override
+  String get noCurrentRoutine => 'No current routine.';
+
+  @override
+  String get pastRoutines => 'Past routines';
+
+  @override
+  String get pastRoutine => 'Past routine';
+
+  @override
+  String get deleteRoutineTooltip => 'Delete routine';
+
+  @override
+  String get deleteCurrentRoutineQuestion => 'Delete current routine?';
+
+  @override
+  String get deleteRoutineQuestion => 'Delete routine?';
+
+  @override
+  String deleteRoutineWarning(String title) {
+    return 'This removes \"$title\" from your routine history.';
+  }
+
+  @override
+  String get choosePlan => 'Choose a plan';
+
+  @override
+  String get preset7DaysTitle => 'Complete Quran in 7 days';
+
+  @override
+  String get preset7DaysSubtitle => 'A focused weekly routine';
+
+  @override
+  String get preset30DaysTitle => 'Complete Quran in 30 days';
+
+  @override
+  String get preset30DaysSubtitle => 'Balanced daily portions';
+
+  @override
+  String get preset60DaysTitle => 'Complete Quran in 60 days';
+
+  @override
+  String get preset60DaysSubtitle => 'Gentle long-form reading';
+
+  @override
+  String routineStartedMessage(String title) {
+    return '$title started';
+  }
+
+  @override
+  String get prayerTimesDisclaimer =>
+      'Prayer times are calculated locally. Verify with your local mosque if needed.';
+
+  @override
+  String get locationSaved => 'Location saved.';
+
+  @override
+  String get notificationPermissionOffWarning =>
+      'Notification permission is off. Reminders were disabled.';
+
+  @override
+  String get exactAlarmPermissionOffWarning =>
+      'Exact alarm permission is disabled. Prayer reminders may be delayed.';
+
+  @override
+  String get locationDetails => 'Location details';
+
+  @override
+  String get updateCurrentLocation => 'Update current location';
+
+  @override
+  String get useThisDeviceLocation => 'Use this device location';
+
+  @override
+  String get moveMapPinDescription => 'Move the map pin to a place';
+
+  @override
+  String get saveChanges => 'Save changes';
+
+  @override
+  String get advancedCoordinates => 'Advanced coordinates';
+
+  @override
+  String get advancedCoordinatesEditSubtitle =>
+      'Edit only if you need precise coordinates';
+
+  @override
+  String get locationLabel => 'Location label';
+
+  @override
+  String get locationLabelHint => 'Home, work, or city name';
+
+  @override
+  String get latitude => 'Latitude';
+
+  @override
+  String get latitudeHelperText => 'Use a value between -90 and 90.';
+
+  @override
+  String get longitude => 'Longitude';
+
+  @override
+  String get longitudeHelperText => 'Use a value between -180 and 180.';
+
+  @override
+  String get savedLocationFallback => 'Saved location';
+
+  @override
+  String coordinatesPrivacyDescription(String timezoneText) {
+    return 'Used locally for prayer-time calculation. Coordinates are stored on this device.$timezoneText';
+  }
+
+  @override
+  String get countdownNow => 'Now';
+
+  @override
+  String get countdownVerySoon => 'Very soon';
+
+  @override
+  String countdownInHours(int hours) {
+    return 'In ${hours}h';
+  }
+
+  @override
+  String countdownInHoursMinutes(int hours, int minutes) {
+    return 'In ${hours}h ${minutes}m';
+  }
+
+  @override
+  String countdownInMinutes(int minutes) {
+    return 'In ${minutes}m';
+  }
+
+  @override
+  String get resume => 'Resume';
+
+  @override
+  String get routineComplete => 'Routine complete';
+
+  @override
+  String get routineDeleted => 'Routine deleted';
+
+  @override
+  String get chooseLocationManually => 'Choose location manually';
+
+  @override
+  String get saveLocation => 'Save location';
+
+  @override
+  String get coordinatesForPrayerTimes => 'Coordinates for prayer times';
+
+  @override
+  String get manualLocationDescription =>
+      'Enter the latitude and longitude for the city, area, or address you want to use.';
+
+  @override
+  String get manualLocationPrivacyNotice =>
+      'Saved on this device and used only for local prayer-time calculation.';
+
+  @override
+  String get manualLocation => 'Manual location';
+
+  @override
+  String get savedLocation => 'Saved location';
+
+  @override
+  String get useThisLocation => 'Use this location';
+
+  @override
+  String get selectedLocation => 'Selected location';
+
+  @override
+  String get openStreetMapContributors => 'OpenStreetMap contributors';
+
+  @override
+  String validationEnterField(String field) {
+    return 'Enter $field.';
+  }
+
+  @override
+  String validationShouldBeNumber(String field) {
+    return '$field should be a number.';
+  }
+
+  @override
+  String validationMustBeBetween(String field, String min, String max) {
+    return '$field must be between $min and $max.';
+  }
+
+  @override
+  String completedTodayQuota(int completed, int total) {
+    return '$completed / $total ayahs today';
+  }
+
+  @override
+  String completedAyahsRatio(int completed, int total) {
+    return '$completed/$total ayahs';
+  }
+
+  @override
+  String get the99BeautifulNamesOfAllah => 'The 99 Beautiful Names of Allah';
+
+  @override
+  String allNamesCount(int count) {
+    return 'All Names · $count';
+  }
+
+  @override
+  String get reciteThisNameInDua => 'Recite this name in your dua';
+
+  @override
+  String get searchNames => 'Search names';
+
+  @override
+  String get searchNamesHint => 'Search names...';
+
+  @override
+  String get namesUnavailable => 'Names unavailable';
+
+  @override
+  String get unableLoadAsmaUlHusna => 'Unable to load Asma ul Husna right now.';
+
+  @override
+  String get noNamesFound => 'No names found';
+
+  @override
+  String get tryAnotherAsmaSearch =>
+      'Try another Arabic name, transliteration, or meaning.';
 }

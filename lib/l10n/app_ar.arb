@@ -11,11 +11,15 @@
   "statistics": "الإحصائيات",
   "qibla": "القبلة",
   "tasbih": "التسبيح",
-  "asmaUlHusna": "الأسماء الحسنى",
+  "asmaUlHusna": "أسماء الحسنى",
   "language": "اللغة",
   "systemDefault": "لغة النظام",
   "english": "الإنجليزية",
   "arabic": "العربية",
+  "indonesian": "الإندونيسية",
+  "urdu": "الأردية",
+  "turkish": "التركية",
+  "bengali": "البنغالية",
   "vibration": "الاهتزاز",
   "vibrationSubtitle": "تمكين الاهتزاز التفاعلي عند التنقل.",
   "showReadingHistory": "عرض سجل القراءة",
@@ -238,7 +242,7 @@
   "middleOfNight": "منتصف الليل",
   "lastThirdStarts": "بداية الثلث الأخير",
   "useCurrentLocation": "استخدام الموقع الحالي",
-  "chooseOnMap": "اختيار من الخريطة",
+  "chooseOnMap": "اختر على الخريطة",
   "enterCoordinatesManually": "إدخال الإحداثيات يدوياً",
   "locationUseNotice": "يُستخدم موقعك فقط لحساب أوقات الصلاة.",
   "timesCalculatedLocally": "تُحسب الأوقات محلياً على جهازك.",
@@ -297,7 +301,6 @@
   "streak": "السلسلة",
   "savedDhikrSessionsEmpty": "ستظهر جلسات الذكر المحفوظة هنا.",
   "dhikrSessionCounted": "تم عدّ {count} من {target} • {time}",
-  "prayerTimesSettings": "إعدادات أوقات الصلاة",
   "location": "الموقع",
   "locationSubtitle": "يُستخدم فقط لحساب أوقات الصلاة",
   "useCurrentLocationDescription": "حفظ موقع هذا الجهاز لحساب أوقات الصلاة.",
@@ -344,11 +347,10 @@
   "exactAlarmPermission": "إذن المنبه الدقيق / المنبهات والتذكيرات",
   "enable": "تفعيل",
   "open": "فتح",
-  "notificationPermissionOff": "إذن الإشعارات متوقف. فعّله لتلقي تذكيرات الصلاة.",
+  "notificationPermissionOff": "إذن الإشعارات متوقف.",
   "exactAlarmPermissionDisabled": "إذن المنبه الدقيق متوقف. قد تتأخر تذكيرات الصلاة.",
   "openAppSettings": "فتح إعدادات التطبيق",
   "requestPermission": "طلب الإذن",
-  "retry": "إعادة المحاولة",
   "openAlarmPermissionSettings": "فتح إعدادات إذن المنبه",
   "chooseLocationBeforeReminders": "اختر موقعاً قبل جدولة التذكيرات.",
   "notifyAtSavedPrayerTime": "إشعار في وقت الصلاة المحفوظ.",
@@ -365,7 +367,6 @@
   "prayerTimesExperimental": "أوقات الصلاة حالياً تجريبية وقد تختلف عن أوقات المسجد المحلي أو الجداول الرسمية. يرجى التحقق قبل الاعتماد عليها.",
   "bestMethodAfterLocationSaved": "أفضل طريقة بعد حفظ الموقع",
   "minutesBeforePrayer": "{minutes} د قبل الصلاة",
-  "save": "حفظ",
   "clear": "مسح",
   "enablePrayerTracking": "تفعيل تتبع الصلاة",
   "trackYourDailyPrayers": "تتبع صلواتك اليومية",
@@ -447,7 +448,7 @@
   "chooseTafsirSourcesFirst": "اختر مصدراً واحداً أو أكثر للتفسير أولاً.",
   "choose": "اختيار",
   "go": "انتقل",
-  "deleteDownloadedMp3": "حذف MP3 المنزّل؟",
+  "deleteDownloadedMp3": "حذف MP3 المنزّل",
   "deleteDownloadedAyah": "حذف الآية المنزّلة؟",
   "downloadAllAyahs": "تنزيل كل الآيات؟",
   "downloadAllAyahsConfirm": "سيؤدي ذلك إلى تنزيل الصوت لجميع {count} آية في هذه السورة ({size}).",
@@ -514,7 +515,6 @@
   "shareCurrentAyah": "مشاركة الآية الحالية",
   "createImageForThisAyah": "إنشاء صورة لهذه الآية",
   "tafsirSources": "مصادر التفسير",
-  "currentLocation": "الموقع الحالي",
   "setPrayerLocation": "تعيين موقع الصلاة",
   "ayahLabel": "الآية {number}",
   "@ayahLabel": {
@@ -563,7 +563,7 @@
   "dayStreakCount": "{count} يوم متتالية",
   "ayahsCount": "{count} آية",
   "daysCount": "{count} يوم",
-  "todaysPortionComplete": "اكتمل ورد اليوم",
+  "todaysPortionComplete": "الجزء اليوم كامل",
   "catchUpAyahsIncluded": "يتضمن {count} آية للتعويض",
   "ayahsRemainingToday": "بقي {count} آية اليوم",
   "todaysPortion": "ورد اليوم: {count} آية",
@@ -608,7 +608,6 @@
   "chooseSurah": "اختيار السورة",
   "offline": "دون اتصال",
   "downloadMp3": "تنزيل MP3",
-  "deleteDownloadedMp3": "حذف MP3 المنزّل",
   "availableOffline": "متاح دون اتصال",
   "notSaved": "غير محفوظ",
   "playback": "التشغيل",
@@ -662,14 +661,12 @@
   "permissionStatusNeedsRetry": "تحتاج حالة الإذن إلى إعادة المحاولة.",
   "localNotificationsScheduled": "تمت جدولة الإشعارات المحلية على هذا الجهاز.",
   "notificationPermissionGranted": "تم منح إذن الإشعارات.",
-  "notificationPermissionOff": "إذن الإشعارات متوقف.",
   "notificationPermissionOffEnable": "إذن الإشعارات متوقف. فعّله لاستقبال تذكيرات الصلاة.",
   "prayerRemindersUnsupported": "تذكيرات الصلاة غير مدعومة على هذه المنصة.",
   "checkingExactAlarmPermission": "جارٍ التحقق من إذن المنبه الدقيق...",
   "exactAlarmStatusNeedsRetry": "تحتاج حالة المنبه الدقيق إلى إعادة المحاولة.",
   "alarmPermissionGranted": "تم منح إذن المنبهات والتذكيرات.",
   "exactAlarmPermissionNotRequired": "إذن المنبه الدقيق غير مطلوب على هذه المنصة.",
-  "categoryUnavailable": "التصنيف غير متاح",
   "hisnCategoryCouldNotLoad": "لم يمكن تحميل هذا التصنيف من حصن المسلم.",
   "categoryContainsNoDuas": "لا يحتوي هذا التصنيف على أي أدعية.",
   "couldNotUpdateDua": "تعذّر تحديث مفضلة الدعاء.",
@@ -695,8 +692,6 @@
   "asr": "العصر",
   "maghrib": "المغرب",
   "isha": "العشاء",
-  "todaysWorship": "عبادة اليوم",
-  "assalamuAlaikum": "السلام عليكم",
   "notYet": "لم يحن بعد",
   "onTimeThisWeek": "في الوقت هذا الأسبوع",
   "lateThisWeek": "متأخر هذا الأسبوع",
@@ -1046,7 +1041,6 @@
     }
   },
   "hifzReminderReview": "مراجعة",
-  "hifzSettingsTitle": "إعدادات الحفظ",
   "hifzSettingsNewPerDay": "آيات جديدة يومياً",
   "hifzSettingsReviewsPerDay": "مراجعات يومياً",
   "hifzSettingsShowTranslit": "عرض النطق افتراضياً",
@@ -1117,5 +1111,244 @@
   "hifzMorePageTitle": "الحفظ",
   "hifzMorePageSubtitle": "احفظ القرآن بمراجعة ذكية",
   "hifzReminderTitle": "{count} آيات مستحقة لمراجعة الحفظ",
-  "hifzReminderButton": "مراجعة"
+  "hifzReminderButton": "مراجعة",
+  "hifz": "حفظ",
+  "hifzSubtitle": "احفظ القرآن بالمراجعة الذكية",
+  "licenses": "التراخيص",
+  "buildQuranRoutine": "بناء روتين القرآن",
+  "chooseGentlePlan": "اختر خطة لطيفة ودع اليوم يحصل على جزء واضح.",
+  "routineCompletedAyahs": "{completed} من {total} آية مكتملة",
+  "plansReadyNotice": "خطط 7 أيام و30 يومًا و60 يومًا جاهزة.",
+  "finishTargetDate": "هدف النهاية: {date}",
+  "allLabel": "الجميع",
+  "doneLabel": "منتهي",
+  "ongoingLabel": "مستمر",
+  "skippedLabel": "تم تخطيه",
+  "noActiveRoutine": "لا يوجد روتين نشط",
+  "startBalancedPlanDescription": "ابدأ بخطة متوازنة لمدة 30 يومًا، أو اختر روتينًا أسرع أو أكثر لطفًا أدناه.",
+  "start30DayPlan": "ابدأ خطة الـ 30 يومًا",
+  "todayReading": "قراءة اليوم",
+  "todayCompleted": "اكتمل اليوم",
+  "todaysPortionAyahs": "جزء اليوم: {count} آيات",
+  "includesCatchUpAyahs": "يتضمن {count} آيات اللحاق بالركب",
+  "ayahRangeConnector": "{start} إلى {end}",
+  "dailyPercentCompleteRemaining": "{percent}% مكتمل • {remaining} آيات متبقية اليوم",
+  "routineHistory": "التاريخ الروتيني",
+  "currentRoutine": "الروتين الحالي",
+  "noCurrentRoutine": "لا يوجد روتين الحالي.",
+  "pastRoutines": "الروتينات الماضية",
+  "pastRoutine": "روتين الماضي",
+  "deleteRoutineTooltip": "حذف الروتين",
+  "deleteCurrentRoutineQuestion": "هل تريد حذف الروتين الحالي؟",
+  "deleteRoutineQuestion": "هل تريد حذف الروتين؟",
+  "deleteRoutineWarning": "يؤدي هذا إلى إزالة \"{title}\" من سجلك الروتيني.",
+  "choosePlan": "اختر خطة",
+  "preset7DaysTitle": "القرآن كاملا في 7 أيام",
+  "preset7DaysSubtitle": "روتين أسبوعي مركز",
+  "preset30DaysTitle": "القرآن كاملا في 30 يوما",
+  "preset30DaysSubtitle": "حصص يومية متوازنة",
+  "preset60DaysTitle": "القرآن كاملا في 60 يوما",
+  "preset60DaysSubtitle": "قراءة لطيفة طويلة",
+  "routineStartedMessage": "بدأ {title}",
+  "prayerTimesDisclaimer": "يتم احتساب أوقات الصلاة محليا. تحقق مع مسجدك المحلي إذا لزم الأمر.",
+  "locationSaved": "تم حفظ الموقع.",
+  "notificationPermissionOffWarning": "إذن الإخطار معطل. تم تعطيل التذكيرات.",
+  "exactAlarmPermissionOffWarning": "تم تعطيل إذن التنبيه الدقيق. قد تتأخر تذكيرات الصلاة.",
+  "locationDetails": "تفاصيل الموقع",
+  "updateCurrentLocation": "تحديث الموقع الحالي",
+  "useThisDeviceLocation": "استخدم موقع الجهاز هذا",
+  "moveMapPinDescription": "حرك دبوس الخريطة إلى مكان ما",
+  "saveChanges": "حفظ التغييرات",
+  "advancedCoordinates": "الإحداثيات المتقدمة",
+  "advancedCoordinatesEditSubtitle": "قم بالتحرير فقط إذا كنت بحاجة إلى إحداثيات دقيقة",
+  "locationLabel": "تسمية الموقع",
+  "locationLabelHint": "اسم المنزل أو العمل أو المدينة",
+  "latitude": "خط العرض",
+  "latitudeHelperText": "استخدم قيمة بين -90 و90.",
+  "longitude": "خط الطول",
+  "longitudeHelperText": "استخدم قيمة بين -180 و180.",
+  "savedLocationFallback": "الموقع المحفوظ",
+  "coordinatesPrivacyDescription": "يستخدم محليا لحساب وقت الصلاة. يتم تخزين الإحداثيات على هذا الجهاز.{timezoneText}",
+  "countdownNow": "الآن",
+  "countdownVerySoon": "قريبا جدا",
+  "countdownInHours": "في {hours}h",
+  "countdownInHoursMinutes": "في {hours}h {minutes}m",
+  "countdownInMinutes": "في {minutes}م",
+  "@routineCompletedAyahs": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@finishTargetDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@todaysPortionAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@includesCatchUpAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahRangeConnector": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyPercentCompleteRemaining": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+  "@deleteRoutineWarning": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@routineStartedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@coordinatesPrivacyDescription": {
+    "placeholders": {
+      "timezoneText": {
+        "type": "String"
+      }
+    }
+  },
+  "@countdownInHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "resume": "متابعة",
+  "routineComplete": "اكتمل الورد",
+  "routineDeleted": "تم حذف الورد",
+  "chooseLocationManually": "اختر الموقع يدويًا",
+  "saveLocation": "حفظ الموقع",
+  "coordinatesForPrayerTimes": "إحداثيات أوقات الصلاة",
+  "manualLocationDescription": "أدخل خط الطول وخط العرض للمدينة أو المنطقة أو العنوان الذي تريد استخدامه.",
+  "manualLocationPrivacyNotice": "يتم حفظه على هذا الجهاز ويستخدم فقط لحساب أوقات الصلاة المحلية.",
+  "manualLocation": "الموقع اليدوي",
+  "savedLocation": "الموقع المحفوظ",
+  "useThisLocation": "استخدم هذا الموقع",
+  "selectedLocation": "الموقع المحدد",
+  "openStreetMapContributors": "المساهمين في OpenStreetMap",
+  "validationEnterField": "أدخل {field}.",
+  "validationShouldBeNumber": "{field} يجب أن يكون رقمًا.",
+  "validationMustBeBetween": "يجب أن يكون {field} بين {min} و{max}.",
+  "@validationEnterField": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationShouldBeNumber": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationMustBeBetween": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "completedTodayQuota": "{completed} / {total} آيات اليوم",
+  "completedAyahsRatio": "{completed}/{total} آيات",
+  "the99BeautifulNamesOfAllah": "99 أسماء الله الحسنى",
+  "allNamesCount": "جميع الأسماء · {count}",
+  "reciteThisNameInDua": "اقرء هذا الاسم في دعاءك",
+  "searchNames": "بحث في الأسماء",
+  "searchNamesHint": "بحث في الأسماء...",
+  "namesUnavailable": "الأسماء غير متوفرة",
+  "unableLoadAsmaUlHusna": "غير قادر على تحميل أسماء الحسنى الآن.",
+  "noNamesFound": "لم يتم العثور على أسماء",
+  "tryAnotherAsmaSearch": "جرّب اسمًا عربيًا آخر أو ترجمة صوتية أو معنى آخر.",
+  "@completedTodayQuota": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@completedAyahsRatio": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@allNamesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

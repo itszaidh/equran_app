@@ -1,0 +1,1888 @@
+{
+  "@@locale": "tr",
+  "@dailyQuranGoalSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@removeDownloadFromOffline": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@deletedDownload": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteAllDownloadsBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@surahAyahSummary": {
+    "placeholders": {
+      "surahCount": {
+        "type": "int"
+      },
+      "ayahCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@downloadTranslationQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@translationNotInstalled": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@installedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@deleteResourceQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@deletedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@backupSavedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "@restoredBackupSummary": {
+    "placeholders": {
+      "favouritesCount": {
+        "type": "int"
+      },
+      "readingHistoryCount": {
+        "type": "int"
+      },
+      "settingsCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "@downloadEquranShareText": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "@ayahRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "@juzNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@prayerTimeTitle": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      }
+    }
+  },
+  "@prayerBeginsIn": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@hoursMinutesShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@prohibitedTimeEndsIn": {
+    "placeholders": {
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "@compassAccuracyLowWithDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@bearingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@targetDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@headingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@turnRightDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@turnLeftDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@kilometersToKaaba": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "@dhikrComplete": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@dhikrSessionCounted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@minutesAfterMaghrib": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@sunriseProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@zawalProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@sunsetProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@minutesBefore": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@positiveOrNegativeMinutes": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "@minutesBeforePrayer": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@savedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@surahLabel": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    },
+    "ayah": {
+      "type": "int"
+    }
+  },
+  "@arabicCategoriesDuasOffline": {
+    "placeholders": {
+      "categoryCount": {
+        "type": "int"
+      },
+      "duaCount": {
+        "type": "int"
+      }
+    }
+  },
+  "@savedDuasCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "@duaCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "label": {
+      "type": "String"
+    }
+  },
+  "@reciterNeedsTimings": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@installedLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@downloadAllAyahsConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@timingsNeedToBeDownloaded": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "@autoAdvancesToNextPreset": {
+    "placeholders": {
+      "nextPreset": {
+        "type": "String"
+      }
+    }
+  },
+  "@counts33To33To34": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "@onStreakDay": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "@jumpToAyahIn": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    }
+  },
+  "@ayahLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@versesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@surahVerseCount": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzNewTodayLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsMemorized": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzOverdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAddAyahsButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzAyahsAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSurahsMastered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSessionProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzExitSessionBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompletedInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzNextReviewInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStatsNextDueValue": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStatsNextDueDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStatsRetentionSuffix": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStatsPill": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzReminderDueCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitNextAyah": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitProgress": {
+    "placeholders": {
+      "introduced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueRevision": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzDueMaintenance": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzStartMemorizingSurah": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzStartMemorizingJuz": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitAyahCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzSurahsMasteredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzEmptySessionBody": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzCompleteSubtitleMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteNextDueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteGraduatedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzCompleteKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@hifzUnitCompleteTitle": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "@hifzReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "appTitle": "e-Kur'an",
+  "home": "Ev",
+  "quran": "Kuran",
+  "prayer": "Namaz",
+  "duas": "Dualar",
+  "more": "Daha",
+  "settings": "Ayarlar",
+  "downloads": "İndirilenler",
+  "statistics": "İstatistikler",
+  "qibla": "Kıble",
+  "tasbih": "tesbih",
+  "asmaUlHusna": "Esmaül Hüsna",
+  "language": "Dil",
+  "systemDefault": "Sistem varsayılanı",
+  "english": "İngilizce",
+  "arabic": "Arapça",
+  "indonesian": "Endonezya dili",
+  "urdu": "Urduca",
+  "turkish": "Türkçe",
+  "bengali": "Bengalce",
+  "vibration": "Titreşim",
+  "vibrationSubtitle": "Gezinirken dokunsal geri bildirimi etkinleştirin.",
+  "showReadingHistory": "Okuma geçmişini göster",
+  "showReadingHistorySubtitle": "En son okunan 7 Sureyi gösterir.",
+  "general": "Genel",
+  "generalSubtitle": "Uygulama davranışı ve geçmişi",
+  "reading": "Okuma",
+  "readingSubtitle": "Kur'an gösterimi ve tercümesi",
+  "cardView": "Kart Görünümü",
+  "cardViewSubtitle": "Her ayeti ayrı ayrı veya hepsini tek sayfada görüntüler.",
+  "displayTranslation": "Görüntülü Çeviri",
+  "displayTranslationSubtitle": "Kart görünümünde her ayetin çevirisini görüntüleyin.",
+  "displayTransliteration": "Harf çevirisini görüntüle",
+  "displayTransliterationSubtitle": "Kart görünümünde her ayetin harf çevirisini gösterin.",
+  "dailyQuranGoal": "Günlük Kur'an hedefi",
+  "dailyQuranGoalSubtitle": "Günde {count} ayet",
+  "translation": "Çeviri",
+  "reciter": "Okuyucu",
+  "audio": "Ses",
+  "audioSubtitle": "Okuyucu ve oynatma",
+  "downloadableResources": "İndirilebilir Kaynaklar",
+  "downloadableResourcesSubtitle": "Tefsir ve ses zamanlama paketleri",
+  "prayerTimesSettings": "Namaz Vakitleri Ayarları",
+  "prayerTimesSettingsSubtitle": "Konumu, yöntemi, Asr'ı, saat biçimini ve uzaklıkları yönetin.",
+  "appearance": "Dış görünüş",
+  "appearanceSubtitle": "Tema, renk ve görüntüleme modu",
+  "themeMode": "Tema modu",
+  "colorScheme": "Renk şeması",
+  "data": "Veri",
+  "dataSubtitle": "Kaydedilen yerel verileri yedekleyin, geri yükleyin veya temizleyin",
+  "backupData": "Verileri yedekle",
+  "backupDataSubtitle": "Favorileri, okuma geçmişini, okuyucuyu, metin boyutlarını ve tüm ayarları dışa aktarır.",
+  "restoreData": "Verileri geri yükle",
+  "restoreDataSubtitle": "Favorileri, okuma geçmişini, okuyucuyu, metin boyutlarını ve kayıtlı ayarları bir yedekleme dosyasından geri yükler.",
+  "clearReadingHistory": "Okuma geçmişini temizle",
+  "clearReadingHistorySubtitle": "Son okuma, devam etme konumları ve Kur'an okuma ilerlemesini kaldırır.",
+  "clearFavourites": "Favorileri Temizle",
+  "clearFavouritesSubtitle": "Kaydedilen ayetleri, klasörleri, notları, etiketleri ve favorileri kaldırır.",
+  "cancel": "İptal etmek",
+  "save": "Kaydetmek",
+  "delete": "Silmek",
+  "download": "İndirmek",
+  "update": "Güncelleme",
+  "retry": "Yeniden dene",
+  "continueReading": "Okumaya Devam Et",
+  "lastRead": "Son Okuma",
+  "beginWithQuran": "Kuran Okuma",
+  "startReadingSubtitle": "Okumaya başladığınızda yeriniz burada görünecektir.",
+  "startReading": "Okumaya başla",
+  "continueListening": "Dinlemeye Devam Et",
+  "beginListeningSubtitle": "Tilaveti dinleyin, yeriniz burada görünecektir.",
+  "startReadingRoutine": "Bir okuma rutini başlatın",
+  "buildDailyQuranHabit": "Günlük bir Kuran alışkanlığı edinin",
+  "start": "Başlangıç",
+  "readingRoutine": "Okuma Rutini",
+  "continueRoutine": "Rutine Devam Et",
+  "dailyQuranCompanion": "Günlük Kuran Arkadaşı",
+  "dailyQuranCompanionSubtitle": "Okumanızı ve günlük araçlarınızı alın",
+  "dailyTools": "Günlük Araçlar",
+  "dailyToolsSubtitle": "Temel bilgilere hızlı erişim",
+  "exploreAllFeatures": "Tüm özellikleri keşfedin",
+  "dailyAyah": "Günlük Ayah",
+  "seeAll": "Tümünü gör",
+  "surahs": "Sureler",
+  "juz": "Cüz",
+  "pages": "Sayfalar",
+  "saved": "Kaydedildi",
+  "quranJourney": "Kuran Yolculuğu",
+  "nextPrayer": "Sonraki Dua",
+  "prayerTimes": "Namaz Vakitleri",
+  "exploreQibla": "Kıbleyi keşfedin",
+  "tasbihCounter": "Tesbih Sayacı",
+  "duasAndAzkar": "Duas ve Azkar",
+  "readingPlans": "Okuma Planları",
+  "quranStatistics": "Kuran İstatistikleri",
+  "search": "Aramak",
+  "dua": "dua",
+  "player": "Oyuncu",
+  "searchQuran": "Kuran'ı ara",
+  "searchHintSurah": "Sure adı veya numarası...",
+  "searchHintJuz": "Cüz numarası veya sure adı...",
+  "searchHintPage": "Sayfa numarası, sure veya cüz...",
+  "searchHintSaved": "Ayah, sure, not veya numara kaydedildi...",
+  "searchHintText": "Kuran'ın Arapçasını veya çevirisini arayın...",
+  "savedAyahs": "Kaydedilen Ayahlar",
+  "ayahNumber": "Ayah {number}",
+  "play": "Oynamak",
+  "pause": "Duraklat",
+  "next": "Sonraki",
+  "previous": "Öncesi",
+  "repeat": "Tekrarlamak",
+  "audioOptions": "Ses Seçenekleri",
+  "dismissPlayer": "Oyuncuyu kapat",
+  "playbackOptions": "Oynatma seçenekleri",
+  "previousAyah": "Önceki ayet",
+  "nextAyah": "Sonraki ayet",
+  "autoPlayback": "Otomatik Oynatma",
+  "repeatInterval": "Tekrar Aralığı",
+  "downloadSurahAudio": "Sure Sesini İndir",
+  "deleteDownloadedAudio": "İndirilen Sesi Sil",
+  "deleteDownloadQuestion": "İndirilenler silinsin mi?",
+  "removeDownloadFromOffline": "{title} çevrimdışı depolama alanından kaldırılsın mı?",
+  "deletedDownload": "{title} silindi",
+  "deleteAllDownloadsQuestion": "Tüm İndirilenler Silinsin mi?",
+  "deleteAllDownloadsBody": "Bu, indirilen {count} ses dosyalarını ({size}) kaldıracaktır.",
+  "deleteAll": "Tümünü Sil",
+  "deletedAllDownloadedAudio": "İndirilen tüm ses silindi.",
+  "offlineAudio": "Çevrimdışı Ses",
+  "surahAyahSummary": "{surahCount} sureler • {ayahCount} ayetler",
+  "clearAll": "Tümünü Temizle",
+  "cleanupPreview": "Temizleme önizlemesi",
+  "downloadedSurahs": "İndirilen sureler",
+  "downloadedAyahs": "İndirilen ayetler",
+  "potentialSpaceToFree": "Serbest bırakılacak potansiyel alan",
+  "cleanupDoesNotRemoveData": "Temizleme işlemi hiçbir zaman favorileri, notları, okuma planlarını, Kuran metnini veya ayarları silmez.",
+  "reviewDeletion": "Silme işlemini inceleyin",
+  "noDownloadedAudioYet": "Henüz indirilmiş ses yok.",
+  "downloadedAudioEmpty": "İndirilen sureler ve ayetler burada okuyucuya göre gruplandırılmış olarak görünecektir.",
+  "ayahs": "Ayetler",
+  "deleteDownload": "İndirmeyi sil",
+  "playbackSpeed": "Oynatma Hızı",
+  "locationPermissionRequired": "Konum izni gerekli",
+  "unableToReconnect": "Yeniden bağlanılamıyor",
+  "reciterOptions": "Okuyucu Seçenekleri",
+  "close": "Kapalı",
+  "theme": "Tema",
+  "themeModeDark": "Karanlık",
+  "themeModeLight": "Işık",
+  "themeModeSystem": "Otomatik",
+  "themeModeDialogTitle": "Tema Modu",
+  "themeModeDarkSubtitle": "Daima gece modunu kullanın.",
+  "themeModeLightSubtitle": "Her zaman ışık modunu kullanın.",
+  "themeModeSystemSubtitle": "Sistem temasını takip edin.",
+  "colorSchemeDialogTitle": "Renk Şeması",
+  "translationLanguage": "Çeviri dili",
+  "notDownloaded": "İndirilmedi",
+  "playbackRate": "Oynatma Hızı",
+  "arabicTextSize": "Arapça metin boyutu",
+  "translationTextSize": "Çeviri metni boyutu",
+  "resourcesUnavailable": "Kaynaklar kullanılamıyor",
+  "resourcesManifestUnavailable": "Kaynak bildirimi yüklenemiyor.",
+  "tafsir": "Tefsir",
+  "audioTimings": "Ses Zamanlamaları",
+  "translations": "Çeviriler",
+  "refreshManifest": "Bildiriyi yenile",
+  "checkGithubReleases": "Değişiklikler için GitHub sürümlerini kontrol edin",
+  "noResourcesListed": "Manifest'te hiçbir kaynak listelenmiyor.",
+  "selected": "Seçildi",
+  "translationUnsupported": "Bu çeviri henüz desteklenmiyor.",
+  "translationNotInManifest": "Bu çeviri kaynak bildiriminde yer almıyor.",
+  "downloadTranslationQuestion": "{name} indirilsin mi?",
+  "translationNotInstalled": "Bu çeviri bu cihazda yüklü değil. {size}",
+  "installedResource": "{name} yüklendi.",
+  "unableInstallResource": "Bu kaynak yüklenemiyor.",
+  "deleteResourceQuestion": "{name} silinsin mi?",
+  "deleteResourceBody": "Bu, indirilen dosyaları bu cihazdan kaldırır.",
+  "deletedResource": "{name} silindi.",
+  "ayahsPerDay": "Günlük ayetler",
+  "enterGoalRange": "1 ila 1000 ayah arasında bir hedef girin",
+  "clearReadingHistoryWarning": "UYARI: Bu, son okunanları, devam ettirilen konumları, istatistikleri ve rutin gün ilerlemesini temizler.",
+  "clearFavouritesWarning": "UYARI: Bu, kayıtlı tüm ayetleri, klasörleri, notları, etiketleri ve favorileri temizleyecektir.",
+  "no": "HAYIR",
+  "yes": "EVET",
+  "restoreBackup": "Yedeği geri yükle",
+  "restoreBackupWarning": "Bu, mevcut favorilerinizi, okuma geçmişinizi ve kayıtlı ayarlarınızı yedekleme dosyasının içeriğiyle değiştirecektir.",
+  "restore": "Eski haline getirmek",
+  "backupReadyToShare": "Yedekleme dosyası paylaşıma hazır.",
+  "backupSavedTo": "Yedekleme {path} konumuna kaydedildi",
+  "unableCreateBackup": "Yedekleme dosyası oluşturulamıyor.",
+  "restoredBackupSummary": "{favouritesCount} favoriler, {readingHistoryCount} geçmiş girişleri ve {settingsCount} ayarları geri yüklendi.",
+  "unableRestoreBackup": "Seçilen yedekleme geri yüklenemiyor.",
+  "locationAndCalculationSettings": "Konum ve hesaplama ayarları",
+  "quranSearch": "Kuran Arama",
+  "searchArabicAndTranslation": "Arapça ve çeviride arama yapın",
+  "recitationsAndAudioControls": "Okumalar ve ses kontrolleri",
+  "compassAndDirection": "Pusula ve yön",
+  "offlineAudioAndCleanup": "Çevrimdışı ses ve temizleme",
+  "plansGoalsProgress": "Planlar, hedefler ve ilerleme",
+  "calmDhikrCounter": "Sakin zikir sayacı",
+  "the99BeautifulNames": "99 Güzel İsim",
+  "worshipTrendsAndStreaks": "İbadet eğilimleri ve çizgileri",
+  "fontsReciterAppBehavior": "Yazı tipleri, okuyucu, uygulama davranışı",
+  "switchLightOrNightMode": "Işık veya gece modunu değiştirin",
+  "yourIslamicCompanion": "İslam Arkadaşınız",
+  "moreHeroSubtitle": "Kıble, indirmeler, ayarlar, planlar ve araçlar tek bir sessiz yerde toplandı.",
+  "openRoutine": "Rutini aç",
+  "aboutAppBody": "eQuran, odaklanmış okuma, dinleme ve günlük yansıma için tasarlanmış modern bir Kuran arkadaşıdır.",
+  "versionLabel": "Sürüm {version}",
+  "downloadEquran": "e-Kuran'ı indirin",
+  "downloadEquranShareText": "eQuran'ı F-Droid'e indirin: {url}",
+  "unableOpenShareSheet": "Paylaşım sayfası açılamıyor.",
+  "aboutThisApp": "Bu uygulama hakkında",
+  "appDetailsAndVersion": "Uygulama ayrıntıları ve sürümü",
+  "shareApp": "Uygulamayı paylaş",
+  "shareAppSubtitle": "Başkalarına e-Kuran gönder",
+  "feedbackContact": "Geribildirim / İletişim",
+  "feedbackContactSubtitle": "Sorunları bildirin veya e-posta desteği",
+  "reportIssues": "Sorunları bildir",
+  "reportIssuesSubtitle": "GitHub sorun izleyicisini açın.",
+  "unableOpenIssueTracker": "Sorun izleyici açılamıyor.",
+  "emailSupport": "E-posta desteği",
+  "unableOpenEmailClient": "E-posta istemcisi açılamıyor.",
+  "feedbackThanks": "Geri bildiriminizi ve önerilerinizi takdir ediyoruz.",
+  "browseBySurah": "Sureye göre göz at",
+  "browseByJuz": "Juz'a göre göz at",
+  "browseByPage": "Sayfaya göre göz at",
+  "closeSearch": "Aramayı kapat",
+  "noSurahsFound": "Hiç sure bulunamadı.",
+  "ayahRange": "Ayah {start}-{end}",
+  "juzNumber": "Cüz {number}",
+  "prayerNameFajr": "sabah",
+  "prayerNameSunrise": "Gündoğumu",
+  "prayerNameDhuhr": "Öğle yemeği",
+  "prayerNameAsr": "İkindi",
+  "prayerNameMaghrib": "Akşam",
+  "prayerNameIsha": "Yatsı",
+  "today": "Bugün",
+  "previousDay": "Önceki gün",
+  "nextDay": "Ertesi gün",
+  "middleOfNight": "Gece yarısı",
+  "lastThirdStarts": "Son üçüncü başlangıçlar",
+  "useCurrentLocation": "Mevcut konumu kullan",
+  "chooseOnMap": "Haritada seç",
+  "enterCoordinatesManually": "Koordinatları manuel olarak girin",
+  "locationUseNotice": "Konumunuz yalnızca namaz vakti hesaplaması için kullanılır.",
+  "timesCalculatedLocally": "Süreler cihazınızda yerel olarak hesaplanır.",
+  "prayerTimesNeedLocation": "Namaz vakitlerinin lokasyona ihtiyacı var",
+  "prayerTimesLocationSubtitle": "Tam konumunuz için Sabah, Öğle, İkindi, Akşam ve Yatsı hesaplarını yapın.",
+  "setUpLocation": "Konumu ayarla",
+  "chooseLocationForNextPrayer": "Bir sonraki namaz vaktinin gösterileceği yeri buradan seçin.",
+  "prayerTimeTitle": "{prayer} Zaman",
+  "prayerBeginsIn": "{prayer} {countdown} ile başlıyor",
+  "minutesShort": "{minutes} dk.",
+  "hoursMinutesShort": "{hours}h {minutes}m",
+  "exactAlarmPermissionOff": "Tam alarm izni kapalı. Namaz hatırlatmaları gecikebilir.",
+  "zawal": "Zaval",
+  "sunset": "Gün batımı",
+  "morning": "Sabah",
+  "prohibitedTimeEndsIn": "Yasaklanan süre {countdown}'da sona eriyor",
+  "selectPrayerDate": "Namaz tarihini seçin",
+  "appSettings": "Uygulama ayarları",
+  "unableGetLocation": "Konum alınamıyor.",
+  "qiblaBearingUnavailable": "Mevcut konum koordinatları kullanılamıyor.",
+  "currentLocationTimedOut": "Geçerli konum zaman aşımına uğradı. Konum hizmetlerini kontrol edip tekrar deneyin.",
+  "compassUnavailable": "Pusula kullanılamıyor. Gösterilen yatağı kullanın.",
+  "qiblaCalibrationHint": "En iyi doğruluğu elde etmek için telefonunuzu düz tutun ve kalibre etmek için şekil-8 yönünde hareket ettirin.",
+  "compassAccuracyLow": "Pusula doğruluğu düşük olabilir.",
+  "compassAccuracyLowWithDegrees": "Pusula doğruluğu düşük olabilir ({degrees}°).",
+  "qiblaLocationServicesDisabled": "Kıble'yi kullanmak için konum servislerini açın.",
+  "qiblaLocationPermissionNeeded": "Mevcut cihazınızın konumundan kıbleyi hesaplamak için konum izni gereklidir.",
+  "qiblaLocationPermissionBlocked": "Konum izni engellendi. Kıble'yi kullanmak için uygulama ayarlarından etkinleştirin.",
+  "qiblaLocationUnavailableMessage": "Mevcut konumunuzu okuyamadık. Konum hizmetlerini kontrol edip tekrar deneyin.",
+  "bearingDegrees": "Yön {degrees}°",
+  "targetDegrees": "Hedef {degrees}°",
+  "headingDegrees": "Başlık {degrees}°",
+  "heading": "Başlık",
+  "facingQibla": "Kıbleye bakan",
+  "turnRightDegrees": "Sağa dönün {degrees}°",
+  "turnLeftDegrees": "Sola dönün {degrees}°",
+  "refreshCurrentLocation": "Mevcut konumu yenile",
+  "findingYourLocation": "Konumunuzu bulma",
+  "currentLocationRequired": "Mevcut konum gerekli",
+  "qiblaRequiresLocation": "Kıble, bu cihazdan canlı güncel konum bilgisi gerektirir. Devam etmek için konum hizmetlerini ve izni etkinleştirin.",
+  "findingLocation": "Konum bulma",
+  "currentLocationUnavailable": "Mevcut konum kullanılamıyor",
+  "currentLocation": "Mevcut konum",
+  "distanceUnavailable": "Mesafe mevcut değil",
+  "kilometersToKaaba": "Kabe'ye {distance} km",
+  "resetCounter": "Sayacı sıfırla",
+  "recentSessions": "Son oturumlar",
+  "haptics": "Dokunsal",
+  "countSomeDhikrFirst": "Önce biraz zikir sayın",
+  "dhikrSessionSaved": "Zikir oturumu kaydedildi",
+  "postPrayerDhikr": "Namaz sonrası zikir",
+  "postPrayerDhikrComplete": "Namaz sonrası zikir tamamlandı",
+  "dhikrComplete": "{label} tamamlandı",
+  "todayMetric": "Bugün",
+  "rounds": "Turlar",
+  "streak": "Rüzgâr gibi geçmek",
+  "savedDhikrSessionsEmpty": "Kaydedilen zikir seansları burada görünecektir.",
+  "dhikrSessionCounted": "{target} / {count} sayıldı • {time}",
+  "location": "Konum",
+  "locationSubtitle": "Yalnızca namaz vakti hesaplamalarında kullanılır",
+  "useCurrentLocationDescription": "Dua hesaplamaları için bu cihazın konumunu kaydedin.",
+  "moveMapUnderPin": "Haritayı ortalanmış bir raptiyenin altına taşıyın.",
+  "enterLatitudeAndLongitude": "Enlem ve boylamı girin.",
+  "clearSavedLocation": "Kaydedilen konumu temizle",
+  "clearSavedLocationSubtitle": "Siz tekrar seçim yapana kadar namaz vakitleri duraklatılacaktır.",
+  "calculation": "Hesaplama",
+  "calculationSubtitle": "Yöntem, Asr, yüksek enlem ve zaman biçimi",
+  "calculationMethod": "Hesaplama yöntemi",
+  "asrMethod": "İkindi yöntemi",
+  "highLatitudeAdjustment": "Yüksek enlem ayarı",
+  "highLatitudeAdjustmentSubtitle": "Uzak kuzey veya güney bölgelerde sabah veya yatsıyı hesaplamanın zor olduğu durumlarda kullanılır.",
+  "timeFormat": "Zaman formatı",
+  "useLocationTimezone": "Konumun saat dilimini kullan",
+  "locationTimezoneSubtitle": "Bu cihazın saat dilimi yerine kayıtlı konumun saat dilimini kullanın.",
+  "customMethod": "Özel Yöntem",
+  "fajrAngle": "Sabah açısı",
+  "ishaMode": "Yatsı modu",
+  "maghribAngle": "Akşam açısı",
+  "leaveBlankToUseSunset": "Gün batımını kullanmak için boş bırakın.",
+  "fixedIshaTime": "Sabit yatsı vakti",
+  "latestIshaTime": "En geç yatsı vakti",
+  "baseIshaAngle": "Temel Yatsı açısı",
+  "baseIshaInterval": "Temel yatsı aralığı",
+  "ishaAngle": "Yatsı açısı",
+  "ishaInterval": "Yatsı aralığı",
+  "leaveBlankToUseBaseIshaAngle": "Temel yatsı açısını kullanmak için boş bırakın.",
+  "useIshaAngle": "Yatsı açısını kullan",
+  "minutesAfterMaghrib": "Akşam yemeğinden {minutes} dakika sonra",
+  "prohibitedTimes": "Yasak Zamanlar",
+  "prohibitedTimesSubtitle": "Gün Doğumu, Zawal ve Gün Batımı pencereleri",
+  "sunriseProhibitedTime": "Gündoğumu yasak zamanı",
+  "sunriseProhibitedTimeMinutes": "Gün doğumundan {minutes} dakika sonra",
+  "zawalProhibitedTime": "Zaval yasak zamanı",
+  "zawalProhibitedTimeMinutes": "Öğle saatinden {minutes} dakika önce",
+  "sunsetProhibitedTime": "Gün batımı yasak zamanı",
+  "sunsetProhibitedTimeMinutes": "Akşam namazına {minutes} dakika kala",
+  "prayerReminders": "Namaz Hatırlatmalar",
+  "prayerRemindersSubtitle": "Her namazdan önce bildirimler",
+  "prayerRemindersEnabled": "Namaz hatırlatıcıları",
+  "prayerRemindersEnabledSubtitle": "Her namaz vaktinden önce bildirim alın.",
+  "notificationsPermission": "Bildirim izni",
+  "exactAlarmPermission": "Tam alarm / alarmlar ve hatırlatıcılar izni",
+  "enable": "Olanak vermek",
+  "open": "Açık",
+  "notificationPermissionOff": "Bildirim izni kapalı.",
+  "exactAlarmPermissionDisabled": "Tam alarm izni devre dışı bırakıldı. Namaz hatırlatmaları gecikebilir.",
+  "openAppSettings": "Uygulama ayarlarını aç",
+  "requestPermission": "İzin iste",
+  "openAlarmPermissionSettings": "Alarm izin ayarlarını aç",
+  "chooseLocationBeforeReminders": "Hatırlatıcıların planlanabilmesi için önce bir konum seçin.",
+  "notifyAtSavedPrayerTime": "Kaydedilen namaz vaktinde haber verin.",
+  "reminderTime": "Hatırlatma zamanı",
+  "atPrayerTime": "Namaz vaktinde",
+  "minutesBefore": "{minutes} dakika önce",
+  "schedule1MinuteExactTest": "1 dakikalık kesin test planlayın",
+  "schedule1MinuteExactTestSubtitle": "Dua hatırlatma zamanlayıcısını kullanır.",
+  "offsetsAreAppliedAfterBaseCalculation": "Ofsetler baz hesaplamasından sonra uygulanır. Olumlu veya olumsuz dakikaları yalnızca güvenilir bir yerel zaman çizelgesine uymanız gerektiğinde kullanın.",
+  "manualOffsets": "Manuel Ofsetler",
+  "manualOffsetsSubtitle": "Hesaplanan sürelere ince ayar yapın",
+  "noManualAdjustment": "Manuel ayar yok",
+  "positiveOrNegativeMinutes": "{value} dakika",
+  "prayerTimesExperimental": "Namaz vakitleri şu anda deneyseldir ve yerel cami veya resmi zaman çizelgelerinden farklı olabilir. Lütfen bunlara güvenmeden önce doğrulayın.",
+  "bestMethodAfterLocationSaved": "Konum kaydedildikten sonra en iyi yöntem",
+  "minutesBeforePrayer": "{minutes} duadan dakika önce",
+  "clear": "Temizlemek",
+  "enablePrayerTracking": "Dua izlemeyi etkinleştir",
+  "trackYourDailyPrayers": "Günlük dualarınızı takip edin",
+  "trackYourDailyPrayersDescription": "Her duayı cihazınıza özel olarak kaydedin. Verileriniz asla telefonunuzdan ayrılmaz.",
+  "maybeLater": "Belki daha sonra",
+  "logEachPrayerPrivately": "Her duayı cihazınıza özel olarak kaydedin. Verileriniz asla telefonunuzdan ayrılmaz.",
+  "enablePrayerTrackingLabel": "Dua izlemeyi etkinleştir →",
+  "somePrayersNotYetAvailable": "Bazı dualar henüz mevcut değildi ve kaydedilmedi.",
+  "prayerLogSaved": "Dua günlüğü kaydedildi",
+  "addNewFolder": "Yeni Klasör",
+  "editNote": "Notu düzenle",
+  "moveToFolder": "Klasöre taşı",
+  "editTags": "Etiketleri düzenle",
+  "savedAyah": "Ayah kaydedildi",
+  "removeSavedAyah": "Kaydedilen ayet kaldırılsın mı?",
+  "removeSavedAyahBody": "Bu, ayeti kayıtlı kitaplığınızdan kaldıracaktır.",
+  "remove": "Kaldırmak",
+  "personalLibrary": "Kişisel Kütüphane",
+  "savedCount": "{count} kaydedildi",
+  "all": "Tüm",
+  "favourites": "Favoriler",
+  "notes": "Notlar",
+  "folders": "Klasörler",
+  "tags": "Etiketler",
+  "manageFolders": "Üstesinden gelmek",
+  "surahLabel": "{surahName} • Ayah {ayah}",
+  "showTafsir": "Tefsiri göster",
+  "saveToLibrary": "Kitaplığa kaydet",
+  "folderTagsAndNote": "Klasör, etiketler ve özel not",
+  "ayahDetails": "Ayah ayrıntıları",
+  "newFolder": "Yeni klasör",
+  "create": "Yaratmak",
+  "translationOption": "Çeviri",
+  "showAyahTranslation": "Ayet çevirisini göster",
+  "transliterationOption": "Harf çevirisi",
+  "showAyahTransliteration": "Ayet harf çevirisini göster",
+  "cardViewOption": "Kart Görünümü",
+  "readOneAyahPerCard": "Kart başına bir ayet okuyun",
+  "chooseAnAction": "Bir eylem seçin",
+  "playThisAyah": "Bu ayeti çal",
+  "shareImage": "Resmi paylaş",
+  "searchCategories": "Kategorileri ara",
+  "clearSearch": "Aramayı temizle",
+  "categories": "Kategoriler",
+  "noMatchingCategories": "Eşleşen kategori yok",
+  "trySearchingArabicWord": "Başka bir Arapça kelime veya ifadeyle aramayı deneyin.",
+  "duasUnavailable": "Dua kullanılamıyor",
+  "hisnAlMuslimNotLoaded": "Hisn al Muslim çevrimdışı öğeden yüklenemedi.",
+  "retryAction": "Yeniden dene",
+  "noDuasFound": "Hiçbir dua bulunamadı",
+  "offlineHisnAlMuslimEmpty": "Çevrimdışı Hisn al Muslim dosyası herhangi bir dua içermiyordu.",
+  "hisnAlMuslim": "Hisn el Müslim",
+  "arabicCategoriesDuasOffline": "{categoryCount} Arapça kategorileri - {duaCount} dualar çevrimdışı",
+  "favouriteDuas": "Favori dualar",
+  "favourite": "Favori",
+  "removeFavourite": "Favoriyi kaldır",
+  "saveDuasHere": "Hızlı erişim için duaları buraya kaydedin",
+  "savedDuasCount": "{count} kaydedildi {label}",
+  "tasbihAndDhikr": "Tesbih ve zikir",
+  "calmCounterDailyPresets": "Günlük ön ayarlara sahip sakin bir sayaç",
+  "duaCount": "{count} {label}",
+  "favouriteDuasPage": "Favori dualar",
+  "favouritesUnavailable": "Favoriler kullanılamıyor",
+  "savedDuasNotLoaded": "Kaydedilen dualar şu anda yüklenemiyor.",
+  "noFavouriteDuasYet": "Henüz favori dua yok.",
+  "tapHeartToSave": "Buraya kaydetmek için herhangi bir dua kartındaki kalbe dokunun.",
+  "categoryUnavailable": "Kategori kullanılamıyor",
+  "categoryNotLoaded": "Bu Hisn al Muslim kategorisi yüklenemedi.",
+  "categoryNoDuas": "Hiçbir dua bulunamadı",
+  "categoryDoesNotContainDuas": "Bu kategoride herhangi bir dua bulunmamaktadır.",
+  "downloadTimings": "Zamanlamaları indirilsin mi?",
+  "reciterNeedsTimings": "Bu okuyucunun senkronize ayet metninin gösterilebilmesi için ses zamanlamalarına ihtiyacı var. {size}",
+  "timingsUnavailable": "Bu okuyucu için zamanlamalar mevcut değil.",
+  "timingsUnavailableSurah": "Bu sure için zamanlamalar mevcut değil.",
+  "unableToInstallTimings": "Zamanlamalar yüklenemiyor.",
+  "installedLabel": "{name} yüklendi.",
+  "installed": "Yüklendi",
+  "noTafsirSourcesSelected": "Hiçbir Tefsir kaynağı seçilmedi",
+  "chooseTafsirSourcesFirst": "Önce bir veya daha fazla Tefsir kaynağı seçin.",
+  "choose": "Seçmek",
+  "go": "Gitmek",
+  "deleteDownloadedMp3": "İndirilen MP3'ü sil",
+  "deleteDownloadedAyah": "İndirilen Ayah silinsin mi?",
+  "downloadAllAyahs": "Tüm Ayahlar İndirilsin mi?",
+  "downloadAllAyahsConfirm": "Bu, bu suredeki ({size}) tüm {count} ayetlerin sesini indirecektir.",
+  "surahOption": "Sure",
+  "reciterOption": "Okuyucu",
+  "sleepTimerOption": "Uyku zamanlayıcısı",
+  "shuffleOption": "Karıştır",
+  "shuffleSubtitle": "Sure bittikten sonra rastgele seç",
+  "loopCurrentSurah": "Geçerli sureyi döngüye al",
+  "loopSubtitle": "Mevcut sureyi tekrarlayın",
+  "downloadTimingsResource": "Zamanlamaları indir",
+  "timingsNeedToBeDownloaded": "Bu okuyucunun senkronize ayet metninin gösterilebilmesi için ses zamanlamalarına ihtiyacı var. {size}",
+  "intervalOption": "Aralık",
+  "intervalRepeatOption": "Aralık tekrarı",
+  "repeatEachAyahOption": "Her ayeti tekrarlayın",
+  "resetPlaybackOptions": "Oynatma seçeneklerini sıfırla",
+  "surahOptionLabel": "Sure",
+  "searchCategoriesDua": "Kategorileri ara",
+  "savedAyahLibrary": "Ayah kaydedildi",
+  "autoAdvancesToNextPreset": "{nextPreset} konumuna otomatik olarak ilerler",
+  "previousDhikr": "Önceki zikir",
+  "nextDhikr": "Sonraki zikir",
+  "counts33To33To34": "{target} sayımları • 33 → 33 → 34",
+  "assalamuAlaikum": "Selamun Aleyküm",
+  "continueYourJourneyToday": "Yolculuğunuza bugün devam edin",
+  "onStreakDay": "{streak} günlük bir galibiyet serisi yakaladınız — devam edin",
+  "todaysWorship": "Bugünkü ibadet",
+  "ayahsLabel": "Ayetler",
+  "dhikrLabel": "Zikir",
+  "duasLabel": "Dualar",
+  "salahLabel": "Salah",
+  "dayStreakLabel": "Gün serisi",
+  "dailyQuranGoalLabel": "GÜNLÜK KUR'AN HEDEFİ",
+  "salah": "Salah",
+  "quranLabel": "Kuran",
+  "tasbihLabel": "tesbih",
+  "activityHistory": "Etkinlik Geçmişi",
+  "streaksLabel": "Çizgiler",
+  "weekRange": "Hafta",
+  "monthRange": "Ay",
+  "yearRange": "Yıl",
+  "allTimeRange": "Tüm zamanlar",
+  "noPrayerYet": "Henüz dua yok",
+  "noDayYet": "Henüz gün yok",
+  "noSurahYet": "Henüz bir sure yok",
+  "noDhikrYet": "Henüz zikir yok",
+  "noCategoryYet": "Henüz kategori yok",
+  "dhikrLabelSimple": "Zikir",
+  "readingOptions": "Okuma seçenekleri",
+  "navigation": "Navigasyon",
+  "goToAyah": "Ayah'a git",
+  "jumpToAyahIn": "{surahName} dilindeki ayete atla",
+  "displayAndSharing": "Görüntüleme ve paylaşma",
+  "showLatinTransliteration": "Latince harf çevirisini göster",
+  "chooseTranslationShownOnCards": "Kartlarda gösterilen çeviriyi seçin",
+  "chooseDownloadedExplanations": "İndirilen açıklamaları seçin",
+  "shareCurrentAyah": "Mevcut ayeti paylaş",
+  "createImageForThisAyah": "Bu ayet için bir resim oluştur",
+  "tafsirSources": "Tefsir Kaynakları",
+  "setPrayerLocation": "Dua yerini ayarla",
+  "ayahLabel": "Ayah {number}",
+  "versesCount": "{count} ayetler",
+  "surahVerseCount": "{surahName} • {count} ayetler",
+  "noJuzResultsFound": "Cüz sonucu bulunamadı.",
+  "surahCount": "{count, plural, =1{1 sure} other{{count} sure}}",
+  "surahRange": "{startSurah} {startVerse} - {endSurah} {endVerse}",
+  "recentQuranTextSearches": "Son Kur'an metin aramaları",
+  "searchResultCount": "{count, plural, =1{1 sonuç} other{{count} sonuç}}",
+  "searchQuranText": "Kuran metnini arayın",
+  "searchQuranTextEmptyMessage": "Arapça kelimeler veya çeviri metinleri için bu sekmeyi kullanın. Sure araması Sureler sekmesinde kalır.",
+  "noQuranTextResults": "Kuran metni sonucu yok",
+  "noAyahSearchResults": "\"{query}\" ile eşleşen ayet yok. Başka bir Arapça kelime veya ifadeyi deneyin.",
+  "optionalNote": "İsteğe bağlı not...",
+  "ayahOfTotal": "{total} ayetinin {current} ayeti",
+  "noMatchingSavedAyahs": "Eşleşen kayıtlı ayet yok.",
+  "saveAyahsNotesHere": "Ayetleri, notları ve düşünceleri buraya kaydedin.",
+  "savedAyahLibraryHint": "Ayetleri hızlı bir şekilde favorilerinize ekleyin veya okuma seçeneklerinden klasörler, etiketler ve özel notlar ekleyin.",
+  "privateNote": "Özel not",
+  "writeReflectionHint": "Bir yansıma yazın...",
+  "createFolder": "Klasör oluştur",
+  "tagsHint": "şükran, dua",
+  "unsorted": "Sıralanmamış",
+  "removeSavedAyahDetailsBody": "Bu, bu ayetin notunu, etiketlerini, klasörünü ve favori durumunu kaldıracaktır.",
+  "folderName": "Klasör adı",
+  "folderNameHint": "Yansımalar",
+  "libraryFolders": "Kütüphane klasörleri",
+  "defaultSavedAyahDestination": "Kaydedilen ayetler için varsayılan hedef",
+  "savedAyahCollection": "Kaydedilen ayet koleksiyonu",
+  "renameFolder": "Klasörü yeniden adlandır",
+  "rename": "Yeniden isimlendirmek",
+  "deleteFolderQuestion": "{folder} silinsin mi?",
+  "deleteFolderBody": "Bu klasöre kaydedilen ayetler Sıralanmamış klasörüne taşınacaktır.",
+  "quranRecitation": "Kuran Oyuncusu",
+  "openPlayer": "Oynatıcıyı Aç",
+  "resumeRecitation": "Okumaya devam et{progress}",
+  "ayahsToday": "bugünün ayetleri",
+  "lettersCount": "{count} harfler",
+  "dayStreakCount": "{count, plural, =1{1 gün serisi} other{{count} gün serisi}}",
+  "ayahsCount": "{count, plural, =1{1 ayet} other{{count} ayet}}",
+  "daysCount": "{count, plural, =1{1 gün} other{{count} gün}}",
+  "todaysPortionComplete": "Bugünkü bölüm tamamlandı",
+  "catchUpAyahsIncluded": "{count} özet ayeti içerir",
+  "ayahsRemainingToday": "Bugün {count} ayet kaldı",
+  "todaysPortion": "Bugünkü bölüm: {count} ayah",
+  "surahIntroMeta": "{revelation} · {verseCount} AYETLER · JUZ' {juz}",
+  "makkah": "Mekke",
+  "madinah": "Medine",
+  "currentAyahOnly": "Yalnızca güncel ayet",
+  "surahAyahRange": "{surahName} {startAyah} → {endAyah}",
+  "intervalEndBeforeStartError": "Başlangıç ​​ayetiyle aynı veya ondan sonra bir son ayet seçin.",
+  "intervalRange": "Aralık aralığı",
+  "intervalRangeHint": "Bir başlangıç ​​ve bitiş ayeti seçin. Aralıklar sureleri geçebilir.",
+  "end": "Son",
+  "apply": "Uygula",
+  "customizeRecitationBehavior": "Okuma davranışını özelleştirin",
+  "recitation": "Okuma",
+  "timing": "Zamanlama",
+  "ayahDelay": "Ayah gecikmesi",
+  "audioDownloads": "Ses indirmeleri",
+  "surahAudioDownloaded": "Surenin sesi indirildi",
+  "allAyahsAvailableOffline": "Tüm ayetler çevrimdışı olarak kullanılabilir",
+  "downloadEveryAyahInSurah": "Bu suredeki her ayeti indir",
+  "downloadingCurrentAyah": "Güncel ayet indiriliyor",
+  "deleteCurrentAyahAudio": "Mevcut ayet sesini sil",
+  "downloadCurrentAyah": "Güncel ayeti indir",
+  "intervalPickerTitle": "{position} {kind}",
+  "noDelay": "Gecikme yok",
+  "secondsCount": "{count, plural, =1{1 saniye} other{{count} saniye}}",
+  "tafsirNeedsDownload": "Öncelikle bu Tefsir'in indirilmesi gerekiyor. {size}",
+  "downloading": "İndiriliyor",
+  "noTafsirTextForAyah": "Bu ayete ait tefsir metni mevcut değildir.",
+  "noTafsirResourcesAvailable": "Tefsir kaynağı mevcut değil",
+  "enterAyahRange": "1'den {total}'a kadar bir ayet numarası girin",
+  "ayahNumberHint": "Ayet numarası",
+  "downloadingSurahAyahs": "{surahName} ayet indiriliyor",
+  "downloadedSurahAyahs": "{surahName} ayet indirildi",
+  "downloadedAllAyahsFor": "{surahName} için tüm ayetler indirildi",
+  "failedDownloadSurahAyahs": "{surahName} ayah indirilemedi.",
+  "downloadAllAyahsForSurah": "Çevrimdışı dinlemek için {surahName} için tüm ayah sesleri indirilsin mi?",
+  "removedFromFavourites": "Favorilerden kaldırıldı.",
+  "savedAyahsOrganizedHint": "Kaydedilen ayetler klasörler ve etiketler halinde düzenlenebilir.",
+  "playerOptions": "Oyuncu seçenekleri",
+  "chooseSurah": "Sureyi seçin",
+  "offline": "Çevrimdışı",
+  "downloadMp3": "MP3'ü indir",
+  "availableOffline": "Çevrimdışı kullanılabilir",
+  "notSaved": "Kaydedilmedi",
+  "playback": "Playback",
+  "sleepTimerOptions": "Uyku zamanlayıcısı seçenekleri",
+  "endOfSurah": "Surenin sonu",
+  "enabled": "Etkinleştirilmiş",
+  "disabled": "Engelli",
+  "off": "Kapalı",
+  "sleepingSoon": "yakında uyuyacağım",
+  "sleepingInMinutes": "{minutes, plural, =1{1 dakika} other{{minutes} dakika}} içinde kapanacak",
+  "pendingLabel": "{label} beklemede",
+  "loadingSyncedAyah": "Senkronize edilmiş ayet yükleniyor",
+  "syncedAyahUnavailableReciter": "Bu okuyucu için senkronize ayet ekranı kullanılamıyor",
+  "syncedAyahUnavailableSurah": "Bu sure için senkronize ayet ekranı kullanılamıyor",
+  "downloadTimingsToSyncAyahs": "Bu okuyucunun ayetlerini senkronize etmek için zamanlamaları indirin",
+  "unableToPlaySurahAudio": "Surenin sesi çalınamıyor.",
+  "downloadingName": "{name} indiriliyor",
+  "downloadedName": "İndirildi {name}",
+  "failedDownloadName": "{name} indirilemedi",
+  "failedDownloadSurahAudio": "Surenin sesi indirilemedi.",
+  "deletedMp3Name": "{name} MP3 silindi",
+  "failedDeleteDownloadedSurah": "İndirilen sure silinemedi.",
+  "deleteDownloadedMp3Question": "İndirilen MP3 silinsin mi?",
+  "removeSurahFromOffline": "Bu, {name} öğesini çevrimdışı depolama alanından kaldıracak.",
+  "offlineReady": "Çevrimdışı hazır",
+  "streaming": "Akış",
+  "showAyahText": "Ayah metnini göster",
+  "hideAyahText": "Ayah metnini gizle",
+  "themeSchemeEmeraldGreen": "Zümrüt Yeşili",
+  "themeSchemeEmeraldGreenSubtitle": "Orijinal sakin eKuran paleti.",
+  "themeSchemeSapphireBlue": "Safir Mavisi",
+  "themeSchemeSapphireBlueSubtitle": "Safir ve sessiz camgöbeği vurgulara sahip koyu lacivert.",
+  "themeSchemeRoyalPurple": "Kraliyet Moru",
+  "themeSchemeRoyalPurpleSubtitle": "Kraliyet menekşesi vurgularıyla gece yarısı moru.",
+  "themeSchemeSepia": "Sepya",
+  "themeSchemeSepiaSubtitle": "Sıcak parşömen, kahverengi ve yumuşak altın tonları.",
+  "themeSchemeBlack": "Siyah",
+  "themeSchemeBlackSubtitle": "Ölçülü deniz mavisi vurgulara sahip AMOLED siyah.",
+  "themeSchemeRubyRed": "Yakut Kırmızısı",
+  "themeSchemeRubyRedSubtitle": "Zarif yakut rengi vurgulara sahip derin kestane rengi yüzeyler.",
+  "enterLatitudeLongitude": "Enlem ve boylamı girin.",
+  "chooseLocationBeforeCalculating": "Hesaplamadan önce bir konum seçin",
+  "usingDeviceTimezone": "Bu cihazın saat dilimi kullanılıyor.",
+  "usingDeviceTimezoneUntilLocationAvailable": "Konum saat dilimi mevcut olana kadar cihazın saat dilimi kullanılıyor.",
+  "displayPrayerTimesUsingTimezone": "{timezone} kullanarak namaz vakitlerini görüntüleyin.",
+  "remindersOff": "Hatırlatıcılar kapalı",
+  "remindersOnWaitingLocation": "Açık, konum bekleniyor",
+  "allPrayerRemindersOn": "Tüm dua hatırlatmaları açık",
+  "remindersEnabledCount": "{count} hatırlatıcılar etkinleştirildi",
+  "checkingNotificationPermission": "Bildirim izni kontrol ediliyor...",
+  "permissionStatusNeedsRetry": "İzin durumunun yeniden denenmesi gerekiyor.",
+  "localNotificationsScheduled": "Bu cihazda yerel bildirimler planlandı.",
+  "notificationPermissionGranted": "Bildirim izni verildi.",
+  "notificationPermissionOffEnable": "Bildirim izni kapalı. Dua hatırlatmaları almasını etkinleştirin.",
+  "prayerRemindersUnsupported": "Bu platformda dua hatırlatmaları desteklenmemektedir.",
+  "checkingExactAlarmPermission": "Tam alarm izni kontrol ediliyor...",
+  "exactAlarmStatusNeedsRetry": "Tam alarm durumunun yeniden denenmesi gerekiyor.",
+  "alarmPermissionGranted": "Alarmlar ve hatırlatmalara izin verildi.",
+  "exactAlarmPermissionNotRequired": "Bu platformda tam alarm izni gerekli değildir.",
+  "hisnCategoryCouldNotLoad": "Bu Hisn al Muslim kategorisi yüklenemedi.",
+  "categoryContainsNoDuas": "Bu kategoride herhangi bir dua bulunmamaktadır.",
+  "couldNotUpdateDua": "Dua favorisi güncellenemedi.",
+  "moreActions": "Daha fazla işlem",
+  "duaCopied": "Dua kopyalandı.",
+  "hisnAlMuslimDua": "Hisnül Müslim duası",
+  "copyText": "Metni kopyala",
+  "shareText": "Metni paylaş",
+  "prayerStats": "Namaz İstatistikleri",
+  "quranStats": "Kuran İstatistikleri",
+  "tasbihStats": "Tesbih İstatistikleri",
+  "duaStats": "Dua İstatistikleri",
+  "thisWeek": "Bu hafta",
+  "thisMonth": "Bu Ay",
+  "thisYear": "Bu yıl",
+  "allTime": "Tüm zamanlar",
+  "onTime": "zamanında",
+  "late": "Geç",
+  "missed": "Kaçırıldı",
+  "log": "Kayıt",
+  "fajr": "sabah",
+  "dhuhr": "Öğle yemeği",
+  "asr": "İkindi",
+  "maghrib": "Akşam",
+  "isha": "Yatsı",
+  "notYet": "Henüz değil",
+  "onTimeThisWeek": "Bu hafta zamanında",
+  "lateThisWeek": "Bu hafta sonlarında",
+  "bestPrayer": "En iyi dua",
+  "currentFajrStreak": "Güncel Sabah serisi",
+  "startLoggingFajr": "İlerlemenizi takip etmek için sabah namazını kaydetmeye başlayın.",
+  "fajrVeryConsistent": "Maşallah, sabahınız çok tutarlı.",
+  "fajrGettingStronger": "İyi çaba, Fecr güçleniyor.",
+  "fajrEveryAttemptCounts": "Sabah bir meydan okumadır, her girişim önemlidir.",
+  "fajrConsistency": "Sabah tutarlılığı",
+  "todaysPrayers": "Bugünkü Dualar",
+  "saving": "Kaydediliyor",
+  "availableAfter": "{time} tarihinden sonra kullanılabilir",
+  "quranActivity": "Kuran etkinliği",
+  "ayahsRead": "Ayetler Oku",
+  "lettersRead": "Mektuplar Oku",
+  "activeDays": "Aktif günler",
+  "mostActiveDay": "En aktif gün",
+  "ayahsReadCount": "{count} ayetler okundu",
+  "recitationsCount": "{count} okuma",
+  "surahProgress": "Suresi İlerlemesi",
+  "surahsComplete": "{completed} / {total} Sureler tamamlandı",
+  "showLess": "Daha az göster",
+  "showAllSurahs": "{count} surelerin tümünü göster",
+  "quranCompletions": "Kuran Tamamlamaları",
+  "fullCompletions": "Tam tamamlamalar",
+  "completeAllSurahsForFirstKhatm": "İlk Hatminizi kaydetmek için tüm {count} Surelerini tamamlayın",
+  "khatmDateLabel": "Khatm {number} · {date}",
+  "startFirstTasbihSession": "İlk Tesbih seansınıza başlayın",
+  "totalDhikr": "Toplam zikir",
+  "dailyAverage": "Günlük ortalama",
+  "openDuaToBeginHistory": "Duas geçmişinizi başlatmak için bir dua açın",
+  "duasViewed": "Duas görüntülendi",
+  "viewsCount": "{count} görüntüleme",
+  "previousMonth": "Önceki ay",
+  "nextMonth": "Gelecek ay",
+  "activeDaysCount": "{count, plural, =1{1 aktif gün} other{{count} aktif gün}}",
+  "monthlyActivitySummary": "{activeDays} · En iyi gün: {bestDay} · {totalActions} toplam işlem",
+  "dhikrCount": "{count} zikir",
+  "duasCount": "{count} dualar",
+  "quranStreak": "Kuran çizgisi",
+  "tasbihStreak": "Tesbih çizgisi",
+  "overallStreak": "Genel seri",
+  "dayWorshipStreak": "{count} günlük ibadet serisi",
+  "weekShortLabel": "W{week}",
+  "youReadMostOn": "En çok {day} sitesinde okuyorsunuz",
+  "startReadingToUnlockInsights": "İçgörülerin kilidini açmak için okumaya başlayın",
+  "readingUpFromLastWeek": "Geçen haftaya göre %{percent} artış görüldü",
+  "readingDownFromLastWeek": "Geçen haftaya göre %{percent} düşüş okunuyor",
+  "youVisitSurahMostOften": "{surahName}'yi en sık ziyaret ediyorsunuz",
+  "monday": "Pazartesi",
+  "tuesday": "Salı",
+  "wednesday": "Çarşamba",
+  "thursday": "Perşembe",
+  "friday": "Cuma",
+  "saturday": "Cumartesi",
+  "sunday": "Pazar",
+  "mondayShort": "Pazartesi",
+  "tuesdayShort": "Salı",
+  "wednesdayShort": "Çar",
+  "thursdayShort": "Per",
+  "fridayShort": "Cuma",
+  "saturdayShort": "Doygunluk",
+  "sundayShort": "Güneş",
+  "mondayInitial": "M",
+  "tuesdayInitial": "T",
+  "wednesdayInitial": "K",
+  "thursdayInitial": "T",
+  "fridayInitial": "F",
+  "saturdayInitial": "S",
+  "sundayInitial": "S",
+  "mondays": "pazartesi",
+  "tuesdays": "Salı günleri",
+  "wednesdays": "Çarşamba günleri",
+  "thursdays": "perşembe",
+  "fridays": "Cuma günleri",
+  "saturdays": "cumartesi",
+  "sundays": "Pazar günleri",
+  "january": "Ocak",
+  "february": "Şubat",
+  "march": "Mart",
+  "april": "Nisan",
+  "may": "Mayıs",
+  "june": "Haziran",
+  "july": "Temmuz",
+  "august": "Ağustos",
+  "september": "Eylül",
+  "october": "Ekim",
+  "november": "Kasım",
+  "december": "Aralık",
+  "januaryShort": "Ocak",
+  "februaryShort": "Şubat",
+  "marchShort": "Mart",
+  "aprilShort": "Nisan",
+  "mayShort": "Mayıs",
+  "juneShort": "Haziran",
+  "julyShort": "Temmuz",
+  "augustShort": "Ağustos",
+  "septemberShort": "Eylül",
+  "octoberShort": "Ekim",
+  "novemberShort": "Kasım",
+  "decemberShort": "Aralık",
+  "dailyQuoteSmallDeeds": "İçtenlikle yapılan küçük işler güzelleşir.",
+  "dailyQuoteBeginAgain": "Tekrar anma ve şükranla başlayın.",
+  "dailyQuoteSteadyHeart": "Sağlam bir kalp her gün Allah'a döner.",
+  "dailyQuoteGentleConsistent": "Bugünkü ibadetin yumuşak ve tutarlı olmasına izin verin.",
+  "dailyQuoteEveryAyah": "Okunan her ayet yolculuğa ışıktır.",
+  "dailyWorshipComplete": "Maşallah! Günlük ibadet tamamlandı",
+  "greatProgressKeepGoing": "Büyük ilerleme, devam et",
+  "everyDeedCountsKeepGoing": "Her eylem önemlidir, devam edin",
+  "startYourWorshipForToday": "Bugünlük ibadetinize başlayın",
+  "totalRead": "Toplam okuma",
+  "estimatedLettersRead": "Tahmini harfler okundu",
+  "rewardIsWithAllah": "Mükâfat Allah'ındır.",
+  "totalZakahWealth": "Zekat hesaplamak için toplam servetin en az 200 olması gerekir.",
+  "hifzTitle": "Hıfz",
+  "hifzJourneyTitle": "Hıfz Yolculuğunuz",
+  "hifzNewTodayLabel": "{count}/{max} bugün yeni",
+  "hifzMemorized": "Ezberlendi",
+  "hifzDueToday": "Bugün vadesi doluyor",
+  "hifzInReview": "İnceleniyor",
+  "hifzAyahsMemorized": "{count} / 6.236 ayet ezberlendi",
+  "hifzDueForReview": "İnceleme Sonu",
+  "hifzAllCaughtUp": "Hepsi yakalandı; inceleme yapılmayacak",
+  "hifzAyahsReady": "{count} ayetler hazır",
+  "hifzStartYourSession": "İnceleme oturumunuzu başlatın",
+  "hifzStart": "Başlangıç",
+  "hifzDueNow": "Vadesi şimdi",
+  "hifzOverdueDays": "Vadesi geçmiş {days}d",
+  "hifzShowAll": "Tümünü göster {count} →",
+  "hifzAddToMemorize": "Ezberlemeye Ekle",
+  "hifzQuickAdd": "Hızlı ekle",
+  "hifzQuickAlFatiha": "El-Fatiha",
+  "hifzQuickAlKahf": "El Kehf",
+  "hifzQuickJuzAmma": "Cüz Amma",
+  "hifzQuickLast10": "Son 10 Sure",
+  "hifzOrChooseSurah": "Veya bir sure seçin",
+  "hifzFromAyah": "ayetten",
+  "hifzToAyah": "ayah'a",
+  "hifzAddAyahsButton": "Hifz'e {count} ayet ekle",
+  "hifzAyahsAdded": "{count} ayet eklendi",
+  "hifzSurahProgress": "Suresi İlerlemesi",
+  "hifzShowAllSurahs": "114 surenin tamamını göster",
+  "hifzShowLess": "Daha az göster",
+  "hifzSurahsMastered": "{count} / 114 Suresi ustalaştı",
+  "hifzSettingsTitle": "Hıfz Ayarları",
+  "hifzTrackNew": "Yeni",
+  "hifzTrackRevision": "Revizyon",
+  "hifzTrackMaintenance": "Bakım",
+  "hifzSessionProgress": "{current} / {total}",
+  "hifzExitSession": "Oturumdan çıkılsın mı?",
+  "hifzExitSessionBody": "{total} ayetten {count} tanesini incelediniz.\nŞu ana kadar kaydedilen ilerleme kaydedilecek.",
+  "hifzExitCancel": "İptal etmek",
+  "hifzExitConfirm": "Çıkış",
+  "hifzImReady": "Ben hazırım",
+  "hifzRevealAll": "Hepsini göster",
+  "hifzToggleTransliteration": "Harf çevirisi",
+  "hifzToggleTranslation": "Çeviri",
+  "hifzToggleListen": "Dinlemek",
+  "hifzRatingAgain": "Tekrar",
+  "hifzRatingHard": "Zor",
+  "hifzRatingGood": "İyi",
+  "hifzRatingEasy": "Kolay",
+  "hifzSessionComplete": "Oturum Tamamlandı",
+  "hifzCompletedUnderMinute": "Bir dakikadan kısa sürede tamamlandı",
+  "hifzCompletedInMinutes": "{minutes} dakikada tamamlandı{plural}",
+  "hifzSummaryTitle": "Özet",
+  "hifzTotalReviewed": "Toplam incelendi",
+  "hifzTotalReviewedValue": "{count} ayet",
+  "hifzRetentionRate": "Elde tutma oranı",
+  "hifzNextReviewDue": "Sonraki inceleme zamanı gelecek",
+  "hifzNextReviewToday": "Bugün",
+  "hifzNextReviewTomorrow": "Yarın",
+  "hifzNextReviewInDays": "{days} gün içinde",
+  "hifzAllCaughtUpDue": "Hepsi yakalandı",
+  "hifzHadithQuote": "\"Sizin en hayırlınız Kur'an'ı öğrenen ve öğreteninizdir.\" — Buhari",
+  "hifzBackToHifz": "Hifz'e geri dön",
+  "hifzKeepReviewing": "İncelemeye devam edin ({count} kaldı)",
+  "hifzDueReminderTitle": "{count} ayetin Hifz incelemesi bekleniyor",
+  "hifzSettingsComingSoon": "Hifz Ayarları — çok yakında",
+  "hifzStatsSection": "Hıfz",
+  "hifzStatsTotalMemorized": "Toplam hafızaya alınan",
+  "hifzStatsDailyStreak": "Günlük seri",
+  "hifzStatsRetentionRate": "Elde tutma oranı",
+  "hifzStatsTotalReviews": "Toplam inceleme",
+  "hifzStatsNextDue": "Sonraki inceleme",
+  "hifzStatsNextDueValue": "{surah} · Ayah {ayah}",
+  "hifzStatsNextDueDate": "Vade tarihi {date}",
+  "hifzStatsNoEntries": "Hifz istatistiklerinizi görmek için ezberlemeye başlayın",
+  "hifzStatsSurahProgress": "Suresi İlerlemesi",
+  "hifzStatsRetentionSuffix": "{value}%",
+  "hifzStatsPill": "{count} hafızaya alındı",
+  "hifzReminderDueCount": "{count} ayetin Hifz incelemesi bekleniyor",
+  "hifzReminderReview": "Gözden geçirmek",
+  "hifzSettingsNewPerDay": "Her gün yeni ayetler",
+  "hifzSettingsReviewsPerDay": "Günlük değerlendirmeler",
+  "hifzSettingsShowTranslit": "Harf çevirisini varsayılan olarak göster",
+  "hifzSettingsShowTranslation": "Çeviriyi varsayılan olarak göster",
+  "hifzSettingsAutoPlayAudio": "Öğrenme aşamasında sesi otomatik oynat",
+  "hifzSettingsBlankingLevel": "Körleme seviyesi",
+  "hifzSettingsBlankingAuto": "Otomatik",
+  "hifzSettingsBlankingEasy": "Kolay",
+  "hifzSettingsBlankingMedium": "Orta",
+  "hifzSettingsBlankingHard": "Zor",
+  "hifzSettingsDone": "Tamamlamak",
+  "hifzActiveUnits": "Aktif birimler",
+  "hifzInProgress": "Devam etmekte",
+  "hifzActiveUnitsSection": "Aktif Birimler",
+  "hifzNoActiveUnits": "Aktif birim yok — aşağıya bir tane ekleyin",
+  "hifzUnitTypeSurah": "Sure",
+  "hifzUnitTypeJuz": "Cüz",
+  "hifzUnitNextAyah": "Sonraki: {surah} · Ayah {ayah}",
+  "hifzUnitProgress": "{introduced}/{total}",
+  "hifzUnitReview": "Gözden geçirmek",
+  "hifzUnitUpToDate": "Güncel",
+  "hifzDueNew": "{count} yeni",
+  "hifzDueRevision": "{count} revizyonu",
+  "hifzDueMaintenance": "{count} bakımı",
+  "hifzDueAllCaughtUp": "Hepsi yakalandı",
+  "hifzAddUnitSection": "Birim Ekle",
+  "hifzSearchSurahs": "Sureleri ara...",
+  "hifzSearchJuz": "Juz'u ara...",
+  "hifzSelectAbove": "Yukarıdan bir birim seçin",
+  "hifzStartMemorizingSurah": "{name} ezberlemeye başlayın",
+  "hifzStartMemorizingJuz": "Cüz {number} ezberlemeye başlayın",
+  "hifzUnitAlreadyActive": "Zaten devam ediyor",
+  "hifzUnitAyahCount": "{count} ayet",
+  "hifzSurahsMasteredCount": "{count} / 114 Suresi ustalaştı",
+  "hifzTrackNewLabel": "Yeni",
+  "hifzTrackRevisionLabel": "Revizyon",
+  "hifzTrackMaintenanceLabel": "Bakım",
+  "hifzListenPhaseButton": "Ben hazırım",
+  "hifzRevealAllButton": "Hepsini göster",
+  "hifzAudioDisabledTooltip": "Geri çağırma sırasında ses devre dışı bırakıldı",
+  "hifzPrevAyahCueLabel": "...önceki ayet...",
+  "hifzRatingTryAgain": "Tekrar deneyin",
+  "hifzRatingGotIt": "Anladım",
+  "hifzEmptySessionTitle": "Bugünlük her şey bitti!",
+  "hifzEmptySessionBody": "Bugün {unit} için yeni veya teslim edilmesi gereken ayet yok.",
+  "hifzEmptySessionButton": "Hifz'e geri dön",
+  "hifzExitSessionTitle": "Oturumdan çıkılsın mı?",
+  "hifzCompleteTitle": "Oturum Tamamlandı",
+  "hifzCompleteSubtitleUnderMinute": "Bir dakikadan kısa sürede tamamlandı",
+  "hifzCompleteSubtitleMinutes": "{minutes} dakika içinde tamamlandı",
+  "hifzCompleteSummaryTitle": "Özet",
+  "hifzCompleteTotalReviewed": "Toplam incelendi",
+  "hifzCompleteTotalReviewedValue": "{count} ayet",
+  "hifzCompleteRetentionRate": "Elde tutma oranı",
+  "hifzCompleteNextDue": "Sonraki inceleme zamanı gelecek",
+  "hifzCompleteNextDueToday": "Bugün",
+  "hifzCompleteNextDueTomorrow": "Yarın",
+  "hifzCompleteNextDueInDays": "{days} gün içinde",
+  "hifzCompleteAllCaughtUp": "Hepsi yakalandı",
+  "hifzCompleteGraduated": "İncelemek için mezun oldum",
+  "hifzCompleteGraduatedValue": "{count} ayet",
+  "hifzCompleteHadith": "\"Sizin en hayırlınız Kur'an'ı öğrenen ve öğreteninizdir.\" — Buhari",
+  "hifzCompleteBackButton": "Hifz'e geri dön",
+  "hifzCompleteKeepReviewing": "İncelemeye devam edin ({count} kaldı)",
+  "hifzUnitCompleteTitle": "{unit} içindeki tüm ayetleri tanıttınız!",
+  "hifzUnitCompleteSubtitle": "Bunlarda tam anlamıyla ustalaşmak için gözden geçirmeye devam edin.",
+  "hifzSettingsSheetTitle": "Hıfz Ayarları",
+  "hifzMorePageTitle": "Hıfz",
+  "hifzMorePageSubtitle": "Akıllı inceleme ile Kuran'ı ezberleyin",
+  "hifzReminderTitle": "{count} ayetin Hifz incelemesi bekleniyor",
+  "hifzReminderButton": "Gözden geçirmek",
+  "hifz": "Hıfz",
+  "hifzSubtitle": "Akıllı inceleme ile Kuran'ı ezberleyin",
+  "licenses": "Lisanslar",
+  "buildQuranRoutine": "Bir Kuran rutini oluşturun",
+  "chooseGentlePlan": "Nazik bir plan seçin ve bugünün net bir kısmına izin verin.",
+  "routineCompletedAyahs": "{total} ayetten {completed} tamamlandı",
+  "plansReadyNotice": "7 günlük, 30 günlük ve 60 günlük planlar hazır.",
+  "finishTargetDate": "Bitiş hedefi: {date}",
+  "allLabel": "Tüm",
+  "doneLabel": "Tamamlamak",
+  "ongoingLabel": "devam ediyor",
+  "skippedLabel": "Atlandı",
+  "noActiveRoutine": "Aktif rutin yok",
+  "startBalancedPlanDescription": "30 günlük dengeli bir planla başlayın veya aşağıdan daha hızlı veya daha yumuşak bir rutin seçin.",
+  "start30DayPlan": "30 günlük planı başlatın",
+  "todayReading": "Bugünkü okuma",
+  "todayCompleted": "Bugün tamamlandı",
+  "todaysPortionAyahs": "Bugünkü bölüm: {count} ayah",
+  "includesCatchUpAyahs": "{count} özet ayeti içerir",
+  "ayahRangeConnector": "{start} - {end} arası",
+  "dailyPercentCompleteRemaining": "%{percent} tamamlandı • Bugün {remaining} ayet kaldı",
+  "routineHistory": "Rutin geçmişi",
+  "currentRoutine": "Mevcut rutin",
+  "noCurrentRoutine": "Mevcut rutin yok.",
+  "pastRoutines": "Geçmiş rutinler",
+  "pastRoutine": "Geçmiş rutin",
+  "deleteRoutineTooltip": "Rutini sil",
+  "deleteCurrentRoutineQuestion": "Mevcut rutin silinsin mi?",
+  "deleteRoutineQuestion": "Rutin silinsin mi?",
+  "deleteRoutineWarning": "Bu, \"{title}\" rutin geçmişinizden kaldırılır.",
+  "choosePlan": "Bir plan seçin",
+  "preset7DaysTitle": "Kur'an'ı 7 günde tamamla",
+  "preset7DaysSubtitle": "Odaklanmış bir haftalık rutin",
+  "preset30DaysTitle": "Kur'an'ı 30 günde tamamla",
+  "preset30DaysSubtitle": "Dengeli günlük porsiyonlar",
+  "preset60DaysTitle": "Kur'an'ı 60 günde tamamla",
+  "preset60DaysSubtitle": "Nazik, uzun biçimli okuma",
+  "routineStartedMessage": "{title} başladı",
+  "prayerTimesDisclaimer": "Namaz vakitleri yerel olarak hesaplanır. Gerekirse yerel caminizle doğrulayın.",
+  "locationSaved": "Konum kaydedildi.",
+  "notificationPermissionOffWarning": "Bildirim izni kapalı. Hatırlatıcılar devre dışı bırakıldı.",
+  "exactAlarmPermissionOffWarning": "Tam alarm izni devre dışı bırakıldı. Namaz hatırlatmaları gecikebilir.",
+  "locationDetails": "Konum ayrıntıları",
+  "updateCurrentLocation": "Mevcut konumu güncelle",
+  "useThisDeviceLocation": "Bu cihazın konumunu kullan",
+  "moveMapPinDescription": "Harita raptiyesini bir yere taşıyın",
+  "saveChanges": "Değişiklikleri kaydet",
+  "advancedCoordinates": "Gelişmiş koordinatlar",
+  "advancedCoordinatesEditSubtitle": "Yalnızca kesin koordinatlara ihtiyacınız varsa düzenleyin",
+  "locationLabel": "Konum etiketi",
+  "locationLabelHint": "Ev, iş veya şehir adı",
+  "latitude": "Enlem",
+  "latitudeHelperText": "-90 ile 90 arasında bir değer kullanın.",
+  "longitude": "Boylam",
+  "longitudeHelperText": "-180 ile 180 arasında bir değer kullanın.",
+  "savedLocationFallback": "Kayıtlı konum",
+  "coordinatesPrivacyDescription": "Namaz vakti hesaplamasında yerel olarak kullanılır. Koordinatlar bu cihazda saklanıyor.{timezoneText}",
+  "countdownNow": "Şimdi",
+  "countdownVerySoon": "Çok yakında",
+  "countdownInHours": "{hours}h içinde",
+  "countdownInHoursMinutes": "{hours}h {minutes}m içinde",
+  "countdownInMinutes": "{minutes}m içinde",
+  "@routineCompletedAyahs": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@finishTargetDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@todaysPortionAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@includesCatchUpAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahRangeConnector": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyPercentCompleteRemaining": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+  "@deleteRoutineWarning": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@routineStartedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@coordinatesPrivacyDescription": {
+    "placeholders": {
+      "timezoneText": {
+        "type": "String"
+      }
+    }
+  },
+  "@countdownInHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "resume": "Devam et",
+  "routineComplete": "Rutin tamamlandı",
+  "routineDeleted": "Rutin silindi",
+  "chooseLocationManually": "Konumu manuel olarak seçin",
+  "saveLocation": "Konumu kaydet",
+  "coordinatesForPrayerTimes": "Namaz vakitleri için koordinatlar",
+  "manualLocationDescription": "Kullanmak istediğiniz şehir, bölge veya adresin enlem ve boylamını girin.",
+  "manualLocationPrivacyNotice": "Bu cihaza kaydedilir ve yalnızca yerel namaz vakti hesaplamasında kullanılır.",
+  "manualLocation": "Manuel konum",
+  "savedLocation": "Kayıtlı konum",
+  "useThisLocation": "Bu konumu kullan",
+  "selectedLocation": "Seçilen konum",
+  "openStreetMapContributors": "OpenStreetMap'e katkıda bulunanlar",
+  "validationEnterField": "{field} girin.",
+  "validationShouldBeNumber": "{field} bir sayı olmalıdır.",
+  "validationMustBeBetween": "{field}, {min} ile {max} arasında olmalıdır.",
+  "@validationEnterField": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationShouldBeNumber": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationMustBeBetween": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "completedTodayQuota": "{completed} / {total} ayetler bugün",
+  "completedAyahsRatio": "{completed}/{total} ayetler",
+  "the99BeautifulNamesOfAllah": "Allah'ın 99 Güzel İsmi",
+  "allNamesCount": "Tüm İsimler · {count}",
+  "reciteThisNameInDua": "Bu ismi duanızda okuyun",
+  "searchNames": "İsimleri ara",
+  "searchNamesHint": "İsimleri ara...",
+  "namesUnavailable": "İsimler mevcut değil",
+  "unableLoadAsmaUlHusna": "Esma-ül Hüsna şu anda yüklenemiyor.",
+  "noNamesFound": "İsim bulunamadı",
+  "tryAnotherAsmaSearch": "Başka bir Arapça adı, harf çevirisini veya anlamını deneyin.",
+  "@completedTodayQuota": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@completedAyahsRatio": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@allNamesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

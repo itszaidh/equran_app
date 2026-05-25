@@ -28,7 +28,7 @@ class QuranCard extends StatelessWidget {
     final bool tabletLayout = ResponsiveNav.isTablet(context);
     final bool compactText = compact && reduceTitleSize;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final bool arabicMode = isArabicLocalizations(localizations);
+    final bool rtlMode = localizations.localeName == 'ar' || localizations.localeName == 'ur';
     final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
     final double verticalPadding = compact
         ? (tabletLayout ? 14 : 12)
@@ -92,11 +92,11 @@ class QuranCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      arabicMode ? surah.name : surah.transliteration,
+                      rtlMode ? surah.name : localizedSurahName(localizations, surah.id),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      textDirection: arabicMode ? TextDirection.rtl : null,
-                      style: (arabicMode ? arabicTitleStyle : titleStyle)
+                      textDirection: rtlMode ? TextDirection.rtl : null,
+                      style: (rtlMode ? arabicTitleStyle : titleStyle)
                           ?.copyWith(
                             color: colors.textPrimary,
                             fontWeight: FontWeight.w800,
@@ -104,18 +104,18 @@ class QuranCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      arabicMode
+                      rtlMode
                           ? localizations.versesCount(surah.verses)
-                          : '${surah.englishName} • ${surah.verses} verses',
+                          : '${surah.englishName} • ${localizations.versesCount(surah.verses)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      textDirection: arabicMode ? TextDirection.rtl : null,
+                      textDirection: rtlMode ? TextDirection.rtl : null,
                       style: versesStyle,
                     ),
                   ],
                 ),
               ),
-              if (!arabicMode) ...<Widget>[
+              if (!rtlMode) ...<Widget>[
                 const SizedBox(width: EquranSpacing.m),
                 Text(
                   surah.name,

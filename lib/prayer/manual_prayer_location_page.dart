@@ -1,3 +1,4 @@
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -8,13 +9,22 @@ String? validatePrayerCoordinate(
   required double min,
   required double max,
   required String label,
+  required AppLocalizations localizations,
 }) {
   final double? parsed = double.tryParse(value?.trim() ?? '');
   final String fieldName = label.toLowerCase();
-  if ((value ?? '').trim().isEmpty) return 'Enter $fieldName.';
-  if (parsed == null) return '$label should be a number.';
+  if ((value ?? '').trim().isEmpty) {
+    return localizations.validationEnterField(fieldName);
+  }
+  if (parsed == null) {
+    return localizations.validationShouldBeNumber(label);
+  }
   if (parsed < min || parsed > max) {
-    return '$label must be between ${min.toStringAsFixed(0)} and ${max.toStringAsFixed(0)}.';
+    return localizations.validationMustBeBetween(
+      label,
+      min.toStringAsFixed(0),
+      max.toStringAsFixed(0),
+    );
   }
   return null;
 }
@@ -69,10 +79,11 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
     final EquranColors equranColors = context.equranColors;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Choose location manually'),
+        title: Text(localizations.chooseLocationManually),
         backgroundColor: equranColors.background,
         foregroundColor: equranColors.textPrimary,
         elevation: 0,
@@ -116,7 +127,7 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    'Coordinates for prayer times',
+                                    localizations.coordinatesForPrayerTimes,
                                     style: theme.textTheme.titleMedium
                                         ?.copyWith(fontWeight: FontWeight.w800),
                                   ),
@@ -125,7 +136,7 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Enter the latitude and longitude for the city, area, or address you want to use.',
+                              localizations.manualLocationDescription,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: colors.onSurfaceVariant,
                               ),
@@ -134,12 +145,10 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                             TextFormField(
                               controller: _labelController,
                               textInputAction: TextInputAction.next,
-                              decoration: const InputDecoration(
-                                labelText: 'Location label',
-                                hintText: 'Home, work, or city name',
-                                helperText:
-                                    'Optional. This is shown instead of coordinates.',
-                                prefixIcon: Icon(Icons.label_outline_rounded),
+                              decoration: InputDecoration(
+                                labelText: localizations.locationLabel,
+                                hintText: localizations.locationLabelHint,
+                                prefixIcon: const Icon(Icons.label_outline_rounded),
                               ),
                             ),
                             const SizedBox(height: 14),
@@ -151,18 +160,19 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                                     decimal: true,
                                   ),
                               textInputAction: TextInputAction.next,
-                              decoration: const InputDecoration(
-                                labelText: 'Latitude',
+                              decoration: InputDecoration(
+                                labelText: localizations.latitude,
                                 hintText: 'Example: 25.2048',
-                                helperText: 'Use a value between -90 and 90.',
-                                prefixIcon: Icon(Icons.explore_outlined),
+                                helperText: localizations.latitudeHelperText,
+                                prefixIcon: const Icon(Icons.explore_outlined),
                               ),
                               validator: (String? value) =>
                                   validatePrayerCoordinate(
                                     value,
                                     min: -90,
                                     max: 90,
-                                    label: 'Latitude',
+                                    label: localizations.latitude,
+                                    localizations: localizations,
                                   ),
                             ),
                             const SizedBox(height: 14),
@@ -174,18 +184,19 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                                     decimal: true,
                                   ),
                               textInputAction: TextInputAction.done,
-                              decoration: const InputDecoration(
-                                labelText: 'Longitude',
+                              decoration: InputDecoration(
+                                labelText: localizations.longitude,
                                 hintText: 'Example: 55.2708',
-                                helperText: 'Use a value between -180 and 180.',
-                                prefixIcon: Icon(Icons.public_rounded),
+                                helperText: localizations.longitudeHelperText,
+                                prefixIcon: const Icon(Icons.public_rounded),
                               ),
                               validator: (String? value) =>
                                   validatePrayerCoordinate(
                                     value,
                                     min: -180,
                                     max: 180,
-                                    label: 'Longitude',
+                                    label: localizations.longitude,
+                                    localizations: localizations,
                                   ),
                               onFieldSubmitted: (_) => _save(),
                             ),
@@ -215,7 +226,7 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                'Saved on this device and used only for local prayer-time calculation.',
+                                localizations.manualLocationPrivacyNotice,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: colors.onSurfaceVariant,
                                   height: 1.35,
@@ -230,7 +241,7 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                     FilledButton.icon(
                       onPressed: _save,
                       icon: const Icon(Icons.check_rounded),
-                      label: const Text('Save location'),
+                      label: Text(localizations.saveLocation),
                     ),
                   ],
                 ),
@@ -244,10 +255,11 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
 
   void _save() {
     if (_formKey.currentState?.validate() != true) return;
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final double latitude = double.parse(_latitudeController.text.trim());
     final double longitude = double.parse(_longitudeController.text.trim());
     final String label = _labelController.text.trim().isEmpty
-        ? 'Manual location'
+        ? localizations.manualLocation
         : _labelController.text.trim();
 
     Navigator.of(context).pop(
