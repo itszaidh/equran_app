@@ -64,12 +64,21 @@ void _callbackDispatcher() {
         );
         final localeStr =
             await HomeWidget.getWidgetData<String>('widget_locale') ?? 'en';
+        final dynamic use24hRaw = await HomeWidget.getWidgetData<dynamic>(
+          'widget_use_24h',
+        );
+        final bool use24h = use24hRaw is bool
+            ? use24hRaw
+            : use24hRaw?.toString().toLowerCase() == 'true';
+        final locationName =
+            await HomeWidget.getWidgetData<String>('location_name') ?? '';
 
         // Sync localized labels in background
         final t = widgetTranslations[localeStr] ?? widgetTranslations['en']!;
         await Future.wait([
           HomeWidget.saveWidgetData<String>('label_header', t['header']!),
           HomeWidget.saveWidgetData<String>('label_fajr', t['fajr']!),
+          HomeWidget.saveWidgetData<String>('label_sunrise', t['sunrise']!),
           HomeWidget.saveWidgetData<String>('label_dhuhr', t['dhuhr']!),
           HomeWidget.saveWidgetData<String>('label_asr', t['asr']!),
           HomeWidget.saveWidgetData<String>('label_maghrib', t['maghrib']!),
@@ -113,35 +122,38 @@ void _callbackDispatcher() {
         // Determine next prayer
         final nextPrayer = PrayerWidgetService.determineNextPrayer(
           fajr: prayerTimes.fajr,
+          sunrise: prayerTimes.sunrise,
           dhuhr: prayerTimes.dhuhr,
           asr: prayerTimes.asr,
           maghrib: prayerTimes.maghrib,
           isha: prayerTimes.isha,
         );
 
-        // Format times in 24hr by default for background isolate
-        String fmt(DateTime dt) {
+        String fmt(DateTime dt, bool use24h) {
           // Convert UTC to device local time
           final local = dt.toLocal();
-          final h = local.hour.toString().padLeft(2, '0');
-          final m = local.minute.toString().padLeft(2, '0');
-          return '$h:$m';
+          if (use24h) {
+            final h = local.hour.toString().padLeft(2, '0');
+            final m = local.minute.toString().padLeft(2, '0');
+            return '$h:$m';
+          }
+          final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
+          final minute = local.minute.toString().padLeft(2, '0');
+          final period = local.hour < 12 ? 'AM' : 'PM';
+          return '$hour:$minute $period';
         }
 
         await PrayerWidgetService.updateWidget(
-          fajr: fmt(prayerTimes.fajr),
-          dhuhr: fmt(prayerTimes.dhuhr),
-          asr: fmt(prayerTimes.asr),
-          maghrib: fmt(prayerTimes.maghrib),
-          isha: fmt(prayerTimes.isha),
+          fajr: fmt(prayerTimes.fajr, use24h),
+          sunrise: fmt(prayerTimes.sunrise, use24h),
+          dhuhr: fmt(prayerTimes.dhuhr, use24h),
+          asr: fmt(prayerTimes.asr, use24h),
+          maghrib: fmt(prayerTimes.maghrib, use24h),
+          isha: fmt(prayerTimes.isha, use24h),
+          sunriseLabel: t['sunrise']!,
           nextPrayer: nextPrayer,
-          locationName: '',
-          lastUpdated: () {
-            final now = DateTime.now().toLocal();
-            final h = now.hour.toString().padLeft(2, '0');
-            final m = now.minute.toString().padLeft(2, '0');
-            return '$h:$m';
-          }(),
+          locationName: locationName,
+          lastUpdated: fmt(DateTime.now(), use24h),
         );
 
         // Chain the midnight task if this was the midnight run

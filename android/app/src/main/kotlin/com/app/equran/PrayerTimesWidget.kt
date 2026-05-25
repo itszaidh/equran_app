@@ -18,6 +18,7 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.defaultWeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -46,6 +47,7 @@ class PrayerTimesWidget : GlanceAppWidget() {
     // before entering composition
     val prefs = HomeWidgetPlugin.getData(context)
     val fajr    = prefs.getString("fajr_time",    null)
+    val sunrise = prefs.getString("sunrise_time", "---") ?: "---"
     val dhuhr   = prefs.getString("dhuhr_time",   "---") ?: "---"
     val asr     = prefs.getString("asr_time",     "---") ?: "---"
     val maghrib = prefs.getString("maghrib_time", "---") ?: "---"
@@ -57,6 +59,7 @@ class PrayerTimesWidget : GlanceAppWidget() {
     // Read localized labels
     val headerLabel = prefs.getString("label_header", "Prayer Times") ?: "Prayer Times"
     val fajrLabel   = prefs.getString("label_fajr",   "Fajr") ?: "Fajr"
+    val sunriseLabel= prefs.getString("label_sunrise","Sunrise") ?: "Sunrise"
     val dhuhrLabel  = prefs.getString("label_dhuhr",  "Dhuhr") ?: "Dhuhr"
     val asrLabel    = prefs.getString("label_asr",    "Asr") ?: "Asr"
     val maghribLabel= prefs.getString("label_maghrib","Maghrib") ?: "Maghrib"
@@ -74,6 +77,7 @@ class PrayerTimesWidget : GlanceAppWidget() {
         } else {
           WidgetContent(
             fajr    = fajr,
+            sunrise = sunrise,
             dhuhr   = dhuhr,
             asr     = asr,
             maghrib = maghrib,
@@ -83,6 +87,7 @@ class PrayerTimesWidget : GlanceAppWidget() {
             updated = updated,
             headerLabel = headerLabel,
             fajrLabel = fajrLabel,
+            sunriseLabel = sunriseLabel,
             dhuhrLabel = dhuhrLabel,
             asrLabel = asrLabel,
             maghribLabel = maghribLabel,
@@ -111,7 +116,7 @@ private fun WidgetPlaceholder(label: String) {
     modifier = GlanceModifier
       .fillMaxSize()
       .background(BgColor)
-      .padding(12.dp)
+      .padding(8.dp)
       .clickable(
         actionStartActivity<MainActivity>()),
     contentAlignment = Alignment.Center,
@@ -140,6 +145,7 @@ private fun WidgetPlaceholder(label: String) {
 @Composable
 private fun WidgetContent(
   fajr: String,
+  sunrise: String,
   dhuhr: String,
   asr: String,
   maghrib: String,
@@ -149,6 +155,7 @@ private fun WidgetContent(
   updated: String,
   headerLabel: String,
   fajrLabel: String,
+  sunriseLabel: String,
   dhuhrLabel: String,
   asrLabel: String,
   maghribLabel: String,
@@ -159,7 +166,7 @@ private fun WidgetContent(
     modifier = GlanceModifier
       .fillMaxSize()
       .background(BgColor)
-      .padding(12.dp)
+      .padding(8.dp)
       .clickable(
         actionStartActivity<MainActivity>()),
     contentAlignment = Alignment.TopStart,
@@ -172,7 +179,7 @@ private fun WidgetContent(
       Row(
         modifier = GlanceModifier
           .fillMaxWidth()
-          .padding(bottom = 8.dp),
+          .padding(bottom = 6.dp),
         verticalAlignment =
           Alignment.CenterVertically,
       ) {
@@ -180,7 +187,7 @@ private fun WidgetContent(
           text = headerLabel,
           style = TextStyle(
             color = ColorProvider(TextColor),
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold),
           modifier = GlanceModifier
             .defaultWeight())
@@ -189,15 +196,15 @@ private fun WidgetContent(
             text = loc,
             style = TextStyle(
               color = ColorProvider(MutedColor),
-              fontSize = 10.sp))
+              fontSize = 9.sp))
         }
       }
 
-      // ROW 1: Fajr | Dhuhr | Asr
+      // ROW 1: Fajr | Sunrise | Dhuhr
       Row(
         modifier = GlanceModifier
           .fillMaxWidth()
-          .padding(bottom = 6.dp),
+          .padding(bottom = 4.dp),
       ) {
         PrayerCell(
           name = fajrLabel,
@@ -207,24 +214,32 @@ private fun WidgetContent(
             .defaultWeight())
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
+          name = sunriseLabel,
+          time = sunrise,
+          isNext = false,
+          modifier = GlanceModifier
+            .defaultWeight())
+        Spacer(GlanceModifier.width(6.dp))
+        PrayerCell(
           name = dhuhrLabel,
           time = dhuhr,
           isNext = next == "dhuhr",
           modifier = GlanceModifier
             .defaultWeight())
-        Spacer(GlanceModifier.width(6.dp))
+      }
+
+      // ROW 2: Asr | Maghrib | Isha
+      Row(
+        modifier = GlanceModifier
+          .fillMaxWidth(),
+      ) {
         PrayerCell(
           name = asrLabel,
           time = asr,
           isNext = next == "asr",
           modifier = GlanceModifier
             .defaultWeight())
-      }
-
-      // ROW 2: Maghrib | Isha | Updated
-      Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-      ) {
+        Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = maghribLabel,
           time = maghrib,
@@ -238,15 +253,18 @@ private fun WidgetContent(
           isNext = next == "isha",
           modifier = GlanceModifier
             .defaultWeight())
-        Spacer(GlanceModifier.width(6.dp))
-        // Redesigned Updated cell matching standard PrayerCell
-        PrayerCell(
-          name = updatedLabel,
-          time = if (updated.isNotEmpty()) updated else "--:--",
-          isNext = false,
-          modifier = GlanceModifier
-            .defaultWeight())
       }
+
+      Spacer(GlanceModifier.defaultWeight())
+      Text(
+        text = "$updatedLabel: ${if (updated.isNotEmpty()) updated else "--:--"}",
+        modifier = GlanceModifier.fillMaxWidth(),
+        style = TextStyle(
+          color = ColorProvider(MutedColor),
+          fontSize = 8.sp,
+          textAlign = TextAlign.Center,
+        ),
+      )
     }
   }
 }
@@ -263,9 +281,9 @@ private fun PrayerCell(
 
   Box(
     modifier = modifier
-      .height(60.dp)
+      .height(34.dp)
       .background(bg)
-      .padding(4.dp),
+      .padding(3.dp),
     contentAlignment = Alignment.Center,
   ) {
     Column(
@@ -276,16 +294,16 @@ private fun PrayerCell(
         text = name,
         style = TextStyle(
           color = ColorProvider(nameColor),
-          fontSize = 9.sp,
+          fontSize = 8.sp,
           fontWeight = if (isNext)
             FontWeight.Bold
           else FontWeight.Normal))
-      Spacer(GlanceModifier.height(2.dp))
+      Spacer(GlanceModifier.height(1.dp))
       Text(
         text = time,
         style = TextStyle(
           color = ColorProvider(TextColor),
-          fontSize = 13.sp,
+          fontSize = 11.sp,
           fontWeight = FontWeight.Bold))
     }
   }

@@ -22,7 +22,6 @@ class _HifzHomePageState extends State<HifzHomePage> {
   HifzUnitType _selectedType = HifzUnitType.surah;
   int? _selectedNumber; // surah 1-114 or juz 1-30
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -33,23 +32,6 @@ class _HifzHomePageState extends State<HifzHomePage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  // Derived from search
-  List<int> get _filteredNumbers {
-    final query = _searchQuery.toLowerCase().trim();
-    if (_selectedType == HifzUnitType.surah) {
-      return List.generate(114, (i) => i + 1).where((n) {
-        if (query.isEmpty) return true;
-        final name = HifzSurahData.name(n).toLowerCase();
-        return name.contains(query) || n.toString() == query;
-      }).toList();
-    } else {
-      return List.generate(30, (i) => i + 1).where((n) {
-        if (query.isEmpty) return true;
-        return 'juz $n'.contains(query) || n.toString() == query;
-      }).toList();
-    }
   }
 
   String _unitId(int n) =>
@@ -91,7 +73,6 @@ class _HifzHomePageState extends State<HifzHomePage> {
     // Reset picker state
     setState(() {
       _selectedNumber = null;
-      _searchQuery = '';
       _searchController.clear();
     });
   }
@@ -122,12 +103,12 @@ class _HifzHomePageState extends State<HifzHomePage> {
       decoration: BoxDecoration(
         color: isAlreadyActive
             ? colors.goldSoft
-            : colors.mint.withOpacity(0.15),
+            : colors.mint.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadii.large),
         border: Border.all(
           color: isAlreadyActive
-              ? colors.accentGold.withOpacity(0.4)
-              : colors.primary.withOpacity(0.3),
+              ? colors.accentGold.withValues(alpha: 0.4)
+              : colors.primary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -624,7 +605,6 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                     onTap: () => setState(() {
                                       _selectedType = HifzUnitType.surah;
                                       _selectedNumber = null;
-                                      _searchQuery = '';
                                       _searchController.clear();
                                     }),
                                     child: Container(
@@ -665,7 +645,6 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                     onTap: () => setState(() {
                                       _selectedType = HifzUnitType.juz;
                                       _selectedNumber = null;
-                                      _searchQuery = '';
                                       _searchController.clear();
                                     }),
                                     child: Container(
@@ -703,112 +682,83 @@ class _HifzHomePageState extends State<HifzHomePage> {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            // SEARCH FIELD
-                            TextField(
+                            // SEARCHABLE DROPDOWN
+                            DropdownMenu<int>(
                               controller: _searchController,
-                              onChanged: (v) =>
-                                  setState(() => _searchQuery = v),
-                              style: theme.textTheme.bodyMedium?.copyWith(
+                              enableSearch: true,
+                              enableFilter: true,
+                              requestFocusOnTap: true,
+                              expandedInsets: EdgeInsets.zero,
+                              hintText: _selectedType == HifzUnitType.surah
+                                  ? l10n.hifzSearchSurahs
+                                  : l10n.hifzSearchJuz,
+                              textStyle: theme.textTheme.bodyMedium?.copyWith(
                                 color: colors.textPrimary,
                               ),
-                              decoration: InputDecoration(
-                                hintText: _selectedType == HifzUnitType.surah
-                                    ? l10n.hifzSearchSurahs
-                                    : l10n.hifzSearchJuz,
-                                hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                                  color: colors.textMuted,
+                              menuStyle: MenuStyle(
+                                backgroundColor: WidgetStatePropertyAll(
+                                  colors.surface,
                                 ),
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  color: colors.textMuted,
-                                  size: 18,
+                                shape: WidgetStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadii.large,
+                                    ),
+                                    side: BorderSide(color: colors.border),
+                                  ),
                                 ),
+                                maximumSize: const WidgetStatePropertyAll(
+                                  Size(double.infinity, 300),
+                                ),
+                              ),
+                              inputDecorationTheme: InputDecorationTheme(
                                 filled: true,
                                 fillColor: colors.surfaceAlt,
-                                border: const OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(AppRadii.pill),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.pill,
                                   ),
                                   borderSide: BorderSide.none,
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
-                                  vertical: 10,
+                                  vertical: 12,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            // UNIT PICKER GRID
-                            GridView.count(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              crossAxisCount: 5,
-                              mainAxisSpacing: 8,
-                              crossAxisSpacing: 8,
-                              childAspectRatio: 1.0,
-                              children: _filteredNumbers.map((n) {
-                                final isSelected = _selectedNumber == n;
-                                final alreadyActive =
-                                    HifzDB.getUnit(_unitId(n)) != null;
-
-                                return GestureDetector(
-                                  onTap: () => setState(() {
-                                    _selectedNumber = isSelected ? null : n;
-                                  }),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? colors.primary
-                                          : alreadyActive
-                                          ? colors.primary.withOpacity(0.15)
-                                          : colors.surfaceAlt,
-                                      borderRadius: BorderRadius.circular(
-                                        AppRadii.medium,
-                                      ),
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? colors.primary
-                                            : alreadyActive
-                                            ? colors.primary.withOpacity(0.4)
-                                            : colors.border,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            n.toString(),
-                                            style: theme.textTheme.titleSmall
-                                                ?.copyWith(
-                                                  color: isSelected
-                                                      ? colors.onPrimary
-                                                      : colors.textPrimary,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                          if (_selectedType ==
-                                                  HifzUnitType.surah &&
-                                              !isSelected)
-                                            Text(
-                                              HifzSurahData.name(
-                                                n,
-                                              ).split(' ').first,
-                                              style: theme.textTheme.labelSmall
-                                                  ?.copyWith(
-                                                    color: colors.textMuted,
-                                                  ),
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
+                              onSelected: (val) =>
+                                  setState(() => _selectedNumber = val),
+                              dropdownMenuEntries:
+                                  _selectedType == HifzUnitType.surah
+                                  ? List.generate(114, (i) => i + 1).map((n) {
+                                      final active =
+                                          HifzDB.getUnit(_unitId(n)) != null;
+                                      return DropdownMenuEntry<int>(
+                                        value: n,
+                                        label: '$n. ${HifzSurahData.name(n)}',
+                                        trailingIcon: active
+                                            ? Icon(
+                                                Icons.check_circle,
+                                                color: colors.primary,
+                                                size: 16,
+                                              )
+                                            : null,
+                                      );
+                                    }).toList()
+                                  : List.generate(30, (i) => i + 1).map((n) {
+                                      final active =
+                                          HifzDB.getUnit(_unitId(n)) != null;
+                                      return DropdownMenuEntry<int>(
+                                        value: n,
+                                        label: l10n.juzNumber(n),
+                                        trailingIcon: active
+                                            ? Icon(
+                                                Icons.check_circle,
+                                                color: colors.primary,
+                                                size: 16,
+                                              )
+                                            : null,
+                                      );
+                                    }).toList(),
                             ),
                             const SizedBox(height: 12),
                             // SELECTED UNIT PREVIEW
@@ -898,14 +848,14 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                         cellBg = colors.accentGold;
                                         cellText = const Color(0xFF1a1408);
                                       } else if (unit.introducedAyahs == 0) {
-                                        cellBg = colors.primary.withOpacity(
-                                          0.15,
+                                        cellBg = colors.primary.withValues(
+                                          alpha: 0.15,
                                         );
                                         cellText = colors.primary;
                                         hasActiveDot = !unit.isComplete;
                                       } else {
-                                        cellBg = colors.primary.withOpacity(
-                                          0.5,
+                                        cellBg = colors.primary.withValues(
+                                          alpha: 0.5,
                                         );
                                         cellText = colors.onPrimary;
                                         hasActiveDot = !unit.isComplete;
@@ -1528,7 +1478,7 @@ class _DueChip extends StatelessWidget {
       margin: const EdgeInsets.only(right: 6),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Text(

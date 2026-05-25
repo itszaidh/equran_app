@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:quran/quran.dart' as quran;
+import 'package:equran/utils/quran_text.dart';
 
 import '../models/hifz_entry.dart';
 import '../models/hifz_unit.dart';
@@ -61,8 +62,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
 
   // Blanking state
   List<String> _words = [];
-  int _blankUntilIndex = 0;
-  Set<int> _revealedIndices = {};
+  Set<int> _blankedIndices = {};
   bool _allRevealed = false;
 
   // Ayah text
@@ -212,11 +212,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
 
     try {
       // 1. Fetch Arabic verse text
-      final arabic = quran.getVerse(
-        entry.surah,
-        entry.ayah,
-        verseEndSymbol: false,
-      );
+      final arabic = quranVerseText(entry.surah, entry.ayah);
 
       // 2. Fetch previous ayah end as cue for revision tracks
       String prevEnd = '';
@@ -229,11 +225,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
             orElse: () => entry,
           );
           if (prev != entry) {
-            final prevText = quran.getVerse(
-              prev.surah,
-              prev.ayah,
-              verseEndSymbol: false,
-            );
+            final prevText = quranVerseText(prev.surah, prev.ayah);
             final prevWords = prevText.trim().split(' ');
             prevEnd = prevWords
                 .skip(math.max(0, prevWords.length - 4))
@@ -242,8 +234,12 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         }
       }
 
-      final words = arabic.trim().split(' ');
-      final blankFrom = _computeInitialBlankFrom(
+      final words = arabic
+          .trim()
+          .split(' ')
+          .where((w) => w.isNotEmpty)
+          .toList();
+      final blanked = _computeBlankedIndices(
         words.length,
         card.track,
         entry.introducedRepetitions,
@@ -269,15 +265,18 @@ class _HifzSessionPageState extends State<HifzSessionPage>
           _arabicText = arabic;
           _prevAyahEnd = prevEnd;
           _words = words;
-          _blankUntilIndex = blankFrom;
-          _revealedIndices = {};
+          _blankedIndices = blanked;
           _allRevealed = false;
           _loadingAyah = false;
           _phase = card.startPhase;
           _audioEnabled =
               card.track == _Track.newAyah && _phase == _Phase.listen;
-          _showTransliteration = HifzPrefs.showTransliterationByDefault();
-          _showTranslation = HifzPrefs.showTranslationByDefault();
+          _showTransliteration = card.track == _Track.newAyah
+              ? HifzPrefs.showTransliterationByDefault()
+              : false;
+          _showTranslation = card.track == _Track.newAyah
+              ? HifzPrefs.showTranslationByDefault()
+              : false;
           _currentTransliteration = transliteration;
           _currentTranslation = translation;
         });
@@ -309,21 +308,34 @@ class _HifzSessionPageState extends State<HifzSessionPage>
     }
   }
 
-  int _computeInitialBlankFrom(int wordCount, _Track track, int introReps) {
+  Set<int> _computeBlankedIndices(int wordCount, _Track track, int introReps) {
+    if (wordCount == 0) return {};
+
     if (track != _Track.newAyah) {
       // Sabqi/Manzil — blank everything
-      return 0;
+      return Set<int>.from(List.generate(wordCount, (i) => i));
     }
 
-    // Progressive for new ayahs based on reps
+    // Randomly select indices to blank based on rep count
+    final rng = math.Random();
+    final allIndices = List.generate(wordCount, (i) => i);
+
+    int blankCount;
     switch (introReps) {
       case 0:
-        return wordCount - 1;
+        blankCount = 1;
+        break;
       case 1:
-        return (wordCount / 2).ceil();
+        blankCount = (wordCount / 2).ceil();
+        break;
       default:
-        return 0;
+        blankCount = wordCount;
+        break;
     }
+
+    blankCount = math.min(blankCount, wordCount);
+    allIndices.shuffle(rng);
+    return Set<int>.from(allIndices.take(blankCount));
   }
 
   Future<void> _submitRating(String rating) async {
@@ -680,61 +692,64 @@ class _HifzSessionPageState extends State<HifzSessionPage>
             else
               _buildRecallText(colors),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _ToggleButton(
-                  icon: Icons.translate,
-                  label: l10n.hifzToggleTransliteration,
-                  active: _showTransliteration,
-                  onTap: () {
-                    setState(() {
-                      _showTransliteration = !_showTransliteration;
-                    });
-                  },
-                ),
-                const SizedBox(width: 16),
-                _ToggleButton(
-                  icon: Icons.language,
-                  label: l10n.hifzToggleTranslation,
-                  active: _showTranslation,
-                  onTap: () {
-                    setState(() {
-                      _showTranslation = !_showTranslation;
-                    });
-                  },
-                ),
-                const SizedBox(width: 16),
-                _audioEnabled
-                    ? _ToggleButton(
-                        icon: _audioPlaying
-                            ? Icons.stop_circle_outlined
-                            : Icons.volume_up_outlined,
-                        label: l10n.hifzToggleListen,
-                        active: _audioPlaying,
-                        onTap: _playAudio,
-                      )
-                    : Tooltip(
-                        message: l10n.hifzAudioDisabledTooltip,
-                        triggerMode: TooltipTriggerMode.tap,
-                        child: Opacity(
-                          opacity: 0.35,
-                          child: _ToggleButton(
-                            icon: Icons.volume_up_outlined,
-                            label: l10n.hifzToggleListen,
-                            active: false,
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(l10n.hifzAudioDisabledTooltip),
-                                  duration: const Duration(seconds: 1),
-                                ),
-                              );
-                            },
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (card.track == _Track.newAyah) ...[
+                    _ToggleButton(
+                      icon: Icons.translate,
+                      active: _showTransliteration,
+                      onTap: () {
+                        setState(() {
+                          _showTransliteration = !_showTransliteration;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    _ToggleButton(
+                      icon: Icons.language,
+                      active: _showTranslation,
+                      onTap: () {
+                        setState(() {
+                          _showTranslation = !_showTranslation;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                  _audioEnabled
+                      ? _ToggleButton(
+                          icon: _audioPlaying
+                              ? Icons.stop_circle_outlined
+                              : Icons.volume_up_outlined,
+                          active: _audioPlaying,
+                          onTap: _playAudio,
+                        )
+                      : Tooltip(
+                          message: l10n.hifzAudioDisabledTooltip,
+                          triggerMode: TooltipTriggerMode.tap,
+                          child: Opacity(
+                            opacity: 0.35,
+                            child: _ToggleButton(
+                              icon: Icons.volume_up_outlined,
+                              active: false,
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      l10n.hifzAudioDisabledTooltip,
+                                    ),
+                                    duration: const Duration(seconds: 1),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                         ),
-                      ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             AnimatedSwitcher(
@@ -852,33 +867,28 @@ class _HifzSessionPageState extends State<HifzSessionPage>
               final i = e.key;
               final word = e.value;
 
-              // Words before blank zone — always shown
-              if (i < _blankUntilIndex) {
-                return _RevealedWord(word: word, isJustRevealed: false);
+              // Not in blanked set — always shown
+              if (!_blankedIndices.contains(i) || _allRevealed) {
+                return _RevealedWord(
+                  word: word,
+                  isJustRevealed: _allRevealed && _blankedIndices.contains(i),
+                );
               }
 
-              // Words in blank zone — hidden or revealed
-              final isRevealed = _revealedIndices.contains(i) || _allRevealed;
-
-              return isRevealed
-                  ? _RevealedWord(
-                      word: word,
-                      isJustRevealed: _revealedIndices.contains(i),
-                    )
-                  : _BlankWord(
-                      word: word,
-                      onReveal: () {
-                        setState(() {
-                          _revealedIndices.add(i);
-                          // Check if all blanks revealed
-                          final totalBlanks = _words.length - _blankUntilIndex;
-                          if (_revealedIndices.length >= totalBlanks) {
-                            _allRevealed = true;
-                            _phase = _Phase.rating;
-                          }
-                        });
-                      },
-                    );
+              // Blanked word — tap to reveal
+              return _BlankWord(
+                word: word,
+                onReveal: () {
+                  setState(() {
+                    _blankedIndices.remove(i);
+                    // Check if all blanks revealed
+                    if (_blankedIndices.isEmpty) {
+                      _allRevealed = true;
+                      _phase = _Phase.rating;
+                    }
+                  });
+                },
+              );
             }).toList(),
           ),
         ),
@@ -920,19 +930,30 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         ),
       );
     } else if (_phase == _Phase.recall) {
-      child = TextButton(
-        onPressed: () {
-          setState(() {
-            _allRevealed = true;
-            _phase = _Phase.rating;
-            _audioEnabled = false;
-          });
-        },
-        child: Text(
-          l10n.hifzRevealAll,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: colors.textMuted,
-            fontWeight: FontWeight.w500,
+      child = SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colors.surfaceAlt,
+            foregroundColor: colors.textPrimary,
+            shape: const StadiumBorder(),
+            minimumSize: const Size(double.infinity, 52),
+            side: BorderSide(color: colors.border),
+          ),
+          onPressed: () {
+            setState(() {
+              _allRevealed = true;
+              _blankedIndices.clear();
+              _phase = _Phase.rating;
+              _audioEnabled = false;
+            });
+          },
+          child: Text(
+            l10n.hifzRevealAll,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: colors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       );
@@ -1163,13 +1184,11 @@ class _RevealedWordState extends State<_RevealedWord> {
 
 class _ToggleButton extends StatelessWidget {
   final IconData icon;
-  final String label;
   final bool active;
   final VoidCallback onTap;
 
   const _ToggleButton({
     required this.icon,
-    required this.label,
     required this.active,
     required this.onTap,
   });
@@ -1177,38 +1196,27 @@ class _ToggleButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.equranColors;
-    final theme = Theme.of(context);
 
     return GestureDetector(
       onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: active
-                  ? colors.primary.withOpacity(0.15)
-                  : colors.surfaceAlt,
-              border: Border.all(
-                color: active ? colors.primary.withOpacity(0.3) : colors.border,
-              ),
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-            ),
-            child: Icon(
-              icon,
-              size: 18,
-              color: active ? colors.primary : colors.textMuted,
-            ),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: active
+              ? colors.primary.withValues(alpha: 0.15)
+              : colors.surfaceAlt,
+          border: Border.all(
+            color: active
+                ? colors.primary.withValues(alpha: 0.3)
+                : colors.border,
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: colors.textMuted,
-            ),
-          ),
-        ],
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: active ? colors.primary : colors.textMuted,
+        ),
       ),
     );
   }
@@ -1308,7 +1316,7 @@ class _TrackLabel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Text(

@@ -9,6 +9,7 @@ const Map<String, Map<String, String>> widgetTranslations = {
   'en': {
     'header': 'Prayer Times',
     'fajr': 'Fajr',
+    'sunrise': 'Sunrise',
     'dhuhr': 'Dhuhr',
     'asr': 'Asr',
     'maghrib': 'Maghrib',
@@ -19,11 +20,12 @@ const Map<String, Map<String, String>> widgetTranslations = {
   'ar': {
     'header': 'مواقيت الصلاة',
     'fajr': 'الفجر',
+    'sunrise': 'الشروق',
     'dhuhr': 'الظهر',
     'asr': 'العصر',
     'maghrib': 'المغرب',
     'isha': 'العشاء',
-    'updated': 'تحديث',
+    'updated': 'آخر تحديث',
     'placeholder': 'افتح التطبيق لتحميل مواقيت الصلاة',
   },
 };
@@ -54,6 +56,7 @@ class PrayerWidgetService {
     required double longitude,
     required String calculationMethod,
     required String madhab,
+    required bool use24h,
   }) async {
     await Future.wait([
       HomeWidget.saveWidgetData<String>('widget_lat', latitude.toString()),
@@ -63,6 +66,7 @@ class PrayerWidgetService {
         calculationMethod,
       ),
       HomeWidget.saveWidgetData<String>('widget_madhab', madhab),
+      HomeWidget.saveWidgetData<bool>('widget_use_24h', use24h),
     ]);
   }
 
@@ -78,12 +82,14 @@ class PrayerWidgetService {
       location: location,
       settings: settings,
     );
+    final use24hr = settings.use24HourFormat;
 
     await saveCoordinates(
       latitude: location.latitude,
       longitude: location.longitude,
       calculationMethod: effectiveMethod.name,
       madhab: settings.asrMethod.name,
+      use24h: use24hr,
     );
 
     // Sync localized strings
@@ -93,6 +99,7 @@ class PrayerWidgetService {
     await Future.wait([
       HomeWidget.saveWidgetData<String>('label_header', t['header']!),
       HomeWidget.saveWidgetData<String>('label_fajr', t['fajr']!),
+      HomeWidget.saveWidgetData<String>('label_sunrise', t['sunrise']!),
       HomeWidget.saveWidgetData<String>('label_dhuhr', t['dhuhr']!),
       HomeWidget.saveWidgetData<String>('label_asr', t['asr']!),
       HomeWidget.saveWidgetData<String>('label_maghrib', t['maghrib']!),
@@ -100,6 +107,7 @@ class PrayerWidgetService {
       HomeWidget.saveWidgetData<String>('label_updated', t['updated']!),
       HomeWidget.saveWidgetData<String>('label_placeholder', t['placeholder']!),
       HomeWidget.saveWidgetData<String>('widget_locale', langCode),
+      HomeWidget.saveWidgetData<bool>('widget_use_24h', use24hr),
     ]);
 
     final now = DateTime.now();
@@ -125,9 +133,8 @@ class PrayerWidgetService {
       now: now,
     );
 
-    final use24hr = settings.use24HourFormat;
-
     final fajr = today.entryFor(PrayerTimeKind.fajr);
+    final sunrise = today.entryFor(PrayerTimeKind.sunrise);
     final dhuhr = today.entryFor(PrayerTimeKind.dhuhr);
     final asr = today.entryFor(PrayerTimeKind.asr);
     final maghrib = today.entryFor(PrayerTimeKind.maghrib);
@@ -135,10 +142,12 @@ class PrayerWidgetService {
 
     await updateWidget(
       fajr: formatTime(fajr.time, use24hr),
+      sunrise: formatTime(sunrise.time, use24hr),
       dhuhr: formatTime(dhuhr.time, use24hr),
       asr: formatTime(asr.time, use24hr),
       maghrib: formatTime(maghrib.time, use24hr),
       isha: formatTime(isha.time, use24hr),
+      sunriseLabel: t['sunrise']!,
       nextPrayer: nextPrayer.entry.kind.id,
       locationName: location.displayLabel,
       lastUpdated: formatTime(now, use24hr),
@@ -150,20 +159,24 @@ class PrayerWidgetService {
   // or when the app is foregrounded
   static Future<void> updateWidget({
     required String fajr,
+    required String sunrise,
     required String dhuhr,
     required String asr,
     required String maghrib,
     required String isha,
+    required String sunriseLabel,
     required String nextPrayer,
     required String locationName,
     required String lastUpdated,
   }) async {
     await Future.wait([
       HomeWidget.saveWidgetData<String>('fajr_time', fajr),
+      HomeWidget.saveWidgetData<String>('sunrise_time', sunrise),
       HomeWidget.saveWidgetData<String>('dhuhr_time', dhuhr),
       HomeWidget.saveWidgetData<String>('asr_time', asr),
       HomeWidget.saveWidgetData<String>('maghrib_time', maghrib),
       HomeWidget.saveWidgetData<String>('isha_time', isha),
+      HomeWidget.saveWidgetData<String>('label_sunrise', sunriseLabel),
       HomeWidget.saveWidgetData<String>('next_prayer', nextPrayer),
       HomeWidget.saveWidgetData<String>('location_name', locationName),
       HomeWidget.saveWidgetData<String>('last_updated', lastUpdated),
@@ -177,6 +190,7 @@ class PrayerWidgetService {
   // Pass in today's prayer DateTime values
   static String determineNextPrayer({
     required DateTime fajr,
+    required DateTime sunrise,
     required DateTime dhuhr,
     required DateTime asr,
     required DateTime maghrib,
@@ -184,6 +198,7 @@ class PrayerWidgetService {
   }) {
     final now = DateTime.now();
     if (now.isBefore(fajr)) return 'fajr';
+    if (now.isBefore(sunrise)) return 'sunrise';
     if (now.isBefore(dhuhr)) return 'dhuhr';
     if (now.isBefore(asr)) return 'asr';
     if (now.isBefore(maghrib)) return 'maghrib';

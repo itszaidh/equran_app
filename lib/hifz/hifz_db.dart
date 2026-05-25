@@ -233,34 +233,34 @@ class HifzDB {
 
   // Get today's new ayahs for a unit
   // Returns up to maxNew entries with
-  // status == 'learning' AND
-  // introducedRepetitions == 0
+  // status == 'learning' (any rep count)
   // in sequenceIndex ascending order
   static List<HifzEntry> getNewAyahsForUnit(String unitId, int maxNew) {
-    return _entries.values
-        .where(
-          (e) =>
-              e.unitId == unitId &&
-              e.status == 'learning' &&
-              e.introducedRepetitions == 0,
-        )
-        .toList()
-      ..sort((a, b) => (a.sequenceIndex ?? 0).compareTo(b.sequenceIndex ?? 0))
-      ..take(maxNew).toList();
+    final filtered =
+        _entries.values
+            .where((e) => e.unitId == unitId && e.status == 'learning')
+            .toList()
+          ..sort(
+            (a, b) => (a.sequenceIndex ?? 0).compareTo(b.sequenceIndex ?? 0),
+          );
+    return filtered.take(maxNew).toList();
   }
 
-  // Get sabqi ayahs — introduced in last 7 days
-  // Returns in sequenceIndex ascending order
-  // grouped by unitId
+  // Get sabqi ayahs — graduated to review in last 7 days
+  // and due for revision today.
+  // Excludes 'learning' entries (still doing learn reps).
+  // Returns in sequenceIndex ascending order.
   static List<HifzEntry> getSabqiAyahs(String unitId) {
     final cutoff = DateTime.now().subtract(const Duration(days: 7));
+    final now = DateTime.now().add(const Duration(hours: 1));
     return _entries.values
         .where(
           (e) =>
               e.unitId == unitId &&
-              e.status != 'unseen' &&
+              e.status == 'review' &&
               e.firstLearnedAt != null &&
-              e.firstLearnedAt!.isAfter(cutoff),
+              e.firstLearnedAt!.isAfter(cutoff) &&
+              e.dueDate.isBefore(now),
         )
         .toList()
       ..sort((a, b) => (a.sequenceIndex ?? 0).compareTo(b.sequenceIndex ?? 0));
