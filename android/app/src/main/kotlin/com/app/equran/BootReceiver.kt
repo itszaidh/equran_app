@@ -11,16 +11,16 @@ import kotlinx.coroutines.launch
 import java.util.TimeZone
 import java.util.Calendar
 
-class BootReceiver : BroadcastReceiver() {
+class BootReceiver: BroadcastReceiver() {
 
   override fun onReceive(
-      context: Context,
-      intent: Intent) {
+    context: Context,
+    intent: Intent) {
 
     if (intent.action !=
-        Intent.ACTION_BOOT_COMPLETED &&
-        intent.action !=
-        "android.intent.action.QUICKBOOT_POWERON")
+      Intent.ACTION_BOOT_COMPLETED &&
+      intent.action !=
+      "android.intent.action.QUICKBOOT_POWERON")
       return
 
     // Read last known prayer times from
@@ -33,9 +33,9 @@ class BootReceiver : BroadcastReceiver() {
       "FlutterSharedPreferences",
       Context.MODE_PRIVATE)
 
-    // home_widget saves to a specific prefs
+    // home_widget saves to specific prefs
     // file — read from there directly.
-    // The key prefix used by home_widget is
+    // key prefix used by home_widget is
     // "flutter." prepended to each key.
     val hwPrefs = context.getSharedPreferences(
       "HomeWidgetPreferences",
@@ -59,26 +59,26 @@ class BootReceiver : BroadcastReceiver() {
   }
 
   private fun _computeAndUpdateNative(
-      context: Context,
-      prefs: SharedPreferences) {
+    context: Context,
+    prefs: SharedPreferences) {
 
     // Read stored coordinates
     val lat = prefs.getString(
       "widget_lat", null)
-        ?.toDoubleOrNull() ?: return
+      ?.toDoubleOrNull() ?: return
     val lng = prefs.getString(
       "widget_lng", null)
-        ?.toDoubleOrNull() ?: return
+      ?.toDoubleOrNull() ?: return
 
-    // Use a simple sun angle calculation
+    // Use simple sun angle calculation
     // to approximate prayer times natively
     // without the Dart adhan_dart package.
-    // This is only a fallback for boot —
+    // This is only fallback for boot —
     // the Flutter app will correct it on
     // first open.
 
     // Get current local time
-    val tz  = TimeZone.getDefault()
+    val tz = TimeZone.getDefault()
     val cal = Calendar.getInstance(tz)
     val offsetHours = tz.rawOffset / 3600000.0
 
@@ -100,33 +100,36 @@ class BootReceiver : BroadcastReceiver() {
         "${m.toString().padStart(2,'0')}"
     }
 
-    val fajrTime    = toTimeStr(solarNoon - 6.0)
-    val dhuhrTime   = toTimeStr(solarNoon)
-    val asrTime     = toTimeStr(solarNoon + 3.5)
+    val sunriseTime = toTimeStr(solarNoon - 5.5)
+    val fajrTime = toTimeStr(solarNoon - 6.0)
+    val dhuhrTime = toTimeStr(solarNoon)
+    val asrTime = toTimeStr(solarNoon + 3.5)
     val maghribTime = toTimeStr(solarNoon + 6.5)
-    val ishaTime    = toTimeStr(solarNoon + 8.0)
+    val ishaTime = toTimeStr(solarNoon + 8.0)
 
     // Determine next prayer
     val nowHour = cal.get(Calendar.HOUR_OF_DAY) +
       cal.get(Calendar.MINUTE) / 60.0
     val nextPrayer = when {
-      nowHour < solarNoon - 6.0  -> "fajr"
-      nowHour < solarNoon        -> "dhuhr"
-      nowHour < solarNoon + 3.5  -> "asr"
-      nowHour < solarNoon + 6.5  -> "maghrib"
-      nowHour < solarNoon + 8.0  -> "isha"
-      else                        -> "fajr"
+      nowHour < solarNoon - 6.0 -> "fajr"
+      nowHour < solarNoon - 5.5 -> "sunrise"
+      nowHour < solarNoon -> "dhuhr"
+      nowHour < solarNoon + 3.5 -> "asr"
+      nowHour < solarNoon + 6.5 -> "maghrib"
+      nowHour < solarNoon + 8.0 -> "isha"
+      else -> "fajr"
     }
 
     // Write to HomeWidget SharedPreferences
-    // using the exact same keys as Flutter
+    // using exact same keys as Flutter
     prefs.edit().apply {
-      putString("fajr_time",    fajrTime)
-      putString("dhuhr_time",   dhuhrTime)
-      putString("asr_time",     asrTime)
+      putString("fajr_time", fajrTime)
+      putString("dhuhr_time", dhuhrTime)
+      putString("asr_time", asrTime)
       putString("maghrib_time", maghribTime)
-      putString("isha_time",    ishaTime)
-      putString("next_prayer",  nextPrayer)
+      putString("isha_time", ishaTime)
+      putString("sunrise_time", sunriseTime)
+      putString("next_prayer", nextPrayer)
       putString("location_name","")
       putString("last_updated", toTimeStr(nowHour))
       apply()

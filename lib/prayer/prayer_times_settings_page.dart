@@ -1663,18 +1663,20 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   }
 
   Future<PrayerLocation> _saveResolvedLocation(PrayerLocation location) async {
+    final EquranColors colors = context.equranColors;
     final PrayerLocation resolvedLocation = await _locationService
         .resolveLocationForSave(location, previousLocation: _location);
     await _store.saveLocation(resolvedLocation);
     await _rescheduleReminders(location: resolvedLocation);
-    unawaited(PrayerWidgetService.refreshWidget());
+    unawaited(PrayerWidgetService.refreshWidget(colors: colors));
     return resolvedLocation;
   }
 
   Future<void> _clearLocation() async {
+    final EquranColors colors = context.equranColors;
     await _store.clearLocation();
     await _rescheduleReminders(locationCleared: true);
-    unawaited(PrayerWidgetService.refreshWidget());
+    unawaited(PrayerWidgetService.refreshWidget(colors: colors));
     if (!mounted) return;
     setState(() {
       _location = null;
@@ -1683,8 +1685,9 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   }
 
   Future<void> _saveSettings(PrayerTimeSettings settings) async {
+    final EquranColors colors = context.equranColors;
     await _store.saveSettings(settings);
-    unawaited(PrayerWidgetService.refreshWidget());
+    unawaited(PrayerWidgetService.refreshWidget(colors: colors));
     final PrayerNotificationScheduleResult reminderResult =
         await _rescheduleReminders(settings: settings);
     if (mounted) {

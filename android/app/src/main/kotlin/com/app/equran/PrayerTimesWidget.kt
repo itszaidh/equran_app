@@ -33,57 +33,74 @@ import androidx.compose.ui.graphics.Color
 
 class PrayerTimesWidget : GlanceAppWidget() {
 
-  // Glance 1.1.0 correct pattern:
-  // Read data in provideGlance BEFORE
-  // calling provideContent, pass as
-  // plain values into the composable.
-
   override suspend fun provideGlance(
-      context: Context,
-      id: GlanceId) {
-
-    // Read ALL data here synchronously
-    // before entering composition
+    context: Context,
+    id: GlanceId
+  ) {
     val prefs = HomeWidgetPlugin.getData(context)
-    val fajr    = prefs.getString("fajr_time",    null)
-    val sunrise = prefs.getString("sunrise_time", "---") ?: "---"
-    val dhuhr   = prefs.getString("dhuhr_time",   "---") ?: "---"
-    val asr     = prefs.getString("asr_time",     "---") ?: "---"
+    val fajr = prefs.getString("fajr_time", null)
+    val dhuhr = prefs.getString("dhuhr_time", "---") ?: "---"
+    val asr = prefs.getString("asr_time", "---") ?: "---"
     val maghrib = prefs.getString("maghrib_time", "---") ?: "---"
-    val isha    = prefs.getString("isha_time",    "---") ?: "---"
-    val next    = prefs.getString("next_prayer",  "")   ?: ""
-    val loc     = prefs.getString("location_name","")   ?: ""
-    val updated = prefs.getString("last_updated", "")   ?: ""
+    val isha = prefs.getString("isha_time", "---") ?: "---"
+    val sunrise = prefs.getString("sunrise_time", "---") ?: "---"
+    val next = prefs.getString("next_prayer", "") ?: ""
+    val loc = prefs.getString("location_name", "") ?: ""
+    val updated = prefs.getString("last_updated", "") ?: ""
 
-    // Read localized labels
+    val bgHex = prefs.getString("w_bg", "FF0D1F1A") ?: "FF0D1F1A"
+    val surfaceHex = prefs.getString("w_surface", "FF122920") ?: "FF122920"
+    val primaryHex = prefs.getString("w_primary", "FF1E735D") ?: "FF1E735D"
+    val textHex = prefs.getString("w_text", "FFFFFFFF") ?: "FFFFFFFF"
+    val textMutedHex = prefs.getString("w_text_muted", "FF8A918B") ?: "FF8A918B"
+    val goldHex = prefs.getString("w_gold", "FFD6A84F") ?: "FFD6A84F"
+    val borderHex = prefs.getString("w_border", "FF1E3A2E") ?: "FF1E3A2E"
+
+    val bgColor = hexToColor(bgHex)
+    val surfaceColor = hexToColor(surfaceHex)
+    val primaryColor = hexToColor(primaryHex)
+    val textColor = hexToColor(textHex)
+    val textMuted = hexToColor(textMutedHex)
+    val goldColor = hexToColor(goldHex)
+    val borderColor = hexToColor(borderHex)
+
     val headerLabel = prefs.getString("label_header", "Prayer Times") ?: "Prayer Times"
-    val fajrLabel   = prefs.getString("label_fajr",   "Fajr") ?: "Fajr"
-    val sunriseLabel= prefs.getString("label_sunrise","Sunrise") ?: "Sunrise"
-    val dhuhrLabel  = prefs.getString("label_dhuhr",  "Dhuhr") ?: "Dhuhr"
-    val asrLabel    = prefs.getString("label_asr",    "Asr") ?: "Asr"
-    val maghribLabel= prefs.getString("label_maghrib","Maghrib") ?: "Maghrib"
-    val ishaLabel   = prefs.getString("label_isha",   "Isha") ?: "Isha"
-    val updatedLabel= prefs.getString("label_updated","Updated") ?: "Updated"
+    val fajrLabel = prefs.getString("label_fajr", "Fajr") ?: "Fajr"
+    val sunriseLabel = prefs.getString("label_sunrise", "Sunrise") ?: "Sunrise"
+    val dhuhrLabel = prefs.getString("label_dhuhr", "Dhuhr") ?: "Dhuhr"
+    val asrLabel = prefs.getString("label_asr", "Asr") ?: "Asr"
+    val maghribLabel = prefs.getString("label_maghrib", "Maghrib") ?: "Maghrib"
+    val ishaLabel = prefs.getString("label_isha", "Isha") ?: "Isha"
+    val updatedLabel = prefs.getString("label_updated", "Updated") ?: "Updated"
     val placeholderLabel = prefs.getString("label_placeholder", "Tap to load prayer times") ?: "Tap to load prayer times"
 
-    // provideContent in Glance 1.1.0
-    // is called as a member function
-    // (not a top-level extension)
     provideContent {
       GlanceTheme {
         if (fajr == null) {
-          WidgetPlaceholder(placeholderLabel)
+          WidgetPlaceholder(
+            bgColor = bgColor,
+            primaryColor = primaryColor,
+            mutedColor = textMuted,
+            label = placeholderLabel,
+          )
         } else {
           WidgetContent(
-            fajr    = fajr,
+            fajr = fajr,
             sunrise = sunrise,
-            dhuhr   = dhuhr,
-            asr     = asr,
+            dhuhr = dhuhr,
+            asr = asr,
             maghrib = maghrib,
-            isha    = isha,
-            next    = next,
-            loc     = loc,
+            isha = isha,
+            next = next,
+            loc = loc,
             updated = updated,
+            bgColor = bgColor,
+            surfaceColor = surfaceColor,
+            primaryColor = primaryColor,
+            textColor = textColor,
+            textMuted = textMuted,
+            goldColor = goldColor,
+            borderColor = borderColor,
             headerLabel = headerLabel,
             fajrLabel = fajrLabel,
             sunriseLabel = sunriseLabel,
@@ -99,44 +116,46 @@ class PrayerTimesWidget : GlanceAppWidget() {
   }
 }
 
-// All Color values MUST use Long literals
-// (suffix L) to avoid signed Int overflow
-private val BgColor     = Color(0xFF0D1F1AL)
-private val CardColor   = Color(0xFF122920L)
-private val PrimaryColor = Color(0xFF1E735DL)
-private val TextColor   = Color(0xFFFFFFFFL)
-private val MutedColor  = Color(0xFF8A918BL)
-private val GoldColor   = Color(0xFFD6A84FL)
-private val NextBgColor = Color(0xFF1E3A2EL)
+private fun hexToColor(hex: String): Color {
+  val normalized = hex.removePrefix("#")
+  return Color(android.graphics.Color.parseColor("#$normalized"))
+}
 
 @Composable
-private fun WidgetPlaceholder(label: String) {
+private fun WidgetPlaceholder(
+  bgColor: Color,
+  primaryColor: Color,
+  mutedColor: Color,
+  label: String,
+) {
   Box(
     modifier = GlanceModifier
       .fillMaxSize()
-      .background(BgColor)
-      .padding(8.dp)
-      .clickable(
-        actionStartActivity<MainActivity>()),
+      .background(bgColor)
+      .padding(12.dp)
+      .clickable(actionStartActivity<MainActivity>()),
     contentAlignment = Alignment.Center,
   ) {
     Column(
-      horizontalAlignment =
-        Alignment.CenterHorizontally,
+      horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       Text(
         text = "eQuran",
         style = TextStyle(
-          color = ColorProvider(PrimaryColor),
+          color = ColorProvider(primaryColor),
           fontSize = 14.sp,
-          fontWeight = FontWeight.Bold))
+          fontWeight = FontWeight.Bold
+        )
+      )
       Spacer(GlanceModifier.height(6.dp))
       Text(
         text = label,
         style = TextStyle(
-          color = ColorProvider(MutedColor),
+          color = ColorProvider(mutedColor),
           fontSize = 10.sp,
-          textAlign = TextAlign.Center))
+          textAlign = TextAlign.Center
+        )
+      )
     }
   }
 }
@@ -152,6 +171,13 @@ private fun WidgetContent(
   next: String,
   loc: String,
   updated: String,
+  bgColor: Color,
+  surfaceColor: Color,
+  primaryColor: Color,
+  textColor: Color,
+  textMuted: Color,
+  goldColor: Color,
+  borderColor: Color,
   headerLabel: String,
   fajrLabel: String,
   sunriseLabel: String,
@@ -164,92 +190,160 @@ private fun WidgetContent(
   Box(
     modifier = GlanceModifier
       .fillMaxSize()
-      .background(BgColor)
-      .padding(8.dp)
-      .clickable(
-        actionStartActivity<MainActivity>()),
+      .background(bgColor)
+      .padding(16.dp)
+      .clickable(actionStartActivity<MainActivity>()),
     contentAlignment = Alignment.TopStart,
   ) {
     Column(
       modifier = GlanceModifier.fillMaxSize(),
     ) {
-
       // HEADER
       Row(
-        modifier = GlanceModifier
-          .fillMaxWidth()
-          .padding(bottom = 6.dp),
-        verticalAlignment =
-          Alignment.CenterVertically,
+        modifier = GlanceModifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
       ) {
-        Text(
-          text = headerLabel,
-          style = TextStyle(
-            color = ColorProvider(TextColor),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold),)
-        if (loc.isNotEmpty()) {
+        Column(
+          modifier = GlanceModifier.defaultWeight(),
+        ) {
           Text(
-            text = loc,
+            text = headerLabel,
             style = TextStyle(
-              color = ColorProvider(MutedColor),
-              fontSize = 9.sp))
+              color = ColorProvider(textColor),
+              fontSize = 15.sp,
+              fontWeight = FontWeight.Bold
+            )
+          )
+          if (loc.isNotEmpty()) {
+            Text(
+              text = loc,
+              style = TextStyle(
+                color = ColorProvider(textMuted),
+                fontSize = 10.sp
+              )
+            )
+          }
+        }
+        if (next.isNotEmpty()) {
+          Box(
+            modifier = GlanceModifier
+              .background(primaryColor)
+              .padding(horizontal = 8.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center,
+          ) {
+            Text(
+              text = _nextPrayerLabel(next),
+              style = TextStyle(
+                color = ColorProvider(textColor),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold
+              )
+            )
+          }
         }
       }
+
+      Spacer(GlanceModifier.height(8.dp))
+      Spacer(
+        GlanceModifier
+          .fillMaxWidth()
+          .height(1.dp)
+          .background(borderColor)
+      )
+      Spacer(GlanceModifier.height(8.dp))
 
       // ROW 1: Fajr | Sunrise | Dhuhr
       Row(
         modifier = GlanceModifier
           .fillMaxWidth()
-          .padding(bottom = 4.dp),
+          .padding(bottom = 6.dp),
       ) {
         PrayerCell(
           name = fajrLabel,
           time = fajr,
-          isNext = next == "fajr")
+          isNext = next == "fajr",
+          surfaceColor = surfaceColor,
+          goldColor = goldColor,
+          textColor = textColor,
+          textMuted = textMuted,
+          modifier = GlanceModifier.defaultWeight()
+        )
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = sunriseLabel,
           time = sunrise,
-          isNext = false)
+          isNext = next == "sunrise",
+          surfaceColor = surfaceColor,
+          goldColor = goldColor,
+          textColor = textColor,
+          textMuted = textMuted,
+          modifier = GlanceModifier.defaultWeight()
+        )
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = dhuhrLabel,
           time = dhuhr,
-          isNext = next == "dhuhr")
+          isNext = next == "dhuhr",
+          surfaceColor = surfaceColor,
+          goldColor = goldColor,
+          textColor = textColor,
+          textMuted = textMuted,
+          modifier = GlanceModifier.defaultWeight()
+        )
       }
 
       // ROW 2: Asr | Maghrib | Isha
       Row(
-        modifier = GlanceModifier
-          .fillMaxWidth(),
+        modifier = GlanceModifier.fillMaxWidth(),
       ) {
         PrayerCell(
           name = asrLabel,
           time = asr,
-          isNext = next == "asr")
+          isNext = next == "asr",
+          surfaceColor = surfaceColor,
+          goldColor = goldColor,
+          textColor = textColor,
+          textMuted = textMuted,
+          modifier = GlanceModifier.defaultWeight()
+        )
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = maghribLabel,
           time = maghrib,
-          isNext = next == "maghrib")
+          isNext = next == "maghrib",
+          surfaceColor = surfaceColor,
+          goldColor = goldColor,
+          textColor = textColor,
+          textMuted = textMuted,
+          modifier = GlanceModifier.defaultWeight()
+        )
         Spacer(GlanceModifier.width(6.dp))
         PrayerCell(
           name = ishaLabel,
           time = isha,
-          isNext = next == "isha")
+          isNext = next == "isha",
+          surfaceColor = surfaceColor,
+          goldColor = goldColor,
+          textColor = textColor,
+          textMuted = textMuted,
+          modifier = GlanceModifier.defaultWeight()
+        )
       }
 
-      Spacer(GlanceModifier.height(6.dp))
-      Text(
-        text = "$updatedLabel: ${if (updated.isNotEmpty()) updated else "--:--"}",
-        modifier = GlanceModifier.fillMaxWidth(),
-        style = TextStyle(
-          color = ColorProvider(MutedColor),
-          fontSize = 8.sp,
-          textAlign = TextAlign.Center,
-        ),
-      )
+      // LAST UPDATED
+      if (updated.isNotEmpty()) {
+        Text(
+          text = "$updatedLabel: $updated",
+          style = TextStyle(
+            color = ColorProvider(textMuted),
+            fontSize = 9.sp,
+            textAlign = TextAlign.Center
+          ),
+          modifier = GlanceModifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+        )
+      }
     }
   }
 }
@@ -259,37 +353,63 @@ private fun PrayerCell(
   name: String,
   time: String,
   isNext: Boolean,
+  surfaceColor: Color,
+  goldColor: Color,
+  textColor: Color,
+  textMuted: Color,
   modifier: GlanceModifier = GlanceModifier,
 ) {
-  val bg = if (isNext) NextBgColor else CardColor
-  val nameColor = if (isNext) GoldColor else MutedColor
+  val finalBg = if (isNext)
+    Color(0xFF1E3A2EL)
+  else
+    surfaceColor
+
+  val nameColor = if (isNext) goldColor else textMuted
 
   Box(
     modifier = modifier
-      .height(34.dp)
-      .background(bg)
-      .padding(3.dp),
+      .fillMaxWidth()
+      .height(58.dp)
+      .background(finalBg)
+      .padding(horizontal = 6.dp, vertical = 8.dp),
     contentAlignment = Alignment.Center,
   ) {
     Column(
-      horizontalAlignment =
-        Alignment.CenterHorizontally,
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       Text(
         text = name,
         style = TextStyle(
           color = ColorProvider(nameColor),
-          fontSize = 8.sp,
+          fontSize = 9.sp,
           fontWeight = if (isNext)
             FontWeight.Bold
-          else FontWeight.Normal))
-      Spacer(GlanceModifier.height(1.dp))
+          else
+            FontWeight.Normal
+        )
+      )
+      Spacer(GlanceModifier.height(3.dp))
       Text(
         text = time,
         style = TextStyle(
-          color = ColorProvider(TextColor),
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Bold))
+          color = ColorProvider(textColor),
+          fontSize = 14.sp,
+          fontWeight = FontWeight.Bold
+        )
+      )
     }
+  }
+}
+
+private fun _nextPrayerLabel(next: String): String {
+  return when (next) {
+    "fajr" -> "Fajr next"
+    "dhuhr" -> "Dhuhr next"
+    "asr" -> "Asr next"
+    "maghrib" -> "Maghrib next"
+    "isha" -> "Isha next"
+    "sunrise" -> "Sunrise next"
+    else -> ""
   }
 }

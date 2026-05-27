@@ -3,6 +3,8 @@ import 'package:equran/backend/library.dart' show SettingsDB;
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
+import 'package:equran/theme/equran_colors.dart';
+import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 
 const Map<String, Map<String, String>> widgetTranslations = {
@@ -18,22 +20,23 @@ const Map<String, Map<String, String>> widgetTranslations = {
     'placeholder': 'Tap to load prayer times',
   },
   'ar': {
-    'header': 'مواقيت الصلاة',
-    'fajr': 'الفجر',
-    'sunrise': 'الشروق',
-    'dhuhr': 'الظهر',
-    'asr': 'العصر',
-    'maghrib': 'المغرب',
-    'isha': 'العشاء',
-    'updated': 'آخر تحديث',
-    'placeholder': 'افتح التطبيق لتحميل مواقيت الصلاة',
+    'header':
+        '\u0645\u0648\u0627\u0642\u064a\u062a \u0627\u0644\u0635\u0644\u0627\u0629',
+    'fajr': '\u0627\u0644\u0641\u062c\u0631',
+    'sunrise': '\u0627\u0644\u0634\u0631\u0648\u0642',
+    'dhuhr': '\u0627\u0644\u0638\u0647\u0631',
+    'asr': '\u0627\u0644\u0639\u0635\u0631',
+    'maghrib': '\u0627\u0644\u0645\u063a\u0631\u0628',
+    'isha': '\u0627\u0644\u0639\u0634\u0627\u0621',
+    'updated': '\u0622\u062e\u0631 \u062a\u062d\u062f\u064a\u062b',
+    'placeholder':
+        '\u0627\u0641\u062a\u062d \u0627\u0644\u062a\u0637\u0628\u064a\u0642 \u0644\u062a\u062d\u0645\u064a\u0644 \u0645\u0648\u0627\u0642\u064a\u062a \u0627\u0644\u0635\u0644\u0627\u0629',
   },
 };
 
 class PrayerWidgetService {
   static const String _appGroupId = 'com.app.equran';
 
-  // Call once at app startup
   static Future<void> init() async {
     await HomeWidget.setAppGroupId(_appGroupId);
     await HomeWidget.registerInteractivityCallback(_backgroundCallback);
@@ -70,8 +73,10 @@ class PrayerWidgetService {
     ]);
   }
 
-  // Recalculates and updates the widget data
-  static Future<void> refreshWidget() async {
+  static Future<void> refreshWidget({
+    BuildContext? context,
+    EquranColors? colors,
+  }) async {
     final store = PrayerSettingsStore();
     final location = store.getLocation();
     final settings = store.getSettings();
@@ -83,6 +88,7 @@ class PrayerWidgetService {
       settings: settings,
     );
     final use24hr = settings.use24HourFormat;
+    final resolvedColors = colors ?? _resolveColors(context);
 
     await saveCoordinates(
       latitude: location.latitude,
@@ -92,7 +98,6 @@ class PrayerWidgetService {
       use24h: use24hr,
     );
 
-    // Sync localized strings
     final langCode = getLanguageCode();
     final t = widgetTranslations[langCode] ?? widgetTranslations['en']!;
 
@@ -151,12 +156,41 @@ class PrayerWidgetService {
       nextPrayer: nextPrayer.entry.kind.id,
       locationName: location.displayLabel,
       lastUpdated: formatTime(now, use24hr),
+      colorBackground: colorToHex(resolvedColors.background),
+      colorSurface: colorToHex(resolvedColors.surface),
+      colorPrimary: colorToHex(resolvedColors.primary),
+      colorPrimaryGradientStart: colorToHex(
+        resolvedColors.primaryGradientStart,
+      ),
+      colorPrimaryGradientEnd: colorToHex(resolvedColors.primaryGradientEnd),
+      colorTextPrimary: colorToHex(resolvedColors.textPrimary),
+      colorTextSecondary: colorToHex(resolvedColors.textSecondary),
+      colorTextMuted: colorToHex(resolvedColors.textMuted),
+      colorAccentGold: colorToHex(resolvedColors.accentGold),
+      colorBorder: colorToHex(resolvedColors.border),
     );
   }
 
-  // Push current prayer times to the widget
-  // Call this whenever prayer times are calculated
-  // or when the app is foregrounded
+  static EquranColors _resolveColors(BuildContext? context) {
+    if (context != null) {
+      final ext = Theme.of(context).extension<EquranColors>();
+      if (ext != null) return ext;
+      final brightness = Theme.of(context).brightness;
+      return brightness == Brightness.dark
+          ? EquranColors.dark
+          : EquranColors.light;
+    }
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    return brightness == Brightness.dark
+        ? EquranColors.dark
+        : EquranColors.light;
+  }
+
+  static String colorToHex(Color color) {
+    return color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase();
+  }
+
   static Future<void> updateWidget({
     required String fajr,
     required String sunrise,
@@ -164,10 +198,20 @@ class PrayerWidgetService {
     required String asr,
     required String maghrib,
     required String isha,
-    required String sunriseLabel,
     required String nextPrayer,
     required String locationName,
     required String lastUpdated,
+    String sunriseLabel = '',
+    String colorBackground = '',
+    String colorSurface = '',
+    String colorPrimary = '',
+    String colorPrimaryGradientStart = '',
+    String colorPrimaryGradientEnd = '',
+    String colorTextPrimary = '',
+    String colorTextSecondary = '',
+    String colorTextMuted = '',
+    String colorAccentGold = '',
+    String colorBorder = '',
   }) async {
     await Future.wait([
       HomeWidget.saveWidgetData<String>('fajr_time', fajr),
@@ -176,18 +220,42 @@ class PrayerWidgetService {
       HomeWidget.saveWidgetData<String>('asr_time', asr),
       HomeWidget.saveWidgetData<String>('maghrib_time', maghrib),
       HomeWidget.saveWidgetData<String>('isha_time', isha),
-      HomeWidget.saveWidgetData<String>('label_sunrise', sunriseLabel),
+      if (sunriseLabel.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('label_sunrise', sunriseLabel),
       HomeWidget.saveWidgetData<String>('next_prayer', nextPrayer),
       HomeWidget.saveWidgetData<String>('location_name', locationName),
       HomeWidget.saveWidgetData<String>('last_updated', lastUpdated),
+      if (colorBackground.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_bg', colorBackground),
+      if (colorSurface.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_surface', colorSurface),
+      if (colorPrimary.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_primary', colorPrimary),
+      if (colorPrimaryGradientStart.isNotEmpty)
+        HomeWidget.saveWidgetData<String>(
+          'w_grad_start',
+          colorPrimaryGradientStart,
+        ),
+      if (colorPrimaryGradientEnd.isNotEmpty)
+        HomeWidget.saveWidgetData<String>(
+          'w_grad_end',
+          colorPrimaryGradientEnd,
+        ),
+      if (colorTextPrimary.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_text', colorTextPrimary),
+      if (colorTextSecondary.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_text_sec', colorTextSecondary),
+      if (colorTextMuted.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_text_muted', colorTextMuted),
+      if (colorAccentGold.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_gold', colorAccentGold),
+      if (colorBorder.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_border', colorBorder),
     ]);
 
-    // Trigger widgets to redraw
     await HomeWidget.updateWidget(androidName: 'PrayerTimesWidgetReceiver');
   }
 
-  // Determine which prayer comes next
-  // Pass in today's prayer DateTime values
   static String determineNextPrayer({
     required DateTime fajr,
     required DateTime sunrise,
@@ -203,11 +271,9 @@ class PrayerWidgetService {
     if (now.isBefore(asr)) return 'asr';
     if (now.isBefore(maghrib)) return 'maghrib';
     if (now.isBefore(isha)) return 'isha';
-    return 'fajr'; // next day's fajr
+    return 'fajr';
   }
 
-  // Format DateTime to display time string
-  // Respects 12hr/24hr based on device locale
   static String formatTime(DateTime dt, bool use24hr) {
     final local = dt.toLocal();
     if (use24hr) {
@@ -223,10 +289,5 @@ class PrayerWidgetService {
   }
 }
 
-// Background callback for widget interactions
-// Must be a top-level function
 @pragma('vm:entry-point')
-Future<void> _backgroundCallback(Uri? uri) async {
-  // Tapping the widget opens the app to Prayer page
-  // Navigation is handled by MainActivity
-}
+Future<void> _backgroundCallback(Uri? uri) async {}

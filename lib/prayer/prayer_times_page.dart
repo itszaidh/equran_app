@@ -559,6 +559,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   }
 
   Future<void> _useCurrentLocation() async {
+    final EquranColors colors = context.equranColors;
     setState(() {
       _isLocating = true;
     });
@@ -573,7 +574,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     if (location != null) {
       await _store.saveLocation(location);
       await _rescheduleReminders(location);
-      unawaited(PrayerWidgetService.refreshWidget());
+      unawaited(PrayerWidgetService.refreshWidget(colors: colors));
       if (!mounted) return;
       final AppLocalizations localizations = AppLocalizations.of(context)!;
       _showMessage(localizations.locationSaved);
@@ -659,7 +660,9 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
             );
             if (!mounted || !sheetContext.mounted) return;
             Navigator.of(sheetContext).pop();
-            final AppLocalizations localizations = AppLocalizations.of(context)!;
+            final AppLocalizations localizations = AppLocalizations.of(
+              context,
+            )!;
             _showMessage(localizations.locationSaved);
           },
         );
@@ -672,6 +675,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
     PrayerLocation? previousLocation,
     bool preserveCustomLabel = false,
   }) async {
+    final EquranColors colors = context.equranColors;
     final PrayerLocation resolvedLocation = await _locationService
         .resolveLocationForSave(
           location,
@@ -680,7 +684,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
         );
     await _store.saveLocation(resolvedLocation);
     await _rescheduleReminders(resolvedLocation);
-    unawaited(PrayerWidgetService.refreshWidget());
+    unawaited(PrayerWidgetService.refreshWidget(colors: colors));
   }
 
   Future<void> _rescheduleReminders(PrayerLocation location) async {
@@ -819,7 +823,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
       setState(() {
         _now = DateTime.now();
       });
-      unawaited(PrayerWidgetService.refreshWidget());
+      unawaited(PrayerWidgetService.refreshWidget(context: context));
       _scheduleNextRefresh();
     });
   }
@@ -1202,7 +1206,9 @@ class _LocationDetailsSheetState extends State<_LocationDetailsSheet> {
         location: PrayerLocation(
           latitude: latitude,
           longitude: longitude,
-          label: coordinatesChanged && !labelChanged ? localizations.savedLocationFallback : label,
+          label: coordinatesChanged && !labelChanged
+              ? localizations.savedLocationFallback
+              : label,
           mode: coordinatesChanged
               ? PrayerLocationMode.manual
               : widget.location.mode,
@@ -1294,7 +1300,10 @@ class _SavedLocationPanel extends StatelessWidget {
   }
 }
 
-String _locationPrivacyText(PrayerLocation location, AppLocalizations localizations) {
+String _locationPrivacyText(
+  PrayerLocation location,
+  AppLocalizations localizations,
+) {
   final String? timezoneId = location.timezoneId;
   final String timezoneText = timezoneId == null || timezoneId.isEmpty
       ? ''
@@ -1565,9 +1574,17 @@ String _formatTime(
   return '$displayHour:${_two(minute)} $period';
 }
 
-String formatPrayerCountdownLabel(Duration duration, AppLocalizations localizations, {bool isNow = false}) {
-  if (isNow || duration == Duration.zero || duration.isNegative) return localizations.countdownNow;
-  if (duration < const Duration(minutes: 5)) return localizations.countdownVerySoon;
+String formatPrayerCountdownLabel(
+  Duration duration,
+  AppLocalizations localizations, {
+  bool isNow = false,
+}) {
+  if (isNow || duration == Duration.zero || duration.isNegative) {
+    return localizations.countdownNow;
+  }
+  if (duration < const Duration(minutes: 5)) {
+    return localizations.countdownVerySoon;
+  }
 
   final int totalMinutes = (duration.inSeconds / 60).ceil();
   final int hours = totalMinutes ~/ 60;
