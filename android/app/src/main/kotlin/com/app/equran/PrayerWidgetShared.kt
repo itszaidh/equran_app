@@ -130,7 +130,7 @@ internal fun prayerTimeForId(state: PrayerWidgetState, prayerId: String): String
 
 internal fun headerSupportingLine(loc: String, updatedLabel: String, updated: String): String {
   val trimmedLoc = loc.trim()
-  if (trimmedLoc.length in 1..22) {
+  if (trimmedLoc.length in 1..16) {
     return trimmedLoc
   }
   if (updated.isNotEmpty()) {

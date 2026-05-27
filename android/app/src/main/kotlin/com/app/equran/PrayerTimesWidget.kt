@@ -98,13 +98,13 @@ private fun WidgetContent(state: PrayerWidgetState) {
     updated = state.updated,
   )
   val nextLabel = prayerLabelForId(state.next, state.labels)
-  val prayerCellModifier = GlanceModifier.width(80.dp)
+  val prayerCellModifier = GlanceModifier.width(72.dp)
 
   Box(
     modifier = GlanceModifier
       .fillMaxSize()
       .background(state.palette.bgColor)
-      .padding(10.dp)
+      .padding(horizontal = 8.dp, vertical = 7.dp)
       .clickable(actionStartActivity<MainActivity>()),
     contentAlignment = Alignment.TopStart,
   ) {
@@ -120,7 +120,7 @@ private fun WidgetContent(state: PrayerWidgetState) {
             text = state.labels.headerLabel,
             style = TextStyle(
               color = ColorProvider(state.palette.textColor),
-              fontSize = 13.sp,
+              fontSize = 12.sp,
               fontWeight = FontWeight.Bold
             )
           )
@@ -129,7 +129,7 @@ private fun WidgetContent(state: PrayerWidgetState) {
               text = supportingLine,
               style = TextStyle(
                 color = ColorProvider(state.palette.textSecondaryColor),
-                fontSize = 8.sp
+                fontSize = 7.sp
               )
             )
           }
@@ -138,14 +138,14 @@ private fun WidgetContent(state: PrayerWidgetState) {
           Box(
             modifier = GlanceModifier
               .background(state.palette.primaryColor)
-              .padding(horizontal = 8.dp, vertical = 4.dp),
+              .padding(horizontal = 6.dp, vertical = 3.dp),
             contentAlignment = Alignment.Center,
           ) {
             Text(
               text = nextLabel,
               style = TextStyle(
                 color = ColorProvider(state.palette.onPrimaryColor),
-                fontSize = 8.sp,
+                fontSize = 7.sp,
                 fontWeight = FontWeight.Bold
               )
             )
@@ -153,64 +153,70 @@ private fun WidgetContent(state: PrayerWidgetState) {
         }
       }
 
-      Spacer(GlanceModifier.height(6.dp))
+      Spacer(GlanceModifier.height(4.dp))
 
-      Row(
+      Box(
         modifier = GlanceModifier
           .fillMaxWidth()
-          .padding(bottom = 4.dp),
+          .padding(bottom = 2.dp),
+        contentAlignment = Alignment.Center,
       ) {
-        PrayerCell(
-          name = state.labels.fajrLabel,
-          time = state.fajr ?: "---",
-          isNext = state.next == "fajr",
-          palette = state.palette,
-          modifier = prayerCellModifier
-        )
-        Spacer(GlanceModifier.width(4.dp))
-        PrayerCell(
-          name = state.labels.sunriseLabel,
-          time = state.sunrise,
-          isNext = state.next == "sunrise",
-          palette = state.palette,
-          modifier = prayerCellModifier
-        )
-        Spacer(GlanceModifier.width(4.dp))
-        PrayerCell(
-          name = state.labels.dhuhrLabel,
-          time = state.dhuhr,
-          isNext = state.next == "dhuhr",
-          palette = state.palette,
-          modifier = prayerCellModifier
-        )
+        Row {
+          PrayerCell(
+            name = state.labels.fajrLabel,
+            time = state.fajr ?: "---",
+            isNext = state.next == "fajr",
+            palette = state.palette,
+            modifier = prayerCellModifier
+          )
+          Spacer(GlanceModifier.width(2.dp))
+          PrayerCell(
+            name = state.labels.sunriseLabel,
+            time = state.sunrise,
+            isNext = state.next == "sunrise",
+            palette = state.palette,
+            modifier = prayerCellModifier
+          )
+          Spacer(GlanceModifier.width(2.dp))
+          PrayerCell(
+            name = state.labels.dhuhrLabel,
+            time = state.dhuhr,
+            isNext = state.next == "dhuhr",
+            palette = state.palette,
+            modifier = prayerCellModifier
+          )
+        }
       }
 
-      Row(
+      Box(
         modifier = GlanceModifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
       ) {
-        PrayerCell(
-          name = state.labels.asrLabel,
-          time = state.asr,
-          isNext = state.next == "asr",
-          palette = state.palette,
-          modifier = prayerCellModifier
-        )
-        Spacer(GlanceModifier.width(4.dp))
-        PrayerCell(
-          name = state.labels.maghribLabel,
-          time = state.maghrib,
-          isNext = state.next == "maghrib",
-          palette = state.palette,
-          modifier = prayerCellModifier
-        )
-        Spacer(GlanceModifier.width(4.dp))
-        PrayerCell(
-          name = state.labels.ishaLabel,
-          time = state.isha,
-          isNext = state.next == "isha",
-          palette = state.palette,
-          modifier = prayerCellModifier
-        )
+        Row {
+          PrayerCell(
+            name = state.labels.asrLabel,
+            time = state.asr,
+            isNext = state.next == "asr",
+            palette = state.palette,
+            modifier = prayerCellModifier
+          )
+          Spacer(GlanceModifier.width(2.dp))
+          PrayerCell(
+            name = state.labels.maghribLabel,
+            time = state.maghrib,
+            isNext = state.next == "maghrib",
+            palette = state.palette,
+            modifier = prayerCellModifier
+          )
+          Spacer(GlanceModifier.width(2.dp))
+          PrayerCell(
+            name = state.labels.ishaLabel,
+            time = state.isha,
+            isNext = state.next == "isha",
+            palette = state.palette,
+            modifier = prayerCellModifier
+          )
+        }
       }
     }
   }
@@ -230,9 +236,9 @@ private fun PrayerCell(
 
   Box(
     modifier = modifier
-      .height(38.dp)
+      .height(34.dp)
       .background(finalBg)
-      .padding(horizontal = 4.dp, vertical = 5.dp),
+      .padding(horizontal = 3.dp, vertical = 4.dp),
     contentAlignment = Alignment.Center,
   ) {
     Column(
@@ -243,19 +249,19 @@ private fun PrayerCell(
         text = name,
         style = TextStyle(
           color = ColorProvider(nameColor),
-          fontSize = 8.sp,
+          fontSize = 7.sp,
           fontWeight = if (isNext)
             FontWeight.Bold
           else
             FontWeight.Normal
         )
       )
-      Spacer(GlanceModifier.height(2.dp))
+      Spacer(GlanceModifier.height(1.dp))
       Text(
         text = time,
         style = TextStyle(
           color = ColorProvider(timeColor),
-          fontSize = 11.sp,
+          fontSize = 10.sp,
           fontWeight = FontWeight.Bold
         )
       )
