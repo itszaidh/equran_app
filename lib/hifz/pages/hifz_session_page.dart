@@ -403,12 +403,6 @@ class _HifzSessionPageState extends State<HifzSessionPage>
     if (_currentIndex >= _queue.length - 1) {
       if (mounted) {
         final duration = DateTime.now().difference(_sessionStart);
-        final mergedCounts = {
-          'again': (_ratingCounts['again'] ?? 0) + (_ratingCounts['fail'] ?? 0),
-          'hard': 0,
-          'good': (_ratingCounts['gotIt'] ?? 0) + (_ratingCounts['pass'] ?? 0),
-          'easy': 0,
-        };
 
         // BEFORE navigating to complete screen:
         await HifzFrontierService.advanceAfterSession(
@@ -421,7 +415,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => HifzCompleteScreen(
-              ratingCounts: mergedCounts,
+              ratingCounts: _ratingCounts,
               sessionDuration: duration,
               totalReviewed: _currentIndex + 1,
               newGraduated: _newGraduated,

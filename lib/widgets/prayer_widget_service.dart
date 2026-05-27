@@ -154,11 +154,13 @@ class PrayerWidgetService {
       isha: formatTime(isha.time, use24hr),
       sunriseLabel: t['sunrise']!,
       nextPrayer: nextPrayer.entry.kind.id,
+      nextPrayerTime: formatTime(nextPrayer.entry.time, use24hr),
       locationName: location.displayLabel,
       lastUpdated: formatTime(now, use24hr),
       colorBackground: colorToHex(resolvedColors.background),
       colorSurface: colorToHex(resolvedColors.surface),
       colorPrimary: colorToHex(resolvedColors.primary),
+      colorPrimaryStrong: colorToHex(resolvedColors.primaryStrong),
       colorPrimaryGradientStart: colorToHex(
         resolvedColors.primaryGradientStart,
       ),
@@ -168,6 +170,7 @@ class PrayerWidgetService {
       colorTextMuted: colorToHex(resolvedColors.textMuted),
       colorAccentGold: colorToHex(resolvedColors.accentGold),
       colorBorder: colorToHex(resolvedColors.border),
+      colorOnPrimary: colorToHex(resolvedColors.onPrimary),
     );
   }
 
@@ -199,12 +202,14 @@ class PrayerWidgetService {
     required String maghrib,
     required String isha,
     required String nextPrayer,
+    required String nextPrayerTime,
     required String locationName,
     required String lastUpdated,
     String sunriseLabel = '',
     String colorBackground = '',
     String colorSurface = '',
     String colorPrimary = '',
+    String colorPrimaryStrong = '',
     String colorPrimaryGradientStart = '',
     String colorPrimaryGradientEnd = '',
     String colorTextPrimary = '',
@@ -212,6 +217,7 @@ class PrayerWidgetService {
     String colorTextMuted = '',
     String colorAccentGold = '',
     String colorBorder = '',
+    String colorOnPrimary = '',
   }) async {
     await Future.wait([
       HomeWidget.saveWidgetData<String>('fajr_time', fajr),
@@ -223,6 +229,7 @@ class PrayerWidgetService {
       if (sunriseLabel.isNotEmpty)
         HomeWidget.saveWidgetData<String>('label_sunrise', sunriseLabel),
       HomeWidget.saveWidgetData<String>('next_prayer', nextPrayer),
+      HomeWidget.saveWidgetData<String>('next_prayer_time', nextPrayerTime),
       HomeWidget.saveWidgetData<String>('location_name', locationName),
       HomeWidget.saveWidgetData<String>('last_updated', lastUpdated),
       if (colorBackground.isNotEmpty)
@@ -231,6 +238,8 @@ class PrayerWidgetService {
         HomeWidget.saveWidgetData<String>('w_surface', colorSurface),
       if (colorPrimary.isNotEmpty)
         HomeWidget.saveWidgetData<String>('w_primary', colorPrimary),
+      if (colorPrimaryStrong.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_primary_strong', colorPrimaryStrong),
       if (colorPrimaryGradientStart.isNotEmpty)
         HomeWidget.saveWidgetData<String>(
           'w_grad_start',
@@ -251,9 +260,14 @@ class PrayerWidgetService {
         HomeWidget.saveWidgetData<String>('w_gold', colorAccentGold),
       if (colorBorder.isNotEmpty)
         HomeWidget.saveWidgetData<String>('w_border', colorBorder),
+      if (colorOnPrimary.isNotEmpty)
+        HomeWidget.saveWidgetData<String>('w_on_primary', colorOnPrimary),
     ]);
 
-    await HomeWidget.updateWidget(androidName: 'PrayerTimesWidgetReceiver');
+    await Future.wait([
+      HomeWidget.updateWidget(androidName: 'PrayerTimesWidgetReceiver'),
+      HomeWidget.updateWidget(androidName: 'NextPrayerWidgetReceiver'),
+    ]);
   }
 
   static String determineNextPrayer({

@@ -122,7 +122,7 @@ class _MainPageState extends State<MainPage>
             ),
             child: _buildSectionHeader(theme),
           ),
-          
+
           Expanded(child: _buildSegmentPager(horizontalPadding)),
         ],
       ),
@@ -645,12 +645,15 @@ class _HifzReminderCard extends StatelessWidget {
           return const SizedBox.shrink();
         }
         final count = HifzFrontierService.totalDueCount();
-        final List<HifzEntry> dueEntries = [];
-        for (final unit in HifzDB.getActiveUnits()) {
-          dueEntries.addAll(HifzDB.getNewAyahsForUnit(unit.id, 999));
-          dueEntries.addAll(HifzDB.getSabqiAyahs(unit.id));
-          dueEntries.addAll(HifzDB.getManzilAyahs(unit.id));
-        }
+        final activeUnits = HifzDB.getActiveUnits();
+        bool hasContent(HifzUnit u) =>
+            HifzDB.getNewAyahsForUnit(u.id, 1).isNotEmpty ||
+            HifzDB.getSabqiAyahs(u.id).isNotEmpty ||
+            HifzDB.getManzilAyahs(u.id).isNotEmpty;
+        final unitWithDue = activeUnits.firstWhere(
+          (u) => hasContent(u),
+          orElse: () => activeUnits.first,
+        );
         final radius = BorderRadius.circular(AppRadii.large);
 
         return Padding(
@@ -709,8 +712,7 @@ class _HifzReminderCard extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) =>
-                                HifzSessionPage(entries: dueEntries),
+                            builder: (_) => HifzSessionPage(unit: unitWithDue),
                           ),
                         );
                       },

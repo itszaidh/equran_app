@@ -143,6 +143,15 @@ void _callbackDispatcher() {
           return '$hour:$minute $period';
         }
 
+        final Map<String, DateTime> prayerLookup = <String, DateTime>{
+          'fajr': prayerTimes.fajr,
+          'sunrise': prayerTimes.sunrise,
+          'dhuhr': prayerTimes.dhuhr,
+          'asr': prayerTimes.asr,
+          'maghrib': prayerTimes.maghrib,
+          'isha': prayerTimes.isha,
+        };
+
         await PrayerWidgetService.updateWidget(
           fajr: fmt(prayerTimes.fajr, use24h),
           sunrise: fmt(prayerTimes.sunrise, use24h),
@@ -152,6 +161,10 @@ void _callbackDispatcher() {
           isha: fmt(prayerTimes.isha, use24h),
           sunriseLabel: t['sunrise']!,
           nextPrayer: nextPrayer,
+          nextPrayerTime: fmt(
+            prayerLookup[nextPrayer] ?? prayerTimes.fajr,
+            use24h,
+          ),
           locationName: locationName,
           lastUpdated: fmt(DateTime.now(), use24h),
         );

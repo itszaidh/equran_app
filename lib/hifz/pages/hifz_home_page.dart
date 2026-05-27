@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quran/quran.dart' as quran;
@@ -1326,7 +1328,10 @@ class _UnitProgressCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    final newCount = HifzDB.getNewAyahsForUnit(unit.id, 999).length;
+    final newCount = math.min(
+      HifzDB.getNewAyahsForUnit(unit.id, 999).length,
+      HifzLimits.remainingNewToday,
+    );
     final sabqiCount = HifzDB.getSabqiAyahs(unit.id).length;
     final manzilCount = HifzDB.getManzilAyahs(unit.id).length;
 

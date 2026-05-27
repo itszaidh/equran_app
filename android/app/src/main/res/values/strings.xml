@@ -1,5 +1,8 @@
 <resources>
   <string name="prayer_widget_description">
-    Prayer Times Widget
+    Prayer Times Widget (4x2)
+  </string>
+  <string name="next_prayer_widget_description">
+    Next Prayer Widget (2x1)
   </string>
 </resources>

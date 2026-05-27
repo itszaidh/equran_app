@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 import 'hifz_db.dart';
 import 'hifz_limits.dart';
 import 'models/hifz_unit.dart';
@@ -20,7 +20,7 @@ class HifzFrontierService {
 
       // Advance frontier by graduated count
       // capped at remainingNewToday
-      final advanceBy = min(graduatedToday, HifzLimits.remainingNewToday);
+      final advanceBy = math.min(graduatedToday, HifzLimits.remainingNewToday);
 
       // If nothing to advance, still check
       // if frontier needs seeding
@@ -79,9 +79,12 @@ class HifzFrontierService {
     try {
       int total = 0;
       for (final unit in HifzDB.getActiveUnits()) {
-        total += HifzDB.getNewAyahsForUnit(unit.id, 999).length;
         total += HifzDB.getSabqiAyahs(unit.id).length;
         total += HifzDB.getManzilAyahs(unit.id).length;
+        total += math.min(
+          HifzDB.getNewAyahsForUnit(unit.id, 999).length,
+          HifzLimits.remainingNewToday,
+        );
       }
       return total;
     } catch (e) {
@@ -96,7 +99,10 @@ class HifzFrontierService {
       final result = <String, HifzUnitDueSummary>{};
       for (final unit in HifzDB.getActiveUnits()) {
         result[unit.id] = HifzUnitDueSummary(
-          newCount: HifzDB.getNewAyahsForUnit(unit.id, 999).length,
+          newCount: math.min(
+            HifzDB.getNewAyahsForUnit(unit.id, 999).length,
+            HifzLimits.remainingNewToday,
+          ),
           sabqiCount: HifzDB.getSabqiAyahs(unit.id).length,
           manzilCount: HifzDB.getManzilAyahs(unit.id).length,
           unit: unit,

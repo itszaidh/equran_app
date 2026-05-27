@@ -49,6 +49,7 @@ class BootReceiver: BroadcastReceiver() {
       // trigger widget redraw with existing data
       CoroutineScope(Dispatchers.Main).launch {
         PrayerTimesWidget().updateAll(context)
+        NextPrayerWidget().updateAll(context)
       }
     } else {
       // No data yet — compute native prayer
@@ -120,6 +121,16 @@ class BootReceiver: BroadcastReceiver() {
       else -> "fajr"
     }
 
+    val nextPrayerTime = when (nextPrayer) {
+      "fajr" -> fajrTime
+      "sunrise" -> sunriseTime
+      "dhuhr" -> dhuhrTime
+      "asr" -> asrTime
+      "maghrib" -> maghribTime
+      "isha" -> ishaTime
+      else -> fajrTime
+    }
+
     // Write to HomeWidget SharedPreferences
     // using exact same keys as Flutter
     prefs.edit().apply {
@@ -130,6 +141,7 @@ class BootReceiver: BroadcastReceiver() {
       putString("isha_time", ishaTime)
       putString("sunrise_time", sunriseTime)
       putString("next_prayer", nextPrayer)
+      putString("next_prayer_time", nextPrayerTime)
       putString("location_name","")
       putString("last_updated", toTimeStr(nowHour))
       apply()
@@ -138,6 +150,7 @@ class BootReceiver: BroadcastReceiver() {
     // Trigger widget redraw
     CoroutineScope(Dispatchers.Main).launch {
       PrayerTimesWidget().updateAll(context)
+      NextPrayerWidget().updateAll(context)
     }
   }
 }

@@ -56,7 +56,10 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
     final total = widget.ratingCounts.values.fold(0, (a, b) => a + b);
     if (total == 0) return '—';
     final positive =
-        (widget.ratingCounts['good'] ?? 0) + (widget.ratingCounts['easy'] ?? 0);
+        (widget.ratingCounts['good'] ?? 0) +
+        (widget.ratingCounts['easy'] ?? 0) +
+        (widget.ratingCounts['pass'] ?? 0) +
+        (widget.ratingCounts['gotIt'] ?? 0);
     final pct = (positive / total * 100).toStringAsFixed(0);
     return '$pct%';
   }
@@ -76,6 +79,10 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
     final colors = context.equranColors;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final tryAgainLabel = 'Try again';
+    final gotItLabel = 'Got it';
+    final failLabel = 'Fail';
+    final passLabel = 'Pass';
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -216,29 +223,29 @@ class _HifzCompleteScreenState extends State<HifzCompleteScreen>
                       Row(
                         children: [
                           _StatChip(
-                            label: l10n.hifzRatingAgain,
+                            label: tryAgainLabel,
                             count: widget.ratingCounts['again'] ?? 0,
                             bgColor: colors.surfaceAlt,
                             textColor: colors.textSecondary,
                           ),
                           const SizedBox(width: 8),
                           _StatChip(
-                            label: l10n.hifzRatingHard,
-                            count: widget.ratingCounts['hard'] ?? 0,
-                            bgColor: colors.goldSoft,
-                            textColor: colors.warning,
-                          ),
-                          const SizedBox(width: 8),
-                          _StatChip(
-                            label: l10n.hifzRatingGood,
-                            count: widget.ratingCounts['good'] ?? 0,
-                            bgColor: colors.primary.withAlpha(31), // 12%
+                            label: gotItLabel,
+                            count: widget.ratingCounts['gotIt'] ?? 0,
+                            bgColor: colors.primary.withAlpha(31),
                             textColor: colors.primary,
                           ),
                           const SizedBox(width: 8),
                           _StatChip(
-                            label: l10n.hifzRatingEasy,
-                            count: widget.ratingCounts['easy'] ?? 0,
+                            label: failLabel,
+                            count: widget.ratingCounts['fail'] ?? 0,
+                            bgColor: colors.warningSurface,
+                            textColor: colors.warning,
+                          ),
+                          const SizedBox(width: 8),
+                          _StatChip(
+                            label: passLabel,
+                            count: widget.ratingCounts['pass'] ?? 0,
                             bgColor: colors.mint,
                             textColor: colors.primary,
                           ),

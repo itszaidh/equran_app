@@ -411,13 +411,8 @@ class StatisticsRepository {
       // of the unit with earliest dueDate)
       HifzEntry? nextDue;
       for (final unit in HifzDB.getActiveUnits()) {
-        final unitDue = [
-          ...HifzDB.getNewAyahsForUnit(unit.id, 1),
-          ...HifzDB.getSabqiAyahs(unit.id).take(1),
-          ...HifzDB.getManzilAyahs(unit.id).take(1),
-        ];
-        if (unitDue.isNotEmpty) {
-          final candidate = unitDue.first;
+        final candidate = _nextDueForUnit(unit);
+        if (candidate != null) {
           if (nextDue == null || candidate.dueDate.isBefore(nextDue.dueDate)) {
             nextDue = candidate;
           }
@@ -436,6 +431,19 @@ class StatisticsRepository {
         masteredPerSurah: masteredMap,
       );
     })();
+  }
+
+  HifzEntry? _nextDueForUnit(HifzUnit unit) {
+    final sabqi = HifzDB.getSabqiAyahs(unit.id);
+    if (sabqi.isNotEmpty) return sabqi.first;
+
+    final manzil = HifzDB.getManzilAyahs(unit.id);
+    if (manzil.isNotEmpty) return manzil.first;
+
+    final newAyahs = HifzDB.getNewAyahsForUnit(unit.id, 1);
+    if (newAyahs.isNotEmpty) return newAyahs.first;
+
+    return null;
   }
 
   int _computeHifzStreak() {
