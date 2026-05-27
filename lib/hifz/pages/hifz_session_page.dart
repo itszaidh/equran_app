@@ -81,9 +81,9 @@ class _HifzSessionPageState extends State<HifzSessionPage>
   // Session stats
   final Map<String, int> _ratingCounts = {
     'again': 0,
-    'hard': 0,
-    'good': 0,
-    'easy': 0,
+    'gotIt': 0,
+    'fail': 0,
+    'pass': 0,
   };
   int _newGraduated = 0;
   final DateTime _sessionStart = DateTime.now();
@@ -111,6 +111,14 @@ class _HifzSessionPageState extends State<HifzSessionPage>
   }
 
   Future<void> _initSession() async {
+    if (widget.unit == null && widget.entries != null) {
+      assert(
+        false,
+        'HifzSessionPage: entries parameter is not supported. '
+        'Use unit instead. See Phase 3 for caller fixes.',
+      );
+    }
+
     // Ensure frontier has content ready
     try {
       final unit = widget.unit ?? _fallbackUnit;
@@ -153,7 +161,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         .toList();
 
     // Combine in order — never shuffle
-    _queue = [...newEntries, ...sabqiEntries, ...manzilEntries];
+    _queue = [...sabqiEntries, ...manzilEntries, ...newEntries];
   }
 
   void _initAnimations() {
@@ -344,7 +352,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
 
     if (card.track == _Track.newAyah) {
       // Learn phase — use recordLearnRepetition not SM-2
-      final graduated = HifzScheduler.recordLearnRepetition(entry);
+      final graduated = HifzScheduler.recordLearnRepetition(entry, rating);
       await HifzDB.saveEntry(entry);
       await HifzLimits.incrementNew();
 
@@ -364,11 +372,21 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         }
       }
     } else {
-      // Sabqi / Manzil — use SM-2
+      // Sabqi / Manzil — use fail/pass review flow
       final (updatedEntry, log) = HifzScheduler.review(entry, rating);
       await HifzDB.saveEntry(updatedEntry);
       await HifzDB.saveLog(log);
       await HifzLimits.incrementReview();
+
+      if (rating == 'fail') {
+        final key = '${entry.surah}:${entry.ayah}';
+        final lapses = _lapseThisSession[key] ?? 0;
+        if (lapses < 3) {
+          _lapseThisSession[key] = lapses + 1;
+          final insertAt = math.min(_currentIndex + 4, _queue.length);
+          _queue.insert(insertAt, card);
+        }
+      }
     }
 
     _ratingCounts[rating] = (_ratingCounts[rating] ?? 0) + 1;
@@ -385,6 +403,13 @@ class _HifzSessionPageState extends State<HifzSessionPage>
     if (_currentIndex >= _queue.length - 1) {
       if (mounted) {
         final duration = DateTime.now().difference(_sessionStart);
+        final mergedCounts = {
+          'again': (_ratingCounts['again'] ?? 0) + (_ratingCounts['fail'] ?? 0),
+          'hard': 0,
+          'good': (_ratingCounts['gotIt'] ?? 0) + (_ratingCounts['pass'] ?? 0),
+          'easy': 0,
+        };
+
         // BEFORE navigating to complete screen:
         await HifzFrontierService.advanceAfterSession(
           unit: _unit,
@@ -396,7 +421,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => HifzCompleteScreen(
-              ratingCounts: _ratingCounts,
+              ratingCounts: mergedCounts,
               sessionDuration: duration,
               totalReviewed: _currentIndex + 1,
               newGraduated: _newGraduated,
@@ -988,7 +1013,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
             const SizedBox(width: 12),
             Expanded(
               child: GestureDetector(
-                onTap: () => _submitRating('good'),
+                onTap: () => _submitRating('gotIt'),
                 child: Container(
                   height: 52,
                   decoration: BoxDecoration(
@@ -1010,7 +1035,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
           ],
         );
       } else {
-        // Sabqi / Manzil: show all four SM-2 buttons
+        // Sabqi / Manzil: show fail/pass review buttons
         child = _buildRatingButtons();
       }
     }
@@ -1027,47 +1052,29 @@ class _HifzSessionPageState extends State<HifzSessionPage>
 
   Widget _buildRatingButtons() {
     final colors = context.equranColors;
-    final l10n = AppLocalizations.of(context)!;
+    final failLabel = 'Fail';
+    final passLabel = 'Pass';
+
     return Row(
       children: [
         _RatingButton(
-          label: l10n.hifzRatingAgain,
-          interval: _projectedIntervals['again'] ?? 1,
+          label: failLabel,
+          interval: _projectedIntervals['fail'] ?? 1,
           bgColor: colors.surfaceAlt,
           borderColor: colors.border,
           labelColor: colors.textSecondary,
           intervalColor: colors.textMuted,
-          onTap: () => _submitRating('again'),
+          onTap: () => _submitRating('fail'),
         ),
         const SizedBox(width: 8),
         _RatingButton(
-          label: l10n.hifzRatingHard,
-          interval: _projectedIntervals['hard'] ?? 1,
-          bgColor: colors.goldSoft,
-          borderColor: colors.accentGold.withAlpha(102), // 40%
-          labelColor: colors.warning,
-          intervalColor: colors.accentGold,
-          onTap: () => _submitRating('hard'),
-        ),
-        const SizedBox(width: 8),
-        _RatingButton(
-          label: l10n.hifzRatingGood,
-          interval: _projectedIntervals['good'] ?? 4,
+          label: passLabel,
+          interval: _projectedIntervals['pass'] ?? 4,
           bgColor: colors.primary.withAlpha(38), // 15%
           borderColor: colors.primary.withAlpha(76), // 30%
           labelColor: colors.primary,
           intervalColor: colors.primarySoft,
-          onTap: () => _submitRating('good'),
-        ),
-        const SizedBox(width: 8),
-        _RatingButton(
-          label: l10n.hifzRatingEasy,
-          interval: _projectedIntervals['easy'] ?? 8,
-          bgColor: colors.mint,
-          borderColor: colors.primary.withAlpha(51), // 20%
-          labelColor: colors.primary,
-          intervalColor: colors.primary,
-          onTap: () => _submitRating('easy'),
+          onTap: () => _submitRating('pass'),
         ),
       ],
     );

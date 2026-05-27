@@ -339,7 +339,13 @@ class HifzDB {
     final logs = _logs.values.toList();
     if (logs.isEmpty) return 0.0;
     final positive = logs
-        .where((l) => l.rating == 'good' || l.rating == 'easy')
+        .where(
+          (l) =>
+              l.rating == 'good' ||
+              l.rating == 'easy' ||
+              l.rating == 'pass' ||
+              l.rating == 'gotIt',
+        )
         .length;
     return positive / logs.length;
   }

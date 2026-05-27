@@ -13,6 +13,10 @@ class HifzScheduler {
   // Maps rating string to SM-2 quality integer
   static int _qualityFromRating(String rating) {
     switch (rating) {
+      case 'fail':
+        return 0;
+      case 'pass':
+        return 3;
       case 'again':
         return 0;
       case 'hard':
@@ -39,15 +43,18 @@ class HifzScheduler {
     return max(1, (interval + fuzz).round());
   }
 
+  // Custom Hifz interval sequence before switching to SM-2
+  static const List<int> _hifzSequence = [1, 2, 4, 7, 14, 30];
+
   // Core review function — mutates and returns entry
-  // Also returns the review log to be saved by caller
+  // Also returns review log to be saved by caller
   static (HifzEntry, HifzReviewLog) review(HifzEntry entry, String rating) {
     final quality = _qualityFromRating(rating);
     final prevInterval = entry.interval;
     final prevEaseFactor = entry.easeFactor;
 
     if (quality < 3) {
-      // Forgotten — reset
+      // Forgotten — reset to 1-day interval and restart sequence
       entry.repetitions = 0;
       entry.interval = 1;
       entry.lapses += 1;
@@ -56,10 +63,8 @@ class HifzScheduler {
     } else {
       // Remembered — advance
       int newInterval;
-      if (entry.repetitions == 0) {
-        newInterval = 1;
-      } else if (entry.repetitions == 1) {
-        newInterval = 6;
+      if (entry.repetitions >= 0 && entry.repetitions < _hifzSequence.length) {
+        newInterval = _hifzSequence[entry.repetitions];
       } else {
         newInterval = (entry.interval * entry.easeFactor).round();
       }
@@ -97,12 +102,12 @@ class HifzScheduler {
     return (entry, log);
   }
 
-  // Preview next intervals for all 4 ratings
-  // without mutating the entry — used to show
+  // Preview next intervals for review fail/pass
+  // without mutating entry — used to show
   // projected intervals on rating buttons
   static Map<String, int> previewIntervals(HifzEntry entry) {
     final result = <String, int>{};
-    for (final rating in ['again', 'hard', 'good', 'easy']) {
+    for (final rating in ['fail', 'pass']) {
       final clone = HifzEntry()
         ..surah = entry.surah
         ..ayah = entry.ayah
@@ -113,7 +118,11 @@ class HifzScheduler {
         ..dueDate = entry.dueDate
         ..lastReviewed = entry.lastReviewed
         ..lapses = entry.lapses
-        ..track = entry.track;
+        ..track = entry.track
+        ..unitId = entry.unitId
+        ..sequenceIndex = entry.sequenceIndex
+        ..introducedRepetitions = entry.introducedRepetitions
+        ..firstLearnedAt = entry.firstLearnedAt;
       final (updated, _) = review(clone, rating);
       result[rating] = updated.interval;
     }
@@ -129,23 +138,29 @@ class HifzScheduler {
     return '${(days / 365).round()}y';
   }
 
-  // Call when an ayah completes a learn
-  // phase repetition (not SM-2 review)
-  // Returns true when entry is ready to
-  // graduate from learning to review phase
-  static bool recordLearnRepetition(HifzEntry entry) {
-    entry.introducedRepetitions += 1;
-
-    if (entry.introducedRepetitions >= 3) {
-      // Graduate to SM-2 review phase
-      entry.status = 'review';
-      entry.repetitions = 1;
-      entry.interval = 1;
-      entry.dueDate = DateTime.now().add(const Duration(days: 1));
-      return true; // graduated
+  // Call when ayah completes learn
+  // phase repetition (not SM-2 review).
+  // Returns true when entry graduates
+  // from learning to review phase.
+  static bool recordLearnRepetition(
+    HifzEntry entry, [
+    String rating = 'again',
+  ]) {
+    if (rating == 'again') {
+      // Failed — stay in learning, due immediately
+      entry.introducedRepetitions += 1;
+      entry.status = 'learning';
+      entry.dueDate = DateTime.now();
+      return false; // not graduated
     }
-    // Stay in learning, due immediately
-    entry.dueDate = DateTime.now();
-    return false;
+
+    // 'gotIt' or any non-again value graduates immediately to review
+    entry.status = 'review';
+    entry.repetitions = 1; // first step in custom sequence
+    entry.interval = 1; // due tomorrow
+    entry.dueDate = DateTime.now().add(const Duration(days: 1));
+    entry.lastReviewed = DateTime.now();
+    entry.firstLearnedAt ??= DateTime.now();
+    return true; // graduated
   }
 }

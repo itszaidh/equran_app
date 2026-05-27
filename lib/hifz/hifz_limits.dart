@@ -22,23 +22,36 @@ class HifzLimits {
 
   static set maxReviewPerDay(int v) => prefsBox.put(_maxReviewKey, v);
 
-  static int get todayNewCount =>
-      prefsBox.get(_todayKey('hifzNew'), defaultValue: 0) as int;
+  static int get todayIntroducedCount =>
+      prefsBox.get(_todayKey('hifzIntroduced'), defaultValue: 0) as int;
+
+  // Compatibility aliases — do not remove
+  // the originals above
+  static int get todayNewCount => todayIntroducedCount;
 
   // Returns how many new ayahs can still
-  // be unlocked today across all units
-  static int get remainingNewToday => max(0, maxNewPerDay - todayNewCount);
+  // be introduced today across all units
+  static int get remainingIntroducableToday =>
+      max(0, maxNewPerDay - todayIntroducedCount);
+
+  // Compatibility aliases — do not remove
+  // the originals above
+  static int get remainingNewToday => remainingIntroducableToday;
 
   static int get todayReviewCount =>
       prefsBox.get(_todayKey('hifzReview'), defaultValue: 0) as int;
 
-  static Future<void> incrementNew() async =>
-      prefsBox.put(_todayKey('hifzNew'), todayNewCount + 1);
+  static Future<void> incrementIntroduced() async =>
+      prefsBox.put(_todayKey('hifzIntroduced'), todayIntroducedCount + 1);
+
+  // Compatibility aliases — do not remove
+  // the originals above
+  static Future<void> incrementNew() => incrementIntroduced();
 
   static Future<void> incrementReview() async =>
       prefsBox.put(_todayKey('hifzReview'), todayReviewCount + 1);
 
-  static bool get canAddNew => todayNewCount < maxNewPerDay;
+  static bool get canIntroduce => todayIntroducedCount < maxNewPerDay;
 
   static bool get canReview => todayReviewCount < maxReviewPerDay;
 }
