@@ -1,67 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Widget Background Container -->
   <item>
     <shape android:shape="rectangle">
-      <corners android:radius="18dp" />
+      <corners android:radius="20dp" />
       <solid android:color="#07110E" />
     </shape>
   </item>
 
-  <item android:left="16dp" android:top="14dp" android:right="110dp" android:bottom="96dp">
+  <!-- Header: "Prayer Times" Title Placeholder Capsule -->
+  <item android:left="16dp" android:top="14dp" android:right="144dp" android:bottom="86dp">
     <shape android:shape="rectangle">
-      <corners android:radius="8dp" />
-      <solid android:color="#111A17" />
+      <corners android:radius="5dp" />
+      <solid android:color="#FFF3F7F4" />
     </shape>
   </item>
 
-  <item android:left="150dp" android:top="18dp" android:right="16dp" android:bottom="92dp">
+  <!-- Header: "Muscat, Oman" Subtitle Placeholder Capsule -->
+  <item android:left="16dp" android:top="28dp" android:right="174dp" android:bottom="76dp">
     <shape android:shape="rectangle">
-      <corners android:radius="12dp" />
+      <corners android:radius="3dp" />
+      <solid android:color="#83908A" />
+    </shape>
+  </item>
+
+  <!-- Header: "Dhuhr" Active Badge -->
+  <item android:left="194dp" android:top="14dp" android:right="16dp" android:bottom="80dp">
+    <shape android:shape="rectangle">
+      <corners android:radius="6dp" />
       <solid android:color="#1E7A61" />
     </shape>
   </item>
 
-  <item android:left="16dp" android:top="52dp" android:right="174dp" android:bottom="44dp">
+  <!-- Grid Row 1, Col 1: Fajr Cell -->
+  <item android:left="16dp" android:top="42dp" android:right="164dp" android:bottom="42dp">
     <shape android:shape="rectangle">
       <corners android:radius="8dp" />
-      <solid android:color="#26332E" />
+      <solid android:color="#111A17" />
     </shape>
   </item>
 
-  <item android:left="16dp" android:top="74dp" android:right="176dp" android:bottom="18dp">
+  <!-- Grid Row 1, Col 2: Sunrise Cell -->
+  <item android:left="90dp" android:top="42dp" android:right="90dp" android:bottom="42dp">
     <shape android:shape="rectangle">
-      <corners android:radius="12dp" />
+      <corners android:radius="8dp" />
       <solid android:color="#111A17" />
     </shape>
   </item>
-  <item android:left="95dp" android:top="74dp" android:right="97dp" android:bottom="18dp">
+
+  <!-- Grid Row 1, Col 3: Dhuhr Cell (ACTIVE highlighted) -->
+  <item android:left="164dp" android:top="42dp" android:right="16dp" android:bottom="42dp">
     <shape android:shape="rectangle">
-      <corners android:radius="12dp" />
-      <solid android:color="#111A17" />
-    </shape>
-  </item>
-  <item android:left="174dp" android:top="74dp" android:right="18dp" android:bottom="18dp">
-    <shape android:shape="rectangle">
-      <corners android:radius="12dp" />
+      <corners android:radius="8dp" />
       <solid android:color="#125B49" />
     </shape>
   </item>
 
-  <item android:left="16dp" android:top="128dp" android:right="176dp" android:bottom="16dp">
+  <!-- Grid Row 2, Col 1: Asr Cell -->
+  <item android:left="16dp" android:top="74dp" android:right="164dp" android:bottom="10dp">
     <shape android:shape="rectangle">
-      <corners android:radius="12dp" />
+      <corners android:radius="8dp" />
       <solid android:color="#111A17" />
     </shape>
   </item>
-  <item android:left="95dp" android:top="128dp" android:right="97dp" android:bottom="16dp">
+
+  <!-- Grid Row 2, Col 2: Maghrib Cell -->
+  <item android:left="90dp" android:top="74dp" android:right="90dp" android:bottom="10dp">
     <shape android:shape="rectangle">
-      <corners android:radius="12dp" />
+      <corners android:radius="8dp" />
       <solid android:color="#111A17" />
     </shape>
   </item>
-  <item android:left="174dp" android:top="128dp" android:right="18dp" android:bottom="16dp">
+
+  <!-- Grid Row 2, Col 3: Isha Cell -->
+  <item android:left="164dp" android:top="74dp" android:right="16dp" android:bottom="10dp">
     <shape android:shape="rectangle">
-      <corners android:radius="12dp" />
+      <corners android:radius="8dp" />
       <solid android:color="#111A17" />
     </shape>
   </item>

@@ -1,29 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Widget Background Container -->
   <item>
     <shape android:shape="rectangle">
-      <corners android:radius="18dp" />
+      <corners android:radius="14dp" />
       <solid android:color="#125B49" />
     </shape>
   </item>
 
-  <item android:left="14dp" android:top="14dp" android:right="74dp" android:bottom="56dp">
+  <!-- Next Prayer Gold Label Capsule -->
+  <item android:left="12dp" android:top="10dp" android:right="68dp" android:bottom="38dp">
     <shape android:shape="rectangle">
-      <corners android:radius="8dp" />
+      <corners android:radius="3dp" />
       <solid android:color="#D6A84F" />
     </shape>
   </item>
 
-  <item android:left="14dp" android:top="34dp" android:right="30dp" android:bottom="28dp">
+  <!-- Next Prayer Time White Capsule -->
+  <item android:left="12dp" android:top="22dp" android:right="48dp" android:bottom="20dp">
     <shape android:shape="rectangle">
-      <corners android:radius="8dp" />
+      <corners android:radius="4dp" />
       <solid android:color="#FFFFFF" />
     </shape>
   </item>
 
-  <item android:left="14dp" android:top="64dp" android:right="92dp" android:bottom="14dp">
+  <!-- Supporting Location Subtitle Capsule -->
+  <item android:left="12dp" android:top="40dp" android:right="58dp" android:bottom="8dp">
     <shape android:shape="rectangle">
-      <corners android:radius="8dp" />
+      <corners android:radius="3dp" />
       <solid android:color="#DDEEE6" />
     </shape>
   </item>

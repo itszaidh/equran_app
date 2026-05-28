@@ -1,6 +1,7 @@
 import 'package:equran/backend/dua_favourites_db.dart';
 import 'package:equran/duas/duas_category_page.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
+import 'package:equran/duas/hisn_category_translations.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/widgets/dua_card.dart';
 import 'package:equran/l10n/app_localizations.dart';
@@ -88,7 +89,7 @@ class DuasFavouritesPage extends StatelessWidget {
                                     child: DuaCard(
                                       dua: dua,
                                       number: dua.index + 1,
-                                      categoryTitle: group.title,
+                                      categoryTitle: getLocalizedCategoryTitle(context, group.categoryId, group.title),
                                       onTap: () =>
                                           _openCategory(context, group, dua),
                                     ),
@@ -223,8 +224,8 @@ class _FavouriteCategoryHeader extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                group.title,
-                textDirection: TextDirection.rtl,
+                getLocalizedCategoryTitle(context, group.categoryId, group.title),
+                textDirection: Directionality.of(context),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(

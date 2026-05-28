@@ -42,8 +42,8 @@ class _DuasCategoryPageState extends State<DuasCategoryPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.categoryIndex.title,
-          textDirection: TextDirection.rtl,
+          widget.categoryIndex.localizedTitle(context),
+          textDirection: Directionality.of(context),
           overflow: TextOverflow.ellipsis,
         ),
         backgroundColor: colors.background,
@@ -156,9 +156,8 @@ class _CategoryContentState extends State<_CategoryContent> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         Text(
-                          category.title,
-                          textDirection: TextDirection.rtl,
-                          textAlign: TextAlign.right,
+                          category.localizedTitle(context),
+                          textDirection: Directionality.of(context),
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w900,
                             height: 1.45,

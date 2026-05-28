@@ -131,7 +131,7 @@ class _DuasContent extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ColorScheme colors = theme.colorScheme;
-    final List<DuaCategoryIndex> visibleCategories = _visibleCategories();
+    final List<DuaCategoryIndex> visibleCategories = _visibleCategories(context);
     final int duaCount = categoryIndex.fold<int>(
       0,
       (int total, DuaCategoryIndex category) => total + category.duaCount,
@@ -221,11 +221,11 @@ class _DuasContent extends StatelessWidget {
     );
   }
 
-  List<DuaCategoryIndex> _visibleCategories() {
+  List<DuaCategoryIndex> _visibleCategories(BuildContext context) {
     final String normalizedQuery = query.trim();
     if (normalizedQuery.isEmpty) return categoryIndex;
     return categoryIndex
-        .where((DuaCategoryIndex category) => category.matches(normalizedQuery))
+        .where((DuaCategoryIndex category) => category.matches(normalizedQuery, context))
         .toList(growable: false);
   }
 
@@ -496,9 +496,8 @@ class _DuaCategoryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Text(
-                  category.title,
-                  textDirection: TextDirection.rtl,
-                  textAlign: TextAlign.right,
+                  category.localizedTitle(context),
+                  textDirection: Directionality.of(context),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(

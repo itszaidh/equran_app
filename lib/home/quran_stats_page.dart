@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:equran/backend/library.dart';
+import 'package:equran/duas/hisn_category_translations.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/hifz/hifz.dart';
 import 'package:equran/l10n/app_localizations.dart';
@@ -622,9 +623,11 @@ class StatisticsRepository {
           count: existing.count + interaction.count,
         );
       }
-      final _DuaCategoryCount? mostViewed = categoryCounts.values.isEmpty
+      final MapEntry<String, _DuaCategoryCount>? mostViewedEntry = categoryCounts.entries.isEmpty
           ? null
-          : categoryCounts.values.reduce((a, b) => a.count >= b.count ? a : b);
+          : categoryCounts.entries.reduce((a, b) => a.value.count >= b.value.count ? a : b);
+      final _DuaCategoryCount? mostViewed = mostViewedEntry?.value;
+      final String? mostViewedId = mostViewedEntry?.key;
       final int favourites = DuaFavouritesDB().length;
       return DuasStatsData(
         hasData: viewed > 0 || favourites > 0,
@@ -632,6 +635,7 @@ class StatisticsRepository {
         favouriteCount: favourites,
         mostViewedCategory: mostViewed?.title ?? '',
         mostViewedCategoryCount: mostViewed?.count ?? 0,
+        mostViewedCategoryId: mostViewedId,
       );
     });
   }
@@ -4032,7 +4036,9 @@ class _DuasSection extends StatelessWidget {
         _FeatureCard(
           title: data.mostViewedCategoryCount == 0
               ? localizations.noCategoryYet
-              : data.mostViewedCategory,
+              : (data.mostViewedCategoryId != null
+                  ? getLocalizedCategoryTitle(context, data.mostViewedCategoryId!, data.mostViewedCategory)
+                  : data.mostViewedCategory),
           subtitle: localizations.viewsCount(data.mostViewedCategoryCount),
           icon: Icons.category_rounded,
         ),
@@ -4861,6 +4867,7 @@ class DuasStatsData {
     required this.favouriteCount,
     required this.mostViewedCategory,
     required this.mostViewedCategoryCount,
+    this.mostViewedCategoryId,
   });
 
   final bool hasData;
@@ -4868,6 +4875,7 @@ class DuasStatsData {
   final int favouriteCount;
   final String mostViewedCategory;
   final int mostViewedCategoryCount;
+  final String? mostViewedCategoryId;
 }
 
 class SalahSectionData {

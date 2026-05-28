@@ -25,6 +25,9 @@ const String _lastReadAsset = '$_appAssetBase/last_read.webp';
 const String _settingsAsset = '$_appAssetBase/settings.webp';
 const String _designAsset = '$_appAssetBase/design.webp';
 const String _mosqueAsset = '$_appAssetBase/mosque.webp';
+const String _hifzAsset = '$_appAssetBase/hifz.webp';
+const String _shareAppAsset = '$_appAssetBase/share_app.webp';
+const String _feedbackAsset = '$_appAssetBase/feedback.webp';
 
 class MorePage extends StatelessWidget {
   const MorePage({
@@ -115,6 +118,7 @@ class MorePage extends StatelessWidget {
                       ),
                       _MoreAction(
                         icon: Icons.menu_book_rounded,
+                        assetPath: _hifzAsset,
                         title: localizations.hifz,
                         subtitle: localizations.hifzSubtitle,
                         onTap: () {
@@ -508,7 +512,7 @@ class _MoreSupportSection extends StatelessWidget {
         _MoreActionTile(
           action: _MoreAction(
             icon: Icons.share_outlined,
-            assetPath: _quranAsset,
+            assetPath: _shareAppAsset,
             title: localizations.shareApp,
             subtitle: localizations.shareAppSubtitle,
             onTap: onShare,
@@ -518,7 +522,7 @@ class _MoreSupportSection extends StatelessWidget {
         _MoreActionTile(
           action: _MoreAction(
             icon: Icons.feedback_outlined,
-            assetPath: _designAsset,
+            assetPath: _feedbackAsset,
             title: localizations.feedbackContact,
             subtitle: localizations.feedbackContactSubtitle,
             onTap: onFeedback,

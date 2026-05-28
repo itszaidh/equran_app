@@ -1,3 +1,6 @@
+import 'package:equran/duas/hisn_category_translations.dart';
+import 'package:flutter/material.dart';
+
 class DuaCategoryIndex {
   const DuaCategoryIndex({
     required this.id,
@@ -15,10 +18,16 @@ class DuaCategoryIndex {
   final int footnoteCount;
   final String asset;
 
-  bool matches(String query) {
+  String localizedTitle(BuildContext context) {
+    return getLocalizedCategoryTitle(context, id, title);
+  }
+
+  bool matches(String query, BuildContext context) {
     final String normalizedQuery = query.trim().toLowerCase();
     if (normalizedQuery.isEmpty) return true;
-    return title.toLowerCase().contains(normalizedQuery);
+    final String localized = localizedTitle(context).toLowerCase();
+    return title.toLowerCase().contains(normalizedQuery) ||
+        localized.contains(normalizedQuery);
   }
 }
 
@@ -38,6 +47,10 @@ class DuaCategory {
   final List<DuaEntry> duas;
   final String asset;
   final int footnoteCount;
+
+  String localizedTitle(BuildContext context) {
+    return getLocalizedCategoryTitle(context, id, title);
+  }
 }
 
 class DuaEntry {
