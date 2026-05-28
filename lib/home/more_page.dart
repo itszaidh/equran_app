@@ -25,6 +25,7 @@ const String _lastReadAsset = '$_appAssetBase/last_read.webp';
 const String _settingsAsset = '$_appAssetBase/settings.webp';
 const String _designAsset = '$_appAssetBase/design.webp';
 const String _mosqueAsset = '$_appAssetBase/mosque.webp';
+const String _themeAsset = '$_appAssetBase/theme_mode.webp';
 const String _hifzAsset = '$_appAssetBase/hifz.webp';
 const String _shareAppAsset = '$_appAssetBase/share_app.webp';
 const String _feedbackAsset = '$_appAssetBase/feedback.webp';
@@ -160,7 +161,7 @@ class MorePage extends StatelessWidget {
                       ),
                       _MoreAction(
                         icon: Icons.brightness_6_outlined,
-                        assetPath: _designAsset,
+                        assetPath: _themeAsset,
                         title: localizations.theme,
                         subtitle: localizations.switchLightOrNightMode,
                         onTap: onToggleTheme,

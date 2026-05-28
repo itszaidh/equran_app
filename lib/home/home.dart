@@ -14,6 +14,7 @@ import 'package:equran/home/quran_stats_page.dart';
 import 'package:equran/home/settings.dart';
 import 'package:equran/home_dashboard/home_dashboard_page.dart';
 import 'package:equran/prayer/prayer_times_page.dart';
+import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/prayer/qibla_page.dart';
 import 'package:equran/reading_plans/reading_plans_page.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
@@ -190,7 +191,13 @@ class _HomePageState extends State<HomePage> {
                 ),
                 actions: <Widget>[
                   if (destinations[_selectedIndex].destination
-                      is PrayerTimesPage)
+                      is PrayerTimesPage) ...<Widget>[
+                    IconButton(
+                      tooltip:
+                          AppLocalizations.of(context)!.prayerTimesSettings,
+                      onPressed: _openPrayerSettingsPage,
+                      icon: const Icon(Icons.settings_outlined),
+                    ),
                     Padding(
                       padding: const EdgeInsetsDirectional.only(end: 6),
                       child: IconButton(
@@ -199,6 +206,7 @@ class _HomePageState extends State<HomePage> {
                         icon: const Icon(Icons.explore_outlined),
                       ),
                     ),
+                  ],
                 ],
               )
             : null,
@@ -532,6 +540,25 @@ class _HomePageState extends State<HomePage> {
           FrameRatePolicyManager.instance.setRouteTransitionActive(
             false,
             reason: 'qibla_route_closed',
+          );
+        });
+  }
+
+  void _openPrayerSettingsPage() {
+    FrameRatePolicyManager.instance.setRouteTransitionActive(
+      true,
+      reason: 'prayer_settings_route_opening',
+    );
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => const PrayerTimesSettingsPage(),
+          ),
+        )
+        .whenComplete(() {
+          FrameRatePolicyManager.instance.setRouteTransitionActive(
+            false,
+            reason: 'prayer_settings_route_closed',
           );
         });
   }
