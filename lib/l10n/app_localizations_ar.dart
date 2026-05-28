@@ -3535,4 +3535,43 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get tryAnotherAsmaSearch =>
       'جرّب اسمًا عربيًا آخر أو ترجمة صوتية أو معنى آخر.';
+
+  @override
+  String get duaGroupDailyAthkar => 'الأذكار اليومية';
+
+  @override
+  String get duaGroupPrayer => 'الصلاة';
+
+  @override
+  String get duaGroupHajjUmrah => 'الحج والعمرة';
+
+  @override
+  String get duaGroupTravel => 'السفر';
+
+  @override
+  String get duaGroupProtectionHardship => 'الحماية والمحن';
+
+  @override
+  String get duaGroupHealthIllness => 'الصحة والمرض';
+
+  @override
+  String get duaGroupDeathFunerals => 'الموت والجنائز';
+
+  @override
+  String get duaGroupRepentance => 'التوبة';
+
+  @override
+  String get duaGroupNatureWeather => 'الطبيعة والطقس';
+
+  @override
+  String get duaGroupMarriageFamily => 'الزواج والأسرة';
+
+  @override
+  String get duaGroupRemembrancePraise => 'الذكر والتسبيح';
+
+  @override
+  String get duaGroupSocialEtiquette => 'الآداب الاجتماعية';
+
+  @override
+  String get duaGroupMisc => 'عام';
 }

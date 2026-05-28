@@ -24,11 +24,7 @@ class HolographicCardWrapper extends StatelessWidget {
             ? Roll(
                 crinkle: Crinkle.twinkling,
                 gradient: Foils.linearRainbow,
-                child: Foil(
-                  useSensor: false,
-                  opacity: 0.15,
-                  child: child,
-                ),
+                child: Foil(useSensor: false, opacity: 0.15, child: child),
               )
             : child;
       },

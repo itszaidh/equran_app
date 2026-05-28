@@ -89,7 +89,11 @@ class DuasFavouritesPage extends StatelessWidget {
                                     child: DuaCard(
                                       dua: dua,
                                       number: dua.index + 1,
-                                      categoryTitle: getLocalizedCategoryTitle(context, group.categoryId, group.title),
+                                      categoryTitle: getLocalizedCategoryTitle(
+                                        context,
+                                        group.categoryId,
+                                        group.title,
+                                      ),
                                       onTap: () =>
                                           _openCategory(context, group, dua),
                                     ),
@@ -224,7 +228,11 @@ class _FavouriteCategoryHeader extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                getLocalizedCategoryTitle(context, group.categoryId, group.title),
+                getLocalizedCategoryTitle(
+                  context,
+                  group.categoryId,
+                  group.title,
+                ),
                 textDirection: Directionality.of(context),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

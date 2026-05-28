@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:equran/backend/download_notifications.dart';
 import 'package:equran/backend/quran_stream_url.dart';
+import 'package:equran/utils/reciter.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:quran/quran.dart' as quran;
@@ -216,7 +217,15 @@ class AudioDownloadService {
       return file;
     }
 
-    final String url = await QuranAudioService().getAyahUrl(surah, ayah);
+    final String reciterCode = _reciterCode();
+    final ReciterProfile reciterProfile = QuranAudioCatalog.findById(
+      reciterCode,
+    );
+    final String url = QuranAudioStreamResolver.buildAyahUrl(
+      reciter: reciterProfile,
+      surah: surah,
+      ayah: ayah,
+    );
     await _downloadToFile(
       url,
       file,
@@ -263,7 +272,15 @@ class AudioDownloadService {
   }
 
   Future<File> _cacheAyahFile(int surah, int ayah) async {
-    final String url = await QuranAudioService().getAyahUrl(surah, ayah);
+    final String reciterCode = _reciterCode();
+    final ReciterProfile reciterProfile = QuranAudioCatalog.findById(
+      reciterCode,
+    );
+    final String url = QuranAudioStreamResolver.buildAyahUrl(
+      reciter: reciterProfile,
+      surah: surah,
+      ayah: ayah,
+    );
     final File file = await tempAyahFile(surah, ayah);
     await _downloadToFile(url, file);
     await _touchFile(file);
@@ -340,9 +357,14 @@ class AudioDownloadService {
         if (taskIndex >= pendingDownloads.length) return;
 
         final task = pendingDownloads[taskIndex];
-        final String url = await QuranAudioService().getAyahUrl(
-          surah,
-          task.ayah,
+        final String reciterCode = _reciterCode();
+        final ReciterProfile reciterProfile = QuranAudioCatalog.findById(
+          reciterCode,
+        );
+        final String url = QuranAudioStreamResolver.buildAyahUrl(
+          reciter: reciterProfile,
+          surah: surah,
+          ayah: task.ayah,
         );
         await _downloadToFile(
           url,

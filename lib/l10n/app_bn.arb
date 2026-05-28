@@ -1878,6 +1878,19 @@
       }
     }
   },
+  "duaGroupDailyAthkar": "দৈনিক যিকির",
+  "duaGroupPrayer": "নামায",
+  "duaGroupHajjUmrah": "হজ্জ ও উমরাহ",
+  "duaGroupTravel": "ভ্রমণ",
+  "duaGroupProtectionHardship": "সুরক্ষা ও কষ্ট",
+  "duaGroupHealthIllness": "স্বাস্থ্য ও অসুস্থতা",
+  "duaGroupDeathFunerals": "মৃত্যু ও জানাযা",
+  "duaGroupRepentance": "তওবা",
+  "duaGroupNatureWeather": "প্রকৃতি ও আবহাওয়া",
+  "duaGroupMarriageFamily": "বিয়ে ও পরিবার",
+  "duaGroupRemembrancePraise": "যিকির ও তাসবীহ",
+  "duaGroupSocialEtiquette": "সামাজিক শিষ্টাচার",
+  "duaGroupMisc": "সাধারণ",
   "@allNamesCount": {
     "placeholders": {
       "count": {

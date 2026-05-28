@@ -28,7 +28,8 @@ class QuranCard extends StatelessWidget {
     final bool tabletLayout = ResponsiveNav.isTablet(context);
     final bool compactText = compact && reduceTitleSize;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final bool rtlMode = localizations.localeName == 'ar' || localizations.localeName == 'ur';
+    final bool rtlMode =
+        localizations.localeName == 'ar' || localizations.localeName == 'ur';
     final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
     final double verticalPadding = compact
         ? (tabletLayout ? 14 : 12)
@@ -92,7 +93,9 @@ class QuranCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      rtlMode ? surah.name : localizedSurahName(localizations, surah.id),
+                      rtlMode
+                          ? surah.name
+                          : localizedSurahName(localizations, surah.id),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textDirection: rtlMode ? TextDirection.rtl : null,

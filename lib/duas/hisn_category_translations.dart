@@ -29,14 +29,16 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '022': 'The sitting prayer between the two prostrations',
     '023': 'The supplication of prostration of recitation',
     '024': 'Tashahhud',
-    '025': 'Praying for the Prophet, may God bless him and grant him peace, after the Tashahhud',
+    '025':
+        'Praying for the Prophet, may God bless him and grant him peace, after the Tashahhud',
     '026': 'Supplication after the last tashahhud and before the greeting',
     '027': 'Remembrances after the greeting of prayer',
     '028': 'Istikharah prayer supplication',
     '029': 'Morning and evening remembrances',
     '030': 'Remembrance of sleep',
     '031': 'Pray when you turn over at night',
-    '032': 'A supplication for anxiety and fear in sleep and for those afflicted with loneliness',
+    '032':
+        'A supplication for anxiety and fear in sleep and for those afflicted with loneliness',
     '033': 'What does someone who sees a vision or dream do?',
     '034': 'Qunoot Witr supplication',
     '035': 'Dhikr after the salaam of the Witr',
@@ -52,7 +54,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '045': 'A supplication for someone who finds it difficult',
     '046': 'What someone who has committed a sin says and does',
     '047': 'A prayer to expel Satan and his whispers',
-    '048': 'Supplication when something happens that does not please him or he is overwhelmed by it',
+    '048':
+        'Supplication when something happens that does not please him or he is overwhelmed by it',
     '049': 'Congratulations to the newborn and his answer',
     '050': 'What children seek refuge in',
     '051': 'Praying for the patient in his clinic',
@@ -80,13 +83,15 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '073': 'The guest\'s prayer for the host of the food',
     '074': 'Pray for whoever watered it or if he wanted to',
     '075': 'Supplication when breaking the fast with a household',
-    '076': 'The supplication of the fasting person if he prepares food and does not break his fast',
+    '076':
+        'The supplication of the fasting person if he prepares food and does not break his fast',
     '077': 'What does a fasting person say if someone insults him?',
     '078': 'Supplication upon seeing the first fruits',
     '079': 'Sneezing supplication',
     '080': 'What is said to an infidel when he sneezes, thank God',
     '081': 'Prayers for the married person',
-    '082': 'A married man\'s prayer for himself and a prayer for buying an animal',
+    '082':
+        'A married man\'s prayer for himself and a prayer for buying an animal',
     '083': 'Supplication before intercourse with the wife',
     '084': 'The prayer of anger',
     '085': 'A supplication from someone who sees an afflicted person',
@@ -110,10 +115,13 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '103': 'A resident\'s prayer for a traveler',
     '104': 'Takbir and glorification during travel',
     '105': 'The traveler\'s supplication when he is enchanted',
-    '106': 'Supplication when it comes down to earth while traveling or elsewhere',
+    '106':
+        'Supplication when it comes down to earth while traveling or elsewhere',
     '107': 'Mention of returning from travel',
-    '108': 'What someone who comes to him says and does is something he likes or dislikes',
-    '109': 'The virtue of praying for the Prophet, may God bless him and grant him peace',
+    '108':
+        'What someone who comes to him says and does is something he likes or dislikes',
+    '109':
+        'The virtue of praying for the Prophet, may God bless him and grant him peace',
     '110': 'Disclosing peace',
     '111': 'How can peace be returned to an infidel if he greets him?',
     '112': 'Prayers for the crow of a rooster and the braying of a donkey',
@@ -131,7 +139,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '124': 'What he says when he is surprised and happy',
     '125': 'What the one who comes to Him does is something that pleases Him',
     '126': 'What someone who feels pain in his body says',
-    '127': 'A supplication for someone who fears that something specific will happen to him',
+    '127':
+        'A supplication for someone who fears that something specific will happen to him',
     '128': 'What to say when you panic',
     '129': 'What is said when slaughtering or slaughtering?',
     '130': 'What does he say to the response of the devil’s mercenary kid?',
@@ -165,15 +174,18 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '022': 'Sholat duduk diantara dua sujud',
     '023': 'Doa sujud bacaannya',
     '024': 'Tasyahhud',
-    '025': 'Mendoakan Nabi, semoga Tuhan memberkatinya dan memberinya kedamaian, setelah Tashahhud',
+    '025':
+        'Mendoakan Nabi, semoga Tuhan memberkatinya dan memberinya kedamaian, setelah Tashahhud',
     '026': 'Doa setelah tashahhud terakhir dan sebelum salam',
     '027': 'Kenangan setelah salam salat',
     '028': 'Doa Sholat Istikharah',
     '029': 'Kenangan pagi dan sore',
     '030': 'Mengingat tidur',
     '031': 'Berdoalah ketika kamu membalikkan badan di malam hari',
-    '032': 'Doa untuk kegelisahan dan ketakutan dalam tidur dan bagi mereka yang menderita kesepian',
-    '033': 'Apa yang dilakukan seseorang yang melihat suatu penglihatan atau mimpi?',
+    '032':
+        'Doa untuk kegelisahan dan ketakutan dalam tidur dan bagi mereka yang menderita kesepian',
+    '033':
+        'Apa yang dilakukan seseorang yang melihat suatu penglihatan atau mimpi?',
     '034': 'Doa Qunut Witir',
     '035': 'Dzikir setelah salam witir',
     '036': 'Doa untuk kekhawatiran dan kesedihan',
@@ -186,9 +198,11 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '043': 'Berdoalah untuk melunasi hutang',
     '044': 'Dua untuk pikiran obsesif dalam doa dan membaca',
     '045': 'Doa bagi seseorang yang merasa kesulitan',
-    '046': 'Apa yang dikatakan dan dilakukan oleh seseorang yang telah melakukan dosa',
+    '046':
+        'Apa yang dikatakan dan dilakukan oleh seseorang yang telah melakukan dosa',
     '047': 'Doa untuk mengusir setan dan bisikannya',
-    '048': 'Doa ketika terjadi sesuatu yang tidak menyenangkan hatinya atau ia kewalahan karenanya',
+    '048':
+        'Doa ketika terjadi sesuatu yang tidak menyenangkan hatinya atau ia kewalahan karenanya',
     '049': 'Selamat untuk bayi yang baru lahir dan jawabannya',
     '050': 'Di mana anak-anak mencari perlindungan',
     '051': 'Berdoa untuk pasien di kliniknya',
@@ -216,13 +230,15 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '073': 'Doa tamu untuk tuan rumah makanan',
     '074': 'Berdoalah bagi siapa pun yang menyiramnya atau jika dia mau',
     '075': 'Doa saat berbuka puasa bersama serumah tangga',
-    '076': 'Doa orang yang berpuasa jika ia menyiapkan makanan dan tidak berbuka',
+    '076':
+        'Doa orang yang berpuasa jika ia menyiapkan makanan dan tidak berbuka',
     '077': 'Apa yang diucapkan orang yang berpuasa jika ada yang menghinanya?',
     '078': 'Doa saat melihat buah sulung',
     '079': 'Doa bersin',
     '080': 'Apa yang diucapkan orang kafir saat bersin, alhamdulillah',
     '081': 'Doa untuk orang yang sudah menikah',
-    '082': 'Doa pria beristri untuk dirinya sendiri dan doa untuk membeli hewan',
+    '082':
+        'Doa pria beristri untuk dirinya sendiri dan doa untuk membeli hewan',
     '083': 'Doa sebelum berhubungan intim dengan istri',
     '084': 'Doa kemarahan',
     '085': 'Doa dari seseorang yang melihat orang yang menderita',
@@ -231,7 +247,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '088': 'Doakan mereka yang mengatakan, semoga Tuhan mengampuni Anda',
     '089': 'Berdoalah bagi mereka yang telah membantu Anda',
     '090': 'Apa yang melindunginya dari Antikristus',
-    '091': 'Berdoalah bagi mereka yang berkata, “Aku mencintaimu karena Tuhan.”',
+    '091':
+        'Berdoalah bagi mereka yang berkata, “Aku mencintaimu karena Tuhan.”',
     '092': 'Berdoalah untuk orang yang menawarimu uangnya',
     '093': 'Berdoalah bagi mereka yang meminjamkan ketika mereka menebusnya',
     '094': 'Doa karena takut akan kemusyrikan',
@@ -248,10 +265,13 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '105': 'Doa seorang musafir ketika ia terpesona',
     '106': 'Doa ketika turun ke bumi saat bepergian atau di tempat lain',
     '107': 'Menyebutkan kembali dari perjalanan',
-    '108': 'Apa yang dikatakan dan dilakukan seseorang yang datang kepadanya adalah sesuatu yang disukai atau tidak disukainya',
-    '109': 'Keutamaan mendoakan Nabi SAW, semoga Allah merahmatinya dan memberinya kedamaian',
+    '108':
+        'Apa yang dikatakan dan dilakukan seseorang yang datang kepadanya adalah sesuatu yang disukai atau tidak disukainya',
+    '109':
+        'Keutamaan mendoakan Nabi SAW, semoga Allah merahmatinya dan memberinya kedamaian',
     '110': 'Mengungkapkan perdamaian',
-    '111': 'Bagaimana kedamaian bisa kembali kepada orang kafir jika dia memberi salam?',
+    '111':
+        'Bagaimana kedamaian bisa kembali kepada orang kafir jika dia memberi salam?',
     '112': 'Doa untuk kokok ayam jantan dan ringkikan keledai',
     '113': 'Doa anjing menggonggong di malam hari',
     '114': 'Berdoalah bagi siapa pun yang menyebabkannya',
@@ -265,15 +285,19 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '122': 'Dzikir di Masy\'ar al-Haram',
     '123': 'Takbir ketika melempar batu dengan masing-masing kerikil',
     '124': 'Apa yang dia katakan ketika dia terkejut dan bahagia',
-    '125': 'Apa yang dilakukan oleh orang yang datang kepada-Nya adalah sesuatu yang diridhai-Nya',
-    '126': 'Apa yang dikatakan oleh seseorang yang merasakan sakit pada tubuhnya',
+    '125':
+        'Apa yang dilakukan oleh orang yang datang kepada-Nya adalah sesuatu yang diridhai-Nya',
+    '126':
+        'Apa yang dikatakan oleh seseorang yang merasakan sakit pada tubuhnya',
     '127': 'Doa untuk seseorang yang takut akan terjadi sesuatu pada dirinya',
     '128': 'Apa yang harus kamu katakan saat kamu panik',
     '129': 'Apa yang diucapkan saat menyembelih atau menyembelih?',
-    '130': 'Apa yang dia katakan terhadap respon bocah tentara bayaran iblis itu?',
+    '130':
+        'Apa yang dia katakan terhadap respon bocah tentara bayaran iblis itu?',
     '131': 'Mohon pengampunan dan pertobatan',
     '132': 'Keutamaan memuliakan, memuji, dan memuliakan Tuhan',
-    '133': 'Bagaimana Nabi, semoga Tuhan memberkati dia dan memberinya kedamaian, berenang?',
+    '133':
+        'Bagaimana Nabi, semoga Tuhan memberkati dia dan memberinya kedamaian, berenang?',
     '134': 'Salah satu jenis kebaikan dan etika universal',
   },
   'ur': {
@@ -367,7 +391,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '088': 'ان لوگوں کے لیے دعا کریں جنہوں نے کہا، خدا تمہیں معاف کرے۔',
     '089': 'ان لوگوں کے لیے دعا کریں جنہوں نے آپ پر احسان کیا۔',
     '090': 'جو چیز اسے دجال سے بچاتی ہے۔',
-    '091': 'ان لوگوں کے لیے دعا کریں جنہوں نے کہا، "میں تم سے خدا کی خاطر محبت کرتا ہوں۔"',
+    '091':
+        'ان لوگوں کے لیے دعا کریں جنہوں نے کہا، "میں تم سے خدا کی خاطر محبت کرتا ہوں۔"',
     '092': 'اس کے لیے دعا کریں جس نے آپ کو اپنا پیسہ پیش کیا۔',
     '093': 'قرض دینے والوں کے لیے دعا کریں جب وہ اس کی قضا کریں۔',
     '094': 'شرک سے ڈرنے کی دعا',
@@ -384,7 +409,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '105': 'مسافر کی دعا جب وہ مسحور ہو جائے۔',
     '106': 'سفر میں یا کسی اور جگہ زمین پر اترنے پر دعا',
     '107': 'سفر سے واپسی کا ذکر',
-    '108': 'اس کے پاس آنے والا جو کچھ کہتا ہے اور کرتا ہے وہ اسے پسند یا ناپسند کرتا ہے۔',
+    '108':
+        'اس کے پاس آنے والا جو کچھ کہتا ہے اور کرتا ہے وہ اسے پسند یا ناپسند کرتا ہے۔',
     '109': 'نبی کریم صلی اللہ علیہ وسلم کے لیے دعا کرنے کی فضیلت',
     '110': 'امن کا انکشاف',
     '111': 'اگر کافر اسے سلام کرے تو اس کی امان کیسے واپس ہو سکتی ہے؟',
@@ -403,7 +429,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '124': 'جب وہ حیران اور خوش ہوتا ہے تو وہ کیا کہتا ہے۔',
     '125': 'جو اس کے پاس آتا ہے وہ وہی کرتا ہے جو اسے خوش کرتا ہے۔',
     '126': 'جو شخص اپنے جسم میں درد محسوس کرتا ہے وہ کیا کہتا ہے۔',
-    '127': 'کسی ایسے شخص کے لیے دعا جس کو خدشہ ہو کہ اس کے ساتھ کوئی خاص واقعہ ہو جائے گا۔',
+    '127':
+        'کسی ایسے شخص کے لیے دعا جس کو خدشہ ہو کہ اس کے ساتھ کوئی خاص واقعہ ہو جائے گا۔',
     '128': 'جب آپ گھبراتے ہیں تو کیا کہنا ہے؟',
     '129': 'ذبح کرتے وقت یا ذبح کرتے وقت کیا کہا جاتا ہے؟',
     '130': 'وہ شیطان کے کرائے کے بچے کے جواب پر کیا کہتا ہے؟',
@@ -444,7 +471,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '029': 'Sabah ve akşam hatıraları',
     '030': 'Uykunun hatırlanması',
     '031': 'Gece döndüğünüzde dua edin',
-    '032': 'Uykuda kaygı ve korku için ve yalnızlıktan mustarip olanlar için bir dua',
+    '032':
+        'Uykuda kaygı ve korku için ve yalnızlıktan mustarip olanlar için bir dua',
     '033': 'Bir vizyon veya rüya gören biri ne yapar?',
     '034': 'Qunoot Witr duası',
     '035': 'Vitir selamından sonra zikir',
@@ -520,8 +548,10 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '105': 'Yolcunun büyülendiğinde yaptığı dua',
     '106': 'Yolculukta veya başka bir yerde yeryüzüne indiğinde yapılan dua',
     '107': 'Seyahatten dönüş sözü',
-    '108': 'Yanına gelenin söylediği ve yaptığı şey onun sevdiği ya da hoşlanmadığı bir şeydir',
-    '109': 'Peygamber sallallahu aleyhi ve sellem\'e dua etmenin fazileti, Allah ona salat ve selam versin',
+    '108':
+        'Yanına gelenin söylediği ve yaptığı şey onun sevdiği ya da hoşlanmadığı bir şeydir',
+    '109':
+        'Peygamber sallallahu aleyhi ve sellem\'e dua etmenin fazileti, Allah ona salat ve selam versin',
     '110': 'Barışı ifşa etmek',
     '111': 'Bir kafir selam verdiğinde ona nasıl barış sağlanır?',
     '112': 'Horozun ötüşü ve eşeğin anırması için okunacak dualar',
@@ -580,7 +610,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '029': 'সকাল সন্ধ্যা স্মৃতিচারণ',
     '030': 'ঘুমের স্মৃতি',
     '031': 'রাতে উল্টে নামায পড়ুন',
-    '032': 'ঘুমের মধ্যে উদ্বেগ এবং ভয় এবং একাকীত্বে আক্রান্তদের জন্য একটি প্রার্থনা',
+    '032':
+        'ঘুমের মধ্যে উদ্বেগ এবং ভয় এবং একাকীত্বে আক্রান্তদের জন্য একটি প্রার্থনা',
     '033': 'যে ব্যক্তি একটি দর্শন বা স্বপ্ন দেখেন তিনি কী করেন?',
     '034': 'কুনূত বিতরের দোয়া',
     '035': 'বিতরের সালামের পর যিকির',
@@ -596,7 +627,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '045': 'এমন একজনের জন্য একটি প্রার্থনা যার কাছে এটি কঠিন মনে হয়',
     '046': 'যে পাপ করেছে সে কি বলে এবং করে',
     '047': 'শয়তান ও তার কুমন্ত্রণাকে বহিষ্কার করার প্রার্থনা',
-    '048': 'প্রার্থনা যখন এমন কিছু ঘটে যা তাকে খুশি করে না বা সে এতে অভিভূত হয়',
+    '048':
+        'প্রার্থনা যখন এমন কিছু ঘটে যা তাকে খুশি করে না বা সে এতে অভিভূত হয়',
     '049': 'নবজাতককে অভিনন্দন এবং তার উত্তর',
     '050': 'শিশুরা যা আশ্রয় চায়',
     '051': 'তার ক্লিনিকে রোগীর জন্য দোয়া করা',
@@ -630,16 +662,19 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '079': 'হাঁচির মিনতি',
     '080': 'হাঁচি দিলে কাফেরকে যা বলা হয়, আল্লাহকে ধন্যবাদ',
     '081': 'বিবাহিত ব্যক্তির জন্য প্রার্থনা',
-    '082': 'একজন বিবাহিত পুরুষের নিজের জন্য প্রার্থনা এবং পশু কেনার জন্য প্রার্থনা',
+    '082':
+        'একজন বিবাহিত পুরুষের নিজের জন্য প্রার্থনা এবং পশু কেনার জন্য প্রার্থনা',
     '083': 'স্ত্রী সহবাসের পূর্বে দোয়া',
     '084': 'রাগের প্রার্থনা',
     '085': 'যে একজন পীড়িত ব্যক্তিকে দেখে তার কাছ থেকে একটি প্রার্থনা',
     '086': 'পরিষদে যা বলা হয়েছে',
-    '087': 'কাউন্সিলের জন্য প্রায়শ্চিত্ত এবং এটির সাথে পরিষদগুলি কী সমাপ্ত করে',
+    '087':
+        'কাউন্সিলের জন্য প্রায়শ্চিত্ত এবং এটির সাথে পরিষদগুলি কী সমাপ্ত করে',
     '088': 'যারা বলেছে তাদের জন্য প্রার্থনা করুন, ঈশ্বর আপনাকে ক্ষমা করুন',
     '089': 'যারা আপনার উপকার করেছে তাদের জন্য প্রার্থনা করুন',
     '090': 'কি তাকে খ্রীষ্টশত্রু থেকে রক্ষা করে',
-    '091': 'তাদের জন্য প্রার্থনা করুন যারা বলেছেন, "আমি তোমাকে ঈশ্বরের জন্য ভালবাসি।"',
+    '091':
+        'তাদের জন্য প্রার্থনা করুন যারা বলেছেন, "আমি তোমাকে ঈশ্বরের জন্য ভালবাসি।"',
     '092': 'যিনি আপনাকে তার অর্থ প্রদান করেছেন তার জন্য প্রার্থনা করুন',
     '093': 'যারা ধার দেয় তাদের জন্য প্রার্থনা করুন যখন তারা তা পূরণ করে',
     '094': 'শিরকের ভয়ের জন্য একটি দোয়া',
@@ -675,7 +710,8 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
     '124': 'অবাক ও খুশি হলে যা বলেন',
     '125': 'যে তার কাছে আসে সে যা করে তা তাকে খুশি করে',
     '126': 'শরীরে ব্যাথা অনুভব করে কে কি বলে',
-    '127': 'এমন একজনের জন্য একটি মিনতি যিনি ভয় করেন যে তার সাথে নির্দিষ্ট কিছু ঘটবে',
+    '127':
+        'এমন একজনের জন্য একটি মিনতি যিনি ভয় করেন যে তার সাথে নির্দিষ্ট কিছু ঘটবে',
     '128': 'ঘাবড়ে গেলে কি বলবে',
     '129': 'জবাই বা জবাই করার সময় কী বলা হয়?',
     '130': 'শয়তানের ভাড়াটে বাচ্চার জবাবে সে কি বলে?',
@@ -686,7 +722,11 @@ const Map<String, Map<String, String>> hisnCategoryTranslations = {
   },
 };
 
-String getLocalizedCategoryTitle(BuildContext context, String id, String fallbackArabic) {
+String getLocalizedCategoryTitle(
+  BuildContext context,
+  String id,
+  String fallbackArabic,
+) {
   final String languageCode = Localizations.localeOf(context).languageCode;
   return hisnCategoryTranslations[languageCode]?[id] ?? fallbackArabic;
 }

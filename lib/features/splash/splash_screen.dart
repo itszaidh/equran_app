@@ -67,10 +67,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _glowAnimation = Tween<double>(begin: 0.85, end: 1.15).animate(
-      CurvedAnimation(
-        parent: _pulseController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
     // 3. Setup Particles
@@ -204,10 +201,7 @@ class _SplashScreenState extends State<SplashScreen>
           // 2. Animated Twinkling Particles
           CustomPaint(
             size: size,
-            painter: ParticlePainter(
-              particles: _particles,
-              color: goldAccent,
-            ),
+            painter: ParticlePainter(particles: _particles, color: goldAccent),
           ),
 
           // 3. Central Ambient Radial Glow
@@ -393,14 +387,15 @@ class RubElHizbPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final Paint fillPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          goldColor.withOpacity(0.24 * fillOpacity),
-          goldColor.withOpacity(0.01 * fillOpacity),
-        ],
-      ).createShader(
-        Rect.fromCircle(center: Offset(cx, cy), radius: outerRadius),
-      )
+      ..shader =
+          RadialGradient(
+            colors: [
+              goldColor.withOpacity(0.24 * fillOpacity),
+              goldColor.withOpacity(0.01 * fillOpacity),
+            ],
+          ).createShader(
+            Rect.fromCircle(center: Offset(cx, cy), radius: outerRadius),
+          )
       ..style = PaintingStyle.fill;
 
     final Paint innerStarPaint = Paint()

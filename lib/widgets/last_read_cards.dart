@@ -83,8 +83,10 @@ class _LastReadCardState extends State<LastReadCard> {
                   trailingAssetPath: equranResumeQuranAsset,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
-                      builder: (context) =>
-                          ReadPage(chapter: entry.surah, startVerse: entry.verse),
+                      builder: (context) => ReadPage(
+                        chapter: entry.surah,
+                        startVerse: entry.verse,
+                      ),
                     ),
                   ),
                 ),

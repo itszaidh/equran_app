@@ -1878,6 +1878,19 @@
       }
     }
   },
+  "duaGroupDailyAthkar": "روزانہ اذکار",
+  "duaGroupPrayer": "نماز",
+  "duaGroupHajjUmrah": "حج و عمرہ",
+  "duaGroupTravel": "سفر",
+  "duaGroupProtectionHardship": "حفاظت اور مشکلات",
+  "duaGroupHealthIllness": "صحت اور بیماری",
+  "duaGroupDeathFunerals": "موت اور جنازے",
+  "duaGroupRepentance": "توبہ",
+  "duaGroupNatureWeather": "فطرت اور موسم",
+  "duaGroupMarriageFamily": "شادی اور خاندان",
+  "duaGroupRemembrancePraise": "اذکار اور تسبیح",
+  "duaGroupSocialEtiquette": "معاشرتی آداب",
+  "duaGroupMisc": "عمومی",
   "@allNamesCount": {
     "placeholders": {
       "count": {

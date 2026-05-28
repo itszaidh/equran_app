@@ -623,9 +623,12 @@ class StatisticsRepository {
           count: existing.count + interaction.count,
         );
       }
-      final MapEntry<String, _DuaCategoryCount>? mostViewedEntry = categoryCounts.entries.isEmpty
+      final MapEntry<String, _DuaCategoryCount>? mostViewedEntry =
+          categoryCounts.entries.isEmpty
           ? null
-          : categoryCounts.entries.reduce((a, b) => a.value.count >= b.value.count ? a : b);
+          : categoryCounts.entries.reduce(
+              (a, b) => a.value.count >= b.value.count ? a : b,
+            );
       final _DuaCategoryCount? mostViewed = mostViewedEntry?.value;
       final String? mostViewedId = mostViewedEntry?.key;
       final int favourites = DuaFavouritesDB().length;
@@ -4037,8 +4040,12 @@ class _DuasSection extends StatelessWidget {
           title: data.mostViewedCategoryCount == 0
               ? localizations.noCategoryYet
               : (data.mostViewedCategoryId != null
-                  ? getLocalizedCategoryTitle(context, data.mostViewedCategoryId!, data.mostViewedCategory)
-                  : data.mostViewedCategory),
+                    ? getLocalizedCategoryTitle(
+                        context,
+                        data.mostViewedCategoryId!,
+                        data.mostViewedCategory,
+                      )
+                    : data.mostViewedCategory),
           subtitle: localizations.viewsCount(data.mostViewedCategoryCount),
           icon: Icons.category_rounded,
         ),

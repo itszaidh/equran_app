@@ -84,7 +84,9 @@ class HifzEntry {
       easeFactor: easeFactor ?? this.easeFactor,
       repetitions: repetitions ?? this.repetitions,
       dueDate: dueDate ?? this.dueDate,
-      lastReviewed: clearLastReviewed ? null : (lastReviewed ?? this.lastReviewed),
+      lastReviewed: clearLastReviewed
+          ? null
+          : (lastReviewed ?? this.lastReviewed),
       lapses: lapses ?? this.lapses,
       track: track ?? this.track,
     );

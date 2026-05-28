@@ -1878,6 +1878,19 @@
       }
     }
   },
+  "duaGroupDailyAthkar": "Daily Athkar",
+  "duaGroupPrayer": "Prayer",
+  "duaGroupHajjUmrah": "Hajj & Umrah",
+  "duaGroupTravel": "Travel",
+  "duaGroupProtectionHardship": "Protection & Hardship",
+  "duaGroupHealthIllness": "Health & Illness",
+  "duaGroupDeathFunerals": "Death & Funerals",
+  "duaGroupRepentance": "Repentance",
+  "duaGroupNatureWeather": "Nature & Weather",
+  "duaGroupMarriageFamily": "Marriage & Family",
+  "duaGroupRemembrancePraise": "Remembrance & Praise",
+  "duaGroupSocialEtiquette": "Social Etiquette",
+  "duaGroupMisc": "General",
   "@allNamesCount": {
     "placeholders": {
       "count": {

@@ -3627,4 +3627,43 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get tryAnotherAsmaSearch =>
       'Coba nama, transliterasi, atau makna Arab lainnya.';
+
+  @override
+  String get duaGroupDailyAthkar => 'Dzikir Harian';
+
+  @override
+  String get duaGroupPrayer => 'Shalat';
+
+  @override
+  String get duaGroupHajjUmrah => 'Haji & Umrah';
+
+  @override
+  String get duaGroupTravel => 'Perjalanan';
+
+  @override
+  String get duaGroupProtectionHardship => 'Perlindungan & Kesulitan';
+
+  @override
+  String get duaGroupHealthIllness => 'Kesehatan & Penyakit';
+
+  @override
+  String get duaGroupDeathFunerals => 'Kematian & Jenazah';
+
+  @override
+  String get duaGroupRepentance => 'Taubat';
+
+  @override
+  String get duaGroupNatureWeather => 'Alam & Cuaca';
+
+  @override
+  String get duaGroupMarriageFamily => 'Pernikahan & Keluarga';
+
+  @override
+  String get duaGroupRemembrancePraise => 'Dzikir & Pujian';
+
+  @override
+  String get duaGroupSocialEtiquette => 'Etika Sosial';
+
+  @override
+  String get duaGroupMisc => 'Umum';
 }

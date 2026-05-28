@@ -239,7 +239,10 @@ class PrayerWidgetService {
       if (colorPrimary.isNotEmpty)
         HomeWidget.saveWidgetData<String>('w_primary', colorPrimary),
       if (colorPrimaryStrong.isNotEmpty)
-        HomeWidget.saveWidgetData<String>('w_primary_strong', colorPrimaryStrong),
+        HomeWidget.saveWidgetData<String>(
+          'w_primary_strong',
+          colorPrimaryStrong,
+        ),
       if (colorPrimaryGradientStart.isNotEmpty)
         HomeWidget.saveWidgetData<String>(
           'w_grad_start',

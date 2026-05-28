@@ -171,7 +171,9 @@ class _AsmaUlHusnaPageState extends State<AsmaUlHusnaPage> {
                 duration: const Duration(milliseconds: 220),
                 child: IconButton(
                   key: ValueKey<bool>(_searchActive),
-                  tooltip: _searchActive ? localizations.closeSearch : localizations.searchNames,
+                  tooltip: _searchActive
+                      ? localizations.closeSearch
+                      : localizations.searchNames,
                   onPressed: _searchActive ? _closeSearch : _focusSearch,
                   icon: Icon(
                     _searchActive ? Icons.close_rounded : Icons.search_rounded,

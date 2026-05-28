@@ -3596,4 +3596,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tryAnotherAsmaSearch =>
       'Try another Arabic name, transliteration, or meaning.';
+
+  @override
+  String get duaGroupDailyAthkar => 'Daily Athkar';
+
+  @override
+  String get duaGroupPrayer => 'Prayer';
+
+  @override
+  String get duaGroupHajjUmrah => 'Hajj & Umrah';
+
+  @override
+  String get duaGroupTravel => 'Travel';
+
+  @override
+  String get duaGroupProtectionHardship => 'Protection & Hardship';
+
+  @override
+  String get duaGroupHealthIllness => 'Health & Illness';
+
+  @override
+  String get duaGroupDeathFunerals => 'Death & Funerals';
+
+  @override
+  String get duaGroupRepentance => 'Repentance';
+
+  @override
+  String get duaGroupNatureWeather => 'Nature & Weather';
+
+  @override
+  String get duaGroupMarriageFamily => 'Marriage & Family';
+
+  @override
+  String get duaGroupRemembrancePraise => 'Remembrance & Praise';
+
+  @override
+  String get duaGroupSocialEtiquette => 'Social Etiquette';
+
+  @override
+  String get duaGroupMisc => 'General';
 }

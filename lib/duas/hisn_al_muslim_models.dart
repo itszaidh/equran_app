@@ -1,6 +1,22 @@
 import 'package:equran/duas/hisn_category_translations.dart';
 import 'package:flutter/material.dart';
 
+enum DuaGroup {
+  dailyAthkar,
+  prayer,
+  hajjUmrah,
+  travel,
+  protectionHardship,
+  healthIllness,
+  deathFunerals,
+  repentance,
+  natureWeather,
+  marriageFamily,
+  remembrancePraise,
+  socialEtiquette,
+  misc,
+}
+
 class DuaCategoryIndex {
   const DuaCategoryIndex({
     required this.id,
@@ -29,6 +45,95 @@ class DuaCategoryIndex {
     return title.toLowerCase().contains(normalizedQuery) ||
         localized.contains(normalizedQuery);
   }
+
+  DuaGroup get group => DuaCategoryGroupMapper.groupFor(id);
+}
+
+class DuaCategoryGroupMapper {
+  static DuaGroup groupFor(String id) {
+    // Quick range checks for common groups
+    final int n = int.tryParse(id) ?? 0;
+
+    // Hajj & Umrah: 117-123
+    if (n >= 117 && n <= 123) return DuaGroup.hajjUmrah;
+
+    // Death & Funerals: 049-062
+    if (n >= 49 && n <= 62) return DuaGroup.deathFunerals;
+
+    // Protection & Hardship: 036-041, 090, 127-128, 130
+    if (n >= 36 && n <= 41) return DuaGroup.protectionHardship;
+    if (n == 90 || n == 127 || n == 128 || n == 130) {
+      return DuaGroup.protectionHardship;
+    }
+
+    // Health & Illness: 042-045, 051-055, 085, 126
+    if (n >= 42 && n <= 45) return DuaGroup.healthIllness;
+    if (n == 51 || n == 52 || n == 53 || n == 54 || n == 85 || n == 126) {
+      return DuaGroup.healthIllness;
+    }
+
+    // Repentance & Forgiveness: 046-048, 094, 131
+    if (n == 46 || n == 47 || n == 48 || n == 94 || n == 131) {
+      return DuaGroup.repentance;
+    }
+
+    // Nature & Weather: 063-069
+    if (n >= 63 && n <= 69) return DuaGroup.natureWeather;
+
+    // Marriage & Family: 049-050, 081-083
+    // 049 is handled by deathFunerals above (newborn), but 049-050 is in death range
+    // Redefine: 081-083 for marriage, 049-050 for family (newborn/children)
+    // Since 049-062 is deathFunerals, override 049-050
+    if (n == 49 || n == 50) return DuaGroup.marriageFamily;
+    if (n >= 81 && n <= 83) return DuaGroup.marriageFamily;
+
+    // Travel: 097-107
+    if (n >= 97 && n <= 107) return DuaGroup.travel;
+
+    // Prayer: 010-016, 017-027, 028, 034-035, 044
+    if (n >= 10 && n <= 16) return DuaGroup.prayer;
+    if (n >= 17 && n <= 27) return DuaGroup.prayer;
+    if (n == 28 || n == 34 || n == 35 || n == 44) return DuaGroup.prayer;
+
+    // Morning & Evening / Daily Athkar: 003, 029-033
+    if (n == 3) return DuaGroup.dailyAthkar;
+    if (n >= 29 && n <= 33) return DuaGroup.dailyAthkar;
+
+    // Remembrance & Praise: 002, 109-116, 132-133
+    if (n == 2) return DuaGroup.remembrancePraise;
+    if (n >= 109 && n <= 116) return DuaGroup.remembrancePraise;
+    if (n >= 132 && n <= 134) return DuaGroup.remembrancePraise;
+
+    // Social Etiquette: 070-080, 086-089, 091-093, 095-096, 114-116, 124-125
+    if (n >= 70 && n <= 80) return DuaGroup.socialEtiquette;
+    if (n >= 86 && n <= 89) return DuaGroup.socialEtiquette;
+    if (n == 91 || n == 92 || n == 93 || n == 95 || n == 96) {
+      return DuaGroup.socialEtiquette;
+    }
+    if (n == 114 || n == 115 || n == 116) return DuaGroup.socialEtiquette;
+    if (n == 124 || n == 125) return DuaGroup.socialEtiquette;
+
+    // Introduction: 001
+    if (n == 1) return DuaGroup.dailyAthkar;
+
+    return DuaGroup.misc;
+  }
+
+  static List<DuaGroup> get orderedGroups => <DuaGroup>[
+        DuaGroup.dailyAthkar,
+        DuaGroup.prayer,
+        DuaGroup.hajjUmrah,
+        DuaGroup.travel,
+        DuaGroup.protectionHardship,
+        DuaGroup.healthIllness,
+        DuaGroup.deathFunerals,
+        DuaGroup.repentance,
+        DuaGroup.natureWeather,
+        DuaGroup.marriageFamily,
+        DuaGroup.remembrancePraise,
+        DuaGroup.socialEtiquette,
+        DuaGroup.misc,
+      ];
 }
 
 class DuaCategory {

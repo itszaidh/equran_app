@@ -22,10 +22,13 @@ class HifzEntryDB extends BaseDB {
 
   List<HifzEntry> dueEntries({DateTime? now}) {
     final DateTime today = _startOfDay(now ?? DateTime.now());
-    final List<HifzEntry> values = entries()
-        .where((HifzEntry entry) => !_startOfDay(entry.dueDate).isAfter(today))
-        .toList(growable: false)
-      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    final List<HifzEntry> values =
+        entries()
+            .where(
+              (HifzEntry entry) => !_startOfDay(entry.dueDate).isAfter(today),
+            )
+            .toList(growable: false)
+          ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
     return values;
   }
 
@@ -38,7 +41,9 @@ class HifzEntryDB extends BaseDB {
   }
 
   int countReviewed() {
-    return entries().where((HifzEntry entry) => entry.lastReviewed != null).length;
+    return entries()
+        .where((HifzEntry entry) => entry.lastReviewed != null)
+        .length;
   }
 
   Map<int, List<HifzEntry>> entriesBySurah() {
@@ -86,21 +91,26 @@ class HifzPrefs {
       (SettingsDB().get(
             'hifzMaxReviewPerDay',
             defaultValue: defaultMaxReviewPerDay,
-          ) as int?) ??
+          )
+          as int?) ??
       defaultMaxReviewPerDay;
 
   static bool showTransliterationByDefault() =>
-      (SettingsDB().get('hifzShowTransliteration', defaultValue: false) as bool?) ??
+      (SettingsDB().get('hifzShowTransliteration', defaultValue: false)
+          as bool?) ??
       false;
 
   static bool showTranslationByDefault() =>
-      (SettingsDB().get('hifzShowTranslation', defaultValue: false) as bool?) ?? false;
+      (SettingsDB().get('hifzShowTranslation', defaultValue: false) as bool?) ??
+      false;
 
   static bool autoPlayAudioOnLearn() =>
-      (SettingsDB().get('hifzAutoPlayAudio', defaultValue: false) as bool?) ?? false;
+      (SettingsDB().get('hifzAutoPlayAudio', defaultValue: false) as bool?) ??
+      false;
 
   static String blankingLevel() =>
-      (SettingsDB().get('hifzBlankingLevel', defaultValue: 'auto') as String?) ??
+      (SettingsDB().get('hifzBlankingLevel', defaultValue: 'auto')
+          as String?) ??
       'auto';
 
   static Future<void> setMaxNewPerDay(int value) =>
@@ -205,8 +215,10 @@ class HifzRepository {
     final List<HifzReviewLog> logs = _logDb.logs().toList(growable: false)
       ..sort((a, b) => a.reviewedAt.compareTo(b.reviewedAt));
     final int positiveRatings = logs
-        .where((HifzReviewLog log) =>
-            log.rating == hifzRatingGood || log.rating == hifzRatingEasy)
+        .where(
+          (HifzReviewLog log) =>
+              log.rating == hifzRatingGood || log.rating == hifzRatingEasy,
+        )
         .length;
     return HifzStatsSnapshot(
       totalMemorizedAyahs: _entryDb.countMastered(),
@@ -235,4 +247,5 @@ class HifzRepository {
   }
 }
 
-DateTime _startOfDay(DateTime value) => DateTime(value.year, value.month, value.day);
+DateTime _startOfDay(DateTime value) =>
+    DateTime(value.year, value.month, value.day);

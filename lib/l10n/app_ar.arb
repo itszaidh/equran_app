@@ -1344,6 +1344,19 @@
       }
     }
   },
+  "duaGroupDailyAthkar": "الأذكار اليومية",
+  "duaGroupPrayer": "الصلاة",
+  "duaGroupHajjUmrah": "الحج والعمرة",
+  "duaGroupTravel": "السفر",
+  "duaGroupProtectionHardship": "الحماية والمحن",
+  "duaGroupHealthIllness": "الصحة والمرض",
+  "duaGroupDeathFunerals": "الموت والجنائز",
+  "duaGroupRepentance": "التوبة",
+  "duaGroupNatureWeather": "الطبيعة والطقس",
+  "duaGroupMarriageFamily": "الزواج والأسرة",
+  "duaGroupRemembrancePraise": "الذكر والتسبيح",
+  "duaGroupSocialEtiquette": "الآداب الاجتماعية",
+  "duaGroupMisc": "عام",
   "@allNamesCount": {
     "placeholders": {
       "count": {

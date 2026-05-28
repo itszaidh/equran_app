@@ -6310,6 +6310,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try another Arabic name, transliteration, or meaning.'**
   String get tryAnotherAsmaSearch;
+
+  /// No description provided for @duaGroupDailyAthkar.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Athkar'**
+  String get duaGroupDailyAthkar;
+
+  /// No description provided for @duaGroupPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer'**
+  String get duaGroupPrayer;
+
+  /// No description provided for @duaGroupHajjUmrah.
+  ///
+  /// In en, this message translates to:
+  /// **'Hajj & Umrah'**
+  String get duaGroupHajjUmrah;
+
+  /// No description provided for @duaGroupTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get duaGroupTravel;
+
+  /// No description provided for @duaGroupProtectionHardship.
+  ///
+  /// In en, this message translates to:
+  /// **'Protection & Hardship'**
+  String get duaGroupProtectionHardship;
+
+  /// No description provided for @duaGroupHealthIllness.
+  ///
+  /// In en, this message translates to:
+  /// **'Health & Illness'**
+  String get duaGroupHealthIllness;
+
+  /// No description provided for @duaGroupDeathFunerals.
+  ///
+  /// In en, this message translates to:
+  /// **'Death & Funerals'**
+  String get duaGroupDeathFunerals;
+
+  /// No description provided for @duaGroupRepentance.
+  ///
+  /// In en, this message translates to:
+  /// **'Repentance'**
+  String get duaGroupRepentance;
+
+  /// No description provided for @duaGroupNatureWeather.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature & Weather'**
+  String get duaGroupNatureWeather;
+
+  /// No description provided for @duaGroupMarriageFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Marriage & Family'**
+  String get duaGroupMarriageFamily;
+
+  /// No description provided for @duaGroupRemembrancePraise.
+  ///
+  /// In en, this message translates to:
+  /// **'Remembrance & Praise'**
+  String get duaGroupRemembrancePraise;
+
+  /// No description provided for @duaGroupSocialEtiquette.
+  ///
+  /// In en, this message translates to:
+  /// **'Social Etiquette'**
+  String get duaGroupSocialEtiquette;
+
+  /// No description provided for @duaGroupMisc.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get duaGroupMisc;
 }
 
 class _AppLocalizationsDelegate

@@ -3606,4 +3606,43 @@ class AppLocalizationsUr extends AppLocalizations {
   @override
   String get tryAnotherAsmaSearch =>
       'کوئی دوسرا عربی نام، نقل حرفی یا معنی آزمائیں۔';
+
+  @override
+  String get duaGroupDailyAthkar => 'روزانہ اذکار';
+
+  @override
+  String get duaGroupPrayer => 'نماز';
+
+  @override
+  String get duaGroupHajjUmrah => 'حج و عمرہ';
+
+  @override
+  String get duaGroupTravel => 'سفر';
+
+  @override
+  String get duaGroupProtectionHardship => 'حفاظت اور مشکلات';
+
+  @override
+  String get duaGroupHealthIllness => 'صحت اور بیماری';
+
+  @override
+  String get duaGroupDeathFunerals => 'موت اور جنازے';
+
+  @override
+  String get duaGroupRepentance => 'توبہ';
+
+  @override
+  String get duaGroupNatureWeather => 'فطرت اور موسم';
+
+  @override
+  String get duaGroupMarriageFamily => 'شادی اور خاندان';
+
+  @override
+  String get duaGroupRemembrancePraise => 'اذکار اور تسبیح';
+
+  @override
+  String get duaGroupSocialEtiquette => 'معاشرتی آداب';
+
+  @override
+  String get duaGroupMisc => 'عمومی';
 }

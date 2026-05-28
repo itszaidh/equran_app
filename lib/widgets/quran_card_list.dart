@@ -79,11 +79,11 @@ class _QuranCardListState extends State<QuranCardList>
       return const Center(child: CircularProgressIndicator());
     }
 
-    final List<Surah> data = widget.ascending ? _surahs! : _surahs!.reversed.toList();
+    final List<Surah> data = widget.ascending
+        ? _surahs!
+        : _surahs!.reversed.toList();
     if (data.isEmpty) {
-      return Center(
-        child: Text(AppLocalizations.of(context)!.noSurahsFound),
-      );
+      return Center(child: Text(AppLocalizations.of(context)!.noSurahsFound));
     }
 
     return LayoutBuilder(

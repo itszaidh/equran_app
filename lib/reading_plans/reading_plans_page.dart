@@ -134,17 +134,20 @@ class ReadingPlansPage extends StatelessWidget {
     await ReadingPlansDB().put(newPlan.id, newPlan);
 
     if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(
-      content: Text(
-        localizations.routineStartedMessage(preset.title(localizations)),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          localizations.routineStartedMessage(preset.title(localizations)),
+        ),
       ),
-    ));
+    );
   }
 }
 
-String _localizedPlanTitle(ReadingPlanEntry plan, AppLocalizations localizations) {
+String _localizedPlanTitle(
+  ReadingPlanEntry plan,
+  AppLocalizations localizations,
+) {
   return switch (plan.type) {
     'complete_7_days' => localizations.preset7DaysTitle,
     'complete_30_days' => localizations.preset30DaysTitle,
@@ -214,7 +217,10 @@ class _RoutineHero extends StatelessWidget {
               Text(
                 plan == null
                     ? localizations.chooseGentlePlan
-                    : localizations.routineCompletedAyahs(progress!.completedAyahs, progress.totalAyahs),
+                    : localizations.routineCompletedAyahs(
+                        progress!.completedAyahs,
+                        progress.totalAyahs,
+                      ),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.onPrimaryMuted,
                   height: 1.35,
@@ -235,7 +241,9 @@ class _RoutineHero extends StatelessWidget {
               Text(
                 plan == null
                     ? localizations.plansReadyNotice
-                    : localizations.finishTargetDate(_shortDate(plan!.finishBy, localizations.localeName)),
+                    : localizations.finishTargetDate(
+                        _shortDate(plan!.finishBy, localizations.localeName),
+                      ),
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: colors.onPrimaryMuted,
                 ),
@@ -260,7 +268,10 @@ class _ActivitySummary extends StatelessWidget {
     final List<_SummaryPillData> items = <_SummaryPillData>[
       _SummaryPillData(localizations.allLabel, plan == null ? 0 : 1),
       _SummaryPillData(localizations.doneLabel, done ? 1 : 0),
-      _SummaryPillData(localizations.ongoingLabel, plan != null && !done ? 1 : 0),
+      _SummaryPillData(
+        localizations.ongoingLabel,
+        plan != null && !done ? 1 : 0,
+      ),
       _SummaryPillData(localizations.skippedLabel, 0),
     ];
 
@@ -397,8 +408,13 @@ class _TodayTaskCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       progress.isRoutineDone
-                          ? localizations.routineCompletedAyahs(progress.totalAyahs, progress.totalAyahs)
-                          : localizations.todaysPortionAyahs(progress.todayPortionAyahs),
+                          ? localizations.routineCompletedAyahs(
+                              progress.totalAyahs,
+                              progress.totalAyahs,
+                            )
+                          : localizations.todaysPortionAyahs(
+                              progress.todayPortionAyahs,
+                            ),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.textSecondary,
                       ),
@@ -407,7 +423,9 @@ class _TodayTaskCard extends StatelessWidget {
                         progress.catchUpAyahs > 0) ...<Widget>[
                       const SizedBox(height: 2),
                       Text(
-                        localizations.includesCatchUpAyahs(progress.catchUpAyahs),
+                        localizations.includesCatchUpAyahs(
+                          progress.catchUpAyahs,
+                        ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.textSecondary,
                           fontWeight: FontWeight.w700,
@@ -416,7 +434,10 @@ class _TodayTaskCard extends StatelessWidget {
                     ] else if (!progress.isRoutineDone) ...<Widget>[
                       const SizedBox(height: 2),
                       Text(
-                        localizations.ayahRangeConnector(_refLabel(start), _refLabel(end)),
+                        localizations.ayahRangeConnector(
+                          _refLabel(start),
+                          _refLabel(end),
+                        ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.textSecondary,
                         ),
@@ -441,7 +462,10 @@ class _TodayTaskCard extends StatelessWidget {
           Text(
             done
                 ? localizations.todaysPortionComplete
-                : localizations.dailyPercentCompleteRemaining(percentComplete, progress.todayRemainingAyahs),
+                : localizations.dailyPercentCompleteRemaining(
+                    percentComplete,
+                    progress.todayRemainingAyahs,
+                  ),
             style: theme.textTheme.bodySmall?.copyWith(
               color: colors.textSecondary,
               fontWeight: FontWeight.w700,
@@ -453,7 +477,11 @@ class _TodayTaskCard extends StatelessWidget {
                 ? null
                 : () => _openContinue(context),
             icon: const Icon(Icons.play_arrow_rounded),
-            label: Text(progress.isRoutineDone ? localizations.routineComplete : localizations.resume),
+            label: Text(
+              progress.isRoutineDone
+                  ? localizations.routineComplete
+                  : localizations.resume,
+            ),
           ),
         ],
       ),
@@ -588,8 +616,12 @@ Future<void> _deleteRoutine(BuildContext context, ReadingPlanEntry plan) async {
   final AppLocalizations localizations = AppLocalizations.of(context)!;
   final bool confirmed = await _confirmRoutineAction(
     context: context,
-    title: plan.active ? localizations.deleteCurrentRoutineQuestion : localizations.deleteRoutineQuestion,
-    message: localizations.deleteRoutineWarning(_localizedPlanTitle(plan, localizations)),
+    title: plan.active
+        ? localizations.deleteCurrentRoutineQuestion
+        : localizations.deleteRoutineQuestion,
+    message: localizations.deleteRoutineWarning(
+      _localizedPlanTitle(plan, localizations),
+    ),
     confirmLabel: localizations.delete,
     destructive: true,
   );

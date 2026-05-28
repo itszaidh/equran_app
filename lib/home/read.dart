@@ -50,6 +50,7 @@ import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/utils/reciter.dart';
+import 'package:equran/backend/quran_stream_url.dart';
 import 'package:equran/utils/responsive_nav.dart';
 import 'package:equran/utils/translation_display.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
@@ -3096,9 +3097,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       sourceUri = Uri.file(offlineFile.path);
       fromOffline = true;
     } else {
-      final String url = await QuranAudioService().getAyahUrl(
-        position.surah,
-        position.ayah,
+      final AppReciter reciter = QuranAudioService().selectedReciter;
+      final ReciterProfile activeProfile = QuranAudioCatalog.findById(
+        reciter.code,
+      );
+      final String url = QuranAudioStreamResolver.buildAyahUrl(
+        reciter: activeProfile,
+        surah: position.surah,
+        ayah: position.ayah,
       );
       _throwIfPlaybackRequestCancelled(requestId);
       sourceUri = Uri.parse(url);
@@ -5049,7 +5055,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     ),
                   ),
                   Text(
-                    localizations.completedTodayQuota(completedToday, todayQuota),
+                    localizations.completedTodayQuota(
+                      completedToday,
+                      todayQuota,
+                    ),
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colors.textSecondary,
                       fontWeight: FontWeight.w800,
@@ -5067,7 +5076,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           vertical: 3,
                         ),
                         child: Text(
-                          localizations.includesCatchUpAyahs(progress.catchUpAyahs),
+                          localizations.includesCatchUpAyahs(
+                            progress.catchUpAyahs,
+                          ),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: colors.primary,
                             fontWeight: FontWeight.w900,

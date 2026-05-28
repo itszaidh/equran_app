@@ -148,7 +148,9 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                               decoration: InputDecoration(
                                 labelText: localizations.locationLabel,
                                 hintText: localizations.locationLabelHint,
-                                prefixIcon: const Icon(Icons.label_outline_rounded),
+                                prefixIcon: const Icon(
+                                  Icons.label_outline_rounded,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 14),

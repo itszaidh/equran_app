@@ -131,93 +131,104 @@ class _DuasContent extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final ColorScheme colors = theme.colorScheme;
-    final List<DuaCategoryIndex> visibleCategories = _visibleCategories(context);
+    final List<DuaCategoryIndex> visibleCategories = _visibleCategories(
+      context,
+    );
     final int duaCount = categoryIndex.fold<int>(
       0,
       (int total, DuaCategoryIndex category) => total + category.duaCount,
     );
 
-    return ListView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 28),
-      children: <Widget>[
-        Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 820),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                _DuasHero(
-                  categoryCount: categoryIndex.length,
-                  duaCount: duaCount,
-                ),
-                const SizedBox(height: 12),
-                ValueListenableBuilder<Box<dynamic>>(
-                  valueListenable: DuaFavouritesDB().listener,
-                  builder:
-                      (BuildContext context, Box<dynamic> box, Widget? child) {
-                        return _FavouritesEntryCard(
-                          count: box.length,
-                          onTap: () => _openFavourites(context),
-                        );
-                      },
-                ),
-                const SizedBox(height: 12),
-                _TasbihEntryCard(onTap: () => _openTasbih(context)),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: searchController,
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: colors.surfaceContainerLow,
-                    hintText: localizations.searchCategories,
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: query.isEmpty
-                        ? null
-                        : IconButton(
-                            tooltip: localizations.clearSearch,
-                            onPressed: searchController.clear,
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadii.medium),
-                      borderSide: BorderSide(color: colors.outlineVariant),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadii.medium),
-                      borderSide: BorderSide(color: colors.outlineVariant),
-                    ),
+    return Scrollbar(
+      child: ListView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 28),
+        children: <Widget>[
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 820),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  _DuasHero(
+                    categoryCount: categoryIndex.length,
+                    duaCount: duaCount,
                   ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  localizations.categories,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
+                  const SizedBox(height: 12),
+                  ValueListenableBuilder<Box<dynamic>>(
+                    valueListenable: DuaFavouritesDB().listener,
+                    builder:
+                        (BuildContext context, Box<dynamic> box, Widget? child) {
+                          return _FavouritesEntryCard(
+                            count: box.length,
+                            onTap: () => _openFavourites(context),
+                          );
+                        },
                   ),
-                ),
-                const SizedBox(height: 10),
-                if (visibleCategories.isEmpty)
-                  _DuasMessageState(
-                    icon: Icons.search_off_rounded,
-                    title: localizations.noMatchingCategories,
-                    message: localizations.trySearchingArabicWord,
-                  )
-                else
-                  for (final DuaCategoryIndex category in visibleCategories)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _DuaCategoryCard(
-                        category: category,
-                        onTap: () => _openCategory(context, category),
+                  const SizedBox(height: 12),
+                  _TasbihEntryCard(onTap: () => _openTasbih(context)),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: searchController,
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: colors.surfaceContainerLow,
+                      hintText: localizations.searchCategories,
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: query.isEmpty
+                          ? null
+                          : IconButton(
+                              tooltip: localizations.clearSearch,
+                              onPressed: searchController.clear,
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.medium),
+                        borderSide: BorderSide(color: colors.outlineVariant),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.medium),
+                        borderSide: BorderSide(color: colors.outlineVariant),
                       ),
                     ),
-              ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    localizations.categories,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  if (visibleCategories.isEmpty)
+                    _DuasMessageState(
+                      icon: Icons.search_off_rounded,
+                      title: localizations.noMatchingCategories,
+                      message: localizations.trySearchingArabicWord,
+                    )
+                  else if (query.isEmpty)
+                    _GroupedCategoriesList(
+                      categoryIndex: categoryIndex,
+                      repository: repository,
+                      onCategoryTap: (context, category) =>
+                          _openCategory(context, category),
+                    )
+                  else
+                    for (final DuaCategoryIndex category in visibleCategories)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _DuaCategoryCard(
+                          category: category,
+                          onTap: () => _openCategory(context, category),
+                        ),
+                      ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -225,7 +236,10 @@ class _DuasContent extends StatelessWidget {
     final String normalizedQuery = query.trim();
     if (normalizedQuery.isEmpty) return categoryIndex;
     return categoryIndex
-        .where((DuaCategoryIndex category) => category.matches(normalizedQuery, context))
+        .where(
+          (DuaCategoryIndex category) =>
+              category.matches(normalizedQuery, context),
+        )
         .toList(growable: false);
   }
 
@@ -669,6 +683,321 @@ class _DuasMessageState extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _GroupedCategoriesList extends StatefulWidget {
+  const _GroupedCategoriesList({
+    required this.categoryIndex,
+    required this.repository,
+    required this.onCategoryTap,
+  });
+
+  final List<DuaCategoryIndex> categoryIndex;
+  final HisnAlMuslimRepository repository;
+  final void Function(BuildContext context, DuaCategoryIndex category) onCategoryTap;
+
+  @override
+  State<_GroupedCategoriesList> createState() => _GroupedCategoriesListState();
+}
+
+class _GroupedCategoriesListState extends State<_GroupedCategoriesList> {
+  final Set<DuaGroup> _collapsed = <DuaGroup>{};
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+
+    final Map<DuaGroup, List<DuaCategoryIndex>> grouped = <DuaGroup, List<DuaCategoryIndex>>{};
+    for (final DuaGroup group in DuaCategoryGroupMapper.orderedGroups) {
+      grouped[group] = <DuaCategoryIndex>[];
+    }
+    for (final DuaCategoryIndex category in widget.categoryIndex) {
+      grouped[category.group]!.add(category);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        for (final DuaGroup group in DuaCategoryGroupMapper.orderedGroups)
+          if (grouped[group]!.isNotEmpty)
+            _DuaGroupSection(
+              group: group,
+              categories: grouped[group]!,
+              localizations: localizations,
+              isCollapsed: _collapsed.contains(group),
+              onToggle: () {
+                setState(() {
+                  if (_collapsed.contains(group)) {
+                    _collapsed.remove(group);
+                  } else {
+                    _collapsed.add(group);
+                  }
+                });
+              },
+              onCategoryTap: widget.onCategoryTap,
+            ),
+      ],
+    );
+  }
+
+  static String _groupLocalizationKey(DuaGroup group) {
+    switch (group) {
+      case DuaGroup.dailyAthkar: return 'duaGroupDailyAthkar';
+      case DuaGroup.prayer: return 'duaGroupPrayer';
+      case DuaGroup.hajjUmrah: return 'duaGroupHajjUmrah';
+      case DuaGroup.travel: return 'duaGroupTravel';
+      case DuaGroup.protectionHardship: return 'duaGroupProtectionHardship';
+      case DuaGroup.healthIllness: return 'duaGroupHealthIllness';
+      case DuaGroup.deathFunerals: return 'duaGroupDeathFunerals';
+      case DuaGroup.repentance: return 'duaGroupRepentance';
+      case DuaGroup.natureWeather: return 'duaGroupNatureWeather';
+      case DuaGroup.marriageFamily: return 'duaGroupMarriageFamily';
+      case DuaGroup.remembrancePraise: return 'duaGroupRemembrancePraise';
+      case DuaGroup.socialEtiquette: return 'duaGroupSocialEtiquette';
+      case DuaGroup.misc: return 'duaGroupMisc';
+    }
+  }
+}
+
+class _DuaGroupSection extends StatelessWidget {
+  const _DuaGroupSection({
+    required this.group,
+    required this.categories,
+    required this.localizations,
+    required this.isCollapsed,
+    required this.onToggle,
+    required this.onCategoryTap,
+  });
+
+  final DuaGroup group;
+  final List<DuaCategoryIndex> categories;
+  final AppLocalizations localizations;
+  final bool isCollapsed;
+  final VoidCallback onToggle;
+  final void Function(BuildContext context, DuaCategoryIndex category) onCategoryTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final (IconData icon, Color accentColor) = _groupIconAndColor(group);
+    final String groupName = _groupName(localizations, group);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        const SizedBox(height: 8),
+        _GroupHeader(
+          groupName: groupName,
+          categoryCount: categories.length,
+          icon: icon,
+          accentColor: accentColor,
+          isCollapsed: isCollapsed,
+          onToggle: onToggle,
+        ),
+        if (!isCollapsed) ...[
+          const SizedBox(height: 10),
+          for (final DuaCategoryIndex category in categories)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _GroupedCategoryCard(
+                category: category,
+                icon: icon,
+                accentColor: accentColor,
+                localizations: localizations,
+                onTap: () => onCategoryTap(context, category),
+              ),
+            ),
+          const SizedBox(height: 10),
+        ],
+      ],
+    );
+  }
+
+  static (IconData, Color) _groupIconAndColor(DuaGroup group) {
+    switch (group) {
+      case DuaGroup.dailyAthkar:
+        return (Icons.wb_sunny_outlined, const Color(0xFF00A6A6));
+      case DuaGroup.prayer:
+        return (Icons.front_hand_outlined, const Color(0xFF7C6ADE));
+      case DuaGroup.hajjUmrah:
+        return (Icons.travel_explore_outlined, const Color(0xFFD08700));
+      case DuaGroup.travel:
+        return (Icons.flight_outlined, const Color(0xFF2E8B57));
+      case DuaGroup.protectionHardship:
+        return (Icons.shield_outlined, const Color(0xFF4A8FE7));
+      case DuaGroup.healthIllness:
+        return (Icons.favorite_outline, const Color(0xFFC6538C));
+      case DuaGroup.deathFunerals:
+        return (Icons.coffee_outlined, const Color(0xFF505050));
+      case DuaGroup.repentance:
+        return (Icons.refresh_outlined, const Color(0xFF00A6A6));
+      case DuaGroup.natureWeather:
+        return (Icons.cloud_outlined, const Color(0xFF4A8FE7));
+      case DuaGroup.marriageFamily:
+        return (Icons.family_restroom_outlined, const Color(0xFFD08700));
+      case DuaGroup.remembrancePraise:
+        return (Icons.record_voice_over_outlined, const Color(0xFF7C6ADE));
+      case DuaGroup.socialEtiquette:
+        return (Icons.emoji_people_outlined, const Color(0xFF2E8B57));
+      case DuaGroup.misc:
+        return (Icons.more_horiz_outlined, const Color(0xFF505050));
+    }
+  }
+
+  static String _groupName(AppLocalizations l, DuaGroup group) {
+    switch (group) {
+      case DuaGroup.dailyAthkar: return l.duaGroupDailyAthkar;
+      case DuaGroup.prayer: return l.duaGroupPrayer;
+      case DuaGroup.hajjUmrah: return l.duaGroupHajjUmrah;
+      case DuaGroup.travel: return l.duaGroupTravel;
+      case DuaGroup.protectionHardship: return l.duaGroupProtectionHardship;
+      case DuaGroup.healthIllness: return l.duaGroupHealthIllness;
+      case DuaGroup.deathFunerals: return l.duaGroupDeathFunerals;
+      case DuaGroup.repentance: return l.duaGroupRepentance;
+      case DuaGroup.natureWeather: return l.duaGroupNatureWeather;
+      case DuaGroup.marriageFamily: return l.duaGroupMarriageFamily;
+      case DuaGroup.remembrancePraise: return l.duaGroupRemembrancePraise;
+      case DuaGroup.socialEtiquette: return l.duaGroupSocialEtiquette;
+      case DuaGroup.misc: return l.duaGroupMisc;
+    }
+  }
+}
+
+class _GroupHeader extends StatelessWidget {
+  const _GroupHeader({
+    required this.groupName,
+    required this.categoryCount,
+    required this.icon,
+    required this.accentColor,
+    required this.isCollapsed,
+    required this.onToggle,
+  });
+
+  final String groupName;
+  final int categoryCount;
+  final IconData icon;
+  final Color accentColor;
+  final bool isCollapsed;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colors = theme.colorScheme;
+
+    return InkWell(
+      onTap: onToggle,
+      borderRadius: BorderRadius.circular(AppRadii.medium),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: accentColor.withAlpha(26),
+                borderRadius: BorderRadius.circular(AppRadii.small),
+              ),
+              child: Icon(icon, size: 20, color: accentColor),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                groupName,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0,
+                ),
+              ),
+            ),
+            Text(
+              '$categoryCount',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: colors.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: 2),
+            Icon(
+              isCollapsed ? Icons.expand_more_rounded : Icons.expand_less_rounded,
+              size: 22,
+              color: colors.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GroupedCategoryCard extends StatelessWidget {
+  const _GroupedCategoryCard({
+    required this.category,
+    required this.icon,
+    required this.accentColor,
+    required this.localizations,
+    required this.onTap,
+  });
+
+  final DuaCategoryIndex category;
+  final IconData icon;
+  final Color accentColor;
+  final AppLocalizations localizations;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colors = theme.colorScheme;
+
+    return _TappablePanel(
+      onTap: onTap,
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Color.alphaBlend(
+                accentColor.withAlpha(34),
+                colors.surfaceContainerHighest,
+              ),
+              borderRadius: BorderRadius.circular(AppRadii.medium),
+            ),
+            child: Icon(icon, size: 20, color: accentColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              category.localizedTitle(context),
+              textDirection: Directionality.of(context),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                height: 1.4,
+                letterSpacing: 0,
+              ),
+            ),
+          ),
+          Text(
+            localizations.duaCount(
+              category.duaCount,
+              category.duaCount == 1
+                  ? localizations.dua
+                  : localizations.duasLabel,
+            ),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: accentColor,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Icon(Icons.chevron_right_rounded, size: 20, color: colors.onSurfaceVariant),
+        ],
       ),
     );
   }

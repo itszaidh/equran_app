@@ -1878,6 +1878,19 @@
       }
     }
   },
+  "duaGroupDailyAthkar": "Dzikir Harian",
+  "duaGroupPrayer": "Shalat",
+  "duaGroupHajjUmrah": "Haji & Umrah",
+  "duaGroupTravel": "Perjalanan",
+  "duaGroupProtectionHardship": "Perlindungan & Kesulitan",
+  "duaGroupHealthIllness": "Kesehatan & Penyakit",
+  "duaGroupDeathFunerals": "Kematian & Jenazah",
+  "duaGroupRepentance": "Taubat",
+  "duaGroupNatureWeather": "Alam & Cuaca",
+  "duaGroupMarriageFamily": "Pernikahan & Keluarga",
+  "duaGroupRemembrancePraise": "Dzikir & Pujian",
+  "duaGroupSocialEtiquette": "Etika Sosial",
+  "duaGroupMisc": "Umum",
   "@allNamesCount": {
     "placeholders": {
       "count": {

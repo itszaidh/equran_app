@@ -3617,4 +3617,43 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get tryAnotherAsmaSearch =>
       'Başka bir Arapça adı, harf çevirisini veya anlamını deneyin.';
+
+  @override
+  String get duaGroupDailyAthkar => 'Günlük Zikirler';
+
+  @override
+  String get duaGroupPrayer => 'Namaz';
+
+  @override
+  String get duaGroupHajjUmrah => 'Hacc ve Umre';
+
+  @override
+  String get duaGroupTravel => 'Seyahat';
+
+  @override
+  String get duaGroupProtectionHardship => 'Koruma ve Zorluklar';
+
+  @override
+  String get duaGroupHealthIllness => 'Sağlık ve Hastalık';
+
+  @override
+  String get duaGroupDeathFunerals => 'Ölüm ve Cenaze';
+
+  @override
+  String get duaGroupRepentance => 'Tövbe';
+
+  @override
+  String get duaGroupNatureWeather => 'Doğa ve Hava Durumu';
+
+  @override
+  String get duaGroupMarriageFamily => 'Evlilik ve Aile';
+
+  @override
+  String get duaGroupRemembrancePraise => 'Zikir ve Övgü';
+
+  @override
+  String get duaGroupSocialEtiquette => 'Sosyal Görgü';
+
+  @override
+  String get duaGroupMisc => 'Genel';
 }

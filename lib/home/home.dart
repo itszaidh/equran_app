@@ -193,8 +193,9 @@ class _HomePageState extends State<HomePage> {
                   if (destinations[_selectedIndex].destination
                       is PrayerTimesPage) ...<Widget>[
                     IconButton(
-                      tooltip:
-                          AppLocalizations.of(context)!.prayerTimesSettings,
+                      tooltip: AppLocalizations.of(
+                        context,
+                      )!.prayerTimesSettings,
                       onPressed: _openPrayerSettingsPage,
                       icon: const Icon(Icons.settings_outlined),
                     ),

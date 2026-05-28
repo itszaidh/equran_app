@@ -3606,4 +3606,43 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get tryAnotherAsmaSearch =>
       'অন্য আরবি নাম, প্রতিবর্ণীকরণ বা অর্থ চেষ্টা করুন।';
+
+  @override
+  String get duaGroupDailyAthkar => 'দৈনিক যিকির';
+
+  @override
+  String get duaGroupPrayer => 'নামায';
+
+  @override
+  String get duaGroupHajjUmrah => 'হজ্জ ও উমরাহ';
+
+  @override
+  String get duaGroupTravel => 'ভ্রমণ';
+
+  @override
+  String get duaGroupProtectionHardship => 'সুরক্ষা ও কষ্ট';
+
+  @override
+  String get duaGroupHealthIllness => 'স্বাস্থ্য ও অসুস্থতা';
+
+  @override
+  String get duaGroupDeathFunerals => 'মৃত্যু ও জানাযা';
+
+  @override
+  String get duaGroupRepentance => 'তওবা';
+
+  @override
+  String get duaGroupNatureWeather => 'প্রকৃতি ও আবহাওয়া';
+
+  @override
+  String get duaGroupMarriageFamily => 'বিয়ে ও পরিবার';
+
+  @override
+  String get duaGroupRemembrancePraise => 'যিকির ও তাসবীহ';
+
+  @override
+  String get duaGroupSocialEtiquette => 'সামাজিক শিষ্টাচার';
+
+  @override
+  String get duaGroupMisc => 'সাধারণ';
 }

@@ -1878,6 +1878,19 @@
       }
     }
   },
+  "duaGroupDailyAthkar": "Günlük Zikirler",
+  "duaGroupPrayer": "Namaz",
+  "duaGroupHajjUmrah": "Hacc ve Umre",
+  "duaGroupTravel": "Seyahat",
+  "duaGroupProtectionHardship": "Koruma ve Zorluklar",
+  "duaGroupHealthIllness": "Sağlık ve Hastalık",
+  "duaGroupDeathFunerals": "Ölüm ve Cenaze",
+  "duaGroupRepentance": "Tövbe",
+  "duaGroupNatureWeather": "Doğa ve Hava Durumu",
+  "duaGroupMarriageFamily": "Evlilik ve Aile",
+  "duaGroupRemembrancePraise": "Zikir ve Övgü",
+  "duaGroupSocialEtiquette": "Sosyal Görgü",
+  "duaGroupMisc": "Genel",
   "@allNamesCount": {
     "placeholders": {
       "count": {
