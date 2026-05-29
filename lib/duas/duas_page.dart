@@ -24,6 +24,7 @@ class DuasPage extends StatefulWidget {
 class _DuasPageState extends State<DuasPage> {
   Future<List<DuaCategoryIndex>>? _categoryIndexFuture;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   String _query = '';
 
   @override
@@ -40,6 +41,7 @@ class _DuasPageState extends State<DuasPage> {
   void dispose() {
     _searchController.removeListener(_handleSearchChanged);
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -107,6 +109,7 @@ class _DuasPageState extends State<DuasPage> {
               query: _query,
               searchController: _searchController,
               repository: widget.repository,
+              scrollController: _scrollController,
             );
           },
     );
@@ -119,12 +122,14 @@ class _DuasContent extends StatelessWidget {
     required this.query,
     required this.searchController,
     required this.repository,
+    required this.scrollController,
   });
 
   final List<DuaCategoryIndex> categoryIndex;
   final String query;
   final TextEditingController searchController;
   final HisnAlMuslimRepository repository;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -139,8 +144,14 @@ class _DuasContent extends StatelessWidget {
       (int total, DuaCategoryIndex category) => total + category.duaCount,
     );
 
-    return Scrollbar(
+    return RawScrollbar(
+      controller: scrollController,
+      thumbVisibility: true,
+      thickness: 6,
+      radius: const Radius.circular(8),
+      minThumbLength: 48,
       child: ListView(
+        controller: scrollController,
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 28),
         children: <Widget>[
@@ -741,24 +752,6 @@ class _GroupedCategoriesListState extends State<_GroupedCategoriesList> {
             ),
       ],
     );
-  }
-
-  static String _groupLocalizationKey(DuaGroup group) {
-    switch (group) {
-      case DuaGroup.dailyAthkar: return 'duaGroupDailyAthkar';
-      case DuaGroup.prayer: return 'duaGroupPrayer';
-      case DuaGroup.hajjUmrah: return 'duaGroupHajjUmrah';
-      case DuaGroup.travel: return 'duaGroupTravel';
-      case DuaGroup.protectionHardship: return 'duaGroupProtectionHardship';
-      case DuaGroup.healthIllness: return 'duaGroupHealthIllness';
-      case DuaGroup.deathFunerals: return 'duaGroupDeathFunerals';
-      case DuaGroup.repentance: return 'duaGroupRepentance';
-      case DuaGroup.natureWeather: return 'duaGroupNatureWeather';
-      case DuaGroup.marriageFamily: return 'duaGroupMarriageFamily';
-      case DuaGroup.remembrancePraise: return 'duaGroupRemembrancePraise';
-      case DuaGroup.socialEtiquette: return 'duaGroupSocialEtiquette';
-      case DuaGroup.misc: return 'duaGroupMisc';
-    }
   }
 }
 

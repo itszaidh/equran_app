@@ -112,9 +112,10 @@ class AudioDownloadService {
       _tempAudioDirectory(_tempAyahDirectoryName);
 
   String _reciterCode() => QuranAudioService().selectedReciter.code;
+  String _playerReciterCode() => PlayerAudioService().selectedReciter.code;
 
   String surahFileName(int surah) {
-    return '${_reciterCode()}_${surah.toString().padLeft(3, '0')}.mp3';
+    return '${_playerReciterCode()}_${surah.toString().padLeft(3, '0')}.mp3';
   }
 
   String ayahFileName(int surah, int ayah) {
@@ -174,7 +175,7 @@ class AudioDownloadService {
     int surah, {
     AudioDownloadProgressCallback? onProgress,
   }) async {
-    final String url = await QuranAudioService().getSurahUrl(surah);
+    final String url = await PlayerAudioService().getSurahUrl(surah);
     final File file = await surahFile(surah);
     await _downloadToFile(
       url,

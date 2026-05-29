@@ -900,9 +900,19 @@ class _HomePremiumCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: <Color>[
-                Color.alphaBlend(accent.withAlpha(18), base),
+                Color.alphaBlend(
+                  accent.withAlpha(
+                    Theme.of(context).brightness == Brightness.light ? 42 : 18,
+                  ),
+                  base,
+                ),
                 base,
-                Color.alphaBlend(colors.primaryStrong.withAlpha(12), base),
+                Color.alphaBlend(
+                  colors.primaryStrong.withAlpha(
+                    Theme.of(context).brightness == Brightness.light ? 28 : 12,
+                  ),
+                  base,
+                ),
               ],
             ),
             borderRadius: radius,
@@ -1956,7 +1966,7 @@ class _JourneyPreviewCard extends StatelessWidget {
                     value: progress,
                     minHeight: 6,
                     color: colors.primary,
-                    backgroundColor: colors.surface,
+                    backgroundColor: colors.mint,
                   ),
                 ),
               ),
@@ -2094,10 +2104,11 @@ class _JourneyMetricChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
+    final bool isLight = Theme.of(context).brightness == Brightness.light;
     return Flexible(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: colors.surfaceAlt.withValues(alpha: 0.30),
+          color: colors.surfaceAlt.withValues(alpha: isLight ? 0.60 : 0.30),
           borderRadius: BorderRadius.circular(AppRadii.pill),
         ),
         child: Padding(
@@ -2107,7 +2118,7 @@ class _JourneyMetricChip extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: colors.onPrimaryMuted,
+              color: colors.textSecondary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -2524,7 +2535,7 @@ class _ContinueListeningCard extends StatelessWidget {
             ? '<- ${localizations.openPlayer}'
             : '${localizations.openPlayer} ->',
         trailingAssetPath: _playerAsset,
-        secondary: true,
+        secondary: false,
         artworkScale: 1.3,
         artworkOffsetX: 18,
         onTap: onOpenPlayer,
@@ -2546,7 +2557,7 @@ class _ContinueListeningCard extends StatelessWidget {
             ? '<- ${localizations.continueListening}'
             : '${localizations.continueListening} ->',
         trailingAssetPath: _playerAsset,
-        secondary: true,
+        secondary: false,
         artworkScale: 1.18,
         artworkOffsetX: 16,
         onTap: () {

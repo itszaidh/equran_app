@@ -281,7 +281,18 @@ DuaEntry? _parseDua(
     ]),
     notes: _firstString(value, const <String>['notes', 'note']),
     source: _firstString(value, const <String>['source']),
+    translations: _stringMapOrNull(value['translations']),
   );
+}
+
+Map<String, String> _stringMapOrNull(Object? value) {
+  if (value is! Map) return const <String, String>{};
+  return value
+      .map(
+        (dynamic k, dynamic v) =>
+            MapEntry<String, String>(k.toString(), v.toString()),
+      )
+      .cast<String, String>();
 }
 
 String _duaId(String categoryId, int duaIndex) {

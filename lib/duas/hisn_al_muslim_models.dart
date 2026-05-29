@@ -172,6 +172,7 @@ class DuaEntry {
     this.transliteration,
     this.notes,
     this.source,
+    this.translations = const <String, String>{},
   });
 
   final String id;
@@ -186,9 +187,17 @@ class DuaEntry {
   final String? transliteration;
   final String? notes;
   final String? source;
+  final Map<String, String> translations;
 
   String get legacyFavouriteId {
     return 'hisn-c${categoryIndex + 1}-d${index + 1}';
+  }
+
+  /// Returns the best translation for the given locale tag (e.g. 'en', 'bn').
+  /// Falls back to the legacy singular [translation] field if no map entry is found.
+  String? localizedTranslation(String localeTag) {
+    final String normalized = localeTag.trim().toLowerCase();
+    return translations[normalized] ?? translation;
   }
 
   bool matches(String normalizedQuery) {
@@ -197,7 +206,9 @@ class DuaEntry {
         (translation?.toLowerCase().contains(normalizedQuery) ?? false) ||
         (transliteration?.toLowerCase().contains(normalizedQuery) ?? false) ||
         (notes?.toLowerCase().contains(normalizedQuery) ?? false) ||
-        (source?.toLowerCase().contains(normalizedQuery) ?? false);
+        (source?.toLowerCase().contains(normalizedQuery) ?? false) ||
+        translations.values
+            .any((String t) => t.toLowerCase().contains(normalizedQuery));
   }
 
   Map<String, Object?> toFavouriteSnapshot() {
@@ -214,6 +225,7 @@ class DuaEntry {
       if (transliteration != null) 'transliteration': transliteration,
       if (notes != null) 'notes': notes,
       if (source != null) 'source': source,
+      if (translations.isNotEmpty) 'translations': translations,
     };
   }
 
@@ -250,6 +262,7 @@ class DuaEntry {
       transliteration: _stringOrNull(value['transliteration']),
       notes: _stringOrNull(value['notes']),
       source: _stringOrNull(value['source']),
+      translations: _stringMapOrNull(value['translations']),
     );
   }
 
@@ -278,6 +291,16 @@ class DuaEntry {
     }
     if (value is num || value is bool) return value.toString();
     return null;
+  }
+
+  static Map<String, String> _stringMapOrNull(Object? value) {
+    if (value is! Map) return const <String, String>{};
+    return value
+        .map(
+          (dynamic k, dynamic v) =>
+              MapEntry<String, String>(k.toString(), v.toString()),
+        )
+        .cast<String, String>();
   }
 
   static int? _intOrNull(Object? value) {

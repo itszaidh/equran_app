@@ -130,7 +130,9 @@ class DuaCard extends StatelessWidget {
                         ),
                       ),
                     ],
-                    if (dua.translation != null) ...<Widget>[
+                    if (dua.localizedTranslation(
+                          Localizations.localeOf(context).languageCode,
+                        ) != null) ...<Widget>[
                       const SizedBox(height: 14),
                       Divider(
                         height: 1,
@@ -138,7 +140,9 @@ class DuaCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        dua.translation!,
+                        dua.localizedTranslation(
+                          Localizations.localeOf(context).languageCode,
+                        )!,
                         textAlign: TextAlign.justify,
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: colors.onSurfaceVariant,

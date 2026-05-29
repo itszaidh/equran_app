@@ -232,21 +232,23 @@ class EquranResumeImageCard extends StatelessWidget {
               fontWeight: FontWeight.w900,
             );
             final BorderRadius radius = BorderRadius.circular(AppRadii.large);
+            final bool isLight =
+                Theme.of(context).brightness == Brightness.light;
             final Gradient cardGradient = secondary
                 ? LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: <Color>[
                       Color.alphaBlend(
-                        colors.primary.withAlpha(80),
+                        colors.primary.withAlpha(isLight ? 120 : 80),
                         colors.surface,
                       ),
                       Color.alphaBlend(
-                        colors.primaryStrong.withAlpha(92),
+                        colors.primaryStrong.withAlpha(isLight ? 130 : 92),
                         colors.surface,
                       ),
                       Color.alphaBlend(
-                        colors.accentGold.withAlpha(22),
+                        colors.accentGold.withAlpha(isLight ? 45 : 22),
                         colors.primaryStrong,
                       ),
                     ],

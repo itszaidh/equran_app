@@ -4760,6 +4760,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required DateTime now,
     required String todayKey,
   }) {
+    if (_isVersePlaying && _continuousPlayback) return;
+
     final String key = '$safeSurah:$safeVerse';
     final dynamic existingActivity = QuranActivityDB().get(todayKey);
     final QuranActivityDay activity = existingActivity is QuranActivityDay
@@ -5625,6 +5627,17 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 final AppReciter? selected = await _showReciterPickerDialog();
                 if (selected == null || !mounted) return;
                 await SettingsDB().put("reciter", selected.code);
+                
+                final bool isDownloading = AudioDownloadService()
+                    .isSurahAyahsDownloadInProgress(_currentChapter);
+                setState(() {
+                  _isDownloadingSurahAyahs = isDownloading;
+                  _hasDownloadedSurahAyahs = false;
+                  _hasDownloadedCurrentAyah = false;
+                });
+                unawaited(_refreshSurahAyahDownloadState());
+                unawaited(_refreshCurrentAyahDownloadState());
+
                 if (_playerMounted || _isVersePlaying || _isVerseLoading) {
                   _playbackRequestId++;
                   final QuranPosition position = _playingPosition;

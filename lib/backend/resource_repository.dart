@@ -55,10 +55,22 @@ class ResourceRepository {
   Future<DownloadableResource?> timingResourceForReciter(
     String reciterCode,
   ) async {
-    final String rawCode = reciterCode.trim();
+    final String rawCode = reciterCode.trim().toLowerCase();
     if (rawCode.isEmpty) return null;
-    final String normalized = AppReciter.normalizeCode(rawCode);
     final ResourceManifest manifest = await loadManifest();
+
+    // First try exact match (case-insensitive) to prevent incorrect legacy normalizations
+    for (final DownloadableResource resource in manifest.resourcesOfType(
+      ResourceType.timings,
+    )) {
+      final String? rCode = resource.reciterCode?.trim().toLowerCase();
+      if (rCode == rawCode || resource.id.toLowerCase() == rawCode) {
+        return resource;
+      }
+    }
+
+    // Fallback to legacy normalization match for backward compatibility
+    final String normalized = AppReciter.normalizeCode(rawCode);
     for (final DownloadableResource resource in manifest.resourcesOfType(
       ResourceType.timings,
     )) {

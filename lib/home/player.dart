@@ -14,7 +14,7 @@ import 'package:equran/backend/library.dart'
         ResourceInstallException,
         ResourceInstallState,
         ResourceInstallStore,
-        QuranAudioService,
+        PlayerAudioService,
         QuranTransliterationService,
         ResumeStateDB,
         ResumeStateEntry,
@@ -688,11 +688,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     )!.minutesShort(choice.duration.inMinutes);
   }
 
-  String _selectedReciterCode() => QuranAudioService().selectedReciter.code;
+  String _selectedReciterCode() => PlayerAudioService().selectedReciter.code;
 
   String _selectedReciterName() {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    return QuranAudioService().selectedReciter.displayName(
+    return PlayerAudioService().selectedReciter.displayName(
       arabic: isArabicLocalizations(localizations),
     );
   }
@@ -758,7 +758,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   }
 
   Future<String> _surahStreamUrl(int surah) =>
-      QuranAudioService().getSurahUrl(surah);
+      PlayerAudioService().getSurahUrl(surah);
 
   void _syncTimingForCurrentSelection() {
     final String reciterCode = _selectedReciterCode();
@@ -1015,11 +1015,11 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _selectReciter(AppReciter reciter) async {
+  Future<void> _selectReciter(PlayerReciter reciter) async {
     if (reciter.code == _selectedReciterCode()) return;
     final bool shouldResumePlayback = _isPlaying || _isLoading;
 
-    await SettingsDB().put("reciter", reciter.code);
+    await SettingsDB().put("player_reciter", reciter.code);
     _loadedSurah = null;
     _loadedFromOffline = null;
     _loadedReciterCode = null;
@@ -1709,7 +1709,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           return StatefulBuilder(
             builder: (sheetContext, setSheetState) {
               Future<void> selectReciter() async {
-                final AppReciter? selected = await _showReciterPickerDialog();
+                final PlayerReciter? selected = await _showReciterPickerDialog();
                 if (selected == null || !mounted) return;
                 await _selectReciter(selected);
                 if (sheetContext.mounted) setSheetState(() {});
@@ -2006,22 +2006,22 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     );
   }
 
-  Future<AppReciter?> _showReciterPickerDialog() {
+  Future<PlayerReciter?> _showReciterPickerDialog() {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
-    final List<AppReciter> reciters = AppReciter.values.toList()
+    final List<PlayerReciter> reciters = PlayerReciter.values.toList()
       ..sort(
         (a, b) =>
             a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase()),
       );
-    return showDialog<AppReciter>(
+    return showDialog<PlayerReciter>(
       context: context,
-      builder: (context) => AppSelectionDialog<AppReciter>(
+      builder: (context) => AppSelectionDialog<PlayerReciter>(
         title: l10n.reciterOption,
         icon: Icons.record_voice_over_rounded,
-        selectedValue: QuranAudioService().selectedReciter,
+        selectedValue: PlayerAudioService().selectedReciter,
         options: reciters
             .map(
-              (reciter) => AppSelectionOption<AppReciter>(
+              (reciter) => AppSelectionOption<PlayerReciter>(
                 value: reciter,
                 title: reciter.displayName(arabic: isArabicLocalizations(l10n)),
               ),
