@@ -5724,6 +5724,20 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 });
                 await _setPlaybackRate(1.0);
                 await _persistPlaybackOptions();
+                if (_playerMounted || _isVersePlaying || _isVerseLoading) {
+                  final QuranPosition position = _playingPosition;
+                  unawaited(
+                    _playVerse(
+                      position.surah,
+                      position.ayah,
+                      continuous: _continuousPlayback,
+                      smoothScroll: false,
+                      preservePlayerPresentationState: true,
+                      preserveRefreshState: true,
+                      resetPlaybackCounters: false,
+                    ),
+                  );
+                }
                 if (sheetContext.mounted) setSheetState(() {});
                 unawaited(_updateKeepScreenOn());
               }
@@ -5859,6 +5873,24 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               });
                               setSheetState(() {});
                               unawaited(_persistPlaybackOptions());
+                            },
+                            onChangeEnd: (value) {
+                              if (_playerMounted ||
+                                  _isVersePlaying ||
+                                  _isVerseLoading) {
+                                final QuranPosition position = _playingPosition;
+                                unawaited(
+                                  _playVerse(
+                                    position.surah,
+                                    position.ayah,
+                                    continuous: _continuousPlayback,
+                                    smoothScroll: false,
+                                    preservePlayerPresentationState: true,
+                                    preserveRefreshState: true,
+                                    resetPlaybackCounters: false,
+                                  ),
+                                );
+                              }
                             },
                           ),
                         ],
@@ -7504,6 +7536,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required int divisions,
     required String label,
     required ValueChanged<double> onChanged,
+    ValueChanged<double>? onChangeEnd,
   }) {
     return ListTile(
       title: Text(title),
@@ -7518,6 +7551,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             value: value.clamp(min, max).toDouble(),
             label: label,
             onChanged: onChanged,
+            onChangeEnd: onChangeEnd,
           ),
         ],
       ),
