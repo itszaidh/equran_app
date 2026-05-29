@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:quran/quran.dart' as quran;
 
 import 'backend/library.dart'
@@ -37,6 +38,10 @@ import 'hifz/hifz.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (!kIsWeb && Platform.isLinux) {
+    JustAudioMediaKit.ensureInitialized();
+  }
 
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     await JustAudioBackground.init(
