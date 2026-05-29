@@ -5627,7 +5627,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 final AppReciter? selected = await _showReciterPickerDialog();
                 if (selected == null || !mounted) return;
                 await SettingsDB().put("reciter", selected.code);
-                
+
                 final bool isDownloading = AudioDownloadService()
                     .isSurahAyahsDownloadInProgress(_currentChapter);
                 setState(() {

@@ -89,6 +89,9 @@ android {
         }
         release {
            signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
+           minifyEnabled true
+           shrinkResources true
+           proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

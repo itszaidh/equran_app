@@ -108,6 +108,4 @@ flutter:
     - family: Hafs
       fonts:
         - asset: assets/media/fonts/Hafs.ttf
-    - family: SurahName
-      fonts:
-        - asset: assets/media/fonts/surah_name.ttf
+

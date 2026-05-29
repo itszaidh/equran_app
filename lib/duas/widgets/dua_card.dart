@@ -132,7 +132,8 @@ class DuaCard extends StatelessWidget {
                     ],
                     if (dua.localizedTranslation(
                           Localizations.localeOf(context).languageCode,
-                        ) != null) ...<Widget>[
+                        ) !=
+                        null) ...<Widget>[
                       const SizedBox(height: 14),
                       Divider(
                         height: 1,

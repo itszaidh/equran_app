@@ -1709,7 +1709,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           return StatefulBuilder(
             builder: (sheetContext, setSheetState) {
               Future<void> selectReciter() async {
-                final PlayerReciter? selected = await _showReciterPickerDialog();
+                final PlayerReciter? selected =
+                    await _showReciterPickerDialog();
                 if (selected == null || !mounted) return;
                 await _selectReciter(selected);
                 if (sheetContext.mounted) setSheetState(() {});

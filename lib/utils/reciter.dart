@@ -1,10 +1,10 @@
 class ReciterProfile {
   final String
-      id; // Existing lookup ID matching the current settings database key
+  id; // Existing lookup ID matching the current settings database key
   final String englishName; // High-fidelity English UI name mapping
   final String arabicName; // High-fidelity Arabic UI name mapping
   final String
-      everyAyahFolder; // Exact target folder string matching EveryAyah CDN asset trees
+  everyAyahFolder; // Exact target folder string matching EveryAyah CDN asset trees
   final String fallbackSurahUrl; // Full-chapter URL (if available)
   final String? playerApiCode; // Quran API reciter code (1-5) for player page
 
@@ -32,21 +32,24 @@ class QuranAudioCatalog {
       englishName: 'Abdul Basit (Mujawwad)',
       arabicName: 'عبد الباسط (مجوّد)',
       everyAyahFolder: 'Abdul_Basit_Mujawwad_128kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/Abdul_Basit_Mujawwad_128kbps',
     ),
     ReciterProfile(
       id: 'abdul_basit_murattal',
       englishName: 'Abdul Basit (Murattal)',
       arabicName: 'عبد الباسط (مرتل)',
       everyAyahFolder: 'Abdul_Basit_Murattal_64kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/Abdul_Basit_Murattal_64kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/Abdul_Basit_Murattal_64kbps',
     ),
     ReciterProfile(
       id: 'abdul_basit_murattal_192',
       englishName: 'Abdul Basit (Murattal 192kbps)',
       arabicName: 'عبد الباسط (مرتل 192)',
       everyAyahFolder: 'Abdul_Basit_Murattal_192kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/Abdul_Basit_Murattal_192kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/Abdul_Basit_Murattal_192kbps',
     ),
     ReciterProfile(
       id: 'abdullaah_3awwaad_al_juhaynee',
@@ -89,7 +92,8 @@ class QuranAudioCatalog {
       englishName: 'Abdul Rahman Al-Sudais',
       arabicName: 'عبد الرحمن السديس',
       everyAyahFolder: 'Abdurrahmaan_As-Sudais_64kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/Abdurrahmaan_As-Sudais_64kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/Abdurrahmaan_As-Sudais_64kbps',
     ),
     ReciterProfile(
       id: 'abdurrahmaan_as_sudais_192',
@@ -104,7 +108,8 @@ class QuranAudioCatalog {
       englishName: 'Abu Bakr Ash-Shaatree',
       arabicName: 'أبو بكر الشاطري',
       everyAyahFolder: 'Abu_Bakr_Ash-Shaatree_64kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/Abu_Bakr_Ash-Shaatree_64kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/Abu_Bakr_Ash-Shaatree_64kbps',
     ),
     ReciterProfile(
       id: 'ahmed_neana',
@@ -330,21 +335,24 @@ class QuranAudioCatalog {
       englishName: 'Mohammad al-Tablaway',
       arabicName: 'محمد الطبلاوي',
       everyAyahFolder: 'Mohammad_al_Tablaway_128kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/Mohammad_al_Tablaway_128kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/Mohammad_al_Tablaway_128kbps',
     ),
     ReciterProfile(
       id: 'mohammad_al_tablaway_64',
       englishName: 'Mohammad al-Tablaway (64kbps)',
       arabicName: 'محمد الطبلاوي (64)',
       everyAyahFolder: 'Mohammad_al_Tablaway_64kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/Mohammad_al_Tablaway_64kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/Mohammad_al_Tablaway_64kbps',
     ),
     ReciterProfile(
       id: 'muhammad_abdul_kareem',
       englishName: 'Muhammad AbdulKareem',
       arabicName: 'محمد عبد الكريم',
       everyAyahFolder: 'Muhammad_AbdulKareem_128kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/Muhammad_AbdulKareem_128kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/Muhammad_AbdulKareem_128kbps',
     ),
     ReciterProfile(
       id: 'muhammad_ayyoub',
@@ -478,7 +486,8 @@ class QuranAudioCatalog {
       englishName: 'Mahmoud Ali Al-Banna',
       arabicName: 'محمود علي البنا',
       everyAyahFolder: 'mahmoud_ali_al_banna_32kbps',
-      fallbackSurahUrl: 'https://everyayah.com/data/mahmoud_ali_al_banna_32kbps',
+      fallbackSurahUrl:
+          'https://everyayah.com/data/mahmoud_ali_al_banna_32kbps',
     ),
   ];
 

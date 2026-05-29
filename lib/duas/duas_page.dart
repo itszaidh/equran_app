@@ -169,7 +169,11 @@ class _DuasContent extends StatelessWidget {
                   ValueListenableBuilder<Box<dynamic>>(
                     valueListenable: DuaFavouritesDB().listener,
                     builder:
-                        (BuildContext context, Box<dynamic> box, Widget? child) {
+                        (
+                          BuildContext context,
+                          Box<dynamic> box,
+                          Widget? child,
+                        ) {
                           return _FavouritesEntryCard(
                             count: box.length,
                             onTap: () => _openFavourites(context),
@@ -708,7 +712,8 @@ class _GroupedCategoriesList extends StatefulWidget {
 
   final List<DuaCategoryIndex> categoryIndex;
   final HisnAlMuslimRepository repository;
-  final void Function(BuildContext context, DuaCategoryIndex category) onCategoryTap;
+  final void Function(BuildContext context, DuaCategoryIndex category)
+  onCategoryTap;
 
   @override
   State<_GroupedCategoriesList> createState() => _GroupedCategoriesListState();
@@ -721,7 +726,8 @@ class _GroupedCategoriesListState extends State<_GroupedCategoriesList> {
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
 
-    final Map<DuaGroup, List<DuaCategoryIndex>> grouped = <DuaGroup, List<DuaCategoryIndex>>{};
+    final Map<DuaGroup, List<DuaCategoryIndex>> grouped =
+        <DuaGroup, List<DuaCategoryIndex>>{};
     for (final DuaGroup group in DuaCategoryGroupMapper.orderedGroups) {
       grouped[group] = <DuaCategoryIndex>[];
     }
@@ -770,7 +776,8 @@ class _DuaGroupSection extends StatelessWidget {
   final AppLocalizations localizations;
   final bool isCollapsed;
   final VoidCallback onToggle;
-  final void Function(BuildContext context, DuaCategoryIndex category) onCategoryTap;
+  final void Function(BuildContext context, DuaCategoryIndex category)
+  onCategoryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -841,19 +848,32 @@ class _DuaGroupSection extends StatelessWidget {
 
   static String _groupName(AppLocalizations l, DuaGroup group) {
     switch (group) {
-      case DuaGroup.dailyAthkar: return l.duaGroupDailyAthkar;
-      case DuaGroup.prayer: return l.duaGroupPrayer;
-      case DuaGroup.hajjUmrah: return l.duaGroupHajjUmrah;
-      case DuaGroup.travel: return l.duaGroupTravel;
-      case DuaGroup.protectionHardship: return l.duaGroupProtectionHardship;
-      case DuaGroup.healthIllness: return l.duaGroupHealthIllness;
-      case DuaGroup.deathFunerals: return l.duaGroupDeathFunerals;
-      case DuaGroup.repentance: return l.duaGroupRepentance;
-      case DuaGroup.natureWeather: return l.duaGroupNatureWeather;
-      case DuaGroup.marriageFamily: return l.duaGroupMarriageFamily;
-      case DuaGroup.remembrancePraise: return l.duaGroupRemembrancePraise;
-      case DuaGroup.socialEtiquette: return l.duaGroupSocialEtiquette;
-      case DuaGroup.misc: return l.duaGroupMisc;
+      case DuaGroup.dailyAthkar:
+        return l.duaGroupDailyAthkar;
+      case DuaGroup.prayer:
+        return l.duaGroupPrayer;
+      case DuaGroup.hajjUmrah:
+        return l.duaGroupHajjUmrah;
+      case DuaGroup.travel:
+        return l.duaGroupTravel;
+      case DuaGroup.protectionHardship:
+        return l.duaGroupProtectionHardship;
+      case DuaGroup.healthIllness:
+        return l.duaGroupHealthIllness;
+      case DuaGroup.deathFunerals:
+        return l.duaGroupDeathFunerals;
+      case DuaGroup.repentance:
+        return l.duaGroupRepentance;
+      case DuaGroup.natureWeather:
+        return l.duaGroupNatureWeather;
+      case DuaGroup.marriageFamily:
+        return l.duaGroupMarriageFamily;
+      case DuaGroup.remembrancePraise:
+        return l.duaGroupRemembrancePraise;
+      case DuaGroup.socialEtiquette:
+        return l.duaGroupSocialEtiquette;
+      case DuaGroup.misc:
+        return l.duaGroupMisc;
     }
   }
 }
@@ -915,7 +935,9 @@ class _GroupHeader extends StatelessWidget {
             ),
             const SizedBox(width: 2),
             Icon(
-              isCollapsed ? Icons.expand_more_rounded : Icons.expand_less_rounded,
+              isCollapsed
+                  ? Icons.expand_more_rounded
+                  : Icons.expand_less_rounded,
               size: 22,
               color: colors.onSurfaceVariant,
             ),
@@ -989,7 +1011,11 @@ class _GroupedCategoryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 6),
-          Icon(Icons.chevron_right_rounded, size: 20, color: colors.onSurfaceVariant),
+          Icon(
+            Icons.chevron_right_rounded,
+            size: 20,
+            color: colors.onSurfaceVariant,
+          ),
         ],
       ),
     );

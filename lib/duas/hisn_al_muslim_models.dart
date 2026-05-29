@@ -120,20 +120,20 @@ class DuaCategoryGroupMapper {
   }
 
   static List<DuaGroup> get orderedGroups => <DuaGroup>[
-        DuaGroup.dailyAthkar,
-        DuaGroup.prayer,
-        DuaGroup.hajjUmrah,
-        DuaGroup.travel,
-        DuaGroup.protectionHardship,
-        DuaGroup.healthIllness,
-        DuaGroup.deathFunerals,
-        DuaGroup.repentance,
-        DuaGroup.natureWeather,
-        DuaGroup.marriageFamily,
-        DuaGroup.remembrancePraise,
-        DuaGroup.socialEtiquette,
-        DuaGroup.misc,
-      ];
+    DuaGroup.dailyAthkar,
+    DuaGroup.prayer,
+    DuaGroup.hajjUmrah,
+    DuaGroup.travel,
+    DuaGroup.protectionHardship,
+    DuaGroup.healthIllness,
+    DuaGroup.deathFunerals,
+    DuaGroup.repentance,
+    DuaGroup.natureWeather,
+    DuaGroup.marriageFamily,
+    DuaGroup.remembrancePraise,
+    DuaGroup.socialEtiquette,
+    DuaGroup.misc,
+  ];
 }
 
 class DuaCategory {
@@ -207,8 +207,9 @@ class DuaEntry {
         (transliteration?.toLowerCase().contains(normalizedQuery) ?? false) ||
         (notes?.toLowerCase().contains(normalizedQuery) ?? false) ||
         (source?.toLowerCase().contains(normalizedQuery) ?? false) ||
-        translations.values
-            .any((String t) => t.toLowerCase().contains(normalizedQuery));
+        translations.values.any(
+          (String t) => t.toLowerCase().contains(normalizedQuery),
+        );
   }
 
   Map<String, Object?> toFavouriteSnapshot() {

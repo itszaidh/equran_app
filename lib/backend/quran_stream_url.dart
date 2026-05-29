@@ -104,7 +104,10 @@ class PlayerAudioService {
     });
   }
 
-  String _extractAudioUrl(Map<String, dynamic> response, PlayerReciter reciter) {
+  String _extractAudioUrl(
+    Map<String, dynamic> response,
+    PlayerReciter reciter,
+  ) {
     final dynamic audio = response['audio'];
     if (audio is! Map) {
       throw Exception('Audio data missing from API response.');
