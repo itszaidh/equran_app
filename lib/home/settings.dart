@@ -1,4 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'appearance_settings_page.dart';
+import 'navigation_settings_page.dart';
 import 'package:equran/backend/library.dart'
     show
         BookmarkDB,
@@ -166,8 +168,28 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: localizations.appearanceSubtitle,
             icon: Icons.palette_outlined,
             children: <Widget>[
-              _buildThemeModeTile(context),
-              _buildThemeColorTile(context),
+              ListTile(
+                leading: const Icon(Icons.palette_outlined),
+                title: Text(localizations.appearance),
+                subtitle: const Text('Theme, light/dark mode, and color accent settings'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const AppearanceSettingsPage(),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.linear_scale_rounded),
+                title: const Text('Navigation Bar Settings'),
+                subtitle: const Text('Rearrange and swap bottom navigation tabs'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const NavigationSettingsPage(),
+                  ),
+                ),
+              ),
             ],
           ),
           _buildSettingsGroup(

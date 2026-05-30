@@ -685,6 +685,16 @@ class AudioDownloadService {
     return path.split(Platform.pathSeparator).last;
   }
 
+  bool isCompleteDownload(File file) {
+    return _isCompleteDownload(file);
+  }
+
+  Future<bool> hasSurahForReciter(int surah, String reciterCode) async {
+    final Directory dir = await surahDirectory();
+    final File file = File('${dir.path}/${reciterCode}_${surah.toString().padLeft(3, '0')}.mp3');
+    return _isCompleteDownload(file);
+  }
+
   bool _isCompleteDownload(File file) {
     return file.existsSync() && file.lengthSync() > 0;
   }

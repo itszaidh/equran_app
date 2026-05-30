@@ -21,7 +21,9 @@ import 'package:equran/backend/library.dart'
         SurahTiming,
         SurahTimingRepository,
         SettingsDB,
+        FavouritesDB,
         prettyBytes;
+import 'package:hive/hive.dart' show Box;
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -41,6 +43,7 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart' as ja;
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/quran.dart' as quran;
+import 'package:equran/backend/playback_cache_service.dart';
 
 const List<String> _surahTransliterations = <String>[
   'Al-Fatihah',
@@ -429,9 +432,23 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     }
   }
 
+  void _syncActivePlaybackTrack() {
+    if (_isPlaying && _loadedReciterCode != null) {
+      PlaybackCacheService.instance.updateActiveTrack(
+        surah: _selectedSurah,
+        reciterCode: _loadedReciterCode!,
+        isPlaying: _isPlaying,
+        isOffline: _playingFromOffline,
+      );
+    } else {
+      PlaybackCacheService.instance.clearActiveTrack();
+    }
+  }
+
   void _safeSetState(VoidCallback fn) {
     if (!mounted) return;
     setState(fn);
+    _syncActivePlaybackTrack();
   }
 
   void _syncFrameRatePolicy(String reason) {
@@ -1105,6 +1122,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           title: _localizedSurahName(surah),
           artist: _selectedReciterName(),
           displayDescription: '$surahOptionLabel $surah',
+          artUri: Uri.parse('asset:///assets/media/images/icon.webp'),
         ),
       ),
     );
@@ -1688,6 +1706,226 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     await _selectSurah(selectedSurah);
   }
 
+  Future<void> _showUpgradedSleepTimerSheet() async {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
+    int minutes = 15;
+    if (_sleepTimerEndsAt != null) {
+      minutes = _sleepTimerEndsAt!.difference(DateTime.now()).inMinutes.clamp(1, 120);
+    }
+    bool endOfSurah = _sleepTimerMode == _sleepTimerEndSurahMode;
+
+    final TextEditingController textController = TextEditingController(text: '$minutes');
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: colorScheme.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadii.large),
+        ),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            void increment(int val) {
+              int current = int.tryParse(textController.text) ?? 15;
+              current = (current + val).clamp(1, 240);
+              textController.text = '$current';
+              setSheetState(() {
+                minutes = current;
+              });
+            }
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 28,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withAlpha(18),
+                          borderRadius: BorderRadius.circular(AppRadii.medium),
+                        ),
+                        child: Icon(
+                          Icons.bedtime_outlined,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Sleep Timer Settings',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Numeric Minute Picker Container
+                  Card(
+                    color: colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const Text(
+                            'Numeric Minutes Duration',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: <Widget>[
+                              // Minus Button
+                              IconButton(
+                                onPressed: endOfSurah ? null : () => increment(-5),
+                                icon: const Icon(Icons.remove_circle_outline_rounded),
+                                color: colorScheme.primary,
+                                iconSize: 28,
+                              ),
+                              // Text Field Input
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: TextField(
+                                    controller: textController,
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
+                                    enabled: !endOfSurah,
+                                    style: theme.textTheme.headlineMedium?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      color: endOfSurah ? colorScheme.onSurfaceVariant.withAlpha(128) : colorScheme.onSurface,
+                                    ),
+                                    decoration: const InputDecoration(
+                                      suffixText: 'min',
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    onChanged: (val) {
+                                      final int? parsed = int.tryParse(val);
+                                      if (parsed != null) {
+                                        minutes = parsed.clamp(1, 240);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                              // Plus Button
+                              IconButton(
+                                onPressed: endOfSurah ? null : () => increment(5),
+                                icon: const Icon(Icons.add_circle_outline_rounded),
+                                color: colorScheme.primary,
+                                iconSize: 28,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // End of Surah Toggle Card
+                  Card(
+                    color: colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                    child: SwitchListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.medium),
+                      ),
+                      secondary: Icon(
+                        Icons.queue_music_rounded,
+                        color: endOfSurah ? colorScheme.primary : colorScheme.textSecondary,
+                      ),
+                      title: const Text(
+                        'End of Surah',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      subtitle: const Text('Auto-kill the stream exactly when the current track finishes'),
+                      value: endOfSurah,
+                      onChanged: (val) {
+                        setSheetState(() {
+                          endOfSurah = val;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Apply / Stop Buttons
+                  Row(
+                    children: <Widget>[
+                      if (_sleepTimerEndsAt != null || _sleepTimerMode != null) ...<Widget>[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              _cancelSleepTimer();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Turn Off'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () async {
+                            if (endOfSurah) {
+                              await _applySleepTimerSelection(_sleepTimerEndSurahMode);
+                            } else {
+                              final int val = int.tryParse(textController.text) ?? minutes;
+                              await _setSleepTimer(
+                                Duration(minutes: val),
+                                l10n.minutesShort(val),
+                                mode: _sleepTimerDurationMode,
+                              );
+                            }
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: const Text('Set Timer'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(textController.dispose);
+  }
+
   Future<void> _showPlayerOptionsSheet() async {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
@@ -1860,47 +2098,13 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                             leading: const Icon(Icons.bedtime_outlined),
                             title: Text(l10n.sleepTimerOption),
                             subtitle: Text(_sleepTimerOptionsSubtitle()),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                if (_sleepTimerEndsAt != null)
-                                  TextButton(
-                                    onPressed: () {
-                                      _cancelSleepTimer();
-                                      setSheetState(() {});
-                                    },
-                                    child: Text(l10n.cancel),
-                                  ),
-                                PopupMenuButton<String>(
-                                  tooltip: l10n.sleepTimerOptions,
-                                  icon: const Icon(Icons.more_time_rounded),
-                                  onSelected: (value) async {
-                                    await _applySleepTimerSelection(value);
-                                    if (sheetContext.mounted) {
-                                      setSheetState(() {});
-                                    }
-                                  },
-                                  itemBuilder: (context) {
-                                    return <PopupMenuEntry<String>>[
-                                      for (final _SleepTimerChoice choice
-                                          in _SleepTimerChoice.durationChoices)
-                                        PopupMenuItem<String>(
-                                          value:
-                                              'duration:${choice.duration.inMinutes}',
-                                          child: Text(
-                                            _sleepTimerChoiceLabel(choice),
-                                          ),
-                                        ),
-                                      const PopupMenuDivider(),
-                                      PopupMenuItem<String>(
-                                        value: _sleepTimerEndSurahMode,
-                                        child: Text(l10n.endOfSurah),
-                                      ),
-                                    ];
-                                  },
-                                ),
-                              ],
-                            ),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: () async {
+                              await _showUpgradedSleepTimerSheet();
+                              if (sheetContext.mounted) {
+                                setSheetState(() {});
+                              }
+                            },
                           ),
                           SwitchListTile(
                             secondary: const Icon(Icons.shuffle_rounded),
@@ -2007,13 +2211,22 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     );
   }
 
-  Future<PlayerReciter?> _showReciterPickerDialog() {
+  Future<PlayerReciter?> _showReciterPickerDialog() async {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final List<PlayerReciter> reciters = PlayerReciter.values.toList()
       ..sort(
         (a, b) =>
             a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase()),
       );
+
+    final Map<String, bool> downloadedReciters = {};
+    for (final reciter in reciters) {
+      downloadedReciters[reciter.code] =
+          await _downloads.hasSurahForReciter(_selectedSurah, reciter.code);
+    }
+
+    if (!mounted) return null;
+
     return showDialog<PlayerReciter>(
       context: context,
       builder: (context) => AppSelectionDialog<PlayerReciter>(
@@ -2025,6 +2238,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               (reciter) => AppSelectionOption<PlayerReciter>(
                 value: reciter,
                 title: reciter.displayName(arabic: isArabicLocalizations(l10n)),
+                leading: downloadedReciters[reciter.code] == true
+                    ? const Icon(Icons.offline_pin_rounded, color: Colors.greenAccent)
+                    : const Icon(Icons.record_voice_over_outlined, size: 20),
               ),
             )
             .toList(),
@@ -2158,6 +2374,7 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    PlaybackCacheService.instance.clearActiveTrack();
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_setKeepScreenOn(false));
     FrameRatePolicyManager.instance.setPlayerDisposed(
@@ -2777,11 +2994,22 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
               ),
               const SizedBox(width: 8),
               IconButton(
-                tooltip: l10n.playerOptions,
-                onPressed: _showPlayerOptionsSheet,
+                tooltip: l10n.chooseSurah,
+                onPressed: _openSurahPickerSheet,
                 style: ResponsiveNav.iconButtonStyle(context),
                 icon: Icon(
-                  Icons.more_horiz,
+                  Icons.queue_music_rounded,
+                  size: ResponsiveNav.iconSize(context),
+                ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                tooltip: _showAyahText ? l10n.hideAyahText : l10n.showAyahText,
+                onPressed: _toggleAyahText,
+                style: ResponsiveNav.iconButtonStyle(context),
+                icon: Icon(
+                  Icons.menu_book_rounded,
+                  color: _showAyahText ? colorScheme.primary : null,
                   size: ResponsiveNav.iconSize(context),
                 ),
               ),
@@ -2856,6 +3084,40 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           );
         }
 
+        Widget buildFavoriteButton() {
+          return ValueListenableBuilder<Box<dynamic>>(
+            valueListenable: FavouritesDB().listener,
+            builder: (context, box, _) {
+              final bool isFav = box.containsKey('surah_fav:$_selectedSurah');
+              return IconButton(
+                tooltip: isFav ? 'Remove from Favorites' : 'Add to Favorites',
+                onPressed: () async {
+                  final String key = 'surah_fav:$_selectedSurah';
+                  if (isFav) {
+                    await FavouritesDB().delete(key);
+                  } else {
+                    await FavouritesDB().put(key, DateTime.now().toIso8601String());
+                  }
+                },
+                icon: Icon(
+                  isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: isFav ? Colors.redAccent : colorScheme.onSurfaceVariant,
+                ),
+                iconSize: secondaryControlIconSize,
+                style: IconButton.styleFrom(
+                  fixedSize: Size.square(secondaryControlSize),
+                  minimumSize: Size.square(secondaryControlSize),
+                  maximumSize: Size.square(secondaryControlSize),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  backgroundColor: isFav
+                      ? Colors.redAccent.withValues(alpha: 0.15)
+                      : colorScheme.surfaceContainerHighest.withValues(alpha: 0.0),
+                ),
+              );
+            },
+          );
+        }
+
         Widget buildTransportControls({double gap = 12}) {
           return FittedBox(
             fit: BoxFit.scaleDown,
@@ -2865,13 +3127,17 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  buildFavoriteButton(),
+                  SizedBox(width: gap),
                   buildSecondaryControl(
-                    tooltip: _showAyahText
-                        ? l10n.hideAyahText
-                        : l10n.showAyahText,
-                    onPressed: _toggleAyahText,
-                    icon: Icons.menu_book_rounded,
-                    selected: _showAyahText,
+                    tooltip: l10n.shuffleOption,
+                    onPressed: () {
+                      setState(() {
+                        _shuffleEnabled = !_shuffleEnabled;
+                      });
+                    },
+                    icon: Icons.shuffle_rounded,
+                    selected: _shuffleEnabled,
                   ),
                   SizedBox(width: gap),
                   IconButton(
@@ -2891,9 +3157,20 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                   ),
                   SizedBox(width: gap),
                   buildSecondaryControl(
-                    tooltip: l10n.chooseSurah,
-                    onPressed: _openSurahPickerSheet,
-                    icon: Icons.queue_music_rounded,
+                    tooltip: l10n.loopCurrentSurah,
+                    onPressed: () {
+                      setState(() {
+                        _loopEnabled = !_loopEnabled;
+                      });
+                    },
+                    icon: Icons.repeat_rounded,
+                    selected: _loopEnabled,
+                  ),
+                  SizedBox(width: gap),
+                  buildSecondaryControl(
+                    tooltip: l10n.playerOptions,
+                    onPressed: _showPlayerOptionsSheet,
+                    icon: Icons.more_horiz_rounded,
                   ),
                 ],
               ),
@@ -3025,13 +3302,15 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: <Color>[
-                  colorScheme.primaryContainer.withValues(alpha: 0.60),
-                  colorScheme.tertiaryContainer.withValues(alpha: 0.35),
+                  colorScheme.primaryContainer.withValues(alpha: 0.85),
+                  colorScheme.tertiaryContainer.withValues(alpha: 0.40),
+                  colorScheme.surfaceContainerHighest.withValues(alpha: 0.30),
                   colorScheme.surface,
                 ],
+                stops: const <double>[0.0, 0.45, 0.75, 1.0],
               ),
             ),
             child: SafeArea(

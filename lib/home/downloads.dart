@@ -10,6 +10,8 @@ import 'package:equran/utils/downloads_grouping.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
+import 'package:equran/backend/playback_cache_service.dart';
+import 'package:quran/quran.dart' as quran;
 
 class _SurahAyahDownloadsGroup {
   const _SurahAyahDownloadsGroup({required this.surah, required this.entries});
@@ -33,6 +35,8 @@ class DownloadsPage extends StatefulWidget {
 
 class _DownloadsPageState extends State<DownloadsPage> {
   late Future<AudioDownloadsSummary> _summaryFuture;
+  String _selectedReciterFilter = 'all';
+  String _selectedCategoryFilter = 'all';
 
   @override
   void initState() {
@@ -142,6 +146,35 @@ class _DownloadsPageState extends State<DownloadsPage> {
         final AudioDownloadsSummary summary = snapshot.data!;
         final List<ReciterDownloadsGroup> reciterGroups =
             groupDownloadsByReciter(summary);
+
+        final List<ReciterDownloadsGroup> filteredGroups = reciterGroups.map((group) {
+          if (_selectedReciterFilter != 'all' && group.reciterCode != _selectedReciterFilter) {
+            return null;
+          }
+          
+          final filteredSurahs = group.surahs.where((surah) {
+            if (_selectedCategoryFilter == 'all') return true;
+            final place = quran.getPlaceOfRevelation(surah.surah);
+            return place.toLowerCase() == _selectedCategoryFilter.toLowerCase();
+          }).toList();
+          
+          final filteredAyahs = group.ayahs.where((ayah) {
+            if (_selectedCategoryFilter == 'all') return true;
+            final place = quran.getPlaceOfRevelation(ayah.surah);
+            return place.toLowerCase() == _selectedCategoryFilter.toLowerCase();
+          }).toList();
+          
+          if (filteredSurahs.isEmpty && filteredAyahs.isEmpty) {
+            return null;
+          }
+          
+          return ReciterDownloadsGroup(
+            reciterCode: group.reciterCode,
+            surahs: filteredSurahs,
+            ayahs: filteredAyahs,
+          );
+        }).whereType<ReciterDownloadsGroup>().toList();
+
         return RefreshIndicator(
           onRefresh: () async => _refresh(),
           child: ListView(
@@ -154,10 +187,14 @@ class _DownloadsPageState extends State<DownloadsPage> {
               const SizedBox(height: 16),
               _buildCleanupPreviewCard(theme, summary),
               const SizedBox(height: 16),
-              if (reciterGroups.isEmpty)
+              if (reciterGroups.isNotEmpty) ...<Widget>[
+                _buildFiltersRow(reciterGroups),
+                const SizedBox(height: 16),
+              ],
+              if (filteredGroups.isEmpty)
                 _buildEmptyDownloadsCard()
               else
-                ...reciterGroups.expand(
+                ...filteredGroups.expand(
                   (group) => <Widget>[
                     _buildReciterSection(group),
                     const SizedBox(height: 16),
@@ -167,6 +204,101 @@ class _DownloadsPageState extends State<DownloadsPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFiltersRow(List<ReciterDownloadsGroup> originalGroups) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: _buildReciterFilterDropdown(originalGroups),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildCategoryFilterDropdown(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReciterFilterDropdown(List<ReciterDownloadsGroup> originalGroups) {
+    final EquranColors colors = context.equranColors;
+    final theme = Theme.of(context);
+    
+    final Map<String, String> reciterNames = {'all': 'All Reciters'};
+    for (final group in originalGroups) {
+      reciterNames[group.reciterCode] = reciterDisplayName(group.reciterCode);
+    }
+    
+    // Ensure selected filter value is actually present, otherwise fallback to 'all'
+    if (!reciterNames.containsKey(_selectedReciterFilter)) {
+      _selectedReciterFilter = 'all';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: colors.border),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedReciterFilter,
+          isExpanded: true,
+          dropdownColor: colors.surface,
+          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.primary),
+          style: theme.textTheme.bodyMedium?.copyWith(color: colors.textPrimary),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _selectedReciterFilter = value;
+              });
+            }
+          },
+          items: reciterNames.entries.map((e) {
+            return DropdownMenuItem<String>(
+              value: e.key,
+              child: Text(e.value, maxLines: 1, overflow: TextOverflow.ellipsis),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilterDropdown() {
+    final EquranColors colors = context.equranColors;
+    final theme = Theme.of(context);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.medium),
+        border: Border.all(color: colors.border),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _selectedCategoryFilter,
+          isExpanded: true,
+          dropdownColor: colors.surface,
+          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.primary),
+          style: theme.textTheme.bodyMedium?.copyWith(color: colors.textPrimary),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _selectedCategoryFilter = value;
+              });
+            }
+          },
+          items: const <DropdownMenuItem<String>>[
+            DropdownMenuItem<String>(value: 'all', child: Text('All Categories')),
+            DropdownMenuItem<String>(value: 'makkah', child: Text('Meccan')),
+            DropdownMenuItem<String>(value: 'madinah', child: Text('Medinan')),
+          ],
+        ),
+      ),
     );
   }
 
@@ -441,34 +573,64 @@ class _DownloadsPageState extends State<DownloadsPage> {
   }
 
   Widget _buildDownloadTile(AudioDownloadEntry entry) {
-    return ListTile(
-      leading: const Icon(Icons.offline_pin_rounded),
-      title: Text(entry.title),
-      subtitle: Text(
-        '${entry.subtitle} • ${AudioDownloadService.formatBytes(entry.sizeBytes)}',
-      ),
-      trailing: IconButton(
-        tooltip: AppLocalizations.of(context)!.deleteDownload,
-        onPressed: () => _deleteEntry(entry),
-        icon: const Icon(Icons.delete_outline_rounded),
-      ),
+    return ValueListenableBuilder<ActivePlaybackTrack?>(
+      valueListenable: PlaybackCacheService.instance.activeTrackNotifier,
+      builder: (context, activeTrack, child) {
+        final bool isActiveOffline = activeTrack != null &&
+            activeTrack.isPlaying &&
+            activeTrack.isOffline &&
+            activeTrack.surah == entry.surah &&
+            activeTrack.reciterCode == entry.reciterCode;
+
+        return ListTile(
+          leading: Icon(
+            Icons.offline_pin_rounded,
+            color: isActiveOffline ? Colors.greenAccent : null,
+          ),
+          title: Text(entry.title),
+          subtitle: Text(
+            '${entry.subtitle} • ${AudioDownloadService.formatBytes(entry.sizeBytes)}',
+          ),
+          trailing: IconButton(
+            tooltip: AppLocalizations.of(context)!.deleteDownload,
+            onPressed: () => _deleteEntry(entry),
+            icon: const Icon(Icons.delete_outline_rounded),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildNestedDownloadTile(AudioDownloadEntry entry) {
-    return ListTile(
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      contentPadding: const EdgeInsetsDirectional.only(start: 12, end: 0),
-      title: Text(entry.title),
-      subtitle: Text(
-        '${entry.subtitle} • ${AudioDownloadService.formatBytes(entry.sizeBytes)}',
-      ),
-      trailing: IconButton(
-        tooltip: AppLocalizations.of(context)!.deleteDownload,
-        onPressed: () => _deleteEntry(entry),
-        icon: const Icon(Icons.delete_outline_rounded),
-      ),
+    return ValueListenableBuilder<ActivePlaybackTrack?>(
+      valueListenable: PlaybackCacheService.instance.activeTrackNotifier,
+      builder: (context, activeTrack, child) {
+        final bool isActiveOffline = activeTrack != null &&
+            activeTrack.isPlaying &&
+            activeTrack.isOffline &&
+            activeTrack.surah == entry.surah &&
+            activeTrack.reciterCode == entry.reciterCode;
+
+        return ListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          contentPadding: const EdgeInsetsDirectional.only(start: 12, end: 0),
+          leading: Icon(
+            Icons.offline_pin_rounded,
+            size: 18,
+            color: isActiveOffline ? Colors.greenAccent : null,
+          ),
+          title: Text(entry.title),
+          subtitle: Text(
+            '${entry.subtitle} • ${AudioDownloadService.formatBytes(entry.sizeBytes)}',
+          ),
+          trailing: IconButton(
+            tooltip: AppLocalizations.of(context)!.deleteDownload,
+            onPressed: () => _deleteEntry(entry),
+            icon: const Icon(Icons.delete_outline_rounded),
+          ),
+        );
+      },
     );
   }
 }

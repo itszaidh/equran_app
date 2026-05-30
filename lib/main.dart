@@ -48,6 +48,7 @@ Future<void> main() async {
       androidNotificationChannelId: 'com.app.equran.audio',
       androidNotificationChannelName: 'Quran Audio Playback',
       androidNotificationOngoing: true,
+      androidNotificationIcon: 'mipmap/launcher_icon',
     );
   }
 

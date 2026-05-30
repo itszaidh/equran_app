@@ -3183,6 +3183,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           title: '${quran.getSurahName(position.surah)} ${position.ayah}',
           artist: reciter.englishName,
           displayDescription: 'Ayah ${position.surah}:${position.ayah}',
+          artUri: Uri.parse('asset:///assets/media/images/icon.webp'),
         ),
       ),
     );
@@ -3215,6 +3216,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           displayDescription:
               'Delay after ayah '
               '${afterPosition.surah}:${afterPosition.ayah}',
+          artUri: Uri.parse('asset:///assets/media/images/icon.webp'),
         ),
       ),
     );
@@ -5571,6 +5573,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       ),
                     ),
                     const SizedBox(width: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadii.small),
+                      child: Image.asset(
+                        'assets/media/images/icon.webp',
+                        width: 28,
+                        height: 28,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: InkWell(
                         borderRadius: BorderRadius.circular(AppRadii.large),

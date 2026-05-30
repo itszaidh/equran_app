@@ -346,6 +346,16 @@ class ReadVersePlayerBar extends StatelessWidget {
             constraints: const BoxConstraints.tightFor(width: 34, height: 34),
           ),
           const SizedBox(width: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadii.small),
+            child: Image.asset(
+              'assets/media/images/icon.webp',
+              width: 28,
+              height: 28,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(width: 10),
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(AppRadii.large),
