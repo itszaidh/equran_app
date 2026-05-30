@@ -147,33 +147,41 @@ class _DownloadsPageState extends State<DownloadsPage> {
         final List<ReciterDownloadsGroup> reciterGroups =
             groupDownloadsByReciter(summary);
 
-        final List<ReciterDownloadsGroup> filteredGroups = reciterGroups.map((group) {
-          if (_selectedReciterFilter != 'all' && group.reciterCode != _selectedReciterFilter) {
-            return null;
-          }
-          
-          final filteredSurahs = group.surahs.where((surah) {
-            if (_selectedCategoryFilter == 'all') return true;
-            final place = quran.getPlaceOfRevelation(surah.surah);
-            return place.toLowerCase() == _selectedCategoryFilter.toLowerCase();
-          }).toList();
-          
-          final filteredAyahs = group.ayahs.where((ayah) {
-            if (_selectedCategoryFilter == 'all') return true;
-            final place = quran.getPlaceOfRevelation(ayah.surah);
-            return place.toLowerCase() == _selectedCategoryFilter.toLowerCase();
-          }).toList();
-          
-          if (filteredSurahs.isEmpty && filteredAyahs.isEmpty) {
-            return null;
-          }
-          
-          return ReciterDownloadsGroup(
-            reciterCode: group.reciterCode,
-            surahs: filteredSurahs,
-            ayahs: filteredAyahs,
-          );
-        }).whereType<ReciterDownloadsGroup>().toList();
+        final List<ReciterDownloadsGroup> filteredGroups = reciterGroups
+            .map((group) {
+              if (_selectedReciterFilter != 'all' &&
+                  group.reciterCode != _selectedReciterFilter) {
+                return null;
+              }
+
+              final filteredSurahs = group.surahs.where((surah) {
+                if (_selectedCategoryFilter == 'all') return true;
+                final place = quran.getPlaceOfRevelation(surah.surah);
+                return place.toLowerCase() ==
+                    _selectedCategoryFilter.toLowerCase();
+              }).toList();
+
+              final filteredAyahs = group.ayahs.where((ayah) {
+                if (_selectedCategoryFilter == 'all') return true;
+                final place = quran.getPlaceOfRevelation(ayah.surah);
+                return place.toLowerCase() ==
+                    _selectedCategoryFilter.toLowerCase();
+              }).toList();
+
+              if (filteredSurahs.isEmpty && filteredAyahs.isEmpty) {
+                return null;
+              }
+
+              return ReciterDownloadsGroup(
+                reciterCode: group.reciterCode,
+                entries: <AudioDownloadEntry>[
+                  ...filteredSurahs,
+                  ...filteredAyahs,
+                ],
+              );
+            })
+            .whereType<ReciterDownloadsGroup>()
+            .toList();
 
         return RefreshIndicator(
           onRefresh: () async => _refresh(),
@@ -210,26 +218,24 @@ class _DownloadsPageState extends State<DownloadsPage> {
   Widget _buildFiltersRow(List<ReciterDownloadsGroup> originalGroups) {
     return Row(
       children: <Widget>[
-        Expanded(
-          child: _buildReciterFilterDropdown(originalGroups),
-        ),
+        Expanded(child: _buildReciterFilterDropdown(originalGroups)),
         const SizedBox(width: 12),
-        Expanded(
-          child: _buildCategoryFilterDropdown(),
-        ),
+        Expanded(child: _buildCategoryFilterDropdown()),
       ],
     );
   }
 
-  Widget _buildReciterFilterDropdown(List<ReciterDownloadsGroup> originalGroups) {
+  Widget _buildReciterFilterDropdown(
+    List<ReciterDownloadsGroup> originalGroups,
+  ) {
     final EquranColors colors = context.equranColors;
     final theme = Theme.of(context);
-    
+
     final Map<String, String> reciterNames = {'all': 'All Reciters'};
     for (final group in originalGroups) {
       reciterNames[group.reciterCode] = reciterDisplayName(group.reciterCode);
     }
-    
+
     // Ensure selected filter value is actually present, otherwise fallback to 'all'
     if (!reciterNames.containsKey(_selectedReciterFilter)) {
       _selectedReciterFilter = 'all';
@@ -248,7 +254,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
           isExpanded: true,
           dropdownColor: colors.surface,
           icon: Icon(Icons.arrow_drop_down_rounded, color: colors.primary),
-          style: theme.textTheme.bodyMedium?.copyWith(color: colors.textPrimary),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colors.textPrimary,
+          ),
           onChanged: (value) {
             if (value != null) {
               setState(() {
@@ -259,7 +267,11 @@ class _DownloadsPageState extends State<DownloadsPage> {
           items: reciterNames.entries.map((e) {
             return DropdownMenuItem<String>(
               value: e.key,
-              child: Text(e.value, maxLines: 1, overflow: TextOverflow.ellipsis),
+              child: Text(
+                e.value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             );
           }).toList(),
         ),
@@ -270,7 +282,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
   Widget _buildCategoryFilterDropdown() {
     final EquranColors colors = context.equranColors;
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       decoration: BoxDecoration(
@@ -284,7 +296,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
           isExpanded: true,
           dropdownColor: colors.surface,
           icon: Icon(Icons.arrow_drop_down_rounded, color: colors.primary),
-          style: theme.textTheme.bodyMedium?.copyWith(color: colors.textPrimary),
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colors.textPrimary,
+          ),
           onChanged: (value) {
             if (value != null) {
               setState(() {
@@ -293,7 +307,10 @@ class _DownloadsPageState extends State<DownloadsPage> {
             }
           },
           items: const <DropdownMenuItem<String>>[
-            DropdownMenuItem<String>(value: 'all', child: Text('All Categories')),
+            DropdownMenuItem<String>(
+              value: 'all',
+              child: Text('All Categories'),
+            ),
             DropdownMenuItem<String>(value: 'makkah', child: Text('Meccan')),
             DropdownMenuItem<String>(value: 'madinah', child: Text('Medinan')),
           ],
@@ -450,19 +467,19 @@ class _DownloadsPageState extends State<DownloadsPage> {
         side: BorderSide(color: colorScheme.outlineVariant),
       ),
       child: Column(
-          children: <Widget>[
-            ListTile(
-              leading: const Icon(Icons.download_done_outlined),
-              title: Text(localizations.noDownloadedAudioYet),
-              subtitle: Text(
-                localizations.downloadedAudioEmpty,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+        children: <Widget>[
+          ListTile(
+            leading: const Icon(Icons.download_done_outlined),
+            title: Text(localizations.noDownloadedAudioYet),
+            subtitle: Text(
+              localizations.downloadedAudioEmpty,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -482,31 +499,31 @@ class _DownloadsPageState extends State<DownloadsPage> {
         side: BorderSide(color: colorScheme.outlineVariant),
       ),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            ListTile(
-              leading: const Icon(Icons.record_voice_over_rounded),
-              title: Text(
-                reciterDisplayName(group.reciterCode),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              subtitle: Text(
-                '${localizations.surahAyahSummary(surahs.length, group.ayahCount)} • ${AudioDownloadService.formatBytes(group.sizeBytes)}',
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          ListTile(
+            leading: const Icon(Icons.record_voice_over_rounded),
+            title: Text(
+              reciterDisplayName(group.reciterCode),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
               ),
             ),
+            subtitle: Text(
+              '${localizations.surahAyahSummary(surahs.length, group.ayahCount)} • ${AudioDownloadService.formatBytes(group.sizeBytes)}',
+            ),
+          ),
+          const Divider(height: 1),
+          if (surahs.isNotEmpty)
+            _buildGroupHeader(localizations.surahs, surahs.length),
+          ...surahs.map(_buildDownloadTile),
+          if (surahs.isNotEmpty && ayahSurahs.isNotEmpty)
             const Divider(height: 1),
-            if (surahs.isNotEmpty)
-              _buildGroupHeader(localizations.surahs, surahs.length),
-            ...surahs.map(_buildDownloadTile),
-            if (surahs.isNotEmpty && ayahSurahs.isNotEmpty)
-              const Divider(height: 1),
-            if (ayahSurahs.isNotEmpty)
-              _buildGroupHeader(localizations.ayahs, group.ayahCount),
-            ...ayahSurahs.map(_buildAyahSurahTile),
-          ],
-        ),
+          if (ayahSurahs.isNotEmpty)
+            _buildGroupHeader(localizations.ayahs, group.ayahCount),
+          ...ayahSurahs.map(_buildAyahSurahTile),
+        ],
+      ),
     );
   }
 
@@ -576,7 +593,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
     return ValueListenableBuilder<ActivePlaybackTrack?>(
       valueListenable: PlaybackCacheService.instance.activeTrackNotifier,
       builder: (context, activeTrack, child) {
-        final bool isActiveOffline = activeTrack != null &&
+        final bool isActiveOffline =
+            activeTrack != null &&
             activeTrack.isPlaying &&
             activeTrack.isOffline &&
             activeTrack.surah == entry.surah &&
@@ -605,7 +623,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
     return ValueListenableBuilder<ActivePlaybackTrack?>(
       valueListenable: PlaybackCacheService.instance.activeTrackNotifier,
       builder: (context, activeTrack, child) {
-        final bool isActiveOffline = activeTrack != null &&
+        final bool isActiveOffline =
+            activeTrack != null &&
             activeTrack.isPlaying &&
             activeTrack.isOffline &&
             activeTrack.surah == entry.surah &&

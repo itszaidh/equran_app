@@ -1707,7 +1707,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Future<void> _loadFontsForCurrentSurah() async {
     if (SettingsDB().quranScriptStyle != 'qpc-v4') return;
 
-    final int currentPage = EquranTextStyles.getPageNumber(_currentChapter, _currentVerse);
+    final int currentPage = EquranTextStyles.getPageNumber(
+      _currentChapter,
+      _currentVerse,
+    );
     final bool currentLoaded = await QpcV4FontService.instance
         .ensureFontLoadedForPage(currentPage);
     if (currentLoaded && mounted) {

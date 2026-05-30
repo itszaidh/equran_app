@@ -1,247 +1,404 @@
-import 'package:equran/backend/library.dart' show SettingsDB;
+import 'package:flutter/material.dart';
+import 'package:equran/backend/library.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
-import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 
-class NavigationSettingsPage extends StatefulWidget {
+class NavigationSettingsPage extends StatelessWidget {
   const NavigationSettingsPage({super.key});
 
-  @override
-  State<NavigationSettingsPage> createState() => _NavigationSettingsPageState();
-}
-
-class _NavigationSettingsPageState extends State<NavigationSettingsPage> {
-  final List<String> _allModules = const ['home', 'quran', 'prayer', 'duas', 'more'];
-
-  List<String> _activeSlots = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSlots();
-  }
-
-  void _loadSlots() {
-    final dynamic saved = SettingsDB().get("navigation_slots");
-    if (saved is List) {
-      _activeSlots = List<String>.from(saved);
-    } else {
-      _activeSlots = ['home', 'quran', 'prayer', 'more'];
-    }
-  }
-
-  Future<void> _saveSlots() async {
-    await SettingsDB().put("navigation_slots", _activeSlots);
-    if (mounted) setState(() {});
-  }
-
-  String _getModuleLabel(String key, AppLocalizations localizations) {
-    return switch (key) {
-      'stats' => localizations.statistics,
-      'home' => localizations.home,
-      'quran' => localizations.quran,
-      'prayer' => localizations.prayer,
-      'duas' => localizations.duas,
-      'more' => localizations.more,
-      _ => key.toUpperCase(),
+  IconData _getModuleIcon(NavItem item) {
+    return switch (item) {
+      NavItem.home => Icons.home_rounded,
+      NavItem.quran => Icons.menu_book_rounded,
+      NavItem.prayer => Icons.schedule_rounded,
+      NavItem.duas => Icons.auto_stories_rounded,
+      NavItem.statistics => Icons.bar_chart_rounded,
+      NavItem.player => Icons.library_music_rounded,
+      NavItem.qibla => Icons.explore_rounded,
+      NavItem.downloads => Icons.download_rounded,
+      NavItem.readingPlans => Icons.route_rounded,
+      NavItem.hifz => Icons.bookmark_added_rounded,
+      NavItem.tasbih => Icons.auto_awesome_rounded,
+      NavItem.asmaUlHusna => Icons.diamond_rounded,
+      NavItem.settings => Icons.settings_rounded,
+      NavItem.more => Icons.grid_view_rounded,
     };
   }
 
-  IconData _getModuleIcon(String key) {
-    return switch (key) {
-      'stats' => Icons.bar_chart_rounded,
-      'home' => Icons.home_rounded,
-      'quran' => Icons.menu_book_rounded,
-      'prayer' => Icons.schedule_rounded,
-      'duas' => Icons.auto_stories_rounded,
-      'more' => Icons.grid_view_rounded,
-      _ => Icons.star_rounded,
+  String _getModuleLabel(NavItem item, AppLocalizations l10n) {
+    return switch (item) {
+      NavItem.home => l10n.home,
+      NavItem.quran => l10n.quran,
+      NavItem.prayer => l10n.prayer,
+      NavItem.duas => l10n.duas,
+      NavItem.statistics => l10n.statistics,
+      NavItem.player => l10n.player,
+      NavItem.qibla => l10n.qibla,
+      NavItem.downloads => l10n.downloads,
+      NavItem.readingPlans => l10n.readingRoutine,
+      NavItem.hifz => l10n.hifz,
+      NavItem.tasbih => l10n.tasbih,
+      NavItem.asmaUlHusna => l10n.asmaUlHusna,
+      NavItem.settings => l10n.settings,
+      NavItem.more => l10n.more,
     };
   }
 
-  void _swapOrReplaceSlot(int index, String newModule) {
-    final int existingIndex = _activeSlots.indexOf(newModule);
-    setState(() {
-      if (existingIndex != -1) {
-        // Swap positions
-        final String temp = _activeSlots[index];
-        _activeSlots[index] = newModule;
-        _activeSlots[existingIndex] = temp;
-      } else {
-        // Replace
-        _activeSlots[index] = newModule;
-      }
-    });
-    _saveSlots();
+  String _getModuleSubtitle(NavItem item, AppLocalizations l10n) {
+    return switch (item) {
+      NavItem.home => 'Main Dashboard',
+      NavItem.quran => 'Read the Holy Quran',
+      NavItem.prayer => 'Prayer Times & Adhan',
+      NavItem.duas => 'Dua & Supplications',
+      NavItem.statistics => 'Streaks & Worship Trends',
+      NavItem.player => 'Audio Recitations',
+      NavItem.qibla => 'Qibla Direction Compass',
+      NavItem.downloads => 'Offline Audio Cache Files',
+      NavItem.readingPlans => 'Reading Plans & Routines',
+      NavItem.hifz => 'Hifz Memorization Tasks',
+      NavItem.tasbih => 'Calm Dhikr Counter',
+      NavItem.asmaUlHusna => '99 Beautiful Names',
+      NavItem.settings => 'System Preferences',
+      NavItem.more => 'Immutable Hub Platform',
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
 
-    // The single inactive module
-    final String inactiveModule = _allModules.firstWhere(
-      (m) => !_activeSlots.contains(m),
-      orElse: () => '',
-    );
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Navigation Bar Settings'),
+        title: const Text('Customize Navigation'),
         centerTitle: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        children: <Widget>[
-          // Header Card
-          Card(
-            color: colors.primary.withAlpha(12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadii.large),
-              side: BorderSide(color: colors.primary.withAlpha(32)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.info_outline_rounded, color: colors.primary, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Drag the cards below to rearrange tabs, or tap "Swap" to customize modules. Statistics is locked as the default main tab.',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colors.textPrimary,
-                        height: 1.35,
+      body: ValueListenableBuilder<NavigationState>(
+        valueListenable: NavigationBloc.instance,
+        builder: (context, state, child) {
+          return ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            physics: const BouncingScrollPhysics(),
+            children: <Widget>[
+              // Header Card Info
+              Card(
+                color: colors.primary.withAlpha(12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.large),
+                  side: BorderSide(color: colors.primary.withAlpha(32)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(
+                        Icons.info_outline_rounded,
+                        color: colors.primary,
+                        size: 28,
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Drag tiles to rearrange. Drag an available item and drop it on an active tile to swap, or tap an item below to pin it (displaces least recently used).',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colors.textPrimary,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Statistics Locked Card
-          Text(
-            'LOCKED TABS',
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: colors.primary,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.1,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            margin: EdgeInsets.zero,
-            color: colors.surfaceSoft,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadii.medium),
-              side: BorderSide(color: colors.border),
-            ),
-            child: ListTile(
-              leading: Icon(_getModuleIcon('stats'), color: colors.textMuted),
-              title: Text(
-                _getModuleLabel('stats', localizations),
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colors.textMuted,
                 ),
               ),
-              subtitle: const Text('Slot 1 (Fixed)'),
-              trailing: Icon(Icons.lock_rounded, color: colors.textMuted, size: 18),
-            ),
-          ),
-          const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-          // Customizable List
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+              // Active Items Header
               Text(
-                'CUSTOMIZABLE TABS',
+                'ACTIVE NAVBAR SLOTS (MAX 5)',
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: colors.primary,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.1,
                 ),
               ),
-              if (inactiveModule.isNotEmpty)
-                Text(
-                  'Inactive: ${_getModuleLabel(inactiveModule, localizations)}',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
+              const SizedBox(height: 8),
 
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 460),
-            child: ReorderableListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _activeSlots.length,
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  if (oldIndex < newIndex) {
-                    newIndex -= 1;
-                  }
-                  final String item = _activeSlots.removeAt(oldIndex);
-                  _activeSlots.insert(newIndex, item);
-                });
-                _saveSlots();
-              },
-              itemBuilder: (context, index) {
-                final String moduleKey = _activeSlots[index];
-                return Card(
-                  key: ValueKey<String>(moduleKey),
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  color: colors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadii.medium),
-                    side: BorderSide(color: colors.border),
-                  ),
-                  child: ListTile(
-                    leading: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Icon(Icons.drag_handle_rounded, color: colors.textMuted),
-                        const SizedBox(width: 8),
-                        Icon(_getModuleIcon(moduleKey), color: colors.primary),
-                      ],
-                    ),
-                    title: Text(
-                      _getModuleLabel(moduleKey, localizations),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: colors.textPrimary,
-                      ),
-                    ),
-                    subtitle: Text('Slot ${index + 2}'),
-                    trailing: TextButton.icon(
-                      onPressed: inactiveModule.isEmpty
-                          ? null
-                          : () => _swapOrReplaceSlot(index, inactiveModule),
-                      icon: const Icon(Icons.swap_horiz_rounded, size: 16),
-                      label: Text(
-                        'Swap',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w800,
+              // Reorderable list of active slots
+              Theme(
+                data: theme.copyWith(
+                  canvasColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                ),
+                child: ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.activeNavbarItems.length,
+                  onReorder: (oldIndex, newIndex) => NavigationBloc.instance
+                      .reorderActiveItems(oldIndex, newIndex),
+                  itemBuilder: (context, index) {
+                    final NavItem item = state.activeNavbarItems[index];
+                    final bool isMore = item == NavItem.more;
+
+                    // Wrap each active slot in a DragTarget to support explicit swap drop gestures
+                    return DragTarget<NavItem>(
+                      key: ValueKey<String>('target_${item.name}'),
+                      onWillAccept: (incoming) =>
+                          incoming != null && incoming != item && !isMore,
+                      onAccept: (incoming) {
+                        NavigationBloc.instance.swapItems(item, incoming);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Swapped ${_getModuleLabel(item, l10n)} with ${_getModuleLabel(incoming, l10n)}',
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      builder: (context, candidateData, rejectedData) {
+                        final bool isHovered = candidateData.isNotEmpty;
+
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          color: isHovered
+                              ? colors.primary.withAlpha(20)
+                              : (isMore ? colors.surfaceSoft : colors.surface),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppRadii.medium,
+                            ),
+                            side: BorderSide(
+                              color: isHovered
+                                  ? colors.primary
+                                  : (isMore
+                                        ? colors.border.withAlpha(120)
+                                        : colors.border),
+                              width: isHovered ? 1.8 : 1.0,
+                            ),
+                          ),
+                          child: ListTile(
+                            leading: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(
+                                  Icons.drag_handle_rounded,
+                                  color: colors.textMuted,
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  _getModuleIcon(item),
+                                  color: isMore
+                                      ? colors.textMuted
+                                      : colors.primary,
+                                ),
+                              ],
+                            ),
+                            title: Text(
+                              _getModuleLabel(item, l10n),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: isMore
+                                    ? colors.textMuted
+                                    : colors.textPrimary,
+                              ),
+                            ),
+                            subtitle: Text(
+                              isMore
+                                  ? 'Slot ${index + 1} (Locked Hub)'
+                                  : 'Slot ${index + 1}',
+                              style: isMore
+                                  ? TextStyle(color: colors.textMuted)
+                                  : null,
+                            ),
+                            trailing: isMore
+                                ? Icon(
+                                    Icons.lock_rounded,
+                                    color: colors.textMuted,
+                                    size: 18,
+                                  )
+                                : IconButton(
+                                    icon: Icon(
+                                      Icons.remove_circle_outline,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      NavigationBloc.instance.demoteToAvailable(
+                                        item,
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Removed ${_getModuleLabel(item, l10n)} from navbar',
+                                          ),
+                                          behavior: SnackBarBehavior.floating,
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Available Items Header
+              Text(
+                'AVAILABLE UNPINNED ITEMS',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Grid/List of available items
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: state.availableMoreItems.length,
+                itemBuilder: (context, index) {
+                  final NavItem item = state.availableMoreItems[index];
+
+                  // Wrap each available item in a Draggable to support swap gestures
+                  return Draggable<NavItem>(
+                    data: item,
+                    feedback: Material(
+                      color: Colors.transparent,
+                      child: Container(
+                        width: MediaQuery.sizeOf(context).width - 32,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: colors.surface.withAlpha(220),
+                          borderRadius: BorderRadius.circular(AppRadii.medium),
+                          border: Border.all(color: colors.primary),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colors.primary.withAlpha(20),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: <Widget>[
+                            Icon(_getModuleIcon(item), color: colors.primary),
+                            const SizedBox(width: 12),
+                            Text(
+                              _getModuleLabel(item, l10n),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: colors.textPrimary,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+                    childWhenDragging: Opacity(
+                      opacity: 0.35,
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        color: colors.surfaceSoft,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadii.medium),
+                          side: BorderSide(color: colors.border),
+                        ),
+                        child: ListTile(
+                          leading: Icon(
+                            _getModuleIcon(item),
+                            color: colors.textMuted,
+                          ),
+                          title: Text(
+                            _getModuleLabel(item, l10n),
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: colors.textMuted,
+                            ),
+                          ),
+                          subtitle: Text(_getModuleSubtitle(item, l10n)),
+                        ),
+                      ),
+                    ),
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      color: colors.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.medium),
+                        side: BorderSide(color: colors.border),
+                      ),
+                      child: ListTile(
+                        onTap: () {
+                          // Tap triggers LRU auto displacement promotion
+                          // Find candidate that will be displaced before state changes to notify user
+                          final List<NavItem> active = state.activeNavbarItems;
+                          NavItem? displaceCandidate;
+                          for (final NavItem historic
+                              in NavigationBloc.instance.usageHistory) {
+                            if (historic != NavItem.more &&
+                                active.contains(historic)) {
+                              displaceCandidate = historic;
+                              break;
+                            }
+                          }
+                          displaceCandidate ??= active.firstWhere(
+                            (e) => e != NavItem.more,
+                          );
+
+                          NavigationBloc.instance.promoteToActive(item);
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Pinned ${_getModuleLabel(item, l10n)} (displaced ${_getModuleLabel(displaceCandidate, l10n)})',
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: colors.primary.withAlpha(12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _getModuleIcon(item),
+                            color: colors.primary,
+                          ),
+                        ),
+                        title: Text(
+                          _getModuleLabel(item, l10n),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: colors.textPrimary,
+                          ),
+                        ),
+                        subtitle: Text(_getModuleSubtitle(item, l10n)),
+                        trailing: Icon(
+                          Icons.add_circle_outline_rounded,
+                          color: colors.primary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          );
+        },
       ),
     );
   }

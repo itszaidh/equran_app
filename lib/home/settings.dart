@@ -171,7 +171,9 @@ class _SettingsPageState extends State<SettingsPage> {
               ListTile(
                 leading: const Icon(Icons.palette_outlined),
                 title: Text(localizations.appearance),
-                subtitle: const Text('Theme, light/dark mode, and color accent settings'),
+                subtitle: const Text(
+                  'Theme, light/dark mode, and color accent settings',
+                ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -182,7 +184,9 @@ class _SettingsPageState extends State<SettingsPage> {
               ListTile(
                 leading: const Icon(Icons.linear_scale_rounded),
                 title: const Text('Navigation Bar Settings'),
-                subtitle: const Text('Rearrange and swap bottom navigation tabs'),
+                subtitle: const Text(
+                  'Rearrange and swap bottom navigation tabs',
+                ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -899,134 +903,6 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  Widget _buildThemeColorTile(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    return ListTile(
-      onTap: () async {
-        final String? selectedScheme = await _showThemeSchemeDialog(context);
-        if (selectedScheme == null) return;
-        await SettingsDB().put("themeScheme", selectedScheme);
-        if (mounted) {
-          setState(() {});
-        }
-
-        final MaterialColor color = _savedMaterialColor();
-        if (context.mounted) {
-          AdaptiveTheme.of(context).setTheme(
-            light: AppTheme.buildLightTheme(color, schemeId: selectedScheme),
-            dark: AppTheme.buildDarkTheme(color, schemeId: selectedScheme),
-          );
-        }
-      },
-      title: Text(localizations.colorScheme),
-      subtitle: Text(_selectedThemeName(localizations)),
-    );
-  }
-
-  Future<String?> _showThemeSchemeDialog(BuildContext context) {
-    final String selectedScheme = _selectedThemeScheme();
-
-    return showDialog<String>(
-      context: context,
-      builder: (context) {
-        final AppLocalizations localizations = AppLocalizations.of(context)!;
-        final ThemeData theme = Theme.of(context);
-        final ColorScheme colorScheme = theme.colorScheme;
-        final BorderRadius radius = BorderRadius.circular(AppRadii.large);
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 32,
-          ),
-          backgroundColor: colorScheme.surfaceContainer,
-          shape: RoundedRectangleBorder(borderRadius: radius),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 420,
-                maxHeight: MediaQuery.sizeOf(context).height - 64,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Icon(
-                          Icons.format_paint_rounded,
-                          color: colorScheme.primary,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.colorSchemeDialogTitle,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: AppLocalizations.of(context)!.close,
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close_rounded),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Flexible(
-                      child: Scrollbar(
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          itemCount: _themeSchemeOptions.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final _ThemeSchemeOption option =
-                                _themeSchemeOptions[index];
-                            return ListTile(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppRadii.medium,
-                                ),
-                                side: BorderSide(
-                                  color: option.id == selectedScheme
-                                      ? colorScheme.primary
-                                      : colorScheme.outlineVariant,
-                                ),
-                              ),
-                              tileColor: option.id == selectedScheme
-                                  ? colorScheme.primaryContainer.withAlpha(90)
-                                  : colorScheme.surfaceContainerLow,
-                              leading: _ThemeSchemeSwatch(option: option),
-                              title: Text(option.title(localizations)),
-                              subtitle: Text(option.subtitle(localizations)),
-                              trailing: option.id == selectedScheme
-                                  ? Icon(
-                                      Icons.check_circle_rounded,
-                                      color: colorScheme.primary,
-                                    )
-                                  : null,
-                              onTap: () => Navigator.of(context).pop(option.id),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildDailyQuranGoalTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final int goal = _dailyQuranGoalAyahs();
@@ -1281,6 +1157,29 @@ class _SettingsPageState extends State<SettingsPage> {
     AdaptiveTheme.of(context).setThemeMode(themeMode);
   }
 
+  String _selectedThemeScheme() {
+    final dynamic savedScheme = SettingsDB().get("themeScheme");
+    return switch (savedScheme) {
+      AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
+      AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
+      AppTheme.sepiaScheme => AppTheme.sepiaScheme,
+      AppTheme.blackScheme => AppTheme.blackScheme,
+      AppTheme.redScheme => AppTheme.redScheme,
+      _ => AppTheme.defaultScheme,
+    };
+  }
+
+  MaterialColor _savedMaterialColor() {
+    final dynamic savedColorIndex = SettingsDB().get("color");
+    final int colorIndex =
+        savedColorIndex is int &&
+            savedColorIndex >= 0 &&
+            savedColorIndex < Colors.primaries.length
+        ? savedColorIndex
+        : 7;
+    return Colors.primaries[colorIndex];
+  }
+
   Future<bool> _showRestoreConfirmation(BuildContext context) async {
     final bool? shouldRestore = await showDialog<bool>(
       context: context,
@@ -1308,110 +1207,6 @@ class _SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Widget _buildThemeModeTile(BuildContext context) {
-    final AdaptiveThemeMode themeMode = AdaptiveTheme.of(context).mode;
-    final localizations = AppLocalizations.of(context)!;
-
-    return ListTile(
-      leading: Icon(_themeModeIcon(themeMode)),
-      title: Text(localizations.themeMode),
-      subtitle: Text(_themeModeLabel(themeMode, localizations)),
-      onTap: () => _showThemeModeDialog(context),
-    );
-  }
-
-  Future<void> _showThemeModeDialog(BuildContext context) async {
-    final AdaptiveThemeMode currentMode = AdaptiveTheme.of(context).mode;
-    final localizations = AppLocalizations.of(context)!;
-    final AdaptiveThemeMode? selectedMode =
-        await _showSelectionDialog<AdaptiveThemeMode>(
-          context: context,
-          title: localizations.themeModeDialogTitle,
-          icon: Icons.palette_outlined,
-          selectedValue: currentMode,
-          options: <AppSelectionOption<AdaptiveThemeMode>>[
-            AppSelectionOption<AdaptiveThemeMode>(
-              value: AdaptiveThemeMode.dark,
-              title: localizations.themeModeDark,
-              subtitle: localizations.themeModeDarkSubtitle,
-              leading: const Icon(Icons.dark_mode_rounded),
-            ),
-            AppSelectionOption<AdaptiveThemeMode>(
-              value: AdaptiveThemeMode.light,
-              title: localizations.themeModeLight,
-              subtitle: localizations.themeModeLightSubtitle,
-              leading: const Icon(Icons.light_mode_rounded),
-            ),
-            AppSelectionOption<AdaptiveThemeMode>(
-              value: AdaptiveThemeMode.system,
-              title: localizations.themeModeSystem,
-              subtitle: localizations.themeModeSystemSubtitle,
-              leading: const Icon(Icons.brightness_auto_rounded),
-            ),
-          ],
-        );
-
-    if (selectedMode == null) return;
-    await SettingsDB().put("themeMode", _themeModeSettingValue(selectedMode));
-    if (context.mounted) {
-      AdaptiveTheme.of(context).setThemeMode(selectedMode);
-      setState(() {});
-    }
-  }
-
-  IconData _themeModeIcon(AdaptiveThemeMode themeMode) {
-    if (themeMode.isDark) return Icons.dark_mode_rounded;
-    if (themeMode.isSystem) return Icons.brightness_auto_rounded;
-    return Icons.light_mode_rounded;
-  }
-
-  String _themeModeLabel(
-    AdaptiveThemeMode themeMode,
-    AppLocalizations localizations,
-  ) {
-    if (themeMode.isDark) return localizations.themeModeDark;
-    if (themeMode.isSystem) return localizations.themeModeSystem;
-    return localizations.themeModeLight;
-  }
-
-  String _themeModeSettingValue(AdaptiveThemeMode themeMode) {
-    if (themeMode.isDark) return "dark";
-    if (themeMode.isSystem) return "auto";
-    return "light";
-  }
-
-  String _selectedThemeName(AppLocalizations localizations) {
-    return _themeSchemeOptions
-        .firstWhere(
-          (option) => option.id == _selectedThemeScheme(),
-          orElse: () => _themeSchemeOptions.first,
-        )
-        .title(localizations);
-  }
-
-  String _selectedThemeScheme() {
-    final dynamic savedScheme = SettingsDB().get("themeScheme");
-    return switch (savedScheme) {
-      AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
-      AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
-      AppTheme.sepiaScheme => AppTheme.sepiaScheme,
-      AppTheme.blackScheme => AppTheme.blackScheme,
-      AppTheme.redScheme => AppTheme.redScheme,
-      _ => AppTheme.defaultScheme,
-    };
-  }
-
-  MaterialColor _savedMaterialColor() {
-    final dynamic savedColorIndex = SettingsDB().get("color");
-    final int colorIndex =
-        savedColorIndex is int &&
-            savedColorIndex >= 0 &&
-            savedColorIndex < Colors.primaries.length
-        ? savedColorIndex
-        : 7;
-    return Colors.primaries[colorIndex];
   }
 
   int _dailyQuranGoalAyahs() {
@@ -1545,77 +1340,3 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-
-class _ThemeSchemeOption {
-  const _ThemeSchemeOption({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.colors,
-  });
-
-  final String id;
-  final String Function(AppLocalizations localizations) title;
-  final String Function(AppLocalizations localizations) subtitle;
-  final List<Color> colors;
-}
-
-class _ThemeSchemeSwatch extends StatelessWidget {
-  const _ThemeSchemeSwatch({required this.option});
-
-  final _ThemeSchemeOption option;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 46,
-      height: 46,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(colors: option.colors),
-          border: Border.all(color: Theme.of(context).colorScheme.outline),
-        ),
-      ),
-    );
-  }
-}
-
-final List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
-  _ThemeSchemeOption(
-    id: AppTheme.defaultScheme,
-    title: (localizations) => localizations.themeSchemeEmeraldGreen,
-    subtitle: (localizations) => localizations.themeSchemeEmeraldGreenSubtitle,
-    colors: <Color>[Color(0xFF07110E), Color(0xFF1E7A61)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.fancyBlueScheme,
-    title: (localizations) => localizations.themeSchemeSapphireBlue,
-    subtitle: (localizations) => localizations.themeSchemeSapphireBlueSubtitle,
-    colors: <Color>[Color(0xFF06101C), Color(0xFF3B8DD6)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.fancyPurpleScheme,
-    title: (localizations) => localizations.themeSchemeRoyalPurple,
-    subtitle: (localizations) => localizations.themeSchemeRoyalPurpleSubtitle,
-    colors: <Color>[Color(0xFF100A19), Color(0xFF9368D0)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.sepiaScheme,
-    title: (localizations) => localizations.themeSchemeSepia,
-    subtitle: (localizations) => localizations.themeSchemeSepiaSubtitle,
-    colors: <Color>[Color(0xFF130E09), Color(0xFFC08A4C)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.blackScheme,
-    title: (localizations) => localizations.themeSchemeBlack,
-    subtitle: (localizations) => localizations.themeSchemeBlackSubtitle,
-    colors: <Color>[Color(0xFF000000), Color(0xFF18A28D)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.redScheme,
-    title: (localizations) => localizations.themeSchemeRubyRed,
-    subtitle: (localizations) => localizations.themeSchemeRubyRedSubtitle,
-    colors: <Color>[Color(0xFF12070A), Color(0xFFC8475D)],
-  ),
-];

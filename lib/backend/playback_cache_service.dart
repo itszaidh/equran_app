@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 
 class PlaybackCacheService {
   PlaybackCacheService._privateConstructor();
-  static final PlaybackCacheService instance = PlaybackCacheService._privateConstructor();
+  static final PlaybackCacheService instance =
+      PlaybackCacheService._privateConstructor();
 
   final ValueNotifier<ActivePlaybackTrack?> activeTrackNotifier =
       ValueNotifier<ActivePlaybackTrack?>(null);

@@ -171,19 +171,6 @@ class PlayerPage extends StatefulWidget {
   State<PlayerPage> createState() => _PlayerPageState();
 }
 
-class _SleepTimerChoice {
-  const _SleepTimerChoice(this.duration);
-
-  final Duration duration;
-
-  static const List<_SleepTimerChoice> durationChoices = <_SleepTimerChoice>[
-    _SleepTimerChoice(Duration(minutes: 10)),
-    _SleepTimerChoice(Duration(minutes: 15)),
-    _SleepTimerChoice(Duration(minutes: 30)),
-    _SleepTimerChoice(Duration(minutes: 60)),
-  ];
-}
-
 class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
   static const MethodChannel _playerPageChannel = MethodChannel(
     'com.app.equran/read_page',
@@ -697,12 +684,6 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
   String _localizedSurahName(int surah) {
     return localizedSurahName(AppLocalizations.of(context)!, surah);
-  }
-
-  String _sleepTimerChoiceLabel(_SleepTimerChoice choice) {
-    return AppLocalizations.of(
-      context,
-    )!.minutesShort(choice.duration.inMinutes);
   }
 
   String _selectedReciterCode() => PlayerAudioService().selectedReciter.code;
@@ -1710,14 +1691,20 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
     final AppLocalizations l10n = AppLocalizations.of(context)!;
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
 
     int minutes = 15;
     if (_sleepTimerEndsAt != null) {
-      minutes = _sleepTimerEndsAt!.difference(DateTime.now()).inMinutes.clamp(1, 120);
+      minutes = _sleepTimerEndsAt!
+          .difference(DateTime.now())
+          .inMinutes
+          .clamp(1, 120);
     }
     bool endOfSurah = _sleepTimerMode == _sleepTimerEndSurahMode;
 
-    final TextEditingController textController = TextEditingController(text: '$minutes');
+    final TextEditingController textController = TextEditingController(
+      text: '$minutes',
+    );
 
     await showModalBottomSheet<void>(
       context: context,
@@ -1788,7 +1775,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       side: BorderSide(color: colorScheme.outlineVariant),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -1801,24 +1791,34 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                             children: <Widget>[
                               // Minus Button
                               IconButton(
-                                onPressed: endOfSurah ? null : () => increment(-5),
-                                icon: const Icon(Icons.remove_circle_outline_rounded),
+                                onPressed: endOfSurah
+                                    ? null
+                                    : () => increment(-5),
+                                icon: const Icon(
+                                  Icons.remove_circle_outline_rounded,
+                                ),
                                 color: colorScheme.primary,
                                 iconSize: 28,
                               ),
                               // Text Field Input
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   child: TextField(
                                     controller: textController,
                                     keyboardType: TextInputType.number,
                                     textAlign: TextAlign.center,
                                     enabled: !endOfSurah,
-                                    style: theme.textTheme.headlineMedium?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                      color: endOfSurah ? colorScheme.onSurfaceVariant.withAlpha(128) : colorScheme.onSurface,
-                                    ),
+                                    style: theme.textTheme.headlineMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: endOfSurah
+                                              ? colorScheme.onSurfaceVariant
+                                                    .withAlpha(128)
+                                              : colorScheme.onSurface,
+                                        ),
                                     decoration: const InputDecoration(
                                       suffixText: 'min',
                                       border: InputBorder.none,
@@ -1837,8 +1837,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                               ),
                               // Plus Button
                               IconButton(
-                                onPressed: endOfSurah ? null : () => increment(5),
-                                icon: const Icon(Icons.add_circle_outline_rounded),
+                                onPressed: endOfSurah
+                                    ? null
+                                    : () => increment(5),
+                                icon: const Icon(
+                                  Icons.add_circle_outline_rounded,
+                                ),
                                 color: colorScheme.primary,
                                 iconSize: 28,
                               ),
@@ -1863,13 +1867,17 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                       ),
                       secondary: Icon(
                         Icons.queue_music_rounded,
-                        color: endOfSurah ? colorScheme.primary : colorScheme.textSecondary,
+                        color: endOfSurah
+                            ? colorScheme.primary
+                            : colors.textSecondary,
                       ),
                       title: const Text(
                         'End of Surah',
                         style: TextStyle(fontWeight: FontWeight.w800),
                       ),
-                      subtitle: const Text('Auto-kill the stream exactly when the current track finishes'),
+                      subtitle: const Text(
+                        'Auto-kill the stream exactly when the current track finishes',
+                      ),
                       value: endOfSurah,
                       onChanged: (val) {
                         setSheetState(() {
@@ -1883,7 +1891,8 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                   // Apply / Stop Buttons
                   Row(
                     children: <Widget>[
-                      if (_sleepTimerEndsAt != null || _sleepTimerMode != null) ...<Widget>[
+                      if (_sleepTimerEndsAt != null ||
+                          _sleepTimerMode != null) ...<Widget>[
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () {
@@ -1899,9 +1908,12 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                         child: FilledButton(
                           onPressed: () async {
                             if (endOfSurah) {
-                              await _applySleepTimerSelection(_sleepTimerEndSurahMode);
+                              await _applySleepTimerSelection(
+                                _sleepTimerEndSurahMode,
+                              );
                             } else {
-                              final int val = int.tryParse(textController.text) ?? minutes;
+                              final int val =
+                                  int.tryParse(textController.text) ?? minutes;
                               await _setSleepTimer(
                                 Duration(minutes: val),
                                 l10n.minutesShort(val),
@@ -2221,8 +2233,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
 
     final Map<String, bool> downloadedReciters = {};
     for (final reciter in reciters) {
-      downloadedReciters[reciter.code] =
-          await _downloads.hasSurahForReciter(_selectedSurah, reciter.code);
+      downloadedReciters[reciter.code] = await _downloads.hasSurahForReciter(
+        _selectedSurah,
+        reciter.code,
+      );
     }
 
     if (!mounted) return null;
@@ -2239,7 +2253,10 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                 value: reciter,
                 title: reciter.displayName(arabic: isArabicLocalizations(l10n)),
                 leading: downloadedReciters[reciter.code] == true
-                    ? const Icon(Icons.offline_pin_rounded, color: Colors.greenAccent)
+                    ? const Icon(
+                        Icons.offline_pin_rounded,
+                        color: Colors.greenAccent,
+                      )
                     : const Icon(Icons.record_voice_over_outlined, size: 20),
               ),
             )
@@ -3096,12 +3113,19 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                   if (isFav) {
                     await FavouritesDB().delete(key);
                   } else {
-                    await FavouritesDB().put(key, DateTime.now().toIso8601String());
+                    await FavouritesDB().put(
+                      key,
+                      DateTime.now().toIso8601String(),
+                    );
                   }
                 },
                 icon: Icon(
-                  isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  color: isFav ? Colors.redAccent : colorScheme.onSurfaceVariant,
+                  isFav
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  color: isFav
+                      ? Colors.redAccent
+                      : colorScheme.onSurfaceVariant,
                 ),
                 iconSize: secondaryControlIconSize,
                 style: IconButton.styleFrom(
@@ -3111,7 +3135,9 @@ class _PlayerPageState extends State<PlayerPage> with WidgetsBindingObserver {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   backgroundColor: isFav
                       ? Colors.redAccent.withValues(alpha: 0.15)
-                      : colorScheme.surfaceContainerHighest.withValues(alpha: 0.0),
+                      : colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.0,
+                        ),
                 ),
               );
             },

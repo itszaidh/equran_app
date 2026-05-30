@@ -8,6 +8,7 @@ import 'package:equran/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:equran/home/navigation_settings_page.dart';
 
 const String _appDownloadUrl =
     'https://f-droid.org/en/packages/com.app.equran/';
@@ -158,6 +159,20 @@ class MorePage extends StatelessWidget {
                         title: localizations.settings,
                         subtitle: localizations.fontsReciterAppBehavior,
                         onTap: onOpenSettings,
+                      ),
+                      _MoreAction(
+                        icon: Icons.dashboard_customize_outlined,
+                        assetPath: _settingsAsset,
+                        title: 'Customize Tabs',
+                        subtitle: 'Rearrange & Swap Slots',
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (BuildContext context) =>
+                                  const NavigationSettingsPage(),
+                            ),
+                          );
+                        },
                       ),
                       _MoreAction(
                         icon: Icons.brightness_6_outlined,

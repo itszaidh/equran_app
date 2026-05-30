@@ -17,13 +17,13 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
   final List<_AccentOption> _accents = [
     _AccentOption(
       id: AppTheme.defaultScheme,
-      name: 'Islamic Green',
+      name: 'Emerald Green',
       color: const Color(0xFF1E7A61),
       description: 'Classic emerald representation',
     ),
     _AccentOption(
       id: AppTheme.fancyBlueScheme,
-      name: 'Deep Blue',
+      name: 'Sapphire Blue',
       color: const Color(0xFF3B8DD6),
       description: 'Premium sapphire aesthetics',
     ),
@@ -47,7 +47,7 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
     ),
     _AccentOption(
       id: AppTheme.blackScheme,
-      name: 'Classic Cyan',
+      name: 'AMOLED',
       color: const Color(0xFF18A28D),
       description: 'Ultra dark high-contrast cyan',
     ),
@@ -89,12 +89,6 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
     }
   }
 
-  String _themeModeLabel(AdaptiveThemeMode mode, AppLocalizations l10n) {
-    if (mode.isDark) return l10n.themeModeDark;
-    if (mode.isSystem) return l10n.themeModeSystem;
-    return l10n.themeModeLight;
-  }
-
   String _themeModeSettingValue(AdaptiveThemeMode themeMode) {
     if (themeMode.isDark) return "dark";
     if (themeMode.isSystem) return "auto";
@@ -109,10 +103,7 @@ class _AppearanceSettingsPageState extends State<AppearanceSettingsPage> {
     final AdaptiveThemeMode currentMode = AdaptiveTheme.of(context).mode;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(localizations.appearance),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(localizations.appearance), centerTitle: true),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: <Widget>[

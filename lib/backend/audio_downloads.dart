@@ -691,7 +691,9 @@ class AudioDownloadService {
 
   Future<bool> hasSurahForReciter(int surah, String reciterCode) async {
     final Directory dir = await surahDirectory();
-    final File file = File('${dir.path}/${reciterCode}_${surah.toString().padLeft(3, '0')}.mp3');
+    final File file = File(
+      '${dir.path}/${reciterCode}_${surah.toString().padLeft(3, '0')}.mp3',
+    );
     return _isCompleteDownload(file);
   }
 

@@ -1,0 +1,111 @@
+Resolving dependencies...
+Downloading packages...
+! analyzer 13.0.0 (overridden)
+  audioplayers 6.6.0 (6.7.0 available)
+  audioplayers_web 5.2.0 (5.2.1 available)
+  audioplayers_windows 4.3.0 (4.3.1 available)
+! build 4.0.6 (overridden)
+! build_resolvers 3.0.4 (overridden)
+! build_runner 2.15.0 (overridden)
+  cli_util 0.4.2 (0.5.1 available)
+  code_assets 1.1.0 (1.2.0 available)
+! dart_style 3.1.9 (overridden)
+  dbus 0.7.12 (0.7.13 available)
+  device_info_plus 12.4.0 (13.1.0 available)
+  device_info_plus_platform_interface 7.0.3 (8.1.0 available)
+  flutter_timezone 5.0.2 (5.1.0 available)
+  geocoding_android 4.0.1 (5.0.1 available)
+  geocoding_platform_interface 3.2.0 (5.0.0 available)
+! geolocator_android 4.6.2 from git https://github.com/Zverik/flutter-geolocator.git at e3991f in geolocator_android (overridden)
+! hive_generator 2.0.1 (overridden)
+  image 4.8.0 (4.9.0 available)
+  latlong2 0.9.1 (0.10.1 available)
+  matcher 0.12.19 (0.12.20 available)
+! meta 1.18.2 (overridden)
+  package_info_plus 9.0.1 (10.1.0 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  share_plus 12.0.2 (13.1.0 available)
+  share_plus_platform_interface 6.1.0 (7.1.0 available)
+! source_gen 4.2.3 (overridden)
+  test_api 0.7.11 (0.7.12 available)
+  vector_math 2.2.0 (2.3.0 available)
+  win32 5.15.0 (6.3.0 available)
+  win32_registry 2.1.0 (3.0.3 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+23 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing equran_app...                                         
+
+warning • The value of the local variable 'previousText' isn't used. Try removing the variable or using it • check_pua.dart:13:13 • unused_local_variable
+   info • Don't invoke 'print' in production code. Try using a logging framework • check_pua.dart:33:11 • avoid_print
+warning • The declaration '_themeModeLabel' isn't referenced. Try removing the declaration of '_themeModeLabel' • lib/home/appearance_settings_page.dart:92:10 • unused_element
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/home/home.dart:66:26 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/home/home.dart:67:31 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/home/home.dart:68:38 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/home/home.dart:69:31 • curly_braces_in_flow_control_structures
+   info • 'axisAlignment' is deprecated and shouldn't be used. Use alignment instead. This property provides full control over both axes, which is an improvement over the old axisAlignment. This feature was deprecated after v3.41.0-1.0.pre. Try replacing the use of the deprecated member with the replacement • lib/home/main_page.dart:169:17 • deprecated_member_use
+   info • 'onReorder' is deprecated and shouldn't be used. Use the onReorderItem callback instead. The onReorderItem callback adjusts the newIndex parameter for a removed item at the oldIndex. This feature was deprecated after v3.41.0-0.0.pre. Try replacing the use of the deprecated member with the replacement • lib/home/navigation_settings_page.dart:189:15 • deprecated_member_use
+warning • The value of the field 'durationChoices' isn't used. Try removing the field, or using it • lib/home/player.dart:179:40 • unused_field
+warning • The declaration '_sleepTimerChoiceLabel' isn't referenced. Try removing the declaration of '_sleepTimerChoiceLabel' • lib/home/player.dart:702:10 • unused_element
+warning • The declaration '_buildThemeColorTile' isn't referenced. Try removing the declaration of '_buildThemeColorTile' • lib/home/settings.dart:902:10 • unused_element
+warning • The declaration '_buildThemeModeTile' isn't referenced. Try removing the declaration of '_buildThemeModeTile' • lib/home/settings.dart:1313:10 • unused_element
+warning • The value of the field '_fontLoaded' isn't used. Try removing the field, or using it • lib/home_dashboard/home_dashboard_page.dart:1671:8 • unused_field
+   info • The constant name 'abdul_samad' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:505:3 • constant_identifier_names
+   info • The constant name 'abdul_basit_mujawwad' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:510:3 • constant_identifier_names
+   info • The constant name 'abdul_basit_murattal' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:515:3 • constant_identifier_names
+   info • The constant name 'abdul_basit_murattal_192' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:520:3 • constant_identifier_names
+   info • The constant name 'abdullaah_3awwaad_al_juhaynee' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:525:3 • constant_identifier_names
+   info • The constant name 'abdullah_basfar' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:530:3 • constant_identifier_names
+   info • The constant name 'abdullah_basfar_64' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:535:3 • constant_identifier_names
+   info • The constant name 'abdullah_basfar_192' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:540:3 • constant_identifier_names
+   info • The constant name 'abdullah_matroud' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:545:3 • constant_identifier_names
+   info • The constant name 'abdurrahmaan_as_sudais' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:550:3 • constant_identifier_names
+   info • The constant name 'abdurrahmaan_as_sudais_192' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:555:3 • constant_identifier_names
+   info • The constant name 'abu_bakr_ash_shaatree' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:560:3 • constant_identifier_names
+   info • The constant name 'ahmed_neana' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:565:3 • constant_identifier_names
+   info • The constant name 'ahmed_ibn_ali_al_ajamy' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:570:3 • constant_identifier_names
+   info • The constant name 'akram_alalaqimy' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:575:3 • constant_identifier_names
+   info • The constant name 'ali_hajjaj_alsuesy' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:590:3 • constant_identifier_names
+   info • The constant name 'ali_jaber' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:595:3 • constant_identifier_names
+   info • The constant name 'ayman_sowaid' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:600:3 • constant_identifier_names
+   info • The constant name 'fares_abbad' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:605:3 • constant_identifier_names
+   info • The constant name 'hani_rifai' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:615:3 • constant_identifier_names
+   info • The constant name 'hani_rifai_192' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:620:3 • constant_identifier_names
+   info • The constant name 'husary_mujawwad' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:650:3 • constant_identifier_names
+   info • The constant name 'husary_mujawwad_64' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:655:3 • constant_identifier_names
+   info • The constant name 'husary_muallim' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:660:3 • constant_identifier_names
+   info • The constant name 'ibrahim_akhdar' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:665:3 • constant_identifier_names
+   info • The constant name 'ibrahim_akhdar_64' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:670:3 • constant_identifier_names
+   info • The constant name 'karim_mansoori' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:675:3 • constant_identifier_names
+   info • The constant name 'khalid_abdul_qahtaanee' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:680:3 • constant_identifier_names
+   info • The constant name 'maher_al_muaiqly' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:685:3 • constant_identifier_names
+   info • The constant name 'maher_al_muaiqly_128' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:690:3 • constant_identifier_names
+   info • The constant name 'minshawi_murattal' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:700:3 • constant_identifier_names
+   info • The constant name 'minshawi_mujawwad' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:705:3 • constant_identifier_names
+   info • The constant name 'minshawi_mujawwad_192' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:710:3 • constant_identifier_names
+   info • The constant name 'minshawi_teacher' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:715:3 • constant_identifier_names
+   info • The constant name 'mohammad_al_tablaway' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:720:3 • constant_identifier_names
+   info • The constant name 'mohammad_al_tablaway_64' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:725:3 • constant_identifier_names
+   info • The constant name 'muhammad_abdul_kareem' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:730:3 • constant_identifier_names
+   info • The constant name 'muhammad_ayyoub' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:735:3 • constant_identifier_names
+   info • The constant name 'muhammad_ayyoub_64' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:740:3 • constant_identifier_names
+   info • The constant name 'muhammad_jibreel' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:745:3 • constant_identifier_names
+   info • The constant name 'muhammad_jibreel_64' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:750:3 • constant_identifier_names
+   info • The constant name 'muhsin_al_qasim' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:755:3 • constant_identifier_names
+   info • The constant name 'mustafa_ismail' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:760:3 • constant_identifier_names
+   info • The constant name 'nabil_rifa3i' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:765:3 • constant_identifier_names
+   info • The constant name 'nasser_al_qatami' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:770:3 • constant_identifier_names
+   info • The constant name 'sahl_yassin' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:780:3 • constant_identifier_names
+   info • The constant name 'salaah_abdulrahman_bukhatir' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:785:3 • constant_identifier_names
+   info • The constant name 'salah_al_budair' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:790:3 • constant_identifier_names
+   info • The constant name 'saood_ash_shuraym' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:795:3 • constant_identifier_names
+   info • The constant name 'saood_ash_shuraym_128' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:800:3 • constant_identifier_names
+   info • The constant name 'yasser_salamah' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:805:3 • constant_identifier_names
+   info • The constant name 'yasser_ad_dussary' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:810:3 • constant_identifier_names
+   info • The constant name 'aziz_alili' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:815:3 • constant_identifier_names
+   info • The constant name 'khalefa_al_tunaiji' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:820:3 • constant_identifier_names
+   info • The constant name 'mahmoud_ali_al_banna' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/utils/reciter.dart:825:3 • constant_identifier_names
+warning • Unused import: 'dart:convert'. Try removing the import directive • test_qpc.dart:1:8 • unused_import
+warning • The value of the local variable 'pageDataContent' isn't used. Try removing the variable or using it • test_qpc.dart:6:9 • unused_local_variable
+
