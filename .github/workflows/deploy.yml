@@ -115,6 +115,20 @@ jobs:
         run: flutter build apk --release --split-per-abi
         shell: bash
 
+      # More thorough scan using apkanalyzer
+      - name: Scan with apkanalyzer
+        run: |
+          for APK in build/app/outputs/flutter-apk/*.apk; do
+            RESULT=$(apkanalyzer dex packages "$APK" \
+              | grep "com.google.android.play" || true)
+            if [ -n "$RESULT" ]; then
+              echo "❌ FAIL: Play Core found in $APK"
+              echo "$RESULT"
+              exit 1
+            fi
+          done
+          echo "✅ PASS: Clean APK"
+
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v4
         with:
