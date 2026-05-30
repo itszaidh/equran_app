@@ -34,7 +34,10 @@ String quranVerseText(
 }) {
   String verseText = quran.getVerse(chapter, verse);
   if (verse == 1 && chapter != 1) {
-    verseText = verseText.replaceAll(quranBasmalaText, '');
+    final RegExp basmalaRegex = RegExp(
+      r'^بِسْمِ\s+اللَّهِ\s+الرَّحْمَ[ٰـ]*نِ\s+الرَّحِيمِ\s*',
+    );
+    verseText = verseText.replaceFirst(basmalaRegex, '');
   }
 
   if (!includeVerseNumber) return verseText;

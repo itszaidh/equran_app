@@ -19,7 +19,13 @@ const int totalVerseCount = 6236;
 const String basmala = 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ';
 const String sajdah = 'سَجْدَةٌ';
 
-const String _quranTextAssetBase = 'assets/data/quran/text';
+String quranTextAssetBase = 'assets/data/quran/text/uthmani';
+
+void setQuranTextAssetBase(String path) {
+  quranTextAssetBase = path;
+  _quranTextCache.clear();
+}
+
 const String _translationAssetBase = 'assets/data/quran/translations';
 const String missingTranslationPrefix = '__missing_translation__';
 
@@ -52,7 +58,7 @@ Future<void> ensureSurahTextLoaded(int surahNumber) async {
   final int surah = _validSurahNumber(surahNumber);
   if (_quranTextCache.containsKey(surah)) return;
   _quranTextCache[surah] = await _loadAssetSurah(
-    '$_quranTextAssetBase/$surah.json',
+    '$quranTextAssetBase/$surah.json',
     surah,
   );
 }
@@ -471,7 +477,7 @@ Map<int, String> _loadedSurahText(int surahNumber) {
 Map<int, String> _loadTextSyncFromFile(int surah) {
   final Map<int, String>? cached = _quranTextCache[surah];
   if (cached != null) return cached;
-  final File file = File('$_quranTextAssetBase/$surah.json');
+  final File file = File('$quranTextAssetBase/$surah.json');
   if (!file.existsSync()) {
     throw 'Quran text is not loaded. Call initializeQuran() before reading verses.';
   }

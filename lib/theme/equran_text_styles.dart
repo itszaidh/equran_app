@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:equran/backend/settings_db.dart';
 
 class EquranTextStyles {
   const EquranTextStyles._();
@@ -111,9 +112,14 @@ class EquranTextStyles {
     return GoogleFonts.interTextTheme(textTheme);
   }
 
+  static String get activeFontFamily {
+    return SettingsDB().quranScriptStyle == 'indopak' ? 'QuranIndoPak' : 'Hafs';
+  }
+
   static TextStyle arabicDisplay(BuildContext context, {Color? color}) {
     return TextStyle(
-      fontFamily: 'Hafs',
+      fontFamily: activeFontFamily,
+      fontFamilyFallback: const <String>['Hafs'],
       fontSize: 30,
       height: 1.7,
       color: color ?? Theme.of(context).colorScheme.onSurface,
@@ -122,7 +128,8 @@ class EquranTextStyles {
 
   static TextStyle arabicBody(BuildContext context, {Color? color}) {
     return TextStyle(
-      fontFamily: 'Hafs',
+      fontFamily: activeFontFamily,
+      fontFamilyFallback: const <String>['Hafs'],
       fontSize: 24,
       height: 1.75,
       color: color ?? Theme.of(context).colorScheme.onSurface,
@@ -131,7 +138,8 @@ class EquranTextStyles {
 
   static TextStyle arabicSmall(BuildContext context, {Color? color}) {
     return TextStyle(
-      fontFamily: 'Hafs',
+      fontFamily: activeFontFamily,
+      fontFamilyFallback: const <String>['Hafs'],
       fontSize: 19,
       height: 1.55,
       color: color ?? Theme.of(context).colorScheme.onSurface,

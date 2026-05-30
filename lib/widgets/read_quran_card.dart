@@ -6,6 +6,7 @@ import 'package:equran/backend/library.dart'
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/theme/equran_text_styles.dart' show EquranTextStyles;
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
@@ -431,7 +432,8 @@ class ReadQuranCard extends StatelessWidget {
                     textDirection: TextDirection.rtl,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Hafs',
+                      fontFamily: EquranTextStyles.activeFontFamily,
+                      fontFamilyFallback: const <String>['Hafs'],
                       fontSize: fontSize,
                       height: 1.7,
                       color: colorScheme.primary,
@@ -446,7 +448,8 @@ class ReadQuranCard extends StatelessWidget {
                     textDirection: TextDirection.rtl,
                     textAlign: TextAlign.justify,
                     style: TextStyle(
-                      fontFamily: 'Hafs',
+                      fontFamily: EquranTextStyles.activeFontFamily,
+                      fontFamilyFallback: const <String>['Hafs'],
                       height: 1.78,
                       fontSize: fontSize,
                       color: colorScheme.onSurface,

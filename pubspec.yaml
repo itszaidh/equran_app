@@ -95,7 +95,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/data/quran/text/
+    - assets/data/quran/text/uthmani/
+    - assets/data/quran/text/indopak/
     - assets/data/quran/translations/en_saheeh/
     - assets/data/transliteration/quran_en_transliteration.json
     - assets/data/dua/asma_al_husna.json
@@ -108,4 +109,7 @@ flutter:
     - family: Hafs
       fonts:
         - asset: assets/media/fonts/Hafs.ttf
+    - family: QuranIndoPak
+      fonts:
+        - asset: assets/media/fonts/QuranIndoPak.ttf
 

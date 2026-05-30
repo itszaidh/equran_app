@@ -6745,7 +6745,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   TextStyle _shareArabicTextStyle(double fontSize) {
     return TextStyle(
-      fontFamily: 'Hafs',
+      fontFamily: EquranTextStyles.activeFontFamily,
+      fontFamilyFallback: const <String>['Hafs'],
       fontSize: fontSize,
       height: 1.82,
       fontWeight: FontWeight.w400,
@@ -6947,11 +6948,14 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                     if (showBasmala) ...<Widget>[
                       const SizedBox(height: 20),
                       Text(
-                        quranBasmalaText,
+                        SettingsDB().quranScriptStyle == 'indopak'
+                            ? 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
+                            : quranBasmalaText,
                         textDirection: TextDirection.rtl,
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.amiri(
-                          textStyle: theme.textTheme.headlineSmall,
+                        style: TextStyle(
+                          fontFamily: EquranTextStyles.activeFontFamily,
+                          fontFamilyFallback: const <String>['Hafs'],
                           color: colors.onPrimary,
                           fontSize: 36,
                           fontWeight: FontWeight.w400,
@@ -7230,7 +7234,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   TextSpan _buildInlineSurahTextSpan(double fontSize, ColorScheme colorScheme) {
     final TextStyle baseStyle = TextStyle(
-      fontFamily: 'Hafs',
+      fontFamily: EquranTextStyles.activeFontFamily,
+      fontFamilyFallback: const <String>['Hafs'],
       height: 1.8,
       fontSize: fontSize,
       color: colorScheme.onSurface,
@@ -7720,7 +7725,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         textDirection: TextDirection.rtl,
                         textAlign: TextAlign.justify,
                         style: TextStyle(
-                          fontFamily: 'Hafs',
+                          fontFamily: EquranTextStyles.activeFontFamily,
+                          fontFamilyFallback: const <String>['Hafs'],
                           fontSize: _ayahDetailsArabicFontSize,
                           height: 1.7,
                           color: colorScheme.onSurface,
@@ -8357,7 +8363,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontFamily: 'Hafs',
+                                fontFamily: EquranTextStyles.activeFontFamily,
+                                fontFamilyFallback: const <String>['Hafs'],
                                 color: colors.textPrimary,
                                 fontSize: 22,
                                 height: 1.6,
@@ -8932,7 +8939,8 @@ class _ShareImageAyahTextColumn extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: colors.textPrimary,
-            fontFamily: 'Hafs',
+            fontFamily: EquranTextStyles.activeFontFamily,
+            fontFamilyFallback: const <String>['Hafs'],
             fontSize: layout.arabicFontSize,
             height: 1.82,
             fontWeight: FontWeight.w400,

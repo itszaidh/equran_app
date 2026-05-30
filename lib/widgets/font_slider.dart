@@ -201,7 +201,9 @@ class _FontPreview extends StatelessWidget {
             textAlign: TextAlign.center,
             textDirection: TextDirection.rtl,
             style: TextStyle(
-              fontFamily: 'Hafs',
+              fontFamily: SettingsDB().quranScriptStyle == 'indopak'
+                  ? 'QuranIndoPak'
+                  : 'Hafs',
               height: 1.65,
               fontSize: fontSize,
             ),

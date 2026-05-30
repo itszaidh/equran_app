@@ -120,6 +120,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
               _buildDailyQuranGoalTile(context),
               _buildTranslationTile(context),
+              _buildScriptStyleTile(context),
               FontSlider(showTranslationControls: showTranslationControls),
             ],
           ),
@@ -217,6 +218,39 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildScriptStyleTile(BuildContext context) {
+    final String currentStyle = SettingsDB().quranScriptStyle;
+    final String label = currentStyle == 'indopak'
+        ? 'IndoPak'
+        : 'Uthmani (Madinah)';
+
+    return ListTile(
+      leading: const Icon(Icons.font_download_outlined),
+      title: const Text('Quran Script Style'),
+      subtitle: Text(label),
+      onTap: () async {
+        final String? value = await _showSelectionDialog<String>(
+          context: context,
+          title: 'Quran Script Style',
+          icon: Icons.font_download_outlined,
+          selectedValue: currentStyle,
+          options: const <AppSelectionOption<String>>[
+            AppSelectionOption<String>(
+              value: 'uthmani',
+              title: 'Uthmani (Madinah)',
+            ),
+            AppSelectionOption<String>(value: 'indopak', title: 'IndoPak'),
+          ],
+        );
+        if (value == null) return;
+        await SettingsDB().setQuranScriptStyle(value);
+        if (mounted) {
+          setState(() {});
+        }
+      },
     );
   }
 
