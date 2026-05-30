@@ -41,6 +41,23 @@ class DuaCard extends StatelessWidget {
       if (dua.notes != null) dua.notes!,
     ];
 
+    final String selectedLanguage = SettingsDB().get(
+      "dua_language",
+      defaultValue: "app",
+    );
+    final bool showTranslation = SettingsDB().get(
+      "dua_show_translation",
+      defaultValue: true,
+    );
+    final bool showTransliteration = SettingsDB().get(
+      "dua_show_transliteration",
+      defaultValue: true,
+    );
+
+    final String? resolvedTranslation = selectedLanguage == 'app'
+        ? dua.localizedTranslation(Localizations.localeOf(context).languageCode)
+        : dua.localizedTranslation(selectedLanguage);
+
     return ValueListenableBuilder<Box<dynamic>>(
       valueListenable: DuaFavouritesDB().listener,
       builder: (BuildContext context, Box<dynamic> box, Widget? child) {
@@ -118,7 +135,8 @@ class DuaCard extends StatelessWidget {
                         color: colors.onSurface,
                       ),
                     ),
-                    if (dua.transliteration != null) ...<Widget>[
+                    if (showTransliteration &&
+                        dua.transliteration != null) ...<Widget>[
                       const SizedBox(height: 14),
                       Text(
                         dua.transliteration!,
@@ -130,10 +148,8 @@ class DuaCard extends StatelessWidget {
                         ),
                       ),
                     ],
-                    if (dua.localizedTranslation(
-                          Localizations.localeOf(context).languageCode,
-                        ) !=
-                        null) ...<Widget>[
+                    if (showTranslation &&
+                        resolvedTranslation != null) ...<Widget>[
                       const SizedBox(height: 14),
                       Divider(
                         height: 1,
@@ -141,9 +157,7 @@ class DuaCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        dua.localizedTranslation(
-                          Localizations.localeOf(context).languageCode,
-                        )!,
+                        resolvedTranslation,
                         textAlign: TextAlign.justify,
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: colors.onSurfaceVariant,

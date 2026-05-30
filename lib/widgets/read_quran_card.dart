@@ -258,6 +258,19 @@ class ReadQuranCard extends StatelessWidget {
                 color: colorScheme.primary,
               ),
             ),
+            if (isDownloaded) ...<Widget>[
+              SizedBox(width: actionGap),
+              Tooltip(
+                message: 'Downloaded',
+                child: Icon(
+                  Icons.offline_pin_rounded,
+                  size: actionIconSize,
+                  color: isPlaying
+                      ? Colors.green
+                      : colorScheme.onSurface.withAlpha(140),
+                ),
+              ),
+            ],
             if (onTafsir != null) ...<Widget>[
               SizedBox(width: actionGap),
               _buildActionButton(

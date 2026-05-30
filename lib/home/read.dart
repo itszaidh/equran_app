@@ -447,6 +447,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   final Set<String> _downloadingAyahKeys = <String>{};
   bool _hasDownloadedSurahAyahs = false;
   bool _hasDownloadedCurrentAyah = false;
+  static const String _sleepTimerDurationMode = 'duration';
+  static const String _sleepTimerEndSurahMode = 'endSurah';
+
+  Timer? _sleepTimer;
+  DateTime? _sleepTimerEndsAt;
+  String? _sleepTimerLabel;
+  String? _sleepTimerMode;
   bool _continuousPlayback = false;
   bool _repeatIntervalEnabled = false;
   PlaybackInterval? _playbackInterval;
@@ -467,6 +474,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   double _currentVersePlaybackRate = 1.0;
   final ValueNotifier<Duration> _playerPositionValue = ValueNotifier<Duration>(
     Duration.zero,
+  );
+  final ValueNotifier<double?> _surahDownloadProgressNotifier = ValueNotifier<double?>(
+    null,
   );
   final ValueNotifier<Duration> _playerDurationValue = ValueNotifier<Duration>(
     Duration.zero,
@@ -564,6 +574,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
       }
     }
+    _sleepTimer?.cancel();
     unawaited(_setKeepScreenOn(false));
     _lowRefreshIdleTimer?.cancel();
     _playerSettleTimer?.cancel();
@@ -619,6 +630,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _versePlayer.dispose();
     _playerPositionValue.dispose();
     _playerDurationValue.dispose();
+    _surahDownloadProgressNotifier.dispose();
     _scrollController.dispose();
     _pageFocusNode.dispose();
     super.dispose();
@@ -3754,6 +3766,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final QuranPosition? nextContinuousPosition = _nextQuranPosition(
       completedPosition,
     );
+    if (_sleepTimerMode == _sleepTimerEndSurahMode) {
+      if (nextContinuousPosition == null ||
+          nextContinuousPosition.surah != completedPosition.surah) {
+        _cancelSleepTimer();
+        if (mounted) {
+          await _stopBottomPlayer();
+        }
+        return;
+      }
+    }
     if (_continuousPlayback && nextContinuousPosition != null) {
       await _delayBeforeNextPlayback(requestId);
       await _playVerse(
@@ -3851,6 +3873,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     setState(() {
       _isDownloadingSurahAyahs = true;
     });
+    _surahDownloadProgressNotifier.value = 0.0;
 
     final int notificationId = DownloadNotifications.notificationId(
       'surah-ayahs-$_currentChapter',
@@ -3867,13 +3890,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       );
       await AudioDownloadService().downloadSurahAyahs(
         _currentChapter,
-        onProgress: (progress) => unawaited(
-          DownloadNotifications.progress(
-            id: notificationId,
-            title: title,
-            progress: progress.fraction,
-          ),
-        ),
+        onProgress: (progress) {
+          _surahDownloadProgressNotifier.value = progress.fraction;
+          unawaited(
+            DownloadNotifications.progress(
+              id: notificationId,
+              title: title,
+              progress: progress.fraction,
+            ),
+          );
+        },
       );
       await DownloadNotifications.complete(
         id: notificationId,
@@ -3888,7 +3914,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           ),
         );
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint('Error downloading surah: $e');
+      debugPrint('$stackTrace');
       await DownloadNotifications.fail(
         id: notificationId,
         title: localizations.failedDownloadSurahAyahs(surahName),
@@ -3901,6 +3929,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         );
       }
     } finally {
+      _surahDownloadProgressNotifier.value = null;
       if (mounted) {
         setState(() {
           _isDownloadingSurahAyahs = false;
@@ -4043,6 +4072,362 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _setSleepTimer(
+    Duration duration,
+    String label, {
+    String mode = _sleepTimerDurationMode,
+    bool startPlayback = true,
+  }) async {
+    if (duration <= Duration.zero) return;
+    _sleepTimer?.cancel();
+    final DateTime endsAt = DateTime.now().add(duration);
+    _sleepTimer = Timer(duration, () async {
+      await _stopBottomPlayer();
+      if (mounted) {
+        setState(() {
+          _sleepTimer = null;
+          _sleepTimerEndsAt = null;
+          _sleepTimerLabel = null;
+          _sleepTimerMode = null;
+        });
+      }
+    });
+    if (mounted) {
+      setState(() {
+        _sleepTimerEndsAt = endsAt;
+        _sleepTimerLabel = label;
+        _sleepTimerMode = mode;
+        _continuousPlayback = true;
+        _repeatIntervalEnabled = false;
+      });
+    }
+    if (startPlayback) {
+      await _startOrContinuePlaybackForSleepTimer();
+    }
+  }
+
+  Future<void> _startOrContinuePlaybackForSleepTimer() async {
+    if (_isVersePlaying || _isVerseLoading) return;
+    if (_playingVerse != null && _playerPosition > Duration.zero) {
+      await _resumeCurrentVerseAudio();
+      return;
+    }
+    await _playVerse(
+      _currentChapter,
+      _playingVerse ?? _currentVerse,
+      continuous: _continuousPlayback,
+    );
+  }
+
+  void _cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    if (mounted) {
+      setState(() {
+        _sleepTimer = null;
+        _sleepTimerEndsAt = null;
+        _sleepTimerLabel = null;
+        _sleepTimerMode = null;
+      });
+    }
+  }
+
+  String _sleepTimerSummary() {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final DateTime? endsAt = _sleepTimerEndsAt;
+    if (endsAt == null) return l10n.off;
+    final Duration remaining = endsAt.difference(DateTime.now());
+    if (remaining.isNegative) return l10n.sleepingSoon;
+    final int minutes =
+        remaining.inMinutes + (remaining.inSeconds % 60 == 0 ? 0 : 1);
+    return l10n.sleepingInMinutes(minutes);
+  }
+
+  String _sleepTimerOptionsSubtitle() {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    if (_sleepTimerEndsAt != null) return _sleepTimerSummary();
+    if (_sleepTimerMode == _sleepTimerEndSurahMode) {
+      return l10n.pendingLabel(_sleepTimerLabel ?? l10n.endOfSurah);
+    }
+    return l10n.off;
+  }
+
+  Future<void> _applySleepTimerSelection(String value) async {
+    if (value.startsWith('duration:')) {
+      final int? minutes = int.tryParse(value.substring('duration:'.length));
+      if (minutes == null) return;
+      await _setSleepTimer(
+        Duration(minutes: minutes),
+        AppLocalizations.of(context)!.minutesShort(minutes),
+        mode: _sleepTimerDurationMode,
+      );
+      return;
+    }
+
+    if (value == _sleepTimerEndSurahMode) {
+      final AppLocalizations l10n = AppLocalizations.of(context)!;
+      if (mounted) {
+        setState(() {
+          _sleepTimerLabel = l10n.endOfSurah;
+          _sleepTimerMode = _sleepTimerEndSurahMode;
+          _continuousPlayback = true;
+          _repeatIntervalEnabled = false;
+        });
+      }
+      await _startOrContinuePlaybackForSleepTimer();
+    }
+  }
+
+  Future<void> _showUpgradedSleepTimerSheet() async {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
+
+    int minutes = 15;
+    if (_sleepTimerEndsAt != null) {
+      minutes = _sleepTimerEndsAt!
+          .difference(DateTime.now())
+          .inMinutes
+          .clamp(1, 120);
+    }
+    bool endOfSurah = _sleepTimerMode == _sleepTimerEndSurahMode;
+
+    final TextEditingController textController = TextEditingController(
+      text: '$minutes',
+    );
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: colorScheme.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadii.large),
+        ),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            void increment(int val) {
+              int current = int.tryParse(textController.text) ?? 15;
+              current = (current + val).clamp(1, 240);
+              textController.text = '$current';
+              setSheetState(() {
+                minutes = current;
+              });
+            }
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 28,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withAlpha(18),
+                          borderRadius: BorderRadius.circular(AppRadii.medium),
+                        ),
+                        child: Icon(
+                          Icons.bedtime_outlined,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Sleep Timer Settings',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Numeric Minute Picker Container
+                  Card(
+                    color: colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const Text(
+                            'Numeric Minutes Duration',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: <Widget>[
+                              // Minus Button
+                              IconButton(
+                                onPressed: endOfSurah
+                                    ? null
+                                    : () => increment(-5),
+                                icon: const Icon(
+                                  Icons.remove_circle_outline_rounded,
+                                ),
+                                color: colorScheme.primary,
+                                iconSize: 28,
+                              ),
+                              // Text Field Input
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  child: TextField(
+                                    controller: textController,
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
+                                    enabled: !endOfSurah,
+                                    style: theme.textTheme.headlineMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: endOfSurah
+                                              ? colorScheme.onSurfaceVariant
+                                                    .withAlpha(128)
+                                              : colorScheme.onSurface,
+                                        ),
+                                    decoration: const InputDecoration(
+                                      suffixText: 'min',
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    onChanged: (val) {
+                                      final int? parsed = int.tryParse(val);
+                                      if (parsed != null) {
+                                        minutes = parsed.clamp(1, 240);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                              // Plus Button
+                              IconButton(
+                                onPressed: endOfSurah
+                                    ? null
+                                    : () => increment(5),
+                                icon: const Icon(
+                                  Icons.add_circle_outline_rounded,
+                                ),
+                                color: colorScheme.primary,
+                                iconSize: 28,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // End of Surah Toggle Card
+                  Card(
+                    color: colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                    child: SwitchListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.medium),
+                      ),
+                      secondary: Icon(
+                        Icons.queue_music_rounded,
+                        color: endOfSurah
+                            ? colorScheme.primary
+                            : colors.textSecondary,
+                      ),
+                      title: const Text(
+                        'End of Surah',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      subtitle: const Text(
+                        'Auto-kill the stream exactly when the current track finishes',
+                      ),
+                      value: endOfSurah,
+                      onChanged: (val) {
+                        setSheetState(() {
+                          endOfSurah = val;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Apply / Stop Buttons
+                  Row(
+                    children: <Widget>[
+                      if (_sleepTimerEndsAt != null ||
+                          _sleepTimerMode != null) ...<Widget>[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              _cancelSleepTimer();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Turn Off'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () async {
+                            if (endOfSurah) {
+                              await _applySleepTimerSelection(
+                                _sleepTimerEndSurahMode,
+                              );
+                            } else {
+                              final int val =
+                                  int.tryParse(textController.text) ?? minutes;
+                              await _setSleepTimer(
+                                Duration(minutes: val),
+                                localizations.minutesShort(val),
+                                mode: _sleepTimerDurationMode,
+                              );
+                            }
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: const Text('Set Timer'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(textController.dispose);
+  }
+
   Future<void> _refreshSurahAyahDownloadState() async {
     if (kIsWeb) return;
 
@@ -4065,6 +4450,29 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         _hasDownloadedSurahAyahs = true;
       });
     }
+  }
+
+  bool _isVerseDownloaded(int chapter, int verse) {
+    if (kIsWeb) return false;
+    if (_hasDownloadedSurahAyahs) return true;
+    if (chapter == _currentChapter && verse == _currentVerse) {
+      return _hasDownloadedCurrentAyah;
+    }
+    return false;
+  }
+
+  Future<bool> _isSurahDownloadedForReciter(int chapter, String reciterCode) async {
+    if (kIsWeb) return false;
+    final int totalVerses = quran.getVerseCount(chapter);
+    final Directory dir = await AudioDownloadService().ayahDirectory();
+    for (int ayah = 1; ayah <= totalVerses; ayah++) {
+      final String fileName = '${reciterCode}_${chapter.toString().padLeft(3, '0')}_${ayah.toString().padLeft(3, '0')}.mp3';
+      final File file = File('${dir.path}/$fileName');
+      if (!file.existsSync() || file.lengthSync() == 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<void> _stopBottomPlayer() async {
@@ -4103,6 +4511,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _toggleContinuousPlayback(bool value) {
+    if (!value) {
+      _sleepTimer?.cancel();
+    }
     final bool shouldRefreshUpcomingSequence =
         (_playerMounted || _isVersePlaying || _isVerseLoading) &&
         _playingVerse != null;
@@ -4114,6 +4525,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _continuousPlayback = value;
       if (value) {
         _repeatIntervalEnabled = false;
+      } else {
+        _sleepTimer = null;
+        _sleepTimerEndsAt = null;
+        _sleepTimerLabel = null;
+        _sleepTimerMode = null;
       }
       _playerVisible = true;
       _playerMounted = true;
@@ -5486,6 +5902,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         onPlayNext: () => unawaited(_playAdjacentPageViewAyah(1)),
         canPlayPrevious: _canPlayPreviousAyah,
         canPlayNext: _canPlayNextAyah,
+        isDownloaded: _isVerseDownloaded(_currentChapter, _playingVerse ?? _currentVerse),
       ),
     );
   }
@@ -5576,16 +5993,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(AppRadii.small),
-                      child: Image.asset(
-                        'assets/media/images/icon.webp',
-                        width: 28,
-                        height: 28,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
                     Expanded(
                       child: InkWell(
                         borderRadius: BorderRadius.circular(AppRadii.large),
@@ -5594,18 +6001,35 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           height: double.infinity,
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text(
-                              localizedSurahAyahLabel(
-                                AppLocalizations.of(context)!,
-                                _currentChapter,
-                                verse,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Flexible(
+                                  child: Text(
+                                    localizedSurahAyahLabel(
+                                      AppLocalizations.of(context)!,
+                                      _currentChapter,
+                                      verse,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                if (_isVerseDownloaded(_currentChapter, verse)) ...[
+                                  const SizedBox(width: 6),
+                                  Icon(
+                                    Icons.offline_pin_rounded,
+                                    size: 15,
+                                    color: _isVersePlaying
+                                        ? Colors.green
+                                        : colorScheme.onSurfaceVariant.withAlpha(140),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ),
@@ -5808,17 +6232,51 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
               Future<void> downloadSurahAudio() async {
                 if (!sheetContext.mounted) return;
-                Navigator.of(sheetContext).pop();
-                await _confirmDownloadCurrentSurahAyahs();
+                final AppLocalizations localizations = AppLocalizations.of(context)!;
+                final String surahName = localizedSurahName(localizations, _currentChapter);
+                final bool? confirm = await _withLowFpsSuppressed(() {
+                  return showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      icon: const Icon(Icons.download_for_offline_rounded),
+                      title: Text(localizations.downloadAllAyahs),
+                      content: Text(localizations.downloadAllAyahsForSurah(surahName)),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(localizations.cancel),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: Text(localizations.download),
+                        ),
+                      ],
+                    ),
+                  );
+                });
+
+                if (confirm != true) return;
+
+                // Rebuild sheet to show downloading state immediately
+                setSheetState(() {});
+
+                // Trigger download in background without blocking the sheet
+                unawaited(_downloadCurrentSurahAyahs().then((_) {
+                  if (sheetContext.mounted) {
+                    setSheetState(() {});
+                  }
+                }));
               }
 
               Future<void> toggleCurrentAyahAudio() async {
                 if (!sheetContext.mounted) return;
-                Navigator.of(sheetContext).pop();
                 if (_hasDownloadedCurrentAyah) {
                   await _confirmDeleteCurrentAyahDownload();
                 } else {
                   await _downloadCurrentAyah();
+                }
+                if (sheetContext.mounted) {
+                  setSheetState(() {});
                 }
               }
 
@@ -5877,6 +6335,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         onDownloadSurah: () => unawaited(downloadSurahAudio()),
                         onToggleCurrentAyah: () =>
                             unawaited(toggleCurrentAyahAudio()),
+                        downloadProgressNotifier: _surahDownloadProgressNotifier,
                       ),
                       const SizedBox(height: 10),
                       _buildPlaybackOptionsSection(
@@ -5995,6 +6454,25 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             ),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: selectRepeatAyah,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildPlaybackOptionsSection(
+                        context: context,
+                        title: localizations.sleepTimerOption,
+                        children: <Widget>[
+                          ListTile(
+                            leading: const Icon(Icons.bedtime_outlined),
+                            title: Text(localizations.sleepTimerOption),
+                            subtitle: Text(_sleepTimerOptionsSubtitle()),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: () async {
+                              await _showUpgradedSleepTimerSheet();
+                              if (sheetContext.mounted) {
+                                setSheetState(() {});
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -7532,30 +8010,28 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required List<Widget> children,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: colorScheme.outlineVariant),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w800,
-                ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w800,
               ),
             ),
-            ...children,
-          ],
-        ),
+          ),
+          ...children,
+        ],
       ),
     );
   }
@@ -7565,34 +8041,64 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required bool currentAyahDownloading,
     required VoidCallback onDownloadSurah,
     required VoidCallback onToggleCurrentAyah,
+    required ValueNotifier<double?> downloadProgressNotifier,
   }) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     return _buildPlaybackOptionsSection(
       context: context,
       title: localizations.audioDownloads,
       children: <Widget>[
-        ListTile(
-          leading: Icon(
-            _hasDownloadedSurahAyahs
-                ? Icons.offline_pin_rounded
-                : _isDownloadingSurahAyahs
-                ? Icons.downloading_rounded
-                : Icons.download_for_offline_rounded,
-          ),
-          title: Text(
-            _hasDownloadedSurahAyahs
-                ? localizations.surahAudioDownloaded
-                : localizations.downloadSurahAudio,
-          ),
-          subtitle: Text(
-            _hasDownloadedSurahAyahs
-                ? localizations.allAyahsAvailableOffline
-                : localizations.downloadEveryAyahInSurah,
-          ),
-          enabled: !_isDownloadingSurahAyahs && !_hasDownloadedSurahAyahs,
-          onTap: !_isDownloadingSurahAyahs && !_hasDownloadedSurahAyahs
-              ? onDownloadSurah
-              : null,
+        ValueListenableBuilder<double?>(
+          valueListenable: downloadProgressNotifier,
+          builder: (context, progressFraction, _) {
+            final bool isCurrentlyDownloading = _isDownloadingSurahAyahs || progressFraction != null;
+            return ListTile(
+              leading: isCurrentlyDownloading
+                  ? SizedBox.square(
+                      dimension: 30,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            value: (progressFraction == 0.0 || progressFraction == null)
+                                ? null
+                                : progressFraction,
+                            color: Theme.of(context).colorScheme.primary,
+                            backgroundColor: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                          if (progressFraction != null && progressFraction > 0.0)
+                            Text(
+                              '${(progressFraction * 100).round()}%',
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                        ],
+                      ),
+                    )
+                  : Icon(
+                      _hasDownloadedSurahAyahs
+                          ? Icons.offline_pin_rounded
+                          : Icons.download_for_offline_rounded,
+                    ),
+              title: Text(
+                _hasDownloadedSurahAyahs
+                    ? localizations.surahAudioDownloaded
+                    : localizations.downloadSurahAudio,
+              ),
+              subtitle: Text(
+                _hasDownloadedSurahAyahs
+                    ? localizations.allAyahsAvailableOffline
+                    : localizations.downloadEveryAyahInSurah,
+              ),
+              enabled: !isCurrentlyDownloading && !_hasDownloadedSurahAyahs,
+              onTap: !isCurrentlyDownloading && !_hasDownloadedSurahAyahs
+                  ? onDownloadSurah
+                  : null,
+            );
+          },
         ),
         ListTile(
           leading: Icon(
@@ -7654,25 +8160,63 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  Future<AppReciter?> _showReciterPickerDialog() {
+  Future<AppReciter?> _showReciterPickerDialog() async {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final List<AppReciter> reciters = AppReciter.values.toList()
       ..sort(
         (a, b) =>
             a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase()),
       );
+
+    // Pre-fetch download status for all reciters in parallel
+    final Map<String, bool> reciterDownloadedMap = {};
+    await Future.wait(reciters.map((reciter) async {
+      final bool downloaded = await _isSurahDownloadedForReciter(
+        _currentChapter,
+        reciter.code,
+      );
+      reciterDownloadedMap[reciter.code] = downloaded;
+    }));
+
+    final AppReciter currentReciter = QuranAudioService().selectedReciter;
+    final bool isAudioActive = _isVersePlaying;
+
     return showDialog<AppReciter>(
       context: context,
       builder: (context) => AppSelectionDialog<AppReciter>(
         title: localizations.reciter,
         icon: Icons.record_voice_over_rounded,
-        selectedValue: QuranAudioService().selectedReciter,
+        selectedValue: currentReciter,
         options: reciters
             .map(
-              (reciter) => AppSelectionOption<AppReciter>(
-                value: reciter,
-                title: _localizedReciterName(reciter, localizations),
-              ),
+              (reciter) {
+                final bool isDownloaded = reciterDownloadedMap[reciter.code] ?? false;
+                final bool isCurrentSelected = reciter == currentReciter;
+                final bool isPlayingActive = isCurrentSelected && isAudioActive;
+
+                Widget? leadingWidget;
+                if (isDownloaded) {
+                  leadingWidget = Icon(
+                    Icons.offline_pin_rounded,
+                    color: isPlayingActive
+                        ? Colors.green
+                        : Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(140),
+                    size: 20,
+                  );
+                } else {
+                  leadingWidget = Icon(
+                    Icons.record_voice_over_rounded,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(60),
+                    size: 20,
+                  );
+                }
+
+                return AppSelectionOption<AppReciter>(
+                  value: reciter,
+                  title: _localizedReciterName(reciter, localizations),
+                  leading: leadingWidget,
+                );
+              },
             )
             .toList(),
       ),
@@ -8693,30 +9237,28 @@ class _ReadingOptionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: colorScheme.outlineVariant),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w800,
-                ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w800,
               ),
             ),
-            ...children,
-          ],
-        ),
+          ),
+          ...children,
+        ],
       ),
     );
   }

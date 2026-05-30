@@ -8,7 +8,6 @@ import 'package:equran/duas/tasbih_page.dart';
 import 'package:equran/home/downloads.dart';
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/more_page.dart';
-import 'package:equran/home/player.dart';
 import 'package:equran/home/quran_stats_page.dart';
 import 'package:equran/home/settings.dart';
 import 'package:equran/home_dashboard/home_dashboard_page.dart';
@@ -20,6 +19,8 @@ import 'package:equran/reading_plans/reading_plans_page.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/responsive_nav.dart';
+import 'package:equran/zakat/zakat_page.dart';
+import 'package:equran/prayer/islamic_calendar_page.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 
@@ -74,9 +75,6 @@ class _HomePageState extends State<HomePage> {
         label = localizations.prayer;
       } else if (T == DuasPage) {
         label = localizations.duas;
-      } else if (T == PlayerPage) {
-        label = localizations.player;
-        showAppBar = false;
       } else if (T == DownloadsPage) {
         label = localizations.downloads;
       } else if (T == SettingsPage) {
@@ -91,6 +89,10 @@ class _HomePageState extends State<HomePage> {
         label = localizations.asmaUlHusna;
       } else if (T == QiblaPage) {
         label = localizations.qibla;
+      } else if (T == ZakatCalculatorPage) {
+        label = 'Zakat';
+      } else if (T == IslamicCalendarPage) {
+        label = 'Calendar';
       }
 
       _pushSecondaryPage(
@@ -114,7 +116,6 @@ class _HomePageState extends State<HomePage> {
           HomeDashboardPage(
             onOpenMore: () => _selectTabByWidgetType<MorePage>(
               () => MorePage(
-                onOpenPlayer: _openPlayerPage,
                 onOpenQibla: _openQiblaPage,
                 onOpenDownloads: _openDownloadsPage,
                 onOpenSearch: _openQuranTextSearch,
@@ -123,13 +124,15 @@ class _HomePageState extends State<HomePage> {
                 onOpenAsmaUlHusna: _openAsmaUlHusnaPage,
                 onOpenSettings: _openSettingsPage,
                 onOpenStats: _openStatisticsPage,
+                onOpenZakat: _openZakatPage,
+                onOpenCalendar: _openCalendarPage,
                 onToggleTheme: _toggleQuickTheme,
               ),
             ),
             onOpenQuran: () => _selectTabByWidgetType<MainPage>(
               () => MainPage(searchRequestListenable: _quranSearchRequest),
             ),
-            onOpenPlayer: _openPlayerPage,
+            onOpenZakat: _openZakatPage,
             onOpenPrayerTimes: () => _selectTabByWidgetType<PrayerTimesPage>(
               () => const PrayerTimesPage(),
             ),
@@ -170,13 +173,6 @@ class _HomePageState extends State<HomePage> {
           const Icon(Icons.bar_chart_outlined),
           const Icon(Icons.bar_chart_rounded),
           const StatisticsPage(),
-        );
-      case NavItem.player:
-        return Destinations(
-          localizations.player,
-          const Icon(Icons.library_music_outlined),
-          const Icon(Icons.library_music_rounded),
-          const PlayerPage(),
         );
       case NavItem.qibla:
         return Destinations(
@@ -227,13 +223,26 @@ class _HomePageState extends State<HomePage> {
           const Icon(Icons.settings_rounded),
           const SettingsPage(),
         );
+      case NavItem.zakat:
+        return Destinations(
+          'Zakat',
+          const Icon(Icons.calculate_outlined),
+          const Icon(Icons.calculate_rounded),
+          const ZakatCalculatorPage(),
+        );
+      case NavItem.calendar:
+        return Destinations(
+          'Calendar',
+          const Icon(Icons.calendar_month_outlined),
+          const Icon(Icons.calendar_month_rounded),
+          const IslamicCalendarPage(),
+        );
       case NavItem.more:
         return Destinations(
           localizations.more,
           const Icon(Icons.grid_view_outlined),
           const Icon(Icons.grid_view_rounded),
           MorePage(
-            onOpenPlayer: _openPlayerPage,
             onOpenQibla: _openQiblaPage,
             onOpenDownloads: _openDownloadsPage,
             onOpenSearch: _openQuranTextSearch,
@@ -242,6 +251,8 @@ class _HomePageState extends State<HomePage> {
             onOpenAsmaUlHusna: _openAsmaUlHusnaPage,
             onOpenSettings: _openSettingsPage,
             onOpenStats: _openStatisticsPage,
+            onOpenZakat: _openZakatPage,
+            onOpenCalendar: _openCalendarPage,
             onToggleTheme: () => unawaited(_toggleQuickTheme()),
           ),
         );
@@ -557,10 +568,6 @@ class _HomePageState extends State<HomePage> {
     NavigationBloc.instance.selectTab(index);
   }
 
-  void _openPlayerPage() {
-    _selectTabByWidgetType<PlayerPage>(() => const PlayerPage());
-  }
-
   void _openDownloadsPage() {
     _selectTabByWidgetType<DownloadsPage>(() => const DownloadsPage());
   }
@@ -587,6 +594,18 @@ class _HomePageState extends State<HomePage> {
 
   void _openQiblaPage() {
     _selectTabByWidgetType<QiblaPage>(() => const QiblaPage());
+  }
+
+  void _openZakatPage() {
+    _selectTabByWidgetType<ZakatCalculatorPage>(
+      () => const ZakatCalculatorPage(),
+    );
+  }
+
+  void _openCalendarPage() {
+    _selectTabByWidgetType<IslamicCalendarPage>(
+      () => const IslamicCalendarPage(),
+    );
   }
 
   void _openPrayerSettingsPage() {

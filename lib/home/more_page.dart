@@ -8,14 +8,12 @@ import 'package:equran/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:equran/home/navigation_settings_page.dart';
 
 const String _appDownloadUrl =
     'https://f-droid.org/en/packages/com.app.equran/';
 const String _issueReportUrl = 'https://github.com/ya27hw/equran_app/issues';
 const String _contactEmail = 'equran@elbaesy.com';
 const String _appAssetBase = 'assets/media/images/app';
-const String _playerAsset = '$_appAssetBase/player.webp';
 const String _qiblaAsset = '$_appAssetBase/qiblah.webp';
 const String _downloadAsset = '$_appAssetBase/download.webp';
 const String _quranAsset = '$_appAssetBase/quran.webp';
@@ -34,7 +32,6 @@ const String _feedbackAsset = '$_appAssetBase/feedback.webp';
 class MorePage extends StatelessWidget {
   const MorePage({
     super.key,
-    required this.onOpenPlayer,
     required this.onOpenQibla,
     required this.onOpenDownloads,
     required this.onOpenSearch,
@@ -43,10 +40,11 @@ class MorePage extends StatelessWidget {
     required this.onOpenAsmaUlHusna,
     required this.onOpenSettings,
     required this.onOpenStats,
+    required this.onOpenZakat,
+    required this.onOpenCalendar,
     required this.onToggleTheme,
   });
 
-  final VoidCallback onOpenPlayer;
   final VoidCallback onOpenQibla;
   final VoidCallback onOpenDownloads;
   final VoidCallback onOpenSearch;
@@ -55,6 +53,8 @@ class MorePage extends StatelessWidget {
   final VoidCallback onOpenAsmaUlHusna;
   final VoidCallback onOpenSettings;
   final VoidCallback onOpenStats;
+  final VoidCallback onOpenZakat;
+  final VoidCallback onOpenCalendar;
   final VoidCallback onToggleTheme;
 
   @override
@@ -83,13 +83,6 @@ class MorePage extends StatelessWidget {
                   const SizedBox(height: 18),
                   _MoreShortcutsGrid(
                     items: <_MoreAction>[
-                      _MoreAction(
-                        icon: Icons.library_music_outlined,
-                        assetPath: _playerAsset,
-                        title: localizations.player,
-                        subtitle: localizations.recitationsAndAudioControls,
-                        onTap: onOpenPlayer,
-                      ),
                       _MoreAction(
                         icon: Icons.explore_outlined,
                         assetPath: _qiblaAsset,
@@ -154,26 +147,27 @@ class MorePage extends StatelessWidget {
                         onTap: onOpenStats,
                       ),
                       _MoreAction(
+                        icon: Icons.calculate_outlined,
+                        assetPath: _settingsAsset,
+                        title: 'Zakat Calculator',
+                        subtitle: 'Wealth & Nisab evaluations',
+                        onTap: onOpenZakat,
+                      ),
+                      _MoreAction(
+                        icon: Icons.calendar_month_outlined,
+                        assetPath: _routineAsset,
+                        title: 'Islamic Calendar',
+                        subtitle: 'Synchronized Hijri timeline',
+                        onTap: onOpenCalendar,
+                      ),
+                      _MoreAction(
                         icon: Icons.settings_outlined,
                         assetPath: _settingsAsset,
                         title: localizations.settings,
                         subtitle: localizations.fontsReciterAppBehavior,
                         onTap: onOpenSettings,
                       ),
-                      _MoreAction(
-                        icon: Icons.dashboard_customize_outlined,
-                        assetPath: _settingsAsset,
-                        title: 'Customize Tabs',
-                        subtitle: 'Rearrange & Swap Slots',
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (BuildContext context) =>
-                                  const NavigationSettingsPage(),
-                            ),
-                          );
-                        },
-                      ),
+
                       _MoreAction(
                         icon: Icons.brightness_6_outlined,
                         assetPath: _themeAsset,

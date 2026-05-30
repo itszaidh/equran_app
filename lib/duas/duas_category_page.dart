@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:equran/backend/library.dart' show DuaInteractionsDB;
+import 'package:equran/backend/library.dart' show DuaInteractionsDB, SettingsDB;
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/widgets/dua_card.dart';
@@ -176,6 +176,115 @@ class _CategoryContentState extends State<_CategoryContent> {
                             color: colors.onSurfaceVariant,
                             fontWeight: FontWeight.w700,
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(AppRadii.medium),
+                    border: Border.all(color: colors.outlineVariant),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(
+                              'Translation Language:',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            DropdownButton<String>(
+                              value: SettingsDB().get(
+                                "dua_language",
+                                defaultValue: "app",
+                              ),
+                              onChanged: (String? val) async {
+                                if (val != null) {
+                                  await SettingsDB().put("dua_language", val);
+                                  setState(() {});
+                                }
+                              },
+                              items: const <DropdownMenuItem<String>>[
+                                DropdownMenuItem<String>(
+                                  value: 'app',
+                                  child: Text('Device Default'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'en',
+                                  child: Text('English'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'bn',
+                                  child: Text('Bengali (বাংলা)'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'ur',
+                                  child: Text('Urdu (اردو)'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'id',
+                                  child: Text('Indonesian'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'tr',
+                                  child: Text('Turkish'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const Divider(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Row(
+                              children: <Widget>[
+                                const Text('Translation '),
+                                Switch(
+                                  value: SettingsDB().get(
+                                    "dua_show_translation",
+                                    defaultValue: true,
+                                  ),
+                                  activeColor: colors.primary,
+                                  onChanged: (bool val) async {
+                                    await SettingsDB().put(
+                                      "dua_show_translation",
+                                      val,
+                                    );
+                                    setState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                const Text('Transliteration '),
+                                Switch(
+                                  value: SettingsDB().get(
+                                    "dua_show_transliteration",
+                                    defaultValue: true,
+                                  ),
+                                  activeColor: colors.primary,
+                                  onChanged: (bool val) async {
+                                    await SettingsDB().put(
+                                      "dua_show_transliteration",
+                                      val,
+                                    );
+                                    setState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),

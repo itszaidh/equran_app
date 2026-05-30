@@ -35,6 +35,7 @@ import 'backend/library.dart'
         SurahDB;
 
 import 'hifz/hifz.dart';
+import 'package:equran/zakat/zakat_db.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -65,6 +66,7 @@ Future<void> main() async {
 
   // Hive.deleteBoxFromDisk("bookmarks");
 
+  await ZakatHistoryDB.instance.initialize();
   await BookmarkDB().initBox();
   await SettingsDB().initBox();
   await SurahDB().initBox();

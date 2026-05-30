@@ -14,7 +14,6 @@ class NavigationSettingsPage extends StatelessWidget {
       NavItem.prayer => Icons.schedule_rounded,
       NavItem.duas => Icons.auto_stories_rounded,
       NavItem.statistics => Icons.bar_chart_rounded,
-      NavItem.player => Icons.library_music_rounded,
       NavItem.qibla => Icons.explore_rounded,
       NavItem.downloads => Icons.download_rounded,
       NavItem.readingPlans => Icons.route_rounded,
@@ -22,6 +21,8 @@ class NavigationSettingsPage extends StatelessWidget {
       NavItem.tasbih => Icons.auto_awesome_rounded,
       NavItem.asmaUlHusna => Icons.diamond_rounded,
       NavItem.settings => Icons.settings_rounded,
+      NavItem.zakat => Icons.calculate_rounded,
+      NavItem.calendar => Icons.calendar_month_rounded,
       NavItem.more => Icons.grid_view_rounded,
     };
   }
@@ -33,7 +34,6 @@ class NavigationSettingsPage extends StatelessWidget {
       NavItem.prayer => l10n.prayer,
       NavItem.duas => l10n.duas,
       NavItem.statistics => l10n.statistics,
-      NavItem.player => l10n.player,
       NavItem.qibla => l10n.qibla,
       NavItem.downloads => l10n.downloads,
       NavItem.readingPlans => l10n.readingRoutine,
@@ -41,6 +41,8 @@ class NavigationSettingsPage extends StatelessWidget {
       NavItem.tasbih => l10n.tasbih,
       NavItem.asmaUlHusna => l10n.asmaUlHusna,
       NavItem.settings => l10n.settings,
+      NavItem.zakat => 'Zakat',
+      NavItem.calendar => 'Calendar',
       NavItem.more => l10n.more,
     };
   }
@@ -52,7 +54,6 @@ class NavigationSettingsPage extends StatelessWidget {
       NavItem.prayer => 'Prayer Times & Adhan',
       NavItem.duas => 'Dua & Supplications',
       NavItem.statistics => 'Streaks & Worship Trends',
-      NavItem.player => 'Audio Recitations',
       NavItem.qibla => 'Qibla Direction Compass',
       NavItem.downloads => 'Offline Audio Cache Files',
       NavItem.readingPlans => 'Reading Plans & Routines',
@@ -60,6 +61,8 @@ class NavigationSettingsPage extends StatelessWidget {
       NavItem.tasbih => 'Calm Dhikr Counter',
       NavItem.asmaUlHusna => '99 Beautiful Names',
       NavItem.settings => 'System Preferences',
+      NavItem.zakat => 'Advanced Nisab Calculator',
+      NavItem.calendar => 'Synchronized Hijri Timeline',
       NavItem.more => 'Immutable Hub Platform',
     };
   }
@@ -116,7 +119,7 @@ class NavigationSettingsPage extends StatelessWidget {
 
               // Active Items Header
               Text(
-                'ACTIVE NAVBAR SLOTS (MAX 5)',
+                'ACTIVE NAVBAR SLOTS (${state.activeNavbarItems.length}/5)',
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: colors.primary,
                   fontWeight: FontWeight.w800,
@@ -219,29 +222,33 @@ class NavigationSettingsPage extends StatelessWidget {
                                     color: colors.textMuted,
                                     size: 18,
                                   )
-                                : IconButton(
-                                    icon: Icon(
-                                      Icons.remove_circle_outline,
-                                      color: Colors.red,
-                                      size: 20,
-                                    ),
-                                    onPressed: () {
-                                      NavigationBloc.instance.demoteToAvailable(
-                                        item,
-                                      );
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Removed ${_getModuleLabel(item, l10n)} from navbar',
+                                : (state.activeNavbarItems.length > 2
+                                      ? IconButton(
+                                          icon: Icon(
+                                            Icons.remove_circle_outline,
+                                            color: Colors.red,
+                                            size: 20,
                                           ),
-                                          behavior: SnackBarBehavior.floating,
-                                          duration: const Duration(seconds: 2),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                                          onPressed: () {
+                                            NavigationBloc.instance
+                                                .demoteToAvailable(item);
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Removed ${_getModuleLabel(item, l10n)} from navbar',
+                                                ),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                                duration: const Duration(
+                                                  seconds: 2,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        )
+                                      : null),
                           ),
                         );
                       },
@@ -339,29 +346,33 @@ class NavigationSettingsPage extends StatelessWidget {
                       ),
                       child: ListTile(
                         onTap: () {
-                          // Tap triggers LRU auto displacement promotion
-                          // Find candidate that will be displaced before state changes to notify user
                           final List<NavItem> active = state.activeNavbarItems;
+                          final bool willDisplace = active.length == 5;
+
                           NavItem? displaceCandidate;
-                          for (final NavItem historic
-                              in NavigationBloc.instance.usageHistory) {
-                            if (historic != NavItem.more &&
-                                active.contains(historic)) {
-                              displaceCandidate = historic;
-                              break;
+                          if (willDisplace) {
+                            for (final NavItem historic
+                                in NavigationBloc.instance.usageHistory) {
+                              if (historic != NavItem.more &&
+                                  active.contains(historic)) {
+                                displaceCandidate = historic;
+                                break;
+                              }
                             }
+                            displaceCandidate ??= active.firstWhere(
+                              (e) => e != NavItem.more,
+                            );
                           }
-                          displaceCandidate ??= active.firstWhere(
-                            (e) => e != NavItem.more,
-                          );
 
                           NavigationBloc.instance.promoteToActive(item);
 
+                          final String message = willDisplace
+                              ? 'Pinned ${_getModuleLabel(item, l10n)} (displaced ${_getModuleLabel(displaceCandidate!, l10n)})'
+                              : 'Pinned ${_getModuleLabel(item, l10n)}';
+
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                'Pinned ${_getModuleLabel(item, l10n)} (displaced ${_getModuleLabel(displaceCandidate, l10n)})',
-                              ),
+                              content: Text(message),
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 2),
                             ),

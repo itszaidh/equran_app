@@ -7,7 +7,6 @@ enum NavItem {
   prayer,
   duas,
   statistics,
-  player,
   qibla,
   downloads,
   readingPlans,
@@ -15,6 +14,8 @@ enum NavItem {
   tasbih,
   asmaUlHusna,
   settings,
+  zakat,
+  calendar,
   more,
 }
 
@@ -75,7 +76,9 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
     }
 
     // Default configuration if cache is empty or invalid
-    if (active.length != 5 || !active.contains(NavItem.more)) {
+    if (active.length < 2 ||
+        active.length > 5 ||
+        !active.contains(NavItem.more)) {
       active = <NavItem>[
         NavItem.home,
         NavItem.quran,
@@ -147,10 +150,14 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
     items.insert(newIndex, item);
 
     // Validate active items constraints before mutation
-    if (items.length == 5 && items.contains(NavItem.more)) {
+    if (items.length >= 2 &&
+        items.length <= 5 &&
+        items.contains(NavItem.more)) {
       // Find the index of the previously selected item to adjust the selectedIndex
       final NavItem selectedItem = value.activeNavbarItems[value.selectedIndex];
-      final int newSelectedIdx = items.indexOf(selectedItem).clamp(0, 4);
+      final int newSelectedIdx = items
+          .indexOf(selectedItem)
+          .clamp(0, items.length - 1);
 
       value = value.copyWith(
         activeNavbarItems: items,
@@ -169,6 +176,37 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
     final List<NavItem> available = List<NavItem>.from(
       value.availableMoreItems,
     );
+
+    if (active.length < 5) {
+      if (targetIndex != null &&
+          targetIndex >= 0 &&
+          targetIndex <= active.length) {
+        active.insert(targetIndex, item);
+      } else {
+        active.add(item);
+      }
+      available.remove(item);
+      _usageHistory.remove(item);
+      _usageHistory.add(item);
+
+      final NavItem currentSelected =
+          value.activeNavbarItems[value.selectedIndex.clamp(
+            0,
+            value.activeNavbarItems.length - 1,
+          )];
+      int newSelectedIdx = active.indexOf(currentSelected);
+      if (newSelectedIdx == -1) {
+        newSelectedIdx = active.length - 1;
+      }
+
+      value = value.copyWith(
+        activeNavbarItems: active,
+        availableMoreItems: available,
+        selectedIndex: newSelectedIdx.clamp(0, active.length - 1),
+      );
+      await _persistState();
+      return;
+    }
 
     // Find candidate to displace: least recently used in active items that is NOT NavItem.more
     NavItem? displaceCandidate;
@@ -198,7 +236,10 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
 
       // Maintain selection index or adjust it if the currently selected item was displaced
       final NavItem currentSelected =
-          value.activeNavbarItems[value.selectedIndex];
+          value.activeNavbarItems[value.selectedIndex.clamp(
+            0,
+            value.activeNavbarItems.length - 1,
+          )];
       int newSelectedIdx = active.indexOf(currentSelected);
       if (newSelectedIdx == -1) {
         newSelectedIdx = replaceIdx; // default to the new active item
@@ -211,7 +252,7 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
       value = value.copyWith(
         activeNavbarItems: active,
         availableMoreItems: available,
-        selectedIndex: newSelectedIdx.clamp(0, 4),
+        selectedIndex: newSelectedIdx.clamp(0, active.length - 1),
       );
       await _persistState();
     }
@@ -240,7 +281,10 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
       _usageHistory.add(availableItem);
 
       final NavItem currentSelected =
-          value.activeNavbarItems[value.selectedIndex];
+          value.activeNavbarItems[value.selectedIndex.clamp(
+            0,
+            value.activeNavbarItems.length - 1,
+          )];
       int newSelectedIdx = active.indexOf(currentSelected);
       if (newSelectedIdx == -1) {
         newSelectedIdx = idx;
@@ -249,26 +293,51 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
       value = value.copyWith(
         activeNavbarItems: active,
         availableMoreItems: available,
-        selectedIndex: newSelectedIdx.clamp(0, 4),
+        selectedIndex: newSelectedIdx.clamp(0, active.length - 1),
       );
       await _persistState();
     }
   }
 
-  /// Demotes an active item back to the available pool, automatically bringing
-  /// in the most recently used (or first) available item to maintain length 5.
+  /// Demotes an active item back to the available pool, reducing the active navbar
+  /// length directly (down to a minimum of 2 items) without replacing it.
   Future<void> demoteToAvailable(NavItem item) async {
     if (!value.activeNavbarItems.contains(item) || item == NavItem.more) return;
-    if (value.availableMoreItems.isEmpty) return;
+    final List<NavItem> active = List<NavItem>.from(value.activeNavbarItems);
+    if (active.length <= 2) return; // Cannot demote below 2 slots
 
-    // Pick first available item to promote
-    final NavItem fallbackItem = value.availableMoreItems.first;
-    await swapItems(item, fallbackItem);
+    final List<NavItem> available = List<NavItem>.from(
+      value.availableMoreItems,
+    );
+
+    active.remove(item);
+    available.add(item);
+
+    _usageHistory.remove(item);
+
+    final NavItem currentSelected =
+        value.activeNavbarItems[value.selectedIndex.clamp(
+          0,
+          value.activeNavbarItems.length - 1,
+        )];
+    int newSelectedIdx = active.indexOf(currentSelected);
+    if (newSelectedIdx == -1) {
+      newSelectedIdx = active.length - 1;
+    }
+
+    value = value.copyWith(
+      activeNavbarItems: active,
+      availableMoreItems: available,
+      selectedIndex: newSelectedIdx.clamp(0, active.length - 1),
+    );
+    await _persistState();
   }
 
   /// Helper validation before saving to persistent storage
   bool _validateState(List<NavItem> active) {
-    return active.length == 5 && active.contains(NavItem.more);
+    return active.length >= 2 &&
+        active.length <= 5 &&
+        active.contains(NavItem.more);
   }
 
   Future<void> _persistState() async {

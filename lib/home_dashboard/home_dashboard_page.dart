@@ -32,7 +32,6 @@ const String _lastReadAsset = '$_appAssetBase/last_read.webp';
 const String _quranReadAsset = '$_appAssetBase/read.webp';
 const String _prayerTimeAsset = '$_appAssetBase/prayer_time.webp';
 const String _qiblaAsset = '$_appAssetBase/qiblah.webp';
-const String _playerAsset = '$_appAssetBase/player.webp';
 const String _tasbihAsset = '$_appAssetBase/tasbih.webp';
 const String _duaAsset = '$_appAssetBase/dua.webp';
 const String _downloadAsset = '$_appAssetBase/download.webp';
@@ -45,7 +44,7 @@ class HomeDashboardPage extends StatefulWidget {
     super.key,
     required this.onOpenMore,
     required this.onOpenQuran,
-    required this.onOpenPlayer,
+    required this.onOpenZakat,
     required this.onOpenPrayerTimes,
     required this.onOpenQibla,
     required this.onOpenDuas,
@@ -58,7 +57,7 @@ class HomeDashboardPage extends StatefulWidget {
 
   final VoidCallback onOpenMore;
   final VoidCallback onOpenQuran;
-  final VoidCallback onOpenPlayer;
+  final VoidCallback onOpenZakat;
   final VoidCallback onOpenPrayerTimes;
   final VoidCallback onOpenQibla;
   final VoidCallback onOpenDuas;
@@ -1193,9 +1192,7 @@ class _DailyQuranCompanionSection extends StatelessWidget {
             _ContinueExperience(
               wide: wide,
               latestReading: latestReading,
-              latestListening: latestListening,
               onOpenQuran: actions.onOpenQuran,
-              onOpenPlayer: actions.onOpenPlayer,
             ),
             const SizedBox(height: 16),
             _CompanionSectionHeader(
@@ -1278,46 +1275,18 @@ class _ContinueExperience extends StatelessWidget {
   const _ContinueExperience({
     required this.wide,
     required this.latestReading,
-    required this.latestListening,
     required this.onOpenQuran,
-    required this.onOpenPlayer,
   });
 
   final bool wide;
   final ResumeStateEntry? latestReading;
-  final ResumeStateEntry? latestListening;
   final VoidCallback onOpenQuran;
-  final VoidCallback onOpenPlayer;
 
   @override
   Widget build(BuildContext context) {
-    final Widget readingCard = _HomeQuranLastReadCard(
+    return _HomeQuranLastReadCard(
       entry: latestReading,
       onOpenQuran: onOpenQuran,
-    );
-    final Widget listeningCard = _ContinueListeningCard(
-      entry: latestListening,
-      onOpenPlayer: onOpenPlayer,
-    );
-
-    if (!wide) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          readingCard,
-          const SizedBox(height: 10),
-          listeningCard,
-        ],
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Expanded(flex: 6, child: readingCard),
-        const SizedBox(width: 12),
-        Expanded(flex: 5, child: listeningCard),
-      ],
     );
   }
 }
@@ -1366,10 +1335,10 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
         assetPath: _qiblaAsset,
       ),
       _QuickAction(
-        Icons.graphic_eq_rounded,
-        localizations.player,
-        widget.actions.onOpenPlayer,
-        assetPath: _playerAsset,
+        Icons.calculate_outlined,
+        'Zakat',
+        widget.actions.onOpenZakat,
+        assetPath: _settingsAsset,
       ),
       _QuickAction(
         Icons.auto_awesome_outlined,
@@ -2560,70 +2529,7 @@ class _HomeQuranLastReadCard extends StatelessWidget {
   }
 }
 
-class _ContinueListeningCard extends StatelessWidget {
-  const _ContinueListeningCard({
-    required this.entry,
-    required this.onOpenPlayer,
-  });
-
-  final ResumeStateEntry? entry;
-  final VoidCallback onOpenPlayer;
-
-  @override
-  Widget build(BuildContext context) {
-    final ResumeStateEntry? current = entry;
-    final localizations = AppLocalizations.of(context)!;
-    final Widget card;
-    if (current == null) {
-      card = EquranResumeImageCard(
-        primary: localizations.localeName == 'ar'
-            ? localizations.quranRecitation
-            : localizations.quranRecitation,
-        subtitle: localizations.beginListeningSubtitle,
-        actionText: localizations.localeName == 'ar'
-            ? '<- ${localizations.openPlayer}'
-            : '${localizations.openPlayer} ->',
-        trailingAssetPath: _playerAsset,
-        secondary: false,
-        artworkScale: 1.3,
-        artworkOffsetX: 18,
-        onTap: onOpenPlayer,
-      );
-    } else {
-      final int? positionMillis = current.positionMillis;
-      final String progress = positionMillis == null || positionMillis <= 0
-          ? ''
-          : ' - ${_formatShortDuration(Duration(milliseconds: positionMillis))}';
-
-      card = EquranResumeImageCard(
-        primary: current.surah == null
-            ? localizations.quranRecitation
-            : localizedSurahName(localizations, current.surah!),
-        subtitle: current.ayah == null
-            ? localizations.resumeRecitation(progress)
-            : localizations.ayahNumber(current.ayah!),
-        actionText: localizations.localeName == 'ar'
-            ? '<- ${localizations.continueListening}'
-            : '${localizations.continueListening} ->',
-        trailingAssetPath: _playerAsset,
-        secondary: false,
-        artworkScale: 1.18,
-        artworkOffsetX: 16,
-        onTap: () {
-          unawaited(
-            SettingsDB().put(
-              'resumeListeningRequestAt',
-              DateTime.now().microsecondsSinceEpoch,
-            ),
-          );
-          onOpenPlayer();
-        },
-      );
-    }
-
-    return HolographicCardWrapper(child: card);
-  }
-}
+// _ContinueListeningCard retired
 
 // ignore: unused_element
 class _DailyGoalCard extends StatelessWidget {
@@ -3423,16 +3329,6 @@ String _formatTime(
   return '$hour:${time.minute.toString().padLeft(2, '0')} $suffix';
 }
 
-String _formatShortDuration(Duration duration) {
-  final Duration normalized = duration.isNegative ? Duration.zero : duration;
-  final int hours = normalized.inHours;
-  final int minutes = normalized.inMinutes.remainder(60);
-  final int seconds = normalized.inSeconds.remainder(60);
-  if (hours > 0) {
-    return '${hours}h ${minutes.toString().padLeft(2, '0')}m';
-  }
-  return '$minutes:${seconds.toString().padLeft(2, '0')}';
-}
 
 String _formatCountdown(Duration duration) {
   final Duration normalized = duration.isNegative ? Duration.zero : duration;
