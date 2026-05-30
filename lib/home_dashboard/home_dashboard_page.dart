@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:equran/backend/library.dart';
+import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/prayer/prayer_hero_card.dart';
 import 'package:equran/prayer/prayer_localizations.dart';
@@ -1656,14 +1657,55 @@ class _QuickActionPageDots extends StatelessWidget {
   }
 }
 
-class _DailyAyahPreview extends StatelessWidget {
+class _DailyAyahPreview extends StatefulWidget {
   const _DailyAyahPreview({required this.ayah, required this.onOpenQuran});
 
   final _DailyAyah ayah;
   final VoidCallback onOpenQuran;
 
   @override
+  State<_DailyAyahPreview> createState() => _DailyAyahPreviewState();
+}
+
+class _DailyAyahPreviewState extends State<_DailyAyahPreview> {
+  bool _fontLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFontIfNeeded();
+  }
+
+  @override
+  void didUpdateWidget(covariant _DailyAyahPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.ayah.surah != widget.ayah.surah ||
+        oldWidget.ayah.verse != widget.ayah.verse) {
+      _loadFontIfNeeded();
+    }
+  }
+
+  Future<void> _loadFontIfNeeded() async {
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'qpc-v4') {
+      final int page = EquranTextStyles.getPageNumber(
+        widget.ayah.surah,
+        widget.ayah.verse,
+      );
+      final bool loaded = await QpcV4FontService.instance
+          .ensureFontLoadedForPage(page);
+      if (loaded && mounted) {
+        setState(() {
+          _fontLoaded = true;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final _DailyAyah ayah = widget.ayah;
+    final VoidCallback onOpenQuran = widget.onOpenQuran;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final localizations = AppLocalizations.of(context)!;
@@ -1721,15 +1763,22 @@ class _DailyAyahPreview extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                ayah.arabic,
+                quranVerseText(ayah.surah, ayah.verse),
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.center,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: EquranTextStyles.arabicBody(
-                  context,
-                  color: colors.textPrimary,
-                ).copyWith(height: 1.7),
+                style:
+                    EquranTextStyles.arabicBody(
+                      context,
+                      color: colors.textPrimary,
+                    ).copyWith(
+                      fontFamily: EquranTextStyles.fontFamilyForVerse(
+                        ayah.surah,
+                        ayah.verse,
+                      ),
+                      height: 1.7,
+                    ),
               ),
               const SizedBox(height: 12),
               Text(

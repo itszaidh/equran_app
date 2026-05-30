@@ -1707,7 +1707,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Future<void> _loadFontsForCurrentSurah() async {
     if (SettingsDB().quranScriptStyle != 'qpc-v4') return;
 
-    final int currentPage = quran.getPageNumber(_currentChapter, _currentVerse);
+    final int currentPage = EquranTextStyles.getPageNumber(_currentChapter, _currentVerse);
     final bool currentLoaded = await QpcV4FontService.instance
         .ensureFontLoadedForPage(currentPage);
     if (currentLoaded && mounted) {
@@ -7002,13 +7002,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             : SettingsDB().quranScriptStyle == 'qpc-hafs'
                             ? 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'
                             : SettingsDB().quranScriptStyle == 'qpc-v4'
-                            ? 'ﱁ ﱂ ﱃ ﱄ ﱅ'
+                            ? 'ﱁ ﱂ ﱃ ﱄ'
                             : quranBasmalaText,
                         textDirection: TextDirection.rtl,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: SettingsDB().quranScriptStyle == 'qpc-v4'
-                              ? 'QPCV4_Page_1'
+                              ? EquranTextStyles.fontFamilyForPage(1)
                               : EquranTextStyles.activeFontFamily,
                           fontFamilyFallback: const <String>['UthmanicHafs'],
                           color: colors.onPrimary,
@@ -7292,9 +7292,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       final List<InlineSpan> children = <InlineSpan>[];
       final int? highlightedVerse = _selectedInlineVerse ?? _playingVerse;
       for (int verse = 1; verse <= _totalVerses; verse++) {
-        final int page = quran.getPageNumber(_currentChapter, verse);
+        final int page = EquranTextStyles.getPageNumber(_currentChapter, verse);
         final TextStyle style = TextStyle(
-          fontFamily: 'QPCV4_Page_$page',
+          fontFamily: EquranTextStyles.fontFamilyForPage(page),
           fontFamilyFallback: const <String>['UthmanicHafs'],
           height: 1.8,
           fontSize: fontSize,

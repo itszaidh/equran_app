@@ -1,3 +1,4 @@
+import 'package:equran/backend/settings_db.dart';
 import 'package:quran/quran.dart' as quran;
 
 const String quranBasmalaText = 'بِسْمِ اللَّهِ الرَّحْمَـٰنِ الرَّحِيمِ';
@@ -87,7 +88,8 @@ bool _isArabicLetterRune(int rune) {
 }
 
 String inlineQuranVerseSegment(int chapter, int verse) {
-  return '\u2067${quranVerseText(chapter, verse, includeVerseNumber: true)}\u2069  ';
+  final bool includeNumber = SettingsDB().quranScriptStyle != 'qpc-v4';
+  return '${quranVerseText(chapter, verse, includeVerseNumber: includeNumber)}  ';
 }
 
 double shareArabicFontSizeForText(String verseText) {

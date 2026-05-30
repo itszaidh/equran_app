@@ -310,15 +310,14 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
     final localizations = AppLocalizations.of(context)!;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: colorScheme.outlineVariant),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        child: Column(
+      child: Column(
           children: <Widget>[
             ListTile(
               leading: const Icon(Icons.download_done_outlined),
@@ -332,7 +331,6 @@ class _DownloadsPageState extends State<DownloadsPage> {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -344,15 +342,14 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final List<_SurahAyahDownloadsGroup> ayahSurahs = _groupAyahsBySurah(
       group.ayahs,
     );
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: colorScheme.outlineVariant),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        child: Column(
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             ListTile(
@@ -378,7 +375,6 @@ class _DownloadsPageState extends State<DownloadsPage> {
             ...ayahSurahs.map(_buildAyahSurahTile),
           ],
         ),
-      ),
     );
   }
 

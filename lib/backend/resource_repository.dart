@@ -198,7 +198,7 @@ class ResourceRepository {
         'type': 'quran_fonts',
         'name': 'QPC V4 Tajweed fonts',
         'version': '1.0.0',
-        'url': '$_asset100DownloadBase/ttf.zip',
+        'url': '$_asset100DownloadBase/tajweed.zip',
         'requiredPages': 604,
       },
       <String, Object?>{

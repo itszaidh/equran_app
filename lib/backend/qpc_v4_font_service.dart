@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:equran/backend/qcf_cpal_patcher.dart';
 import 'package:equran/backend/resource_install_store.dart';
 import 'package:equran/backend/resource_models.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,7 @@ class QpcV4FontService {
     name: 'QPC V4 Tajweed fonts',
     version: '1.0.0',
     url:
-        'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/ttf.zip',
+        'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/tajweed.zip',
     metadata: <String, Object?>{'requiredPages': 604},
   );
 
@@ -57,10 +58,27 @@ class QpcV4FontService {
       if (fontFile == null) return false;
       final Uint8List bytes = await fontFile.readAsBytes();
 
-      // Load font dynamically
-      final FontLoader fontLoader = FontLoader('QPCV4_Page_$pageNumber');
-      fontLoader.addFont(Future<ByteData>.value(ByteData.sublistView(bytes)));
-      await fontLoader.load();
+      // Register light variant (original bytes)
+      final FontLoader lightLoader = FontLoader(
+        'QPCV4_Page_${pageNumber}_light',
+      );
+      lightLoader.addFont(Future<ByteData>.value(ByteData.sublistView(bytes)));
+
+      // Register dark variant (patched bytes)
+      // Clone the bytes before patching to avoid mutating the light variant's buffer
+      final Uint8List darkBytes = Uint8List.fromList(bytes);
+      final Uint8List patchedBytes = QcfCpalPatcher.patchForDarkMode(darkBytes);
+
+      final FontLoader darkLoader = FontLoader('QPCV4_Page_${pageNumber}_dark');
+      darkLoader.addFont(
+        Future<ByteData>.value(ByteData.sublistView(patchedBytes)),
+      );
+
+      // Wait for both to load
+      await Future.wait<void>(<Future<void>>[
+        lightLoader.load(),
+        darkLoader.load(),
+      ]);
 
       _loadedPages.add(pageNumber);
       return true;
