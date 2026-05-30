@@ -2776,7 +2776,7 @@ class _DailyAyahCard extends StatelessWidget {
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontFamily: 'Hafs',
+              fontFamily: 'UthmanicHafs',
               fontSize: 28,
               height: 1.65,
             ),

@@ -180,7 +180,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ? [
                           darkBackground,
                           Color.alphaBlend(
-                            deepTeal.withOpacity(0.35),
+                            deepTeal.withValues(alpha: 0.35),
                             darkBackground,
                           ),
                           darkBackground,
@@ -188,7 +188,7 @@ class _SplashScreenState extends State<SplashScreen>
                       : [
                           darkBackground,
                           Color.alphaBlend(
-                            deepTeal.withOpacity(0.08),
+                            deepTeal.withValues(alpha: 0.08),
                             darkBackground,
                           ),
                           darkBackground,
@@ -220,8 +220,8 @@ class _SplashScreenState extends State<SplashScreen>
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          goldAccent.withOpacity(0.25),
-                          goldAccent.withOpacity(0.05),
+                          goldAccent.withValues(alpha: 0.25),
+                          goldAccent.withValues(alpha: 0.05),
                           Colors.transparent,
                         ],
                       ),
@@ -304,7 +304,7 @@ class _SplashScreenState extends State<SplashScreen>
                             fontSize: 13,
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0.8,
-                            color: colors.textSecondary.withOpacity(0.85),
+                            color: colors.textSecondary.withValues(alpha: 0.85),
                           ),
                         ),
                       ],
@@ -350,7 +350,7 @@ class ParticlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final particle in particles) {
       final Paint paint = Paint()
-        ..color = color.withOpacity(particle.opacity)
+        ..color = color.withValues(alpha: particle.opacity)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(Offset(particle.x, particle.y), particle.radius, paint);
     }
@@ -381,7 +381,7 @@ class RubElHizbPainter extends CustomPainter {
     final double innerRadius = outerRadius * 0.76536;
 
     final Paint outlinePaint = Paint()
-      ..color = goldColor.withOpacity(0.85)
+      ..color = goldColor.withValues(alpha: 0.85)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.4
       ..strokeCap = StrokeCap.round;
@@ -390,8 +390,8 @@ class RubElHizbPainter extends CustomPainter {
       ..shader =
           RadialGradient(
             colors: [
-              goldColor.withOpacity(0.24 * fillOpacity),
-              goldColor.withOpacity(0.01 * fillOpacity),
+              goldColor.withValues(alpha: 0.24 * fillOpacity),
+              goldColor.withValues(alpha: 0.01 * fillOpacity),
             ],
           ).createShader(
             Rect.fromCircle(center: Offset(cx, cy), radius: outerRadius),
@@ -399,7 +399,7 @@ class RubElHizbPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final Paint innerStarPaint = Paint()
-      ..color = goldColor.withOpacity(0.48 * fillOpacity)
+      ..color = goldColor.withValues(alpha: 0.48 * fillOpacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -461,7 +461,7 @@ class RubElHizbPainter extends CustomPainter {
 
       // Solid center glowing dot
       final Paint centerDotPaint = Paint()
-        ..color = goldColor.withOpacity(0.9 * fillOpacity)
+        ..color = goldColor.withValues(alpha: 0.9 * fillOpacity)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(Offset(cx, cy), 3.2, centerDotPaint);
     }

@@ -432,8 +432,11 @@ class ReadQuranCard extends StatelessWidget {
                     textDirection: TextDirection.rtl,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: EquranTextStyles.activeFontFamily,
-                      fontFamilyFallback: const <String>['Hafs'],
+                      fontFamily: EquranTextStyles.fontFamilyForVerse(
+                        currentChapter,
+                        currentVerse,
+                      ),
+                      fontFamilyFallback: const <String>['UthmanicHafs'],
                       fontSize: fontSize,
                       height: 1.7,
                       color: colorScheme.primary,
@@ -448,8 +451,11 @@ class ReadQuranCard extends StatelessWidget {
                     textDirection: TextDirection.rtl,
                     textAlign: TextAlign.justify,
                     style: TextStyle(
-                      fontFamily: EquranTextStyles.activeFontFamily,
-                      fontFamilyFallback: const <String>['Hafs'],
+                      fontFamily: EquranTextStyles.fontFamilyForVerse(
+                        currentChapter,
+                        currentVerse,
+                      ),
+                      fontFamilyFallback: const <String>['UthmanicHafs'],
                       height: 1.78,
                       fontSize: fontSize,
                       color: colorScheme.onSurface,

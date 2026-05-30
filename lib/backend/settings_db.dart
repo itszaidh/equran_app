@@ -21,13 +21,17 @@ class SettingsDB extends BaseDB {
   }
 
   /// Getter for tracking the script style preference key
-  String get quranScriptStyle =>
-      get('quran_script_style', defaultValue: 'uthmani') as String;
+  String get quranScriptStyle {
+    final String style =
+        get('quran_script_style', defaultValue: 'qpc-hafs') as String;
+    return style == 'uthmani' ? 'qpc-hafs' : style;
+  }
 
   /// Setter for tracking the script style preference key
   Future<void> setQuranScriptStyle(String style) async {
-    await put('quran_script_style', style);
-    quran.setQuranTextAssetBase('assets/data/quran/text/$style');
+    final String normalizedStyle = style == 'uthmani' ? 'qpc-hafs' : style;
+    await put('quran_script_style', normalizedStyle);
+    quran.setQuranTextAssetBase('assets/data/quran/text/$normalizedStyle');
     await quran.initializeQuran();
   }
 }

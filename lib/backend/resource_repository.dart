@@ -13,6 +13,8 @@ class ResourceRepository {
       'downloadableResourceManifestFetchedAt.v1';
   static const String _assetLatestDownloadBase =
       'https://github.com/ya27hw/equran-assets/releases/latest/download';
+  static const String _asset100DownloadBase =
+      'https://github.com/ya27hw/equran-assets/releases/download/1.0.0';
   static const List<String> _remoteManifestUrls = <String>[
     '$_assetLatestDownloadBase/resource_manifest.json',
     '$_assetLatestDownloadBase/manifest.json',
@@ -190,6 +192,14 @@ class ResourceRepository {
         'language': 'en',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/en_clear_quran.zip',
+      },
+      <String, Object?>{
+        'id': 'qpc_v4_tajweed_fonts',
+        'type': 'quran_fonts',
+        'name': 'QPC V4 Tajweed fonts',
+        'version': '1.0.0',
+        'url': '$_asset100DownloadBase/ttf.zip',
+        'requiredPages': 604,
       },
       <String, Object?>{
         'id': 'tr_saheeh',

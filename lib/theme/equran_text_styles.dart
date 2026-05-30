@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:equran/backend/settings_db.dart';
+import 'package:quran/quran.dart' as quran;
 
 class EquranTextStyles {
   const EquranTextStyles._();
@@ -113,13 +114,44 @@ class EquranTextStyles {
   }
 
   static String get activeFontFamily {
-    return SettingsDB().quranScriptStyle == 'indopak' ? 'QuranIndoPak' : 'Hafs';
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'indopak') {
+      return 'QuranIndoPak';
+    } else if (style == 'qpc-hafs') {
+      return 'UthmanicHafs';
+    }
+    return 'UthmanicHafs';
+  }
+
+  static String fontFamilyForPage(int page) {
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'indopak') {
+      return 'QuranIndoPak';
+    } else if (style == 'qpc-hafs') {
+      return 'UthmanicHafs';
+    } else if (style == 'qpc-v4') {
+      return 'QPCV4_Page_$page';
+    }
+    return 'UthmanicHafs';
+  }
+
+  static String fontFamilyForVerse(int chapter, int verse) {
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'indopak') {
+      return 'QuranIndoPak';
+    } else if (style == 'qpc-hafs') {
+      return 'UthmanicHafs';
+    } else if (style == 'qpc-v4') {
+      final int page = quran.getPageNumber(chapter, verse);
+      return 'QPCV4_Page_$page';
+    }
+    return 'UthmanicHafs';
   }
 
   static TextStyle arabicDisplay(BuildContext context, {Color? color}) {
     return TextStyle(
       fontFamily: activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: 30,
       height: 1.7,
       color: color ?? Theme.of(context).colorScheme.onSurface,
@@ -129,7 +161,7 @@ class EquranTextStyles {
   static TextStyle arabicBody(BuildContext context, {Color? color}) {
     return TextStyle(
       fontFamily: activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: 24,
       height: 1.75,
       color: color ?? Theme.of(context).colorScheme.onSurface,
@@ -139,7 +171,7 @@ class EquranTextStyles {
   static TextStyle arabicSmall(BuildContext context, {Color? color}) {
     return TextStyle(
       fontFamily: activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: 19,
       height: 1.55,
       color: color ?? Theme.of(context).colorScheme.onSurface,

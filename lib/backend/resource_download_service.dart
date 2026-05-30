@@ -379,6 +379,9 @@ class ResourceDownloadService {
       case ResourceType.timings:
         await _validateTimings(directory);
         return;
+      case ResourceType.quranFonts:
+        await _validateQpcV4Fonts(directory);
+        return;
       case ResourceType.translation:
         await _validateTranslation(directory);
         return;
@@ -473,6 +476,31 @@ class ResourceDownloadService {
       if (ayahs.length < expectedAyahs) {
         throw ResourceInstallException(
           'The translation file $surah.json does not include every ayah.',
+        );
+      }
+    }
+  }
+
+  Future<void> _validateQpcV4Fonts(Directory directory) async {
+    final Map<int, String> pages = <int, String>{};
+    await for (final FileSystemEntity entity in directory.list(
+      recursive: true,
+      followLinks: false,
+    )) {
+      if (entity is! File) continue;
+      final String name = entity.uri.pathSegments
+          .where((String segment) => segment.isNotEmpty)
+          .last;
+      final int? page = _qpcV4FontPageNumber(name);
+      if (page != null) {
+        pages.putIfAbsent(page, () => name);
+      }
+    }
+
+    for (int page = 1; page <= 604; page++) {
+      if (!pages.containsKey(page)) {
+        throw ResourceInstallException(
+          'The Tajweed font ZIP is missing page $page.',
         );
       }
     }
@@ -616,6 +644,17 @@ class ResourceDownloadService {
         .map((String segment) => segment.trim())
         .where((String segment) => segment.isNotEmpty)
         .toList(growable: false);
+  }
+
+  static int? _qpcV4FontPageNumber(String fileName) {
+    final RegExpMatch? match = RegExp(
+      r'^(?:p|page)?0*([1-9][0-9]{0,2})\.ttf$',
+      caseSensitive: false,
+    ).firstMatch(fileName.trim());
+    if (match == null) return null;
+    final int? page = int.tryParse(match.group(1)!);
+    if (page == null || page < 1 || page > 604) return null;
+    return page;
   }
 
   static String _friendlyDownloadError(Object error) {

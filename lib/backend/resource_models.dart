@@ -3,6 +3,7 @@ import 'dart:convert';
 enum ResourceType {
   tafsir('tafsir'),
   timings('timings'),
+  quranFonts('quran_fonts'),
   translation('translation'),
   unknown('unknown');
 
@@ -109,6 +110,7 @@ class DownloadableResource {
     return switch (type) {
       ResourceType.tafsir => 'Tafsir',
       ResourceType.timings => 'Audio Timings',
+      ResourceType.quranFonts => 'Quran Fonts',
       ResourceType.translation => 'Translation',
       ResourceType.unknown => rawType.isEmpty ? 'Resource' : rawType,
     };

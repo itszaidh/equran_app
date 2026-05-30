@@ -107,7 +107,7 @@ class DuaCard extends StatelessWidget {
                       textDirection: TextDirection.rtl,
                       textAlign: TextAlign.justify,
                       style: TextStyle(
-                        fontFamily: 'Hafs',
+                        fontFamily: 'UthmanicHafs',
 
                         height: 1.95,
                         fontSize: SettingsDB().get(

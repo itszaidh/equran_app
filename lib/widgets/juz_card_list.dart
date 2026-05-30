@@ -4,6 +4,7 @@ import 'package:equran/utils/juz_search.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
+import 'package:flutter/rendering.dart';
 
 import 'juz_card.dart';
 
@@ -66,6 +67,7 @@ class _JuzCardListState extends State<JuzCardList>
       thumbVisibility: true,
       interactive: true,
       child: ListView.builder(
+        scrollCacheExtent: ScrollCacheExtent.pixels(tileExtent * 8),
         controller: scrollController,
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsetsDirectional.only(end: 2, bottom: 24),
@@ -73,7 +75,6 @@ class _JuzCardListState extends State<JuzCardList>
         itemExtentBuilder: (int index, _) {
           return items[index].group != null ? headerExtent : tileExtent;
         },
-        cacheExtent: tileExtent * 8,
         itemBuilder: (BuildContext context, int index) {
           final JuzListItem item = items[index];
           final JuzGroup? group = item.group;
@@ -180,7 +181,7 @@ class _JuzSectionHeader extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.right,
                 style: theme.textTheme.titleLarge?.copyWith(
-                  fontFamily: 'Hafs',
+                  fontFamily: 'UthmanicHafs',
                   height: 1.18,
                   fontWeight: FontWeight.w700,
                   color: colors.textPrimary,

@@ -1,4 +1,6 @@
 import 'package:equran/backend/library.dart' show SettingsDB;
+import 'package:equran/backend/qpc_v4_font_service.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_slider_theme.dart';
 import 'package:equran/utils/number_formatting.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +25,13 @@ class _FontSliderState extends State<FontSlider> {
   @override
   void initState() {
     super.initState();
+    if (SettingsDB().quranScriptStyle == 'qpc-v4') {
+      QpcV4FontService.instance.ensureFontLoadedForPage(1).then((success) {
+        if (success && mounted) {
+          setState(() {});
+        }
+      });
+    }
     _normalizeSavedFontSize(
       key: 'fontSize',
       defaultValue: 31,
@@ -201,9 +210,7 @@ class _FontPreview extends StatelessWidget {
             textAlign: TextAlign.center,
             textDirection: TextDirection.rtl,
             style: TextStyle(
-              fontFamily: SettingsDB().quranScriptStyle == 'indopak'
-                  ? 'QuranIndoPak'
-                  : 'Hafs',
+              fontFamily: EquranTextStyles.fontFamilyForVerse(1, 1),
               height: 1.65,
               fontSize: fontSize,
             ),

@@ -822,7 +822,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
       child: Text(
         _arabicText,
         style: TextStyle(
-          fontFamily: 'Hafs',
+          fontFamily: 'UthmanicHafs',
           fontSize: 28,
           color: colors.textPrimary,
           height: 2.2,
@@ -852,7 +852,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                 Text(
                   l10n.hifzPrevAyahCueLabel,
                   style: TextStyle(
-                    fontFamily: 'Hafs',
+                    fontFamily: 'UthmanicHafs',
                     fontSize: 18,
                     color: colors.textMuted,
                     height: 2.0,
@@ -863,7 +863,7 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                 Text(
                   _prevAyahEnd,
                   style: TextStyle(
-                    fontFamily: 'Hafs',
+                    fontFamily: 'UthmanicHafs',
                     fontSize: 22,
                     color: colors.textSecondary,
                     height: 2.0,
@@ -1172,7 +1172,7 @@ class _RevealedWordState extends State<_RevealedWord> {
         return Text(
           widget.word,
           style: TextStyle(
-            fontFamily: 'Hafs',
+            fontFamily: 'UthmanicHafs',
             fontSize: 26,
             color: color ?? colors.textPrimary,
             height: 2.0,

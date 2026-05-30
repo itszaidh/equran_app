@@ -791,7 +791,7 @@ class _BookmarkRow extends StatelessWidget {
                                 textDirection: TextDirection.rtl,
                                 style:
                                     const TextStyle(
-                                      fontFamily: 'Hafs',
+                                      fontFamily: 'UthmanicHafs',
                                       fontSize: 15,
                                       height: 1.3,
                                     ).copyWith(
@@ -1127,7 +1127,7 @@ Future<void> _showBookmarkEditor(
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontFamily: 'Hafs',
+                          fontFamily: 'UthmanicHafs',
                           color: colors.textPrimary,
                           fontSize: 22,
                           height: 1.6,

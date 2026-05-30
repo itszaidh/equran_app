@@ -23,6 +23,7 @@ import 'package:equran/backend/library.dart'
         RoutineDayProgressDB,
         SettingsDB,
         prettyBytes;
+import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/backend/backup_service.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/utils/app_theme.dart';
@@ -225,7 +226,9 @@ class _SettingsPageState extends State<SettingsPage> {
     final String currentStyle = SettingsDB().quranScriptStyle;
     final String label = currentStyle == 'indopak'
         ? 'IndoPak'
-        : 'Uthmani (Madinah)';
+        : currentStyle == 'qpc-v4'
+        ? 'QPC V4 Tajweed'
+        : 'Uthmanic Hafs';
 
     return ListTile(
       leading: const Icon(Icons.font_download_outlined),
@@ -238,14 +241,23 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: Icons.font_download_outlined,
           selectedValue: currentStyle,
           options: const <AppSelectionOption<String>>[
-            AppSelectionOption<String>(
-              value: 'uthmani',
-              title: 'Uthmani (Madinah)',
-            ),
             AppSelectionOption<String>(value: 'indopak', title: 'IndoPak'),
+            AppSelectionOption<String>(
+              value: 'qpc-hafs',
+              title: 'Uthmanic Hafs',
+            ),
+            AppSelectionOption<String>(
+              value: 'qpc-v4',
+              title: 'QPC V4 Tajweed',
+            ),
           ],
         );
         if (value == null) return;
+        if (value == 'qpc-v4') {
+          final bool ready = await _ensureQpcV4FontsReady();
+          if (!ready) return;
+          await QpcV4FontService.instance.ensureFontLoadedForPage(1);
+        }
         await SettingsDB().setQuranScriptStyle(value);
         if (mounted) {
           setState(() {});
@@ -426,6 +438,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     _buildResourceSubsection(
                       context: context,
                       manifest: manifest,
+                      title: 'Quran Fonts',
+                      resources: _quranFontResources(manifest),
+                      downloads: downloads,
+                    ),
+                    _buildResourceSubsection(
+                      context: context,
+                      manifest: manifest,
                       title: localizations.translations,
                       resources: manifest.resourcesOfType(
                         ResourceType.translation,
@@ -495,6 +514,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final ResourceInstallStore store = ResourceInstallStore.instance;
     final bool isTafsir = resource.type == ResourceType.tafsir;
     final bool isTranslation = resource.type == ResourceType.translation;
+    final bool isQuranFonts = resource.type == ResourceType.quranFonts;
     final bool selected =
         (isTafsir &&
             store.selectedTafsirResourceIds(manifest).contains(resource.id)) ||
@@ -525,6 +545,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   ? selected
                         ? Icons.radio_button_checked_rounded
                         : Icons.translate_rounded
+                  : isQuranFonts
+                  ? Icons.font_download_outlined
                   : Icons.graphic_eq_rounded,
             ),
       title: Text(resource.name),
@@ -592,6 +614,80 @@ class _SettingsPageState extends State<SettingsPage> {
       prettyBytes(resource.sizeBytes),
     ];
     return parts.join(' • ');
+  }
+
+  List<DownloadableResource> _quranFontResources(ResourceManifest manifest) {
+    final List<DownloadableResource> resources = manifest.resourcesOfType(
+      ResourceType.quranFonts,
+    );
+    if (resources.any(
+      (resource) => resource.id == QpcV4FontService.tajweedFontsResource.id,
+    )) {
+      return resources;
+    }
+    return <DownloadableResource>[
+      QpcV4FontService.tajweedFontsResource,
+      ...resources,
+    ];
+  }
+
+  Future<bool> _ensureQpcV4FontsReady() async {
+    if (await QpcV4FontService.instance.hasAllPageFonts()) return true;
+
+    if (!mounted) return false;
+    final DownloadableResource resource = await _qpcV4FontsResource();
+    if (!mounted) return false;
+    final String sizeLabel = resource.sizeBytes == null
+        ? ''
+        : ' (${prettyBytes(resource.sizeBytes)})';
+    final bool? download = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Download QPC V4 Tajweed fonts?'),
+        content: Text(
+          'Tajweed needs one TTF for each of the 604 Quran pages. '
+          'Download the font package$sizeLabel before enabling it.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.download_rounded),
+            label: Text(AppLocalizations.of(context)!.download),
+          ),
+        ],
+      ),
+    );
+    if (download != true) return false;
+
+    final bool installed = await _downloadResource(resource);
+    if (!installed) return false;
+    QpcV4FontService.instance.clearCache();
+
+    final bool ready = await QpcV4FontService.instance.hasAllPageFonts();
+    if (!ready && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'The Tajweed font download did not include all 604 pages.',
+          ),
+        ),
+      );
+    }
+    return ready;
+  }
+
+  Future<DownloadableResource> _qpcV4FontsResource() async {
+    try {
+      final ResourceManifest manifest = await _resourceManifestFuture;
+      return manifest.resourceById(QpcV4FontService.tajweedFontsResource.id) ??
+          QpcV4FontService.tajweedFontsResource;
+    } catch (_) {
+      return QpcV4FontService.tajweedFontsResource;
+    }
   }
 
   Future<void> _toggleTafsirSelection({
@@ -711,6 +807,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<bool> _downloadResource(DownloadableResource resource) async {
     try {
       await ResourceDownloadService.instance.downloadAndInstall(resource);
+      if (resource.id == QpcV4FontService.tajweedFontsResource.id) {
+        QpcV4FontService.instance.clearCache();
+      }
       await QuranTranslationService.instance
           .loadInstalledTranslationForResource(resource);
       if (!mounted) return false;
@@ -758,6 +857,12 @@ class _SettingsPageState extends State<SettingsPage> {
     );
     if (confirmed != true) return;
     await ResourceDownloadService.instance.uninstall(resource);
+    if (resource.id == QpcV4FontService.tajweedFontsResource.id) {
+      QpcV4FontService.instance.clearCache();
+      if (SettingsDB().quranScriptStyle == 'qpc-v4') {
+        await SettingsDB().setQuranScriptStyle('qpc-hafs');
+      }
+    }
     if (!mounted) return;
     final localizations = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(

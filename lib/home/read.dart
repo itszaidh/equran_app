@@ -42,6 +42,7 @@ import 'package:equran/backend/library.dart'
         TafsirVerseResult,
         TafsirService,
         prettyBytes;
+import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/theme/equran_text_styles.dart';
@@ -406,6 +407,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     milliseconds: 33,
   );
   static const Duration _readingTimeFlushInterval = Duration(seconds: 20);
+  int? _loadedChapter;
+  int? _loadedVerse;
   static const Duration _lowRefreshIdleDelay = Duration(milliseconds: 900);
   static const Duration _playerSettleAnimationDelay = Duration(
     milliseconds: 280,
@@ -1701,8 +1704,54 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     return quranVerseText(chapter, verse);
   }
 
+  Future<void> _loadFontsForCurrentSurah() async {
+    if (SettingsDB().quranScriptStyle != 'qpc-v4') return;
+
+    final int currentPage = quran.getPageNumber(_currentChapter, _currentVerse);
+    final bool currentLoaded = await QpcV4FontService.instance
+        .ensureFontLoadedForPage(currentPage);
+    if (currentLoaded && mounted) {
+      setState(() {});
+    }
+
+    if (currentPage != 1) {
+      unawaited(
+        QpcV4FontService.instance.ensureFontLoadedForPage(1).then((success) {
+          if (success && mounted) {
+            setState(() {});
+          }
+        }),
+      );
+    }
+
+    final List<int> pages = quran.getSurahPages(_currentChapter);
+    for (final int page in pages) {
+      if (page == currentPage) continue;
+      unawaited(
+        QpcV4FontService.instance.ensureFontLoadedForPage(page).then((success) {
+          if (success && mounted) {
+            setState(() {});
+          }
+        }),
+      );
+    }
+  }
+
+  void _ensureFontsLoadedForCurrentState() {
+    if (SettingsDB().quranScriptStyle != 'qpc-v4') return;
+    if (_loadedChapter == _currentChapter && _loadedVerse == _currentVerse) {
+      return;
+    }
+
+    _loadedChapter = _currentChapter;
+    _loadedVerse = _currentVerse;
+
+    _loadFontsForCurrentSurah();
+  }
+
   @override
   Widget build(BuildContext context) {
+    _ensureFontsLoadedForCurrentState();
     Size screenSize = MediaQuery.of(context).size;
     final EquranColors colors = context.equranColors;
 
@@ -6746,7 +6795,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   TextStyle _shareArabicTextStyle(double fontSize) {
     return TextStyle(
       fontFamily: EquranTextStyles.activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: fontSize,
       height: 1.82,
       fontWeight: FontWeight.w400,
@@ -6950,12 +6999,18 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       Text(
                         SettingsDB().quranScriptStyle == 'indopak'
                             ? 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
+                            : SettingsDB().quranScriptStyle == 'qpc-hafs'
+                            ? 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'
+                            : SettingsDB().quranScriptStyle == 'qpc-v4'
+                            ? 'ﱁ ﱂ ﱃ ﱄ ﱅ'
                             : quranBasmalaText,
                         textDirection: TextDirection.rtl,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontFamily: EquranTextStyles.activeFontFamily,
-                          fontFamilyFallback: const <String>['Hafs'],
+                          fontFamily: SettingsDB().quranScriptStyle == 'qpc-v4'
+                              ? 'QPCV4_Page_1'
+                              : EquranTextStyles.activeFontFamily,
+                          fontFamilyFallback: const <String>['UthmanicHafs'],
                           color: colors.onPrimary,
                           fontSize: 36,
                           fontWeight: FontWeight.w400,
@@ -7233,9 +7288,30 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   TextSpan _buildInlineSurahTextSpan(double fontSize, ColorScheme colorScheme) {
+    if (SettingsDB().quranScriptStyle == 'qpc-v4') {
+      final List<InlineSpan> children = <InlineSpan>[];
+      final int? highlightedVerse = _selectedInlineVerse ?? _playingVerse;
+      for (int verse = 1; verse <= _totalVerses; verse++) {
+        final int page = quran.getPageNumber(_currentChapter, verse);
+        final TextStyle style = TextStyle(
+          fontFamily: 'QPCV4_Page_$page',
+          fontFamilyFallback: const <String>['UthmanicHafs'],
+          height: 1.8,
+          fontSize: fontSize,
+          color: highlightedVerse == verse
+              ? colorScheme.primary
+              : colorScheme.onSurface,
+        );
+        children.add(
+          TextSpan(text: _inlineVerseTextSegment(verse), style: style),
+        );
+      }
+      return TextSpan(children: children);
+    }
+
     final TextStyle baseStyle = TextStyle(
       fontFamily: EquranTextStyles.activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       height: 1.8,
       fontSize: fontSize,
       color: colorScheme.onSurface,
@@ -7726,7 +7802,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         textAlign: TextAlign.justify,
                         style: TextStyle(
                           fontFamily: EquranTextStyles.activeFontFamily,
-                          fontFamilyFallback: const <String>['Hafs'],
+                          fontFamilyFallback: const <String>['UthmanicHafs'],
                           fontSize: _ayahDetailsArabicFontSize,
                           height: 1.7,
                           color: colorScheme.onSurface,
@@ -8364,7 +8440,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontFamily: EquranTextStyles.activeFontFamily,
-                                fontFamilyFallback: const <String>['Hafs'],
+                                fontFamilyFallback: const <String>[
+                                  'UthmanicHafs',
+                                ],
                                 color: colors.textPrimary,
                                 fontSize: 22,
                                 height: 1.6,
@@ -8940,7 +9018,7 @@ class _ShareImageAyahTextColumn extends StatelessWidget {
           style: TextStyle(
             color: colors.textPrimary,
             fontFamily: EquranTextStyles.activeFontFamily,
-            fontFamilyFallback: const <String>['Hafs'],
+            fontFamilyFallback: const <String>['UthmanicHafs'],
             fontSize: layout.arabicFontSize,
             height: 1.82,
             fontWeight: FontWeight.w400,
