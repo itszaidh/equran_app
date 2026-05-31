@@ -719,7 +719,6 @@ class _DownloadsPageState extends State<DownloadsPage> {
         children: <Widget>[
           ListTile(
             onTap: () => _toggleReciterSection(group.reciterCode),
-            leading: const Icon(Icons.record_voice_over_rounded),
             title: Text(
               reciterDisplayName(group.reciterCode),
               style: theme.textTheme.titleMedium?.copyWith(
@@ -730,6 +729,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
               '${surahs.length} surahs  •  ${group.ayahCount} ayahs  •  ${AudioDownloadService.formatBytes(group.sizeBytes)}',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
+                fontSize: (theme.textTheme.bodySmall?.fontSize ?? 12) - 1,
               ),
             ),
             trailing: Icon(
