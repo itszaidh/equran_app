@@ -416,7 +416,7 @@ class AudioDownloadService {
 
         final File finalFile = await ayahFile(surah, entryAyah);
         final File tempExtractFile = File(
-          '${extractDir.path}${Platform.pathSeparator}${entrySurah}_${entryAyah}.mp3',
+          '${extractDir.path}${Platform.pathSeparator}${entrySurah}_$entryAyah.mp3',
         );
         await tempExtractFile.parent.create(recursive: true);
 

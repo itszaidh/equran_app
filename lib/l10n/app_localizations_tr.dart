@@ -1589,12 +1589,6 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get previousDhikr => 'Önceki zikir';
-
-  @override
-  String get nextDhikr => 'Sonraki zikir';
-
-  @override
   String counts33To33To34(int target) {
     return '$target sayımları • 33 → 33 → 34';
   }
@@ -3656,4 +3650,292 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get duaGroupMisc => 'Genel';
+
+  @override
+  String get zakatCalculator => 'Zekat Hesaplayıcı';
+
+  @override
+  String get zakatCalculatorSubtitle => 'Servet & Nisap değerlendirmeleri';
+
+  @override
+  String get islamicCalendar => 'İslami Takvim';
+
+  @override
+  String get islamicCalendarSubtitle => 'Senkronize Hicri zaman çizelgesi';
+
+  @override
+  String get customizeNavigation => 'Navigasyonu Özelleştir';
+
+  @override
+  String get allCategories => 'Tüm Kategoriler';
+
+  @override
+  String get meccan => 'Mekki';
+
+  @override
+  String get medinan => 'Medeni';
+
+  @override
+  String get appearanceTileSubtitle =>
+      'Tema, açık/koyu mod ve renk vurgusu ayarları';
+
+  @override
+  String get navigationSettingsSubtitle =>
+      'Alt navigasyon sekmelerini yeniden düzenleyin ve değiştirin';
+
+  @override
+  String get downloadQpcFontsTitle => 'QPC V4 Tecvid yazı tiplerini indir?';
+
+  @override
+  String downloadQpcFontsBody(String size) {
+    return 'Tecvid için 604 Kuran sayfasının her biri için bir TTF gerekir. Etkinleştirmeden önce yazı tipi paketini$size indirin.';
+  }
+
+  @override
+  String get qpcFontsDownloadError =>
+      'Tecvid yazı tipi indirmesi 604 sayfanın tamamını içermiyordu.';
+
+  @override
+  String get sysDefaultSubtitle => 'System default / لغة النظام';
+
+  @override
+  String get enSubtitle => 'English';
+
+  @override
+  String get arSubtitle => 'العربية / Arabic';
+
+  @override
+  String get idSubtitle => 'Bahasa Indonesia / Indonesian';
+
+  @override
+  String get urSubtitle => 'اردو / Urdu';
+
+  @override
+  String get trSubtitle => 'Türkçe / Turkish';
+
+  @override
+  String get bnSubtitle => 'বাংলা / Bengali';
+
+  @override
+  String get subhanAllah => 'Sübhanallah';
+
+  @override
+  String get alhamdulillah => 'Elhamdülillah';
+
+  @override
+  String get allahuAkbar => 'Allahu Ekber';
+
+  @override
+  String get astaghfirullah => 'Estağfirullah';
+
+  @override
+  String get custom => 'Özel';
+
+  @override
+  String get previousDhikr => 'Önceki Zikir';
+
+  @override
+  String get nextDhikr => 'Sonraki Zikir';
+
+  @override
+  String get zakatAlMal => 'Zekat';
+
+  @override
+  String get purifyWealthSubtitle => 'Arının, mallarınızı bereketlendirin.';
+
+  @override
+  String get liveMarketRates => 'Anlık Piyasa Fiyatları';
+
+  @override
+  String get fetchingLiveRates => 'Anlık piyasa fiyatları alınıyor...';
+
+  @override
+  String get ratesSyncSuccess => 'Güncel metal fiyatları başarıyla eşitlendi';
+
+  @override
+  String get ratesSyncOffline =>
+      'Piyasa çevrimdışı. Standart önbelleğe alınmış değerler kullanılıyor.';
+
+  @override
+  String get overridePrices => 'Fiyatları Düzenle';
+
+  @override
+  String get reset => 'Sıfırla';
+
+  @override
+  String get silverDefault => 'Gümüş (Varsayılan)';
+
+  @override
+  String get gold => 'Altın';
+
+  @override
+  String get nisabThresholdLabel => 'NİSAP EŞİĞİ';
+
+  @override
+  String get yourWealth => 'SERVETİNİZ';
+
+  @override
+  String get cashHint => 'Banka, nakit, dijital cüzdanlar, alacaklarınız';
+
+  @override
+  String get goldHint =>
+      'Yatırım altını + takılar (mezhebinize göre kontrol edin)';
+
+  @override
+  String get investmentsHint =>
+      'Hisseler, kripto, fonlar — güncel piyasa değeri';
+
+  @override
+  String get businessHint => 'Güncel değer üzerinden ticari mallar ve envanter';
+
+  @override
+  String get agricultureHint => 'Tarımsal ürünler (Öşür oranı uygulanır)';
+
+  @override
+  String get otherHint => 'Zekata tabi diğer tüm varlıklar';
+
+  @override
+  String get liabilitiesDeduct => 'Borçlar (Düşülecek)';
+
+  @override
+  String get liabilitiesHint =>
+      'Krediler, kredi kartları, ödenmesi gereken borçlar';
+
+  @override
+  String get netZakatableWealth => 'Net Zekata Tabi Servet';
+
+  @override
+  String get eligible => 'ZEKAT GEREKLİ';
+
+  @override
+  String get belowNisab => 'NİSAP ALTINDA';
+
+  @override
+  String get zakatDueLabel => 'ÖDENECEK ZEKAT (%2.5)';
+
+  @override
+  String get resetCalculator => 'Hesaplayıcıyı Sıfırla';
+
+  @override
+  String get goldPriceGram => 'Gram altın fiyatı (USD)';
+
+  @override
+  String get silverPriceGram => 'Gram gümüş fiyatı (USD)';
+
+  @override
+  String get zakatSavedLedger => 'Zekat hesabı kişisel defterinize kaydedildi';
+
+  @override
+  String get zakatPaidDistributed => 'Ödenen/Dağıtılan Zekat:';
+
+  @override
+  String get updateZakatPaidAmount => 'Ödenen Zekat Miktarını Güncelle';
+
+  @override
+  String get enterPaidAmountUsd => 'Ödenen miktarı USD olarak girin';
+
+  @override
+  String get calculatorTab => 'Hesaplayıcı';
+
+  @override
+  String get historyTab => 'Geçmiş';
+
+  @override
+  String get fastingReminder => 'Oruç Hatırlatıcısı';
+
+  @override
+  String get dateNotFound => 'Yakın gelecekte bu tarih bulunamadı';
+
+  @override
+  String get customizeCalendar => 'Takvimi özelleştir';
+
+  @override
+  String get shareDate => 'Bu tarihi paylaş';
+
+  @override
+  String get dateCopiedClipboard => 'Tarih bilgileri panoya kopyalandı';
+
+  @override
+  String get moonSighting => 'Hilal Gözlemi';
+
+  @override
+  String get fastingAlerts => 'Oruç Bildirimleri';
+
+  @override
+  String get standard => 'Standart';
+
+  @override
+  String daysPlural(int count) {
+    return '$count gün';
+  }
+
+  @override
+  String daySingular(int count) {
+    return '$count gün';
+  }
+
+  @override
+  String get calendarSettings => 'Takvim Ayarları';
+
+  @override
+  String get calendarSettingsSubtitle =>
+      'Yerel hilal gözlemi ve oruç hatırlatıcıları için ayarlayın';
+
+  @override
+  String get sightingOffsetLabel => 'Hilal Gözlemi Sapması';
+
+  @override
+  String get fastingRemindersSubtitle =>
+      'Önerilen oruç günlerinden önceki akşam bildirim alın';
+
+  @override
+  String get hijriDateDisclaimer =>
+      'Not: Hicri tarihler yaklaşıktır ve yerel hilal gözlemlerine bağlıdır. Sapma ayarı, takvimi topluluğunuzun gözlemleriyle eşitlemenizi sağlar.';
+
+  @override
+  String get recommendedFast => 'Önerilen Oruç';
+
+  @override
+  String get recommendedForThisDay => 'Bu gün için önerilir';
+
+  @override
+  String get todayLegend => 'Bugün';
+
+  @override
+  String get eidLegend => 'Bayram';
+
+  @override
+  String get ramadanLegend => 'Ramazan';
+
+  @override
+  String get blessedNightLegend => 'Mübarek Gece';
+
+  @override
+  String get fastLegend => 'Oruç';
+
+  @override
+  String keyDatesInYear(int year) {
+    return '$year Yılındaki Önemli Tarihler';
+  }
+
+  @override
+  String get fastingAlertsActive => 'Oruç Bildirimleri Aktif';
+
+  @override
+  String get quranFonts => 'Kuran Yazı Tipleri';
+
+  @override
+  String get allReciters => 'Tüm Hafızlar';
+
+  @override
+  String get tapToAdjust => 'Ayarlamak için dokunun';
+
+  @override
+  String get currency => 'Para Birimi';
+
+  @override
+  String get quranScriptStyle => 'Kuran Yazı Stili';
+
+  @override
+  String get selectCurrency => 'Para Birimi Seç';
 }

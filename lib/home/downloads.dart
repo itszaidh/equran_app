@@ -231,7 +231,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final EquranColors colors = context.equranColors;
     final theme = Theme.of(context);
 
-    final Map<String, String> reciterNames = {'all': 'All Reciters'};
+    final localizations = AppLocalizations.of(context)!;
+    final Map<String, String> reciterNames = {'all': localizations.allReciters};
     for (final group in originalGroups) {
       reciterNames[group.reciterCode] = reciterDisplayName(group.reciterCode);
     }
@@ -282,6 +283,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
   Widget _buildCategoryFilterDropdown() {
     final EquranColors colors = context.equranColors;
     final theme = Theme.of(context);
+    final localizations = AppLocalizations.of(context)!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
@@ -306,13 +308,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
               });
             }
           },
-          items: const <DropdownMenuItem<String>>[
+          items: <DropdownMenuItem<String>>[
             DropdownMenuItem<String>(
               value: 'all',
-              child: Text('All Categories'),
+              child: Text(localizations.allCategories),
             ),
-            DropdownMenuItem<String>(value: 'makkah', child: Text('Meccan')),
-            DropdownMenuItem<String>(value: 'madinah', child: Text('Medinan')),
+            DropdownMenuItem<String>(value: 'makkah', child: Text(localizations.meccan)),
+            DropdownMenuItem<String>(value: 'madinah', child: Text(localizations.medinan)),
           ],
         ),
       ),

@@ -15,6 +15,7 @@ class _PlayBackSliderState extends State<PlayBackSlider> {
   Widget build(BuildContext context) {
     double rate = SettingsDB().get("playbackRate", defaultValue: 1.0);
     return ListTile(
+      leading: const Icon(Icons.speed_rounded),
       title: Text(AppLocalizations.of(context)!.playbackRate),
       subtitle: SliderTheme(
         data: AppSliderTheme.standard(context),

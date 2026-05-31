@@ -400,6 +400,20 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const double _playerBarMinVelocity = 220;
   static const double _ayahDetailsArabicFontSize = 31.0;
   static const String _ayahDelaySettingsKey = 'ayahDelaySeconds';
+  static const List<double> _delaySteps = <double>[
+    0.0,
+    0.5,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0,
+  ];
   static const String _intervalRepeatSettingsKey = 'intervalRepeatCount';
   static const String _repeatAyahSettingsKey = 'repeatAyahCount';
   static const String _playbackIntervalSettingsKey = 'playbackInterval';
@@ -459,7 +473,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   PlaybackInterval? _playbackInterval;
   RepeatChoice _intervalRepeatChoice = RepeatChoice.infinite;
   RepeatChoice _repeatAyahChoice = RepeatChoice.one;
-  int _ayahDelaySeconds = 0;
+  double _ayahDelaySeconds = 0.0;
   int _intervalCyclesCompleted = 0;
   int _currentAyahPlayCount = 1;
   final Set<String> _preloadingAyahKeys = <String>{};
@@ -1996,7 +2010,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           title: localizations.displayAndSharing,
                           children: <Widget>[
                             SwitchListTile(
-                              secondary: const Icon(Icons.translate_rounded),
+                              secondary: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withAlpha(18),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.small,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.translate_rounded,
+                                  color: colorScheme.primary,
+                                  size: 21,
+                                ),
+                              ),
                               title: Text(localizations.translation),
                               subtitle: Text(localizations.showAyahTranslation),
                               value: translationEnabled,
@@ -2011,7 +2039,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               },
                             ),
                             SwitchListTile(
-                              secondary: const Icon(Icons.text_fields_rounded),
+                              secondary: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withAlpha(18),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.small,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.text_fields_rounded,
+                                  color: colorScheme.primary,
+                                  size: 21,
+                                ),
+                              ),
                               title: Text(localizations.transliterationOption),
                               subtitle: Text(
                                 localizations.showLatinTransliteration,
@@ -2028,7 +2070,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               },
                             ),
                             SwitchListTile(
-                              secondary: const Icon(Icons.view_agenda_outlined),
+                              secondary: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withAlpha(18),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.small,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.view_agenda_outlined,
+                                  color: colorScheme.primary,
+                                  size: 21,
+                                ),
+                              ),
                               title: Text(localizations.cardViewOption),
                               subtitle: Text(localizations.readOneAyahPerCard),
                               value: cardViewEnabled,
@@ -3209,7 +3265,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required int repeatOrdinal,
     required int cycleOrdinal,
   }) async {
-    final Duration duration = Duration(seconds: _ayahDelaySeconds);
+    final Duration duration = Duration(milliseconds: (_ayahDelaySeconds * 1000).round());
     final File file = await _silenceAudioFile(duration);
     return _PreparedReadingAudioSource(
       item: _ReadingAudioSequenceItem(
@@ -3523,9 +3579,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _loadPlaybackOptions() {
-    final int delaySeconds =
-        _readInt(SettingsDB().get(_ayahDelaySettingsKey, defaultValue: 0)) ?? 0;
-    _ayahDelaySeconds = delaySeconds.clamp(0, 10).toInt();
+    final dynamic delayVal = SettingsDB().get(_ayahDelaySettingsKey, defaultValue: 0.0);
+    double delaySeconds = 0.0;
+    if (delayVal is num) {
+      delaySeconds = delayVal.toDouble();
+    }
+    _ayahDelaySeconds = delaySeconds.clamp(0.0, 10.0);
     _intervalRepeatChoice = RepeatChoice.fromStorage(
       SettingsDB().get(
         _intervalRepeatSettingsKey,
@@ -3653,7 +3712,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Future<void> _delayBeforeNextPlayback(int requestId) async {
     if (_ayahDelaySeconds <= 0) return;
-    await Future<void>.delayed(Duration(seconds: _ayahDelaySeconds));
+    await Future<void>.delayed(Duration(milliseconds: (_ayahDelaySeconds * 1000).round()));
     _throwIfPlaybackRequestCancelled(requestId);
   }
 
@@ -3936,34 +3995,6 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         });
       }
     }
-  }
-
-  Future<void> _confirmDownloadCurrentSurahAyahs() async {
-    final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String surahName = localizedSurahName(localizations, _currentChapter);
-    final bool? confirm = await _withLowFpsSuppressed(() {
-      return showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          icon: const Icon(Icons.download_for_offline_rounded),
-          title: Text(localizations.downloadAllAyahs),
-          content: Text(localizations.downloadAllAyahsForSurah(surahName)),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(localizations.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(localizations.download),
-            ),
-          ],
-        ),
-      );
-    });
-
-    if (confirm != true) return;
-    await _downloadCurrentSurahAyahs();
   }
 
   Future<void> _downloadCurrentAyah() async {
@@ -6385,14 +6416,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             context: context,
                             title: localizations.ayahDelay,
                             subtitle: _delayLabel(_ayahDelaySeconds),
-                            value: _ayahDelaySeconds.toDouble(),
+                            value: _delaySteps.indexOf(_ayahDelaySeconds).clamp(0, 11).toDouble(),
                             min: 0,
-                            max: 10,
-                            divisions: 10,
+                            max: 11,
+                            divisions: 11,
                             label: _delayLabel(_ayahDelaySeconds),
                             onChanged: (value) {
                               setState(() {
-                                _ayahDelaySeconds = value.round().clamp(0, 10);
+                                final int idx = value.round().clamp(0, _delaySteps.length - 1);
+                                _ayahDelaySeconds = _delaySteps[idx];
                               });
                               setSheetState(() {});
                               unawaited(_persistPlaybackOptions());
@@ -6606,6 +6638,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     try {
       await _pauseReadingAudioForShare();
       await _loadChapterTransliterations();
+      if (SettingsDB().quranScriptStyle == 'qpc-v4') {
+        final int currentPage = EquranTextStyles.getPageNumber(
+          _currentChapter,
+          _currentVerse,
+        );
+        await QpcV4FontService.instance.ensureFontLoadedForPage(currentPage);
+      }
       if (!mounted) return;
 
       _isPreparingShareImage = true;
@@ -6902,6 +6941,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           width: layout.cardWidth,
                           height: layout.cardHeight,
                           child: _ShareImageAyahContent(
+                            chapter: _currentChapter,
+                            verse: _currentVerse,
                             verseText: verseText,
                             translation: translation,
                             transliteration: transliteration,
@@ -7287,7 +7328,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   TextStyle _shareArabicTextStyle(double fontSize) {
     return TextStyle(
-      fontFamily: EquranTextStyles.activeFontFamily,
+      fontFamily: EquranTextStyles.fontFamilyForVerse(
+        _currentChapter,
+        _currentVerse,
+      ),
       fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: fontSize,
       height: 1.82,
@@ -8100,30 +8144,31 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
             );
           },
         ),
-        ListTile(
-          leading: Icon(
-            currentAyahDownloading
-                ? Icons.downloading_rounded
-                : _hasDownloadedCurrentAyah
-                ? Icons.delete_outline_rounded
-                : Icons.download_rounded,
-          ),
-          title: Text(
-            currentAyahDownloading
-                ? localizations.downloadingCurrentAyah
-                : _hasDownloadedCurrentAyah
-                ? localizations.deleteCurrentAyahAudio
-                : localizations.downloadCurrentAyah,
-          ),
-          subtitle: Text(
-            localizations.surahLabel(
-              localizedSurahName(localizations, _currentChapter),
-              _currentVerse,
+        if (!_hasDownloadedSurahAyahs)
+          ListTile(
+            leading: Icon(
+              currentAyahDownloading
+                  ? Icons.downloading_rounded
+                  : _hasDownloadedCurrentAyah
+                  ? Icons.delete_outline_rounded
+                  : Icons.download_rounded,
             ),
+            title: Text(
+              currentAyahDownloading
+                  ? localizations.downloadingCurrentAyah
+                  : _hasDownloadedCurrentAyah
+                  ? localizations.deleteCurrentAyahAudio
+                  : localizations.downloadCurrentAyah,
+            ),
+            subtitle: Text(
+              localizations.surahLabel(
+                localizedSurahName(localizations, _currentChapter),
+                _currentVerse,
+              ),
+            ),
+            enabled: !currentAyahDownloading,
+            onTap: currentAyahDownloading ? null : onToggleCurrentAyah,
           ),
-          enabled: !currentAyahDownloading,
-          onTap: currentAyahDownloading ? null : onToggleCurrentAyah,
-        ),
       ],
     );
   }
@@ -8179,47 +8224,145 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     }));
 
     final AppReciter currentReciter = QuranAudioService().selectedReciter;
-    final bool isAudioActive = _isVersePlaying;
+
+    if (!mounted) return null;
+
+    bool groupByDownloaded = false;
 
     return showDialog<AppReciter>(
       context: context,
-      builder: (context) => AppSelectionDialog<AppReciter>(
-        title: localizations.reciter,
-        icon: Icons.record_voice_over_rounded,
-        selectedValue: currentReciter,
-        options: reciters
-            .map(
-              (reciter) {
-                final bool isDownloaded = reciterDownloadedMap[reciter.code] ?? false;
-                final bool isCurrentSelected = reciter == currentReciter;
-                final bool isPlayingActive = isCurrentSelected && isAudioActive;
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final List<AppReciter> displayReciters = List.from(reciters);
+            if (groupByDownloaded) {
+              displayReciters.sort((a, b) {
+                final bool aDownloaded = reciterDownloadedMap[a.code] ?? false;
+                final bool bDownloaded = reciterDownloadedMap[b.code] ?? false;
+                if (aDownloaded && !bDownloaded) return -1;
+                if (!aDownloaded && bDownloaded) return 1;
+                return a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase());
+              });
+            } else {
+              displayReciters.sort((a, b) =>
+                  a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase()));
+            }
 
-                Widget? leadingWidget;
-                if (isDownloaded) {
-                  leadingWidget = Icon(
-                    Icons.offline_pin_rounded,
-                    color: isPlayingActive
-                        ? Colors.green
-                        : Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(140),
-                    size: 20,
-                  );
-                } else {
-                  leadingWidget = Icon(
-                    Icons.record_voice_over_rounded,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(60),
-                    size: 20,
-                  );
-                }
+            final ThemeData theme = Theme.of(context);
+            final ColorScheme colorScheme = theme.colorScheme;
+            final BorderRadius borderRadius = BorderRadius.circular(AppRadii.large);
 
-                return AppSelectionOption<AppReciter>(
-                  value: reciter,
-                  title: _localizedReciterName(reciter, localizations),
-                  leading: leadingWidget,
-                );
-              },
-            )
-            .toList(),
-      ),
+            return Dialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              backgroundColor: colorScheme.surfaceContainer,
+              shape: RoundedRectangleBorder(borderRadius: borderRadius),
+              clipBehavior: Clip.antiAlias,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440, maxHeight: 560),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    ColoredBox(
+                      color: colorScheme.surfaceContainer,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 12, 10),
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.record_voice_over_rounded, color: colorScheme.primary),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                localizations.reciter,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: groupByDownloaded ? 'Show Alphabetical' : 'Group Downloaded',
+                              onPressed: () {
+                                setDialogState(() {
+                                  groupByDownloaded = !groupByDownloaded;
+                                });
+                              },
+                              icon: Icon(
+                                groupByDownloaded
+                                    ? Icons.offline_pin_rounded
+                                    : Icons.offline_pin_outlined,
+                                color: groupByDownloaded ? Colors.green : colorScheme.onSurfaceVariant.withAlpha(160),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: localizations.close,
+                              onPressed: () => Navigator.of(context).pop(),
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Flexible(
+                      child: ClipRect(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          itemCount: displayReciters.length,
+                          itemBuilder: (context, index) {
+                            final AppReciter reciter = displayReciters[index];
+                            final bool isSelected = reciter == currentReciter;
+                            final bool isDownloaded = reciterDownloadedMap[reciter.code] ?? false;
+
+                            Widget? leadingWidget;
+                            if (isDownloaded) {
+                              leadingWidget = const Icon(
+                                Icons.offline_pin_rounded,
+                                color: Colors.green,
+                                size: 20,
+                              );
+                            } else {
+                              leadingWidget = Icon(
+                                Icons.record_voice_over_rounded,
+                                color: colorScheme.onSurfaceVariant.withAlpha(60),
+                                size: 20,
+                              );
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Material(
+                                color: isSelected
+                                    ? colorScheme.primaryContainer.withValues(
+                                        alpha: 0.42,
+                                      )
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(AppRadii.medium),
+                                clipBehavior: Clip.antiAlias,
+                                child: ListTile(
+                                  leading: leadingWidget,
+                                  title: Text(_localizedReciterName(reciter, localizations)),
+                                  trailing: isSelected
+                                      ? Icon(
+                                          Icons.check_circle_rounded,
+                                          color: colorScheme.primary,
+                                        )
+                                      : null,
+                                  onTap: () => Navigator.of(context).pop(reciter),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -8279,10 +8422,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  String _delayLabel(int seconds) {
+  String _delayLabel(double seconds) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (seconds <= 0) return localizations.noDelay;
-    return localizations.secondsCount(seconds);
+    if (seconds == 0.5) return '0.5 seconds';
+    return localizations.secondsCount(seconds.toInt());
   }
 
   Future<void> _showAyahDetailsSheet(int verse) async {
@@ -9472,6 +9616,8 @@ class _ShareImageHeader extends StatelessWidget {
 
 class _ShareImageAyahContent extends StatelessWidget {
   const _ShareImageAyahContent({
+    required this.chapter,
+    required this.verse,
     required this.verseText,
     required this.translation,
     required this.transliteration,
@@ -9481,6 +9627,8 @@ class _ShareImageAyahContent extends StatelessWidget {
     required this.layout,
   });
 
+  final int chapter;
+  final int verse;
   final String verseText;
   final String translation;
   final String transliteration;
@@ -9514,6 +9662,8 @@ class _ShareImageAyahContent extends StatelessWidget {
             final Widget content = SizedBox(
               width: constraints.maxWidth,
               child: _ShareImageAyahTextColumn(
+                chapter: chapter,
+                verse: verse,
                 verseText: verseText,
                 translation: translation,
                 transliteration: transliteration,
@@ -9530,7 +9680,7 @@ class _ShareImageAyahContent extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.center,
                       child: content,
-                    )
+                      )
                   : content,
             );
           },
@@ -9542,6 +9692,8 @@ class _ShareImageAyahContent extends StatelessWidget {
 
 class _ShareImageAyahTextColumn extends StatelessWidget {
   const _ShareImageAyahTextColumn({
+    required this.chapter,
+    required this.verse,
     required this.verseText,
     required this.translation,
     required this.transliteration,
@@ -9551,6 +9703,8 @@ class _ShareImageAyahTextColumn extends StatelessWidget {
     required this.layout,
   });
 
+  final int chapter;
+  final int verse;
   final String verseText;
   final String translation;
   final String transliteration;
@@ -9574,7 +9728,7 @@ class _ShareImageAyahTextColumn extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: colors.textPrimary,
-            fontFamily: EquranTextStyles.activeFontFamily,
+            fontFamily: EquranTextStyles.fontFamilyForVerse(chapter, verse),
             fontFamilyFallback: const <String>['UthmanicHafs'],
             fontSize: layout.arabicFontSize,
             height: 1.82,

@@ -2924,18 +2924,6 @@ abstract class AppLocalizations {
   /// **'Auto-advances to {nextPreset}'**
   String autoAdvancesToNextPreset(String nextPreset);
 
-  /// No description provided for @previousDhikr.
-  ///
-  /// In en, this message translates to:
-  /// **'Previous dhikr'**
-  String get previousDhikr;
-
-  /// No description provided for @nextDhikr.
-  ///
-  /// In en, this message translates to:
-  /// **'Next dhikr'**
-  String get nextDhikr;
-
   /// No description provided for @counts33To33To34.
   ///
   /// In en, this message translates to:
@@ -6388,6 +6376,546 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'General'**
   String get duaGroupMisc;
+
+  /// No description provided for @zakatCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Zakat Calculator'**
+  String get zakatCalculator;
+
+  /// No description provided for @zakatCalculatorSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wealth & Nisab evaluations'**
+  String get zakatCalculatorSubtitle;
+
+  /// No description provided for @islamicCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Islamic Calendar'**
+  String get islamicCalendar;
+
+  /// No description provided for @islamicCalendarSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Synchronized Hijri timeline'**
+  String get islamicCalendarSubtitle;
+
+  /// No description provided for @customizeNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Navigation'**
+  String get customizeNavigation;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All Categories'**
+  String get allCategories;
+
+  /// No description provided for @meccan.
+  ///
+  /// In en, this message translates to:
+  /// **'Meccan'**
+  String get meccan;
+
+  /// No description provided for @medinan.
+  ///
+  /// In en, this message translates to:
+  /// **'Medinan'**
+  String get medinan;
+
+  /// No description provided for @appearanceTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, light/dark mode, and color accent settings'**
+  String get appearanceTileSubtitle;
+
+  /// No description provided for @navigationSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rearrange and swap bottom navigation tabs'**
+  String get navigationSettingsSubtitle;
+
+  /// No description provided for @downloadQpcFontsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download QPC V4 Tajweed fonts?'**
+  String get downloadQpcFontsTitle;
+
+  /// No description provided for @downloadQpcFontsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tajweed needs one TTF for each of the 604 Quran pages. Download the font package{size} before enabling it.'**
+  String downloadQpcFontsBody(String size);
+
+  /// No description provided for @qpcFontsDownloadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The Tajweed font download did not include all 604 pages.'**
+  String get qpcFontsDownloadError;
+
+  /// No description provided for @sysDefaultSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'System default / لغة النظام'**
+  String get sysDefaultSubtitle;
+
+  /// No description provided for @enSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get enSubtitle;
+
+  /// No description provided for @arSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'العربية / Arabic'**
+  String get arSubtitle;
+
+  /// No description provided for @idSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bahasa Indonesia / Indonesian'**
+  String get idSubtitle;
+
+  /// No description provided for @urSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'اردو / Urdu'**
+  String get urSubtitle;
+
+  /// No description provided for @trSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Türkçe / Turkish'**
+  String get trSubtitle;
+
+  /// No description provided for @bnSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'বাংলা / Bengali'**
+  String get bnSubtitle;
+
+  /// No description provided for @subhanAllah.
+  ///
+  /// In en, this message translates to:
+  /// **'SubhanAllah'**
+  String get subhanAllah;
+
+  /// No description provided for @alhamdulillah.
+  ///
+  /// In en, this message translates to:
+  /// **'Alhamdulillah'**
+  String get alhamdulillah;
+
+  /// No description provided for @allahuAkbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Allahu Akbar'**
+  String get allahuAkbar;
+
+  /// No description provided for @astaghfirullah.
+  ///
+  /// In en, this message translates to:
+  /// **'Astaghfirullah'**
+  String get astaghfirullah;
+
+  /// No description provided for @custom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get custom;
+
+  /// No description provided for @previousDhikr.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous dhikr'**
+  String get previousDhikr;
+
+  /// No description provided for @nextDhikr.
+  ///
+  /// In en, this message translates to:
+  /// **'Next dhikr'**
+  String get nextDhikr;
+
+  /// No description provided for @zakatAlMal.
+  ///
+  /// In en, this message translates to:
+  /// **'Zakat al-Māl'**
+  String get zakatAlMal;
+
+  /// No description provided for @purifyWealthSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Purify your wealth. Grow your blessings.'**
+  String get purifyWealthSubtitle;
+
+  /// No description provided for @liveMarketRates.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Market Rates'**
+  String get liveMarketRates;
+
+  /// No description provided for @fetchingLiveRates.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching live market rates...'**
+  String get fetchingLiveRates;
+
+  /// No description provided for @ratesSyncSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Live metal rates synchronized successfully'**
+  String get ratesSyncSuccess;
+
+  /// No description provided for @ratesSyncOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Market offline. Using standard cached values.'**
+  String get ratesSyncOffline;
+
+  /// No description provided for @overridePrices.
+  ///
+  /// In en, this message translates to:
+  /// **'Override Prices'**
+  String get overridePrices;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
+  /// No description provided for @silverDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver'**
+  String get silverDefault;
+
+  /// No description provided for @gold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold'**
+  String get gold;
+
+  /// No description provided for @nisabThresholdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'NISAB THRESHOLD'**
+  String get nisabThresholdLabel;
+
+  /// No description provided for @yourWealth.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR WEALTH'**
+  String get yourWealth;
+
+  /// No description provided for @cashHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank, cash, digital wallets, money owed to you'**
+  String get cashHint;
+
+  /// No description provided for @goldHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Investment gold + jewelry (check your madhhab)'**
+  String get goldHint;
+
+  /// No description provided for @investmentsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Stocks, ETFs, crypto, funds — current market value'**
+  String get investmentsHint;
+
+  /// No description provided for @businessHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory & trade goods at current value'**
+  String get businessHint;
+
+  /// No description provided for @agricultureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Crops & produce (5-10% rate applied)'**
+  String get agricultureHint;
+
+  /// No description provided for @otherHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Any other Zakatable assets'**
+  String get otherHint;
+
+  /// No description provided for @liabilitiesDeduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Liabilities (Deduct)'**
+  String get liabilitiesDeduct;
+
+  /// No description provided for @liabilitiesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Loans, credit cards, due payments you must settle'**
+  String get liabilitiesHint;
+
+  /// No description provided for @netZakatableWealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Zakatable Wealth'**
+  String get netZakatableWealth;
+
+  /// No description provided for @eligible.
+  ///
+  /// In en, this message translates to:
+  /// **'ELIGIBLE'**
+  String get eligible;
+
+  /// No description provided for @belowNisab.
+  ///
+  /// In en, this message translates to:
+  /// **'BELOW NISAB'**
+  String get belowNisab;
+
+  /// No description provided for @zakatDueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ZAKAT DUE (2.5%)'**
+  String get zakatDueLabel;
+
+  /// No description provided for @resetCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Calculator'**
+  String get resetCalculator;
+
+  /// No description provided for @goldPriceGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold price per gram (USD)'**
+  String get goldPriceGram;
+
+  /// No description provided for @silverPriceGram.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver price per gram (USD)'**
+  String get silverPriceGram;
+
+  /// No description provided for @zakatSavedLedger.
+  ///
+  /// In en, this message translates to:
+  /// **'Zakat calculation saved to your personal ledger'**
+  String get zakatSavedLedger;
+
+  /// No description provided for @zakatPaidDistributed.
+  ///
+  /// In en, this message translates to:
+  /// **'Zakat Paid/Distributed:'**
+  String get zakatPaidDistributed;
+
+  /// No description provided for @updateZakatPaidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Zakat Paid Amount'**
+  String get updateZakatPaidAmount;
+
+  /// No description provided for @enterPaidAmountUsd.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter paid amount in USD'**
+  String get enterPaidAmountUsd;
+
+  /// No description provided for @calculatorTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculator'**
+  String get calculatorTab;
+
+  /// No description provided for @historyTab.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyTab;
+
+  /// No description provided for @fastingReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Fasting Reminder'**
+  String get fastingReminder;
+
+  /// No description provided for @dateNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not locate that date in the near future'**
+  String get dateNotFound;
+
+  /// No description provided for @customizeCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize calendar'**
+  String get customizeCalendar;
+
+  /// No description provided for @shareDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this date'**
+  String get shareDate;
+
+  /// No description provided for @dateCopiedClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Date details copied to clipboard'**
+  String get dateCopiedClipboard;
+
+  /// No description provided for @moonSighting.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon Sighting'**
+  String get moonSighting;
+
+  /// No description provided for @fastingAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Fasting Alerts'**
+  String get fastingAlerts;
+
+  /// No description provided for @standard.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get standard;
+
+  /// No description provided for @daysPlural.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days'**
+  String daysPlural(int count);
+
+  /// No description provided for @daySingular.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} day'**
+  String daySingular(int count);
+
+  /// No description provided for @calendarSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar Settings'**
+  String get calendarSettings;
+
+  /// No description provided for @calendarSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust for local moon sighting and fasting reminders'**
+  String get calendarSettingsSubtitle;
+
+  /// No description provided for @sightingOffsetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon Sighting Offset'**
+  String get sightingOffsetLabel;
+
+  /// No description provided for @fastingRemindersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified the evening before recommended fasts'**
+  String get fastingRemindersSubtitle;
+
+  /// No description provided for @hijriDateDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: Hijri dates are approximate and depend on local moon sighting. The offset lets you align the calendar with your community’s observation.'**
+  String get hijriDateDisclaimer;
+
+  /// No description provided for @recommendedFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended Fast'**
+  String get recommendedFast;
+
+  /// No description provided for @recommendedForThisDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended for this day'**
+  String get recommendedForThisDay;
+
+  /// No description provided for @todayLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayLegend;
+
+  /// No description provided for @eidLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Eid'**
+  String get eidLegend;
+
+  /// No description provided for @ramadanLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan'**
+  String get ramadanLegend;
+
+  /// No description provided for @blessedNightLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Blessed Night'**
+  String get blessedNightLegend;
+
+  /// No description provided for @fastLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
+  String get fastLegend;
+
+  /// No description provided for @keyDatesInYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Key Dates in {year}'**
+  String keyDatesInYear(int year);
+
+  /// No description provided for @fastingAlertsActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Fasting Alerts Active'**
+  String get fastingAlertsActive;
+
+  /// No description provided for @quranFonts.
+  ///
+  /// In en, this message translates to:
+  /// **'Quran Fonts'**
+  String get quranFonts;
+
+  /// No description provided for @allReciters.
+  ///
+  /// In en, this message translates to:
+  /// **'All Reciters'**
+  String get allReciters;
+
+  /// No description provided for @tapToAdjust.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to adjust'**
+  String get tapToAdjust;
+
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currency;
+
+  /// No description provided for @quranScriptStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quran Script Style'**
+  String get quranScriptStyle;
+
+  /// No description provided for @selectCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Currency'**
+  String get selectCurrency;
 }
 
 class _AppLocalizationsDelegate

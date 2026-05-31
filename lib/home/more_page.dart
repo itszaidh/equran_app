@@ -149,15 +149,15 @@ class MorePage extends StatelessWidget {
                       _MoreAction(
                         icon: Icons.calculate_outlined,
                         assetPath: _settingsAsset,
-                        title: 'Zakat Calculator',
-                        subtitle: 'Wealth & Nisab evaluations',
+                        title: localizations.zakatCalculator,
+                        subtitle: localizations.zakatCalculatorSubtitle,
                         onTap: onOpenZakat,
                       ),
                       _MoreAction(
                         icon: Icons.calendar_month_outlined,
                         assetPath: _routineAsset,
-                        title: 'Islamic Calendar',
-                        subtitle: 'Synchronized Hijri timeline',
+                        title: localizations.islamicCalendar,
+                        subtitle: localizations.islamicCalendarSubtitle,
                         onTap: onOpenCalendar,
                       ),
                       _MoreAction(

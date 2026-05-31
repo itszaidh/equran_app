@@ -1582,12 +1582,6 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get previousDhikr => 'আগের dhikr';
-
-  @override
-  String get nextDhikr => 'পরবর্তী যিকির';
-
-  @override
   String counts33To33To34(int target) {
     return '$target গণনা • 33 → 33 → 34';
   }
@@ -3645,4 +3639,293 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get duaGroupMisc => 'সাধারণ';
+
+  @override
+  String get zakatCalculator => 'যাকাত ক্যালকুলেটর';
+
+  @override
+  String get zakatCalculatorSubtitle => 'সম্পদ ও নিসাব মূল্যায়ন';
+
+  @override
+  String get islamicCalendar => 'ইসলামিক ক্যালেন্ডার';
+
+  @override
+  String get islamicCalendarSubtitle => 'সমন্বিত হিজরি সময়রেখা';
+
+  @override
+  String get customizeNavigation => 'ন্যাভিগেশন কাস্টমাইজ করুন';
+
+  @override
+  String get allCategories => 'সব বিভাগ';
+
+  @override
+  String get meccan => 'মাক্কী';
+
+  @override
+  String get medinan => 'মাদানী';
+
+  @override
+  String get appearanceTileSubtitle =>
+      'থিম, লাইট/ডার্ক মোড এবং রঙের এক্সেন্ট সেটিংস';
+
+  @override
+  String get navigationSettingsSubtitle =>
+      'নীচের ন্যাভিগেশন ট্যাবগুলি পুনর্বিন্যাস এবং অদলবদল করুন';
+
+  @override
+  String get downloadQpcFontsTitle => 'QPC V4 তাজবীদ ফন্ট ডাউনলোড করবেন?';
+
+  @override
+  String downloadQpcFontsBody(String size) {
+    return 'তাজবীদের জন্য ৬০৪টি কুরআন পৃষ্ঠার প্রতিটির জন্য একটি টিটিএফ প্রয়োজন। এটি সক্ষম করার আগে ফন্ট প্যাকেজ$size ডাউনলোড করুন।';
+  }
+
+  @override
+  String get qpcFontsDownloadError =>
+      'তাজবীদ ফন্ট ডাউনলোডে ৬০৪টি পৃষ্ঠাই অন্তর্ভুক্ত ছিল না।';
+
+  @override
+  String get sysDefaultSubtitle => 'System default / لغة النظام';
+
+  @override
+  String get enSubtitle => 'English';
+
+  @override
+  String get arSubtitle => 'العربية / Arabic';
+
+  @override
+  String get idSubtitle => 'Bahasa Indonesia / Indonesian';
+
+  @override
+  String get urSubtitle => 'اردو / Urdu';
+
+  @override
+  String get trSubtitle => 'Türkçe / Turkish';
+
+  @override
+  String get bnSubtitle => 'বাংলা / Bengali';
+
+  @override
+  String get subhanAllah => 'সুবহানাল্লাহ';
+
+  @override
+  String get alhamdulillah => 'আলহামদুলিল্লাহ';
+
+  @override
+  String get allahuAkbar => 'আল্লাহু আকবার';
+
+  @override
+  String get astaghfirullah => 'আস্তাগফিরুল্লাহ';
+
+  @override
+  String get custom => 'কাস্টম';
+
+  @override
+  String get previousDhikr => 'পূর্ববর্তী জিকির';
+
+  @override
+  String get nextDhikr => 'পরবর্তী জিকির';
+
+  @override
+  String get zakatAlMal => 'যাকাত আল-মাল';
+
+  @override
+  String get purifyWealthSubtitle =>
+      'আপনার সম্পদ পবিত্র করুন। আপনার বরকত বৃদ্ধি করুন।';
+
+  @override
+  String get liveMarketRates => 'লাইভ মার্কেট রেট';
+
+  @override
+  String get fetchingLiveRates => 'লাইভ মার্কেট রেট আনা হচ্ছে...';
+
+  @override
+  String get ratesSyncSuccess => 'লাইভ মেটাল রেট সফলভাবে সমন্বিত হয়েছে';
+
+  @override
+  String get ratesSyncOffline =>
+      'মার্কেট অফলাইন। স্ট্যান্ডার্ড ক্যাশ করা মান ব্যবহার করা হচ্ছে।';
+
+  @override
+  String get overridePrices => 'মূল্য পরিবর্তন';
+
+  @override
+  String get reset => 'রিসেট';
+
+  @override
+  String get silverDefault => 'রৌপ্য';
+
+  @override
+  String get gold => 'স্বর্ণ';
+
+  @override
+  String get nisabThresholdLabel => 'নিসাব সীমা';
+
+  @override
+  String get yourWealth => 'آپ کی دولت';
+
+  @override
+  String get cashHint => 'ব্যাংক, নগদ, ডিজিটাল ওয়ালেট, আপনার পাওনা টাকা';
+
+  @override
+  String get goldHint => 'বিনিয়োগ স্বর্ণ + গহনা (আপনার মাযহাব চেক করুন)';
+
+  @override
+  String get investmentsHint =>
+      'শেয়ার, ইটিএফ, ক্রিপ্টো, ফান্ড — বর্তমান বাজার মূল্য';
+
+  @override
+  String get businessHint => 'বর্তমান মূল্যে ব্যবসার তালিকা ও বাণিজ্য পণ্য';
+
+  @override
+  String get agricultureHint => 'শস্য ও কৃষি পণ্য (৫-১০% হার প্রযোজ্য)';
+
+  @override
+  String get otherHint => 'অন্যান্য যাকাতযোগ্য সম্পদ';
+
+  @override
+  String get liabilitiesDeduct => 'দায়-দায়িত্ব (বাদ দিতে হবে)';
+
+  @override
+  String get liabilitiesHint =>
+      'ঋণ, ক্রেডিট কার্ড, প্রদেয় অর্থ যা আপনাকে পরিশোধ করতে হবে';
+
+  @override
+  String get netZakatableWealth => 'নেট যাকাতযোগ্য সম্পদ';
+
+  @override
+  String get eligible => 'যাকাত প্রযোজ্য';
+
+  @override
+  String get belowNisab => 'নিসাবের নিচে';
+
+  @override
+  String get zakatDueLabel => 'যাকাত প্রদেয় (২.৫%)';
+
+  @override
+  String get resetCalculator => 'ক্যালকুলেটর রিসেট করুন';
+
+  @override
+  String get goldPriceGram => 'প্রতি গ্রাম স্বর্ণের মূল্য (USD)';
+
+  @override
+  String get silverPriceGram => 'প্রতি গ্রাম রৌপ্যের মূল্য (USD)';
+
+  @override
+  String get zakatSavedLedger =>
+      'যাকাত গণনা আপনার ব্যক্তিগত লেজারে সংরক্ষিত হয়েছে';
+
+  @override
+  String get zakatPaidDistributed => 'পরিশোধিত/বিতরণকৃত যাকাত:';
+
+  @override
+  String get updateZakatPaidAmount => 'পরিশোধিত যাকাতের পরিমাণ আপডেট করুন';
+
+  @override
+  String get enterPaidAmountUsd => 'ইউএসডিতে পরিশোধিত পরিমাণ লিখুন';
+
+  @override
+  String get calculatorTab => 'ক্যালকুলেটর';
+
+  @override
+  String get historyTab => 'ইতিহাস';
+
+  @override
+  String get fastingReminder => 'রোজা রাখার অনুস্মারক';
+
+  @override
+  String get dateNotFound => 'নিকট ভবিষ্যতে সেই তারিখটি খুঁজে পাওয়া যায়নি';
+
+  @override
+  String get customizeCalendar => 'ক্যালেন্ডার কাস্টমাইজ করুন';
+
+  @override
+  String get shareDate => 'এই তারিখটি শেয়ার করুন';
+
+  @override
+  String get dateCopiedClipboard => 'তারিখের বিবরণ ক্লিপবোর্ডে কপি করা হয়েছে';
+
+  @override
+  String get moonSighting => 'চাঁদ দেখা';
+
+  @override
+  String get fastingAlerts => 'রোজার অ্যালার্ট';
+
+  @override
+  String get standard => 'মানক';
+
+  @override
+  String daysPlural(int count) {
+    return '$count দিন';
+  }
+
+  @override
+  String daySingular(int count) {
+    return '$count দিন';
+  }
+
+  @override
+  String get calendarSettings => 'ক্যালেন্ডার সেটিংস';
+
+  @override
+  String get calendarSettingsSubtitle =>
+      'স্থানীয় চাঁদ দেখা এবং রোজা রাখার অনুস্মারকগুলির জন্য সামঞ্জস্য করুন';
+
+  @override
+  String get sightingOffsetLabel => 'চাঁদ দেখার অফসেট';
+
+  @override
+  String get fastingRemindersSubtitle =>
+      'প্রস্তাবিত রোজার আগের দিন সন্ধ্যায় বিজ্ঞপ্তি পান';
+
+  @override
+  String get hijriDateDisclaimer =>
+      'দ্রষ্টব্য: হিজরি তারিখগুলি আনুমানিক এবং স্থানীয় চাঁদ দেখার ওপর নির্ভর করে। অফসেট আপনাকে আপনার সম্প্রদায়ের পর্যবেক্ষণের সাথে ক্যালেন্ডার মেলাতে দেয়।';
+
+  @override
+  String get recommendedFast => 'প্রস্তাবিত রোজা';
+
+  @override
+  String get recommendedForThisDay => 'এই দিনের জন্য প্রস্তাবিত';
+
+  @override
+  String get todayLegend => 'আজ';
+
+  @override
+  String get eidLegend => 'ঈদ';
+
+  @override
+  String get ramadanLegend => 'রমজান';
+
+  @override
+  String get blessedNightLegend => 'বরকতময় রাত';
+
+  @override
+  String get fastLegend => 'রোজা';
+
+  @override
+  String keyDatesInYear(int year) {
+    return '$year সালের মূল তারিখসমূহ';
+  }
+
+  @override
+  String get fastingAlertsActive => 'রোজার অ্যালার্ট সক্রিয়';
+
+  @override
+  String get quranFonts => 'কুরআনের ফন্ট';
+
+  @override
+  String get allReciters => 'সব ক্বারী';
+
+  @override
+  String get tapToAdjust => 'সমন্বয় করতে আলতো চাপুন';
+
+  @override
+  String get currency => 'মুদ্রা';
+
+  @override
+  String get quranScriptStyle => 'কুরআন স্ক্রিপ্ট শৈলী';
+
+  @override
+  String get selectCurrency => 'মুদ্রা নির্বাচন করুন';
 }

@@ -20,6 +20,7 @@ import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:equran/widgets/holographic_card.dart';
+import 'package:equran/prayer/hijri_calendar.dart';
 import 'package:equran/widgets/last_read_cards.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
@@ -231,14 +232,34 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           Row(
             children: <Widget>[
               Expanded(
-                child: Text(
-                  _formatDashboardDate(_now),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      _formatDashboardDate(_now),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    // Integrated Hijri date (beautiful small gold text)
+                    Builder(
+                      builder: (BuildContext context) {
+                        final int offset = SettingsDB().get('hijri_offset', defaultValue: 0) as int;
+                        final HijriCalendar hijri = HijriCalendar.fromDate(_now, offset: offset);
+                        return Text(
+                          hijri.toString(),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: colors.accentGold,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
               // TextButton(
@@ -1637,7 +1658,6 @@ class _DailyAyahPreview extends StatefulWidget {
 }
 
 class _DailyAyahPreviewState extends State<_DailyAyahPreview> {
-  bool _fontLoaded = false;
 
   @override
   void initState() {
@@ -1664,9 +1684,7 @@ class _DailyAyahPreviewState extends State<_DailyAyahPreview> {
       final bool loaded = await QpcV4FontService.instance
           .ensureFontLoadedForPage(page);
       if (loaded && mounted) {
-        setState(() {
-          _fontLoaded = true;
-        });
+        setState(() {});
       }
     }
   }

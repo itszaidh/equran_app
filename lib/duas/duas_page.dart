@@ -288,7 +288,7 @@ class _DuasContent extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          return const TasbihPage();
+          return const TasbihPage(showAppBar: true);
         },
       ),
     );

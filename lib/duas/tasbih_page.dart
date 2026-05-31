@@ -13,7 +13,9 @@ import 'package:hive/hive.dart';
 const String _postPrayerDhikrStorageLabel = 'Post-prayer dhikr';
 
 class TasbihPage extends StatefulWidget {
-  const TasbihPage({super.key});
+  const TasbihPage({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<TasbihPage> createState() => _TasbihPageState();
@@ -63,29 +65,32 @@ class _TasbihPageState extends State<TasbihPage> {
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
 
+    final bool showAppBar = widget.showAppBar;
     return Scaffold(
       backgroundColor: colors.background,
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.tasbih),
-        centerTitle: true,
-        backgroundColor: colors.background.withAlpha(0),
-        foregroundColor: colors.textPrimary,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
-          color: colors.textPrimary,
-          fontWeight: FontWeight.w600,
-        ),
-        iconTheme: IconThemeData(color: colors.textSecondary),
-        actionsIconTheme: IconThemeData(color: colors.textSecondary),
-        actions: <Widget>[
-          IconButton(
-            tooltip: AppLocalizations.of(context)!.resetCounter,
-            onPressed: _completionInputLocked ? null : _reset,
-            icon: const Icon(Icons.refresh_rounded),
-          ),
-        ],
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: Text(AppLocalizations.of(context)!.tasbih),
+              centerTitle: true,
+              backgroundColor: colors.background.withAlpha(0),
+              foregroundColor: colors.textPrimary,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+              iconTheme: IconThemeData(color: colors.textSecondary),
+              actionsIconTheme: IconThemeData(color: colors.textSecondary),
+              actions: <Widget>[
+                IconButton(
+                  tooltip: AppLocalizations.of(context)!.resetCounter,
+                  onPressed: _completionInputLocked ? null : _reset,
+                  icon: const Icon(Icons.refresh_rounded),
+                ),
+              ],
+            )
+          : null,
       body: ValueListenableBuilder<Box<dynamic>>(
         valueListenable: DhikrSessionsDB().listener,
         builder: (context, box, child) {
@@ -146,6 +151,19 @@ class _TasbihPageState extends State<TasbihPage> {
                         onHapticsChanged: _setHapticsEnabled,
                       ),
                       const SizedBox(height: 22),
+                      if (!showAppBar)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed:
+                                _completionInputLocked ? null : _reset,
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            label: Text(
+                              AppLocalizations.of(context)!.resetCounter,
+                            ),
+                          ),
+                        ),
+                      if (!showAppBar) const SizedBox(height: 8),
                       TextButton(
                         onPressed: () => _showRecentSessionsSheet(sessions),
                         child: Text(
@@ -432,8 +450,8 @@ class _PresetSelector extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  IconButton(
-                    tooltip: 'Previous dhikr',
+                   IconButton(
+                    tooltip: localizations.previousDhikr,
                     onPressed: enabled ? onPrevious : null,
                     color: colors.textSecondary,
                     icon: const Icon(Icons.chevron_left_rounded),
@@ -452,7 +470,7 @@ class _PresetSelector extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Next dhikr',
+                    tooltip: localizations.nextDhikr,
                     onPressed: enabled ? onNext : null,
                     color: colors.textSecondary,
                     icon: const Icon(Icons.chevron_right_rounded),
@@ -1004,14 +1022,12 @@ class _DhikrPreset {
   final String sequenceHint;
 
   String localizedLabel(AppLocalizations localizations) {
-    final bool arabicMode = isArabicLocalizations(localizations);
-    if (!arabicMode) return label;
     return switch (label) {
-      'SubhanAllah' => 'سبحان الله',
-      'Alhamdulillah' => 'الحمد لله',
-      'Allahu Akbar' => 'الله أكبر',
-      'Astaghfirullah' => 'أستغفر الله',
-      'Custom' => 'ذكر مخصص',
+      'SubhanAllah' => localizations.subhanAllah,
+      'Alhamdulillah' => localizations.alhamdulillah,
+      'Allahu Akbar' => localizations.allahuAkbar,
+      'Astaghfirullah' => localizations.astaghfirullah,
+      'Custom' => localizations.custom,
       _ => label,
     };
   }
@@ -1059,24 +1075,17 @@ String _localizedDhikrSessionLabel(
   AppLocalizations localizations,
 ) {
   return switch (label) {
-    'SubhanAllah' =>
-      isArabicLocalizations(localizations) ? 'سبحان الله' : label,
-    'Alhamdulillah' =>
-      isArabicLocalizations(localizations) ? 'الحمد لله' : label,
-    'Allahu Akbar' =>
-      isArabicLocalizations(localizations) ? 'الله أكبر' : label,
-    'Astaghfirullah' =>
-      isArabicLocalizations(localizations) ? 'أستغفر الله' : label,
-    'Custom' => isArabicLocalizations(localizations) ? 'ذكر مخصص' : label,
+    'SubhanAllah' => localizations.subhanAllah,
+    'Alhamdulillah' => localizations.alhamdulillah,
+    'Allahu Akbar' => localizations.allahuAkbar,
+    'Astaghfirullah' => localizations.astaghfirullah,
+    'Custom' => localizations.custom,
     _ => label,
   };
 }
 
 String _postPrayerDhikrSummary(AppLocalizations localizations) {
-  if (!isArabicLocalizations(localizations)) {
-    return 'SubhanAllah 33 • Alhamdulillah 33 • Allahu Akbar 34';
-  }
-  return 'سبحان الله 33 • الحمد لله 33 • الله أكبر 34';
+  return '${localizations.subhanAllah} 33 • ${localizations.alhamdulillah} 33 • ${localizations.allahuAkbar} 34';
 }
 
 String _sessionTimeLabel(

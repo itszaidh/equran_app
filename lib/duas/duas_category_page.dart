@@ -197,7 +197,7 @@ class _CategoryContentState extends State<_CategoryContent> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              'Translation Language:',
+                              '${localizations.translationLanguage}:',
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -213,30 +213,30 @@ class _CategoryContentState extends State<_CategoryContent> {
                                   setState(() {});
                                 }
                               },
-                              items: const <DropdownMenuItem<String>>[
+                              items: <DropdownMenuItem<String>>[
                                 DropdownMenuItem<String>(
                                   value: 'app',
-                                  child: Text('Device Default'),
+                                  child: Text(localizations.systemDefault),
                                 ),
                                 DropdownMenuItem<String>(
                                   value: 'en',
-                                  child: Text('English'),
+                                  child: Text(localizations.english),
                                 ),
                                 DropdownMenuItem<String>(
                                   value: 'bn',
-                                  child: Text('Bengali (বাংলা)'),
+                                  child: Text(localizations.bengali),
                                 ),
                                 DropdownMenuItem<String>(
                                   value: 'ur',
-                                  child: Text('Urdu (اردو)'),
+                                  child: Text(localizations.urdu),
                                 ),
                                 DropdownMenuItem<String>(
                                   value: 'id',
-                                  child: Text('Indonesian'),
+                                  child: Text(localizations.indonesian),
                                 ),
                                 DropdownMenuItem<String>(
                                   value: 'tr',
-                                  child: Text('Turkish'),
+                                  child: Text(localizations.turkish),
                                 ),
                               ],
                             ),
@@ -248,13 +248,13 @@ class _CategoryContentState extends State<_CategoryContent> {
                           children: <Widget>[
                             Row(
                               children: <Widget>[
-                                const Text('Translation '),
+                                Text('${localizations.translation} '),
                                 Switch(
                                   value: SettingsDB().get(
                                     "dua_show_translation",
                                     defaultValue: true,
                                   ),
-                                  activeColor: colors.primary,
+                                  activeThumbColor: colors.primary,
                                   onChanged: (bool val) async {
                                     await SettingsDB().put(
                                       "dua_show_translation",
@@ -267,13 +267,13 @@ class _CategoryContentState extends State<_CategoryContent> {
                             ),
                             Row(
                               children: <Widget>[
-                                const Text('Transliteration '),
+                                Text('${localizations.transliterationOption} '),
                                 Switch(
                                   value: SettingsDB().get(
                                     "dua_show_transliteration",
                                     defaultValue: true,
                                   ),
-                                  activeColor: colors.primary,
+                                  activeThumbColor: colors.primary,
                                   onChanged: (bool val) async {
                                     await SettingsDB().put(
                                       "dua_show_transliteration",

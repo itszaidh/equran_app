@@ -140,12 +140,8 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
     }
   }
 
-  /// Reorders items in the active navbar (locked More tab position can be changed)
   Future<void> reorderActiveItems(int oldIndex, int newIndex) async {
     final List<NavItem> items = List<NavItem>.from(value.activeNavbarItems);
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     final NavItem item = items.removeAt(oldIndex);
     items.insert(newIndex, item);
 
@@ -261,8 +257,9 @@ class NavigationBloc extends ValueNotifier<NavigationState> {
   /// Swaps an active item at a specific index with an available item
   Future<void> swapItems(NavItem activeItem, NavItem availableItem) async {
     if (!value.activeNavbarItems.contains(activeItem) ||
-        activeItem == NavItem.more)
+        activeItem == NavItem.more) {
       return;
+    }
     if (!value.availableMoreItems.contains(availableItem)) return;
 
     final List<NavItem> active = List<NavItem>.from(value.activeNavbarItems);

@@ -15,6 +15,7 @@ class ZakatRecord {
     required this.nisabValue,
     required this.zakatDue,
     this.zakatPaid = 0.0,
+    this.detailsJson,
   });
 
   final String id;
@@ -31,6 +32,10 @@ class ZakatRecord {
   final double zakatDue;
   double zakatPaid;
 
+  /// Forward-compatible rich data for new calculator categories.
+  /// Stores JSON of additional line items (stocks, livestock, business, etc.).
+  final Map<String, dynamic>? detailsJson;
+
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
@@ -46,6 +51,7 @@ class ZakatRecord {
       'nisabValue': nisabValue,
       'zakatDue': zakatDue,
       'zakatPaid': zakatPaid,
+      if (detailsJson != null) 'detailsJson': detailsJson,
     };
   }
 
@@ -64,6 +70,9 @@ class ZakatRecord {
       nisabValue: (map['nisabValue'] as num?)?.toDouble() ?? 0.0,
       zakatDue: (map['zakatDue'] as num?)?.toDouble() ?? 0.0,
       zakatPaid: (map['zakatPaid'] as num?)?.toDouble() ?? 0.0,
+      detailsJson: map['detailsJson'] is Map
+          ? Map<String, dynamic>.from(map['detailsJson'] as Map)
+          : null,
     );
   }
 }

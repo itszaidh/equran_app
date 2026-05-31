@@ -86,12 +86,58 @@ class _SettingsPageState extends State<SettingsPage> {
             initiallyExpanded: true,
             children: <Widget>[
               _buildLanguageTile(context),
+              ListTile(
+                leading: const Icon(Icons.access_time_rounded),
+                title: Text(localizations.prayerTimesSettings),
+                subtitle: Text(localizations.prayerTimesSettingsSubtitle),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const PrayerTimesSettingsPage(),
+                  ),
+                ),
+              ),
               SettingsSwitch(
+                leading: const Icon(Icons.vibration_rounded),
                 title: localizations.vibration,
                 subtitle: localizations.vibrationSubtitle,
                 settingsKey: "vibration",
               ),
+            ],
+          ),
+          _buildSettingsGroup(
+            context: context,
+            title: localizations.appearance,
+            subtitle: localizations.appearanceSubtitle,
+            icon: Icons.palette_rounded,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.palette_rounded),
+                title: Text(localizations.appearance),
+                subtitle: Text(
+                  localizations.appearanceTileSubtitle,
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const AppearanceSettingsPage(),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.linear_scale_rounded),
+                title: Text(localizations.customizeNavigation),
+                subtitle: Text(
+                  localizations.navigationSettingsSubtitle,
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const NavigationSettingsPage(),
+                  ),
+                ),
+              ),
               SettingsSwitch(
+                leading: const Icon(Icons.history_rounded),
                 title: localizations.showReadingHistory,
                 settingsKey: "showLastRead",
                 subtitle: localizations.showReadingHistorySubtitle,
@@ -106,6 +152,7 @@ class _SettingsPageState extends State<SettingsPage> {
             initiallyExpanded: true,
             children: <Widget>[
               SettingsSwitch(
+                leading: const Icon(Icons.view_day_rounded),
                 title: localizations.cardView,
                 subtitle: localizations.cardViewSubtitle,
                 settingsKey: "viewMode",
@@ -113,6 +160,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               if (cardViewEnabled)
                 SettingsSwitch(
+                  leading: const Icon(Icons.subtitles_rounded),
                   title: localizations.displayTranslation,
                   subtitle: localizations.displayTranslationSubtitle,
                   settingsKey: "enableTranslation",
@@ -120,7 +168,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   defaultValue: true,
                 ),
               if (cardViewEnabled) _buildTransliterationToggle(context),
-
               _buildDailyQuranGoalTile(context),
               _buildTranslationTile(context),
               _buildScriptStyleTile(context),
@@ -143,58 +190,6 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: localizations.downloadableResourcesSubtitle,
             icon: Icons.cloud_download_outlined,
             children: <Widget>[_buildDownloadableResourcesSection(context)],
-          ),
-          _buildSettingsGroup(
-            context: context,
-            title: localizations.prayerTimes,
-            subtitle: localizations.locationAndCalculationSettings,
-            icon: Icons.access_time_outlined,
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.tune_rounded),
-                title: Text(localizations.prayerTimesSettings),
-                subtitle: Text(localizations.prayerTimesSettingsSubtitle),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const PrayerTimesSettingsPage(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          _buildSettingsGroup(
-            context: context,
-            title: localizations.appearance,
-            subtitle: localizations.appearanceSubtitle,
-            icon: Icons.palette_outlined,
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.palette_outlined),
-                title: Text(localizations.appearance),
-                subtitle: const Text(
-                  'Theme, light/dark mode, and color accent settings',
-                ),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const AppearanceSettingsPage(),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.linear_scale_rounded),
-                title: const Text('Navigation Bar Settings'),
-                subtitle: const Text(
-                  'Rearrange and swap bottom navigation tabs',
-                ),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const NavigationSettingsPage(),
-                  ),
-                ),
-              ),
-            ],
           ),
           _buildSettingsGroup(
             context: context,
@@ -249,6 +244,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildScriptStyleTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final String currentStyle = SettingsDB().quranScriptStyle;
     final String label = currentStyle == 'indopak'
         ? 'IndoPak'
@@ -257,13 +253,13 @@ class _SettingsPageState extends State<SettingsPage> {
         : 'Uthmanic Hafs';
 
     return ListTile(
-      leading: const Icon(Icons.font_download_outlined),
-      title: const Text('Quran Script Style'),
+      leading: const Icon(Icons.font_download_rounded),
+      title: Text(localizations.quranScriptStyle),
       subtitle: Text(label),
       onTap: () async {
         final String? value = await _showSelectionDialog<String>(
           context: context,
-          title: 'Quran Script Style',
+          title: localizations.quranScriptStyle,
           icon: Icons.font_download_outlined,
           selectedValue: currentStyle,
           options: const <AppSelectionOption<String>>[
@@ -295,6 +291,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildTranslationTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
+      leading: const Icon(Icons.g_translate_rounded),
       title: Text(localizations.translation),
       subtitle: Text(_selectedTranslationName(localizations)),
       onTap: () async {
@@ -360,6 +357,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildTransliterationToggle(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return SettingsSwitch(
+      leading: const Icon(Icons.abc_rounded),
       title: localizations.displayTransliteration,
       subtitle: localizations.displayTransliterationSubtitle,
       settingsKey: "showTransliteration",
@@ -370,6 +368,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildReciterTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
+      leading: const Icon(Icons.record_voice_over_rounded),
       title: Text(localizations.reciter),
       subtitle: Text(_selectedReciterName()),
       onTap: () async {
@@ -464,7 +463,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     _buildResourceSubsection(
                       context: context,
                       manifest: manifest,
-                      title: 'Quran Fonts',
+                      title: localizations.quranFonts,
                       resources: _quranFontResources(manifest),
                       downloads: downloads,
                     ),
@@ -503,6 +502,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (resources.isEmpty) {
       final localizations = AppLocalizations.of(context)!;
       return ListTile(
+        leading: const Icon(Icons.cloud_off_rounded),
         title: Text(title),
         subtitle: Text(localizations.noResourcesListed),
       );
@@ -666,23 +666,23 @@ class _SettingsPageState extends State<SettingsPage> {
     final String sizeLabel = resource.sizeBytes == null
         ? ''
         : ' (${prettyBytes(resource.sizeBytes)})';
+    final localizations = AppLocalizations.of(context)!;
     final bool? download = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Download QPC V4 Tajweed fonts?'),
+        title: Text(localizations.downloadQpcFontsTitle),
         content: Text(
-          'Tajweed needs one TTF for each of the 604 Quran pages. '
-          'Download the font package$sizeLabel before enabling it.',
+          localizations.downloadQpcFontsBody(sizeLabel),
         ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(localizations.cancel),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(context).pop(true),
             icon: const Icon(Icons.download_rounded),
-            label: Text(AppLocalizations.of(context)!.download),
+            label: Text(localizations.download),
           ),
         ],
       ),
@@ -696,9 +696,9 @@ class _SettingsPageState extends State<SettingsPage> {
     final bool ready = await QpcV4FontService.instance.hasAllPageFonts();
     if (!ready && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'The Tajweed font download did not include all 604 pages.',
+            localizations.qpcFontsDownloadError,
           ),
         ),
       );
@@ -907,7 +907,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final localizations = AppLocalizations.of(context)!;
     final int goal = _dailyQuranGoalAyahs();
     return ListTile(
-      leading: const Icon(Icons.flag_outlined),
+      leading: const Icon(Icons.flag_rounded),
       title: Text(localizations.dailyQuranGoal),
       subtitle: Text(localizations.dailyQuranGoalSubtitle(goal)),
       onTap: () async {
@@ -981,6 +981,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildClearReadingHistoryTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
+      leading: const Icon(Icons.delete_sweep_rounded),
       title: Text(localizations.clearReadingHistory),
       subtitle: Text(localizations.clearReadingHistorySubtitle),
       onTap: () => _showClearDataDialog(
@@ -995,7 +996,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildBackupDataTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
-      leading: const Icon(Icons.backup_outlined),
+      leading: const Icon(Icons.backup_rounded),
       title: Text(localizations.backupData),
       subtitle: Text(localizations.backupDataSubtitle),
       onTap: () async {
@@ -1022,7 +1023,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildRestoreDataTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
-      leading: const Icon(Icons.restore_page_outlined),
+      leading: const Icon(Icons.settings_backup_restore_rounded),
       title: Text(localizations.restoreData),
       subtitle: Text(localizations.restoreDataSubtitle),
       onTap: () async {
@@ -1060,6 +1061,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildClearFavouritesTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
+      leading: const Icon(Icons.delete_forever_rounded),
       title: Text(localizations.clearFavourites),
       subtitle: Text(localizations.clearFavouritesSubtitle),
       onTap: () => _showClearDataDialog(
@@ -1279,43 +1281,43 @@ class _SettingsPageState extends State<SettingsPage> {
         AppSelectionOption<String>(
           value: "system",
           title: localizations.systemDefault,
-          subtitle: "System default / لغة النظام",
+          subtitle: localizations.sysDefaultSubtitle,
           leading: const Icon(Icons.brightness_auto_rounded),
         ),
         AppSelectionOption<String>(
           value: "en",
           title: localizations.english,
-          subtitle: "English",
+          subtitle: localizations.enSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "ar",
           title: localizations.arabic,
-          subtitle: "العربية / Arabic",
+          subtitle: localizations.arSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "id",
           title: localizations.indonesian,
-          subtitle: "Bahasa Indonesia / Indonesian",
+          subtitle: localizations.idSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "ur",
           title: localizations.urdu,
-          subtitle: "اردو / Urdu",
+          subtitle: localizations.urSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "tr",
           title: localizations.turkish,
-          subtitle: "Türkçe / Turkish",
+          subtitle: localizations.trSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "bn",
           title: localizations.bengali,
-          subtitle: "বাংলা / Bengali",
+          subtitle: localizations.bnSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
       ],

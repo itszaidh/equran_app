@@ -1,3 +1,7 @@
+/// Approximate Hijri (Islamic) calendar date converted from Gregorian.
+/// Uses a standard Meeus/Julian Day algorithm. Results are very close
+/// for most practical purposes but should be treated as approximate.
+/// Sighting offset allows manual adjustment for local moon sighting.
 class HijriCalendar {
   HijriCalendar.fromDate(DateTime date, {int offset = 0}) {
     // Add manual sighting offset in days
@@ -44,6 +48,7 @@ class HijriCalendar {
   late final int hMonth;
   late final int hDay;
 
+  // English month names (existing, kept for compatibility)
   static const List<String> monthNames = <String>[
     'Muharram',
     'Safar',
@@ -59,8 +64,95 @@ class HijriCalendar {
     'Dhu al-Hijjah',
   ];
 
-  String get monthName => monthNames[hMonth - 1];
+  // Arabic script month names (for beautiful UI display)
+  static const List<String> monthNamesArabic = <String>[
+    'مُحَرَّم',
+    'صَفَر',
+    'رَبِيع الأَوَّل',
+    'رَبِيع الثَّانِي',
+    'جُمَادَى الأُولَىٰ',
+    'جُمَادَى الآخِرَة',
+    'رَجَب',
+    'شَعْبَان',
+    'رَمَضَان',
+    'شَوَّال',
+    'ذُو القَعْدَة',
+    'ذُو الحِجَّة',
+  ];
 
+  String get monthName => monthNames[hMonth - 1];
+  String get monthNameArabic => monthNamesArabic[hMonth - 1];
+
+  /// Short "D Month Y" representation (English)
   @override
   String toString() => '$hDay $monthName $hYear';
+
+  /// Beautiful Arabic representation
+  String toArabicString() => '$hDay $monthNameArabic $hYear';
+
+  // ==================== Islamic Event Helpers (for UI) ====================
+
+  /// Returns true for days traditionally recommended for fasting (widely observed).
+  bool get isRecommendedFastingDay {
+    if (hMonth == 9) return true; // Ramadan
+    if (hMonth == 12 && hDay == 9) return true; // Arafah
+    if (hMonth == 1 && (hDay == 9 || hDay == 10)) return true; // Ashura / Tasua
+    if (hDay == 13 || hDay == 14 || hDay == 15) return true; // Ayyam al-Bid
+    return false;
+  }
+
+  /// Returns a short, beautiful English label for major blessed events (or null).
+  String? get majorOccasion {
+    if (hMonth == 9) {
+      if (hDay == 1) return 'First Day of Ramadan';
+      if (<int>[21, 23, 25, 27, 29].contains(hDay)) {
+        return 'Laylat al-Qadr';
+      }
+      return 'Ramadan';
+    }
+    if (hMonth == 10 && hDay == 1) return 'Eid al-Fitr';
+    if (hMonth == 12 && hDay == 9) return 'Day of Arafah';
+    if (hMonth == 12 && hDay == 10) return 'Eid al-Adha';
+    if (hMonth == 1 && hDay == 1) return 'Islamic New Year';
+    if (hMonth == 1 && hDay == 10) return 'Day of Ashura';
+    if (hMonth == 8 && hDay == 15) return 'Shab-e-Barat';
+    if (hMonth == 7 && hDay == 27) return 'Isra\' and Mi\'raj';
+    return null;
+  }
+
+  /// Returns a short label suitable for small calendar badges.
+  String? get shortEventLabel {
+    final occasion = majorOccasion;
+    if (occasion != null) return occasion;
+    if (isRecommendedFastingDay) return 'Fast';
+    return null;
+  }
+
+  /// Very rough moon phase estimate (0=new, 1=waxing crescent, 2=full-ish, 3=waning).
+  /// Good enough for beautiful UI indicators. Not astronomically precise.
+  int get estimatedMoonPhase {
+    // Rough approximation based on lunar month position
+    if (hDay <= 2 || hDay >= 28) return 0; // New moon / very thin crescent
+    if (hDay < 8) return 1; // Waxing crescent
+    if (hDay < 15) return 1; // First quarter to waxing gibbous
+    if (hDay < 18) return 2; // Near full
+    if (hDay < 23) return 3; // Waning
+    return 3;
+  }
+
+  /// Human friendly moon phase name for details view.
+  String get moonPhaseName {
+    switch (estimatedMoonPhase) {
+      case 0:
+        return 'New Moon';
+      case 1:
+        return 'Waxing Crescent';
+      case 2:
+        return 'Full Moon';
+      case 3:
+        return 'Waning Crescent';
+      default:
+        return 'Crescent';
+    }
+  }
 }

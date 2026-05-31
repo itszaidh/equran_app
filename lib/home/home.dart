@@ -193,7 +193,7 @@ class _HomePageState extends State<HomePage> {
           localizations.readingRoutine,
           const Icon(Icons.route_outlined),
           const Icon(Icons.route_rounded),
-          const ReadingPlansPage(),
+          const ReadingPlansPage(showAppBar: false),
         );
       case NavItem.hifz:
         return Destinations(
@@ -207,14 +207,14 @@ class _HomePageState extends State<HomePage> {
           localizations.tasbih,
           const Icon(Icons.auto_awesome_outlined),
           const Icon(Icons.auto_awesome_rounded),
-          const TasbihPage(),
+          const TasbihPage(showAppBar: false),
         );
       case NavItem.asmaUlHusna:
         return Destinations(
           localizations.asmaUlHusna,
           const Icon(Icons.diamond_outlined),
           const Icon(Icons.diamond_rounded),
-          const AsmaUlHusnaPage(),
+          const AsmaUlHusnaPage(showAppBar: false),
         );
       case NavItem.settings:
         return Destinations(
@@ -228,7 +228,7 @@ class _HomePageState extends State<HomePage> {
           'Zakat',
           const Icon(Icons.calculate_outlined),
           const Icon(Icons.calculate_rounded),
-          const ZakatCalculatorPage(),
+          const ZakatCalculatorPage(showAppBar: false),
         );
       case NavItem.calendar:
         return Destinations(
@@ -581,15 +581,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openReadingPlansPage() {
-    _selectTabByWidgetType<ReadingPlansPage>(() => const ReadingPlansPage());
+    _selectTabByWidgetType<ReadingPlansPage>(
+      () => const ReadingPlansPage(showAppBar: false),
+    );
   }
 
   void _openTasbihPage() {
-    _selectTabByWidgetType<TasbihPage>(() => const TasbihPage());
+    _selectTabByWidgetType<TasbihPage>(
+      () => const TasbihPage(showAppBar: false),
+    );
   }
 
   void _openAsmaUlHusnaPage() {
-    _selectTabByWidgetType<AsmaUlHusnaPage>(() => const AsmaUlHusnaPage());
+    _selectTabByWidgetType<AsmaUlHusnaPage>(
+      () => const AsmaUlHusnaPage(showAppBar: false),
+    );
   }
 
   void _openQiblaPage() {
@@ -598,7 +604,7 @@ class _HomePageState extends State<HomePage> {
 
   void _openZakatPage() {
     _selectTabByWidgetType<ZakatCalculatorPage>(
-      () => const ZakatCalculatorPage(),
+      () => const ZakatCalculatorPage(showAppBar: false),
     );
   }
 

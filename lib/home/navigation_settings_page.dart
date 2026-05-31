@@ -41,8 +41,8 @@ class NavigationSettingsPage extends StatelessWidget {
       NavItem.tasbih => l10n.tasbih,
       NavItem.asmaUlHusna => l10n.asmaUlHusna,
       NavItem.settings => l10n.settings,
-      NavItem.zakat => 'Zakat',
-      NavItem.calendar => 'Calendar',
+      NavItem.zakat => l10n.zakatCalculator,
+      NavItem.calendar => l10n.islamicCalendar,
       NavItem.more => l10n.more,
     };
   }
@@ -75,7 +75,7 @@ class NavigationSettingsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Customize Navigation'),
+        title: Text(l10n.customizeNavigation),
         centerTitle: true,
       ),
       body: ValueListenableBuilder<NavigationState>(
@@ -138,7 +138,7 @@ class NavigationSettingsPage extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: state.activeNavbarItems.length,
-                  onReorder: (oldIndex, newIndex) => NavigationBloc.instance
+                  onReorderItem: (oldIndex, newIndex) => NavigationBloc.instance
                       .reorderActiveItems(oldIndex, newIndex),
                   itemBuilder: (context, index) {
                     final NavItem item = state.activeNavbarItems[index];
@@ -147,9 +147,10 @@ class NavigationSettingsPage extends StatelessWidget {
                     // Wrap each active slot in a DragTarget to support explicit swap drop gestures
                     return DragTarget<NavItem>(
                       key: ValueKey<String>('target_${item.name}'),
-                      onWillAccept: (incoming) =>
-                          incoming != null && incoming != item && !isMore,
-                      onAccept: (incoming) {
+                      onWillAcceptWithDetails: (details) =>
+                          details.data != item && !isMore,
+                      onAcceptWithDetails: (details) {
+                        final incoming = details.data;
                         NavigationBloc.instance.swapItems(item, incoming);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

@@ -1412,45 +1412,38 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
             return AlertDialog(
               title: Text(title),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      IconButton.filledTonal(
-                        tooltip: isNegative ? 'Set positive' : 'Set negative',
-                        onPressed: min < 0 ? toggleSign : null,
-                        icon: Text(
-                          isNegative ? '-' : '+',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w900),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: controller,
-                          autofocus: true,
-                          textAlign: TextAlign.center,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          decoration: InputDecoration(helperText: helperText),
-                          onChanged: (_) {
-                            setDialogState(() {
-                              final int fromText = signedValueFromText();
-                              if (fromText >= min && fromText <= max) {
-                                signedValue = fromText;
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly,
                 ],
+                decoration: InputDecoration(
+                  prefixIcon: min < 0
+                      ? IconButton(
+                          tooltip: isNegative ? 'Set positive' : 'Set negative',
+                          onPressed: toggleSign,
+                          icon: Text(
+                            isNegative ? '−' : '+',
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                          ),
+                        )
+                      : null,
+                  helperText: helperText,
+                ),
+                onChanged: (_) {
+                  setDialogState(() {
+                    final int fromText = signedValueFromText();
+                    if (fromText >= min && fromText <= max) {
+                      signedValue = fromText;
+                    }
+                  });
+                },
               ),
               actions: <Widget>[
                 if (allowNullValue)
