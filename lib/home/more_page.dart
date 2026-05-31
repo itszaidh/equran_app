@@ -22,8 +22,9 @@ const String _tasbihAsset = '$_appAssetBase/tasbih.webp';
 const String _duaAsset = '$_appAssetBase/dua.webp';
 const String _lastReadAsset = '$_appAssetBase/last_read.webp';
 const String _settingsAsset = '$_appAssetBase/settings.webp';
+const String _zakatAsset = '$_appAssetBase/zakat.webp';
 // const String _designAsset = '$_appAssetBase/design.webp';
-const String _mosqueAsset = '$_appAssetBase/mosque.webp';
+const String _appIconAsset = 'assets/media/images/icon.webp';
 const String _themeAsset = '$_appAssetBase/theme_mode.webp';
 const String _hifzAsset = '$_appAssetBase/hifz.webp';
 const String _shareAppAsset = '$_appAssetBase/share_app.webp';
@@ -148,7 +149,7 @@ class MorePage extends StatelessWidget {
                       ),
                       _MoreAction(
                         icon: Icons.calculate_outlined,
-                        assetPath: _settingsAsset,
+                        assetPath: _zakatAsset,
                         title: localizations.zakatCalculator,
                         subtitle: localizations.zakatCalculatorSubtitle,
                         onTap: onOpenZakat,
@@ -481,12 +482,15 @@ class _MoreActionArtwork extends StatelessWidget {
       ),
       child: assetPath == null
           ? Icon(icon, color: colors.primary, size: 23)
-          : Image.asset(
-              assetPath!,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(icon, color: colors.primary, size: 23);
-              },
+          : ClipRRect(
+              borderRadius: BorderRadius.circular(EquranRadii.small),
+              child: Image.asset(
+                assetPath!,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(icon, color: colors.primary, size: 23);
+                },
+              ),
             ),
     );
   }
@@ -512,7 +516,7 @@ class _MoreSupportSection extends StatelessWidget {
         _MoreActionTile(
           action: _MoreAction(
             icon: Icons.info_outline_rounded,
-            assetPath: _mosqueAsset,
+            assetPath: _appIconAsset,
             title: localizations.aboutThisApp,
             subtitle: localizations.appDetailsAndVersion,
             onTap: onAbout,
@@ -656,10 +660,14 @@ class _CustomAboutDialogState extends State<_CustomAboutDialog> {
       surfaceTintColor: Colors.transparent,
       title: Row(
         children: <Widget>[
-          Icon(
-            Icons.menu_book_rounded,
-            color: theme.colorScheme.primary,
-            size: 40,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(EquranRadii.medium),
+            child: Image.asset(
+              _appIconAsset,
+              width: 40,
+              height: 40,
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -730,10 +738,17 @@ class _CustomAboutDialogState extends State<_CustomAboutDialog> {
               context: context,
               applicationName: 'eQuran',
               applicationVersion: widget.version,
-              applicationIcon: Icon(
-                Icons.menu_book_rounded,
-                color: theme.colorScheme.primary,
-                size: 40,
+              applicationIcon: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(EquranRadii.medium),
+                  child: Image.asset(
+                    _appIconAsset,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
             );
           },

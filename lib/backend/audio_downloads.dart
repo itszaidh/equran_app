@@ -31,17 +31,16 @@ class AudioDownloadEntry {
   final int sizeBytes;
   final List<File> additionalFiles;
 
-  String get title => type == AudioDownloadType.surah
+  String get title =>
+      type == AudioDownloadType.surah || type == AudioDownloadType.ayahSurah
       ? quran.getSurahName(surah)
-      : type == AudioDownloadType.ayahSurah
-      ? '${quran.getSurahName(surah)} • All Ayahs'
       : '${quran.getSurahName(surah)} • Ayah $ayah';
 
   String get subtitle => type == AudioDownloadType.surah
-      ? 'Surah ${surah.toString().padLeft(3, '0')}'
+      ? ''
       : type == AudioDownloadType.ayahSurah
-      ? 'Surah $surah, ${quran.getVerseCount(surah)} ayahs'
-      : 'Surah $surah, Ayah $ayah';
+      ? '${quran.getVerseCount(surah)} ayahs'
+      : 'Ayah $ayah';
 
   int get ayahCount => type == AudioDownloadType.surah
       ? 0
@@ -71,10 +70,34 @@ class AudioDownloadsSummary {
   int get totalSizeBytes =>
       allDownloads.fold<int>(0, (total, entry) => total + entry.sizeBytes);
 
-  int get surahCount => surahDownloads.length;
+  int get surahCount {
+    final explicit = surahDownloads.length;
+    final completeAyahSets = ayahDownloads
+        .where((e) => e.type == AudioDownloadType.ayahSurah)
+        .length;
+    return explicit + completeAyahSets;
+  }
 
-  int get ayahCount =>
-      ayahDownloads.fold<int>(0, (total, entry) => total + entry.ayahCount);
+  int get ayahCount {
+    int count = 0;
+
+    // Ayahs covered by full surah downloads (one big file per surah)
+    for (final entry in surahDownloads) {
+      count += quran.getVerseCount(entry.surah);
+    }
+
+    // Ayahs from complete ayah bundles (ayahSurah)
+    count += ayahDownloads
+        .where((e) => e.type == AudioDownloadType.ayahSurah)
+        .fold<int>(0, (total, entry) => total + entry.ayahCount);
+
+    // Remaining individual ayah files
+    count += ayahDownloads
+        .where((e) => e.type == AudioDownloadType.ayah)
+        .fold<int>(0, (total, entry) => total + entry.ayahCount);
+
+    return count;
+  }
 }
 
 class AudioDownloadService {

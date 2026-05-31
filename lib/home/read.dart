@@ -41,7 +41,8 @@ import 'package:equran/backend/library.dart'
         SettingsDB,
         TafsirVerseResult,
         TafsirService,
-        prettyBytes;
+        prettyBytes,
+        getResourceSize;
 import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
@@ -8627,7 +8628,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           ),
           content: Text(
             localizations.translationNotInstalled(
-              prettyBytes(resource.sizeBytes),
+              prettyBytes(getResourceSize(resource)),
             ),
           ),
           actions: <Widget>[
@@ -8827,7 +8828,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 children: <Widget>[
                   Text(
                     localizations.tafsirNeedsDownload(
-                      prettyBytes(result.resource.sizeBytes),
+                      prettyBytes(getResourceSize(result.resource)),
                     ),
                     style: theme.textTheme.bodyMedium,
                   ),
@@ -8971,7 +8972,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       ),
       title: Text(resource.name),
       subtitle: Text(
-        '${resource.language?.toUpperCase() ?? resource.typeLabel} • ${state.label} • ${prettyBytes(resource.sizeBytes)}',
+        '${resource.language?.toUpperCase() ?? resource.typeLabel} • ${state.label} • ${prettyBytes(getResourceSize(resource))}',
       ),
       trailing: state == ResourceInstallState.installed
           ? const Icon(Icons.check_circle_rounded)

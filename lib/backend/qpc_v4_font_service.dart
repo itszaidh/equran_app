@@ -19,6 +19,7 @@ class QpcV4FontService {
     version: '1.0.0',
     url:
         'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/tajweed.zip',
+    sizeBytes: 69230903,
     metadata: <String, Object?>{'requiredPages': 604},
   );
 

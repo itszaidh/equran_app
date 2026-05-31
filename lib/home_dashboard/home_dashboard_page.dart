@@ -39,6 +39,7 @@ const String _downloadAsset = '$_appAssetBase/download.webp';
 const String _designAsset = '$_appAssetBase/design.webp';
 const String _routineAsset = '$_appAssetBase/routine.webp';
 const String _settingsAsset = '$_appAssetBase/settings.webp';
+const String _zakatAsset = '$_appAssetBase/zakat.webp';
 
 class HomeDashboardPage extends StatefulWidget {
   const HomeDashboardPage({
@@ -1359,7 +1360,7 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
         Icons.calculate_outlined,
         'Zakat',
         widget.actions.onOpenZakat,
-        assetPath: _settingsAsset,
+        assetPath: _zakatAsset,
       ),
       _QuickAction(
         Icons.auto_awesome_outlined,

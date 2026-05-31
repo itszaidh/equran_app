@@ -24,7 +24,8 @@ import 'package:equran/backend/library.dart'
         ResourceType,
         RoutineDayProgressDB,
         SettingsDB,
-        prettyBytes;
+        prettyBytes,
+        getResourceSize;
 import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/backend/backup_service.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
@@ -456,13 +457,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     _buildResourceSubsection(
                       context: context,
                       manifest: manifest,
-                      title: localizations.audioTimings,
-                      resources: manifest.resourcesOfType(ResourceType.timings),
-                      downloads: downloads,
-                    ),
-                    _buildResourceSubsection(
-                      context: context,
-                      manifest: manifest,
                       title: localizations.quranFonts,
                       resources: _quranFontResources(manifest),
                       downloads: downloads,
@@ -637,7 +631,7 @@ class _SettingsPageState extends State<SettingsPage> {
           resource.reciterCode,
         ).displayName(arabic: isArabicLocalizations(localizations)),
       'v${resource.version}',
-      prettyBytes(resource.sizeBytes),
+      prettyBytes(getResourceSize(resource)),
     ];
     return parts.join(' • ');
   }
@@ -663,9 +657,10 @@ class _SettingsPageState extends State<SettingsPage> {
     if (!mounted) return false;
     final DownloadableResource resource = await _qpcV4FontsResource();
     if (!mounted) return false;
-    final String sizeLabel = resource.sizeBytes == null
+    final int? size = getResourceSize(resource);
+    final String sizeLabel = size == null
         ? ''
-        : ' (${prettyBytes(resource.sizeBytes)})';
+        : ' (${prettyBytes(size)})';
     final localizations = AppLocalizations.of(context)!;
     final bool? download = await showDialog<bool>(
       context: context,
@@ -804,7 +799,7 @@ class _SettingsPageState extends State<SettingsPage> {
         content: Text(
           AppLocalizations.of(
             context,
-          )!.translationNotInstalled(prettyBytes(resource.sizeBytes)),
+          )!.translationNotInstalled(prettyBytes(getResourceSize(resource))),
         ),
         actions: <Widget>[
           TextButton(

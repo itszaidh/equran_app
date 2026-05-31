@@ -105,6 +105,7 @@ flutter:
     - assets/data/dua/hisn/index.json
     - assets/data/dua/hisn/categories/
     - assets/media/images/app/
+    - assets/media/images/icon.webp
 
   fonts:
     - family: QuranIndoPak

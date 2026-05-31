@@ -821,7 +821,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
               ),
               const SizedBox(height: 4),
               Text(
-                '\$${_formatCurrency(comp.netWealth)}',
+                _formatAmount(comp.netWealth),
                 style: theme.textTheme.displaySmall?.copyWith(
                   color: colors.onPrimary,
                   fontWeight: FontWeight.w900,
@@ -850,7 +850,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '\$${_formatCurrency(zakatDue)}',
+                        _formatAmount(zakatDue),
                         style: theme.textTheme.headlineMedium?.copyWith(
                           color: colors.onPrimary,
                           fontWeight: FontWeight.w900,
@@ -877,7 +877,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
               if (!isEligible && comp.netWealth > 0) ...<Widget>[
                 const SizedBox(height: 10),
                 Text(
-                  'Your wealth is below the Nisab of \$${_formatCurrency(comp.nisabThreshold)}. No Zakat is due yet.',
+                  'Your wealth is below the Nisab of ${_formatAmount(comp.nisabThreshold)}. No Zakat is due yet.',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onPrimaryMuted,
                     fontStyle: FontStyle.italic,
@@ -904,7 +904,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                   border: Border.all(color: colors.border),
                 ),
                 child: Text(
-                  '${item.category.label}: \$${_formatCurrency(item.amount)}',
+                  '${item.category.label}: ${_formatAmount(item.amount)}',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.textSecondary,
                     fontWeight: FontWeight.w600,
@@ -992,7 +992,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             ),
             const SizedBox(height: 6),
             Text(
-              '\$${_formatCurrency(threshold)}',
+              _formatAmount(threshold),
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: colors.textPrimary,
@@ -1100,7 +1100,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                 ),
                 if (current > 0)
                   Text(
-                    '\$${_formatCurrency(current)}',
+                    _formatAmount(current),
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: colors.primary,
                       fontWeight: FontWeight.w700,
@@ -1154,7 +1154,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
               ),
               if (_computeLivestockValue() > 0)
                 Text(
-                  '\$${_formatCurrency(_computeLivestockValue())}',
+                  _formatAmount(_computeLivestockValue()),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.primary,
                     fontWeight: FontWeight.w700,
@@ -1269,16 +1269,6 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
         ],
       ),
     );
-  }
-
-  String _formatCurrency(double value) {
-    if (value >= 1000000) {
-      return '${(value / 1000000).toStringAsFixed(1)}M';
-    }
-    if (value >= 10000) {
-      return '${(value / 1000).toStringAsFixed(0)}k';
-    }
-    return value.toStringAsFixed(0);
   }
 
   Future<void> _saveCurrentCalculation(_ZakatComputation comp) async {
@@ -1570,7 +1560,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
               hintText: localizations.enterPaidAmountUsd,
-              prefixText: '\$ ',
+              prefixText: _currencySymbol,
             ),
           ),
           actions: <Widget>[
