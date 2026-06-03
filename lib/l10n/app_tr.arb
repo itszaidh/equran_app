@@ -723,6 +723,10 @@
   "urdu": "Urduca",
   "turkish": "Türkçe",
   "bengali": "Bengalce",
+  "german": "Almanca",
+  "quranScriptStyle": "Kur'an Yazı Stili",
+  "uthmaniMadinah": "Osmanlı (Medine)",
+  "indoPak": "Hint-Pak",
   "vibration": "Titreşim",
   "vibrationSubtitle": "Gezinirken dokunsal geri bildirimi etkinleştirin.",
   "showReadingHistory": "Okuma geçmişini göster",
@@ -785,6 +789,7 @@
   "dailyToolsSubtitle": "Temel bilgilere hızlı erişim",
   "exploreAllFeatures": "Tüm özellikleri keşfedin",
   "dailyAyah": "Günlük Ayah",
+  "dailyDua": "Günlük Dua",
   "seeAll": "Tümünü gör",
   "surahs": "Sureler",
   "juz": "Cüz",
@@ -1897,5 +1902,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "highLatitudeMosqueNotice": "Bazı yüksek enlem cami takvimleri yaz aylarında sabit veya sınırlı Yatsı vakitleri kullanır.",
+  "latestIshaTimeHelp": "Hesaplanan Yatsı vaktini kullanın, ancak {time} vaktinden sonrasına izin vermeyin.",
+  "locationCleared": "Konum temizlendi."
 }

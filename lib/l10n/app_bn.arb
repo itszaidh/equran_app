@@ -723,6 +723,10 @@
   "urdu": "উর্দু",
   "turkish": "তুর্কি",
   "bengali": "বাংলা",
+  "german": "জার্মান",
+  "quranScriptStyle": "কুরআনের লিপি শৈলী",
+  "uthmaniMadinah": "উসমানী (মদীনা)",
+  "indoPak": "ইন্দোপাক",
   "vibration": "কম্পন",
   "vibrationSubtitle": "নেভিগেট করার সময় হ্যাপটিক প্রতিক্রিয়া সক্ষম করুন।",
   "showReadingHistory": "পড়ার ইতিহাস দেখান",
@@ -785,6 +789,7 @@
   "dailyToolsSubtitle": "প্রয়োজনীয় জিনিসগুলিতে দ্রুত অ্যাক্সেস",
   "exploreAllFeatures": "সমস্ত বৈশিষ্ট্য অন্বেষণ",
   "dailyAyah": "দৈনিক আয়াহ",
+  "dailyDua": "দৈনিক দুয়া",
   "seeAll": "সব দেখুন",
   "surahs": "সূরাগুলো",
   "juz": "জুজ",
@@ -1897,5 +1902,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "highLatitudeMosqueNotice": "কিছু উচ্চ-অক্ষাংশ মসজিদের সময়সূচী গ্রীষ্মকালে নির্দিষ্ট বা ক্যাপড এশার সময় ব্যবহার করে।",
+  "latestIshaTimeHelp": "হিসাবকৃত এশা ব্যবহার করুন, তবে {time} এর পরে অনুমতি দেবেন না।",
+  "locationCleared": "অবস্থান সাফ করা হয়েছে।"
 }

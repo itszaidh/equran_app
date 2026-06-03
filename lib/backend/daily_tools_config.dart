@@ -1,0 +1,153 @@
+import 'package:flutter/material.dart';
+import 'package:equran/l10n/app_localizations.dart';
+
+enum DailyToolType {
+  quran,
+  prayer,
+  qibla,
+  player,
+  tasbih,
+  dua,
+  downloads,
+  search,
+  readingPlans,
+  hifz,
+  asmaUlHusna,
+  statistics,
+  calendar,
+  zakah;
+
+  static const List<DailyToolType> defaultTools = <DailyToolType>[
+    quran,
+    prayer,
+    qibla,
+    player,
+    tasbih,
+    dua,
+    downloads,
+    search,
+  ];
+
+  IconData get icon {
+    return switch (this) {
+      quran => Icons.menu_book_outlined,
+      prayer => Icons.schedule_outlined,
+      qibla => Icons.explore_outlined,
+      player => Icons.graphic_eq_rounded,
+      tasbih => Icons.auto_awesome_outlined,
+      dua => Icons.auto_stories_outlined,
+      downloads => Icons.download_outlined,
+      search => Icons.search_rounded,
+      readingPlans => Icons.route_outlined,
+      hifz => Icons.menu_book_rounded,
+      asmaUlHusna => Icons.diamond_outlined,
+      statistics => Icons.insights_outlined,
+      calendar => Icons.calendar_month_outlined,
+      zakah => Icons.calculate_outlined,
+    };
+  }
+
+  String? get assetPath {
+    const String base = 'assets/media/images/app';
+    return switch (this) {
+      quran => '$base/read.webp',
+      prayer => '$base/prayer_time.webp',
+      qibla => '$base/qiblah.webp',
+      player => '$base/player.webp',
+      tasbih => '$base/tasbih.webp',
+      dua => '$base/dua.webp',
+      downloads => '$base/download.webp',
+      search => '$base/quran.webp',
+      readingPlans => '$base/routine.webp',
+      hifz => '$base/hifz.webp',
+      asmaUlHusna => '$base/dua.webp',
+      statistics => '$base/last_read.webp',
+      calendar => null,
+      zakah => null,
+    };
+  }
+
+  String getTitle(AppLocalizations localizations) {
+    final String lang = localizations.localeName.toLowerCase();
+    return switch (this) {
+      quran => localizations.quran,
+      prayer => localizations.prayer,
+      qibla => localizations.qibla,
+      player => localizations.player,
+      tasbih => localizations.tasbih,
+      dua => localizations.dua,
+      downloads => localizations.downloads,
+      search => localizations.search,
+      readingPlans => localizations.readingRoutine,
+      hifz => localizations.hifz,
+      asmaUlHusna => localizations.asmaUlHusna,
+      statistics => localizations.statistics,
+      calendar => _translateCalendar(lang),
+      zakah => _translateZakah(lang),
+    };
+  }
+
+  String getSubtitle(AppLocalizations localizations) {
+    final String lang = localizations.localeName.toLowerCase();
+    return switch (this) {
+      quran => localizations.dailyQuranCompanionSubtitle,
+      prayer => localizations.prayerTimesSettings,
+      qibla => localizations.compassAndDirection,
+      player => localizations.recitationsAndAudioControls,
+      tasbih => localizations.calmDhikrCounter,
+      dua => localizations.duasAndAzkar,
+      downloads => localizations.offlineAudioAndCleanup,
+      search => localizations.searchArabicAndTranslation,
+      readingPlans => localizations.plansGoalsProgress,
+      hifz => localizations.hifzSubtitle,
+      asmaUlHusna => localizations.the99BeautifulNames,
+      statistics => localizations.worshipTrendsAndStreaks,
+      calendar => _translateCalendarSubtitle(lang),
+      zakah => _translateZakahSubtitle(lang),
+    };
+  }
+
+  String _translateCalendar(String lang) {
+    return switch (lang) {
+      'ar' => 'التقويم الهجري',
+      'bn' => 'হিজরি ক্যালেন্ডার',
+      'id' => 'Kalender Hijriah',
+      'tr' => 'Hicri Takvim',
+      'ur' => 'ہجری کیلنڈر',
+      _ => 'Hijri Calendar',
+    };
+  }
+
+  String _translateCalendarSubtitle(String lang) {
+    return switch (lang) {
+      'ar' => 'عرض التواريخ والمناسبات الهجرية',
+      'bn' => 'হিজরি তারিখ ও ঘটনাবলী দেখুন',
+      'id' => 'Lihat tanggal dan hari penting Hijriah',
+      'tr' => 'Hicri tarihleri ve önemli günleri görün',
+      'ur' => 'ہجری تاریخیں اور اہم ایام دیکھیں',
+      _ => 'View Hijri dates and Islamic events',
+    };
+  }
+
+  String _translateZakah(String lang) {
+    return switch (lang) {
+      'ar' => 'حساب الزكاة',
+      'bn' => 'যাকাত ক্যালকুলেটর',
+      'id' => 'Kalkulator Zakat',
+      'tr' => 'Zekat Hesaplama',
+      'ur' => 'زکوٰۃ کیلکولیٹر',
+      _ => 'Zakah Calculator',
+    };
+  }
+
+  String _translateZakahSubtitle(String lang) {
+    return switch (lang) {
+      'ar' => 'احسب زكاة مالك بسهولة',
+      'bn' => 'সহজেই যাকাত হিসাব করুন',
+      'id' => 'Hitung zakat harta Anda dengan mudah',
+      'tr' => 'Malınızın zekatını kolayca hesaplayın',
+      'ur' => 'اپنے مال کی زکوٰۃ کا آسان حساب',
+      _ => 'Calculate your zakah due easily',
+    };
+  }
+}

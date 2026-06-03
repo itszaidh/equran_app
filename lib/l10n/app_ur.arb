@@ -723,6 +723,10 @@
   "urdu": "اردو",
   "turkish": "ترکی",
   "bengali": "بنگالی",
+  "german": "جرمن",
+  "quranScriptStyle": "قرآنی خط کا انداز",
+  "uthmaniMadinah": "عثمانی (مدینہ)",
+  "indoPak": "انڈو پاک",
   "vibration": "کمپن",
   "vibrationSubtitle": "نیویگیٹ کرتے وقت ہیپٹک فیڈ بیک کو فعال کریں۔",
   "showReadingHistory": "پڑھنے کی تاریخ دکھائیں۔",
@@ -785,6 +789,7 @@
   "dailyToolsSubtitle": "ضروری اشیاء تک تیز رسائی",
   "exploreAllFeatures": "تمام خصوصیات کو دریافت کریں۔",
   "dailyAyah": "روزانہ آیۃ",
+  "dailyDua": "روزانہ کی دعا",
   "seeAll": "سب دیکھیں",
   "surahs": "سورتیں۔",
   "juz": "جوز",
@@ -1897,5 +1902,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "highLatitudeMosqueNotice": "کچھ اونچے عرض بلد والے مسجد کے ٹائم ٹیبل گرمیوں کے دوران عشاء کے مقررہ یا محدود اوقات استعمال کرتے ہیں۔",
+  "latestIshaTimeHelp": "عشاء کے حساب شدہ وقت کا استعمال کریں، لیکن اسے {time} سے بعد کی اجازت نہ دیں۔",
+  "locationCleared": "مقام صاف کر دیا گیا۔"
 }

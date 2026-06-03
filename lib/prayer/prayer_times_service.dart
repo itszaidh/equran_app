@@ -29,6 +29,8 @@ class PrayerTimesService {
       settings: settings,
       highLatitudeRule: highLatitudeRule,
     );
+    
+    // Fajr, Sunrise, Dhuhr, Asr are calculated for day D (localDate)
     final DateTime localDate = prayerTimezone == null
         ? DateTime(date.year, date.month, date.day)
         : timezone.TZDateTime(prayerTimezone, date.year, date.month, date.day);
@@ -43,15 +45,23 @@ class PrayerTimesService {
       prayerTimezone,
     );
 
+    // Maghrib, Isha are calculated for day D - 1 (prevLocalDate)
+    final DateTime prevLocalDate = localDate.subtract(const Duration(days: 1));
+    final adhan.PrayerTimes prevTimes = adhan.PrayerTimes(
+      coordinates: adhan.Coordinates(location.latitude, location.longitude),
+      date: prevLocalDate,
+      calculationParameters: parameters,
+      precision: true,
+    );
     final DateTime baseMaghrib = _displayTime(
-      baseTimes.maghrib,
+      prevTimes.maghrib,
       prayerTimezone,
     );
-    final DateTime baseIsha = _displayTime(baseTimes.isha, prayerTimezone);
+    final DateTime baseIsha = _displayTime(prevTimes.isha, prayerTimezone);
     final DateTime customIsha = _customIshaTime(
       baseIsha: baseIsha,
       baseMaghrib: baseMaghrib,
-      localDate: localDate,
+      localDate: prevLocalDate,
       method: effectiveMethod,
       prayerTimezone: prayerTimezone,
       settings: settings,
@@ -122,7 +132,50 @@ class PrayerTimesService {
     final DateTime zonedInstant = prayerTimezone == null
         ? instant.toLocal()
         : timezone.TZDateTime.from(instant.toUtc(), prayerTimezone);
-    return DateTime(zonedInstant.year, zonedInstant.month, zonedInstant.day);
+    final DateTime baseDate = DateTime(zonedInstant.year, zonedInstant.month, zonedInstant.day);
+
+    final PrayerCalculationMethod effectiveMethod = effectiveMethodFor(
+      location: location,
+      settings: settings,
+    );
+    final adhan.HighLatitudeRule highLatitudeRule = resolveHighLatitudeRule(
+      location: location,
+      settings: settings,
+      effectiveMethod: effectiveMethod,
+    );
+    final adhan.CalculationParameters parameters = _parametersFor(
+      method: effectiveMethod,
+      settings: settings,
+      highLatitudeRule: highLatitudeRule,
+    );
+
+    final DateTime localDate = prayerTimezone == null
+        ? baseDate
+        : timezone.TZDateTime(prayerTimezone, baseDate.year, baseDate.month, baseDate.day);
+
+    final adhan.PrayerTimes baseTimes = adhan.PrayerTimes(
+      coordinates: adhan.Coordinates(location.latitude, location.longitude),
+      date: localDate,
+      calculationParameters: parameters,
+      precision: true,
+    );
+
+    final DateTime baseMaghrib = _displayTime(
+      baseTimes.maghrib,
+      prayerTimezone,
+    );
+
+    final DateTime maghribTime = _floorToMinute(
+      _withOffset(
+        baseMaghrib,
+        settings.offsets.maghrib,
+      ),
+    );
+
+    if (!zonedInstant.isBefore(maghribTime)) {
+      return baseDate.add(const Duration(days: 1));
+    }
+    return baseDate;
   }
 
   PrayerCalculationMethod bestMethodForLocation(PrayerLocation location) {
@@ -185,8 +238,18 @@ class PrayerTimesService {
   }) {
     final DateTime localNow = now.toLocal();
     final DateTime displayNow = _floorToMinute(localNow);
+
+    final List<PrayerTimeEntry> candidates = <PrayerTimeEntry>[];
     for (final PrayerTimeKind kind in PrayerTimeKind.nextPrayerOrder) {
-      final PrayerTimeEntry entry = day.entryFor(kind);
+      candidates.add(day.entryFor(kind));
+      if (tomorrow != null) {
+        candidates.add(tomorrow.entryFor(kind));
+      }
+    }
+
+    candidates.sort((a, b) => a.time.compareTo(b.time));
+
+    for (final PrayerTimeEntry entry in candidates) {
       final DateTime displayTime = _floorToMinute(entry.time);
       if (displayTime.isAfter(displayNow)) {
         return NextPrayer(
@@ -213,82 +276,90 @@ class PrayerTimesService {
     );
   }
 
+  List<PrayerCurrentPeriod> _periodsForDay(
+    PrayerDay d,
+    DateTime nextFajr,
+    DateTime nextMaghrib,
+  ) {
+    final PrayerTimeEntry fajr = d.entryFor(PrayerTimeKind.fajr);
+    final PrayerTimeEntry sunrise = d.entryFor(PrayerTimeKind.sunrise);
+    final PrayerTimeEntry dhuhr = d.entryFor(PrayerTimeKind.dhuhr);
+    final PrayerTimeEntry asr = d.entryFor(PrayerTimeKind.asr);
+    final PrayerTimeEntry maghrib = d.entryFor(PrayerTimeKind.maghrib);
+    final PrayerTimeEntry isha = d.entryFor(PrayerTimeKind.isha);
+
+    final DateTime sunriseProhibitedEnd = sunrise.time.add(
+      Duration(minutes: d.settings.sunriseProhibitedDurationMinutes),
+    );
+    final DateTime dhuhrProhibitedStart = dhuhr.time.subtract(
+      Duration(minutes: d.settings.dhuhrProhibitedDurationMinutes),
+    );
+    final DateTime sunsetProhibitedStart = nextMaghrib.subtract(
+      Duration(minutes: d.settings.sunsetProhibitedDurationMinutes),
+    );
+
+    return <PrayerCurrentPeriod>[
+      _normalPrayerPeriod(entry: maghrib, endsAt: isha.time),
+      _normalPrayerPeriod(entry: isha, endsAt: fajr.time),
+      _normalPrayerPeriod(entry: fajr, endsAt: sunrise.time),
+      PrayerCurrentPeriod(
+        type: PrayerCurrentPeriodType.sunriseProhibited,
+        featuredEntry: sunrise,
+        endsAt: _earlierOf(sunriseProhibitedEnd, dhuhr.time),
+        highlightedKind: PrayerTimeKind.sunrise,
+      ),
+      if (sunriseProhibitedEnd.isBefore(dhuhrProhibitedStart))
+        PrayerCurrentPeriod(
+          type: PrayerCurrentPeriodType.beforeDhuhr,
+          featuredEntry: dhuhr,
+          endsAt: dhuhrProhibitedStart,
+        ),
+      PrayerCurrentPeriod(
+        type: PrayerCurrentPeriodType.dhuhrProhibited,
+        featuredEntry: dhuhr,
+        endsAt: dhuhr.time,
+      ),
+      _normalPrayerPeriod(entry: dhuhr, endsAt: asr.time),
+      _normalPrayerPeriod(entry: asr, endsAt: sunsetProhibitedStart),
+      PrayerCurrentPeriod(
+        type: PrayerCurrentPeriodType.sunsetProhibited,
+        featuredEntry: PrayerTimeEntry(
+          kind: PrayerTimeKind.maghrib,
+          time: nextMaghrib,
+          offsetMinutes: maghrib.offsetMinutes,
+        ),
+        endsAt: nextMaghrib,
+      ),
+    ];
+  }
+
   PrayerCurrentPeriod currentPrayerPeriod({
     required PrayerDay today,
     required PrayerDay yesterday,
     required DateTime now,
   }) {
-    final PrayerTimeEntry fajr = today.entryFor(PrayerTimeKind.fajr);
-    final PrayerTimeEntry sunrise = today.entryFor(PrayerTimeKind.sunrise);
-    final PrayerTimeEntry dhuhr = today.entryFor(PrayerTimeKind.dhuhr);
-    final PrayerTimeEntry asr = today.entryFor(PrayerTimeKind.asr);
-    final PrayerTimeEntry maghrib = today.entryFor(PrayerTimeKind.maghrib);
-    final PrayerTimeEntry isha = today.entryFor(PrayerTimeKind.isha);
+    final List<PrayerCurrentPeriod> periods = <PrayerCurrentPeriod>[
+      ..._periodsForDay(
+        yesterday,
+        today.entryFor(PrayerTimeKind.fajr).time,
+        today.entryFor(PrayerTimeKind.maghrib).time,
+      ),
+      ..._periodsForDay(
+        today,
+        today.entryFor(PrayerTimeKind.fajr).time.add(const Duration(days: 1)),
+        today.entryFor(PrayerTimeKind.maghrib).time.add(const Duration(days: 1)),
+      ),
+    ];
 
-    if (now.isBefore(fajr.time)) {
-      return _normalPrayerPeriod(
-        entry: yesterday.entryFor(PrayerTimeKind.isha),
-        endsAt: fajr.time,
-      );
-    }
-    if (now.isBefore(sunrise.time)) {
-      return _normalPrayerPeriod(entry: fajr, endsAt: sunrise.time);
-    }
-
-    final int sunriseProhibitedDurationMinutes =
-        today.settings.sunriseProhibitedDurationMinutes;
-    final DateTime sunriseProhibitedEnd = sunrise.time.add(
-      Duration(minutes: sunriseProhibitedDurationMinutes),
-    );
-    if (now.isBefore(dhuhr.time) && now.isBefore(sunriseProhibitedEnd)) {
-      return PrayerCurrentPeriod(
-        type: PrayerCurrentPeriodType.sunriseProhibited,
-        featuredEntry: sunrise,
-        endsAt: _earlierOf(sunriseProhibitedEnd, dhuhr.time),
-        highlightedKind: PrayerTimeKind.sunrise,
-      );
-    }
-
-    final DateTime dhuhrProhibitedStart = dhuhr.time.subtract(
-      Duration(minutes: today.settings.dhuhrProhibitedDurationMinutes),
-    );
-    if (now.isBefore(dhuhr.time) && !now.isBefore(dhuhrProhibitedStart)) {
-      return PrayerCurrentPeriod(
-        type: PrayerCurrentPeriodType.dhuhrProhibited,
-        featuredEntry: dhuhr,
-        endsAt: dhuhr.time,
-      );
-    }
-
-    if (now.isBefore(dhuhr.time)) {
-      return PrayerCurrentPeriod(
-        type: PrayerCurrentPeriodType.beforeDhuhr,
-        featuredEntry: dhuhr,
-        endsAt: dhuhr.time,
-      );
-    }
-    if (now.isBefore(asr.time)) {
-      return _normalPrayerPeriod(entry: dhuhr, endsAt: asr.time);
-    }
-    if (now.isBefore(maghrib.time)) {
-      final DateTime sunsetProhibitedStart = maghrib.time.subtract(
-        Duration(minutes: today.settings.sunsetProhibitedDurationMinutes),
-      );
-      if (!now.isBefore(sunsetProhibitedStart)) {
-        return PrayerCurrentPeriod(
-          type: PrayerCurrentPeriodType.sunsetProhibited,
-          featuredEntry: maghrib,
-          endsAt: maghrib.time,
-        );
+    for (final PrayerCurrentPeriod period in periods) {
+      if (now.isBefore(period.endsAt)) {
+        return period;
       }
-      return _normalPrayerPeriod(entry: asr, endsAt: sunsetProhibitedStart);
     }
-    if (now.isBefore(isha.time)) {
-      return _normalPrayerPeriod(entry: maghrib, endsAt: isha.time);
-    }
+
     return _normalPrayerPeriod(
-      entry: isha,
-      endsAt: fajr.time.add(const Duration(days: 1)),
+      entry: today.entryFor(PrayerTimeKind.isha),
+      endsAt: today.entryFor(PrayerTimeKind.fajr).time.add(const Duration(days: 1)),
     );
   }
 

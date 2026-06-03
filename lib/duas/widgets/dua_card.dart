@@ -42,130 +42,136 @@ class DuaCard extends StatelessWidget {
     ];
 
     return ValueListenableBuilder<Box<dynamic>>(
-      valueListenable: DuaFavouritesDB().listener,
-      builder: (BuildContext context, Box<dynamic> box, Widget? child) {
-        final bool isFavourite =
-            DuaFavouritesDB().contains(dua.id) ||
-            DuaFavouritesDB().contains(dua.legacyFavouriteId);
+      valueListenable: SettingsDB().listener,
+      builder: (BuildContext context, Box<dynamic> settingsBox, Widget? child) {
+        final bool showTranslation = settingsBox.get('duaShowTranslation', defaultValue: true) as bool;
+        final bool showTransliteration = settingsBox.get('duaShowTransliteration', defaultValue: true) as bool;
+        final String defaultLang = Localizations.localeOf(context).languageCode;
+        final String translationLang = settingsBox.get('duaTranslationLanguage', defaultValue: defaultLang) as String;
 
-        return Card(
-          elevation: isLight ? 3 : 0,
-          color: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          clipBehavior: Clip.antiAlias,
-          margin: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.medium),
-            side: BorderSide(
-              color: isLight
-                  ? colors.primary.withAlpha(26)
-                  : colors.outlineVariant.withAlpha(86),
-            ),
-          ),
-          child: InkWell(
-            onTap: onTap,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: theme.cardTheme.color ?? colors.surfaceContainerLow,
+        return ValueListenableBuilder<Box<dynamic>>(
+          valueListenable: DuaFavouritesDB().listener,
+          builder: (BuildContext context, Box<dynamic> box, Widget? child) {
+            final bool isFavourite =
+                DuaFavouritesDB().contains(dua.id) ||
+                DuaFavouritesDB().contains(dua.legacyFavouriteId);
+
+            return Card(
+              elevation: isLight ? 3 : 0,
+              color: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              clipBehavior: Clip.antiAlias,
+              margin: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadii.medium),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    Color.alphaBlend(
-                      colors.primary.withAlpha(isLight ? 10 : 16),
-                      theme.cardTheme.color ?? colors.surfaceContainerLow,
-                    ),
-                    Color.alphaBlend(
-                      colors.tertiary.withAlpha(isLight ? 8 : 12),
-                      theme.cardTheme.color ?? colors.surfaceContainerLow,
-                    ),
-                  ],
+                side: BorderSide(
+                  color: isLight
+                      ? colors.primary.withAlpha(26)
+                      : colors.outlineVariant.withAlpha(86),
                 ),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: Colors.black.withAlpha(isLight ? 10 : 20),
-                    blurRadius: 18,
-                    offset: const Offset(0, 6),
+              ),
+              child: InkWell(
+                onTap: onTap,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.cardTheme.color ?? colors.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(AppRadii.medium),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: <Color>[
+                        Color.alphaBlend(
+                          colors.primary.withAlpha(isLight ? 10 : 16),
+                          theme.cardTheme.color ?? colors.surfaceContainerLow,
+                        ),
+                        Color.alphaBlend(
+                          colors.tertiary.withAlpha(isLight ? 8 : 12),
+                          theme.cardTheme.color ?? colors.surfaceContainerLow,
+                        ),
+                      ],
+                    ),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: Colors.black.withAlpha(isLight ? 10 : 20),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Padding(
-                padding: contentPadding,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    _DuaCardHeader(
-                      dua: dua,
-                      number: number,
-                      categoryTitle: categoryTitle,
-                      isFavourite: isFavourite,
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      dua.text,
-                      textDirection: TextDirection.rtl,
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(
-                        fontFamily: 'Hafs',
+                  child: Padding(
+                    padding: contentPadding,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        _DuaCardHeader(
+                          dua: dua,
+                          number: number,
+                          categoryTitle: categoryTitle,
+                          isFavourite: isFavourite,
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          dua.text,
+                          textDirection: TextDirection.rtl,
+                          textAlign: TextAlign.justify,
+                          style: TextStyle(
+                            fontFamily: 'Hafs',
 
-                        height: 1.95,
-                        fontSize: SettingsDB().get(
-                          "fontSize",
-                          defaultValue: 31.0,
+                            height: 1.95,
+                            fontSize: SettingsDB().get(
+                              "fontSize",
+                              defaultValue: 31.0,
+                            ),
+                            letterSpacing: 0,
+                            color: colors.onSurface,
+                          ),
                         ),
-                        letterSpacing: 0,
-                        color: colors.onSurface,
-                      ),
+                        if (showTransliteration && dua.transliteration != null) ...<Widget>[
+                          const SizedBox(height: 14),
+                          Text(
+                            dua.transliteration!,
+                            textAlign: TextAlign.justify,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colors.onSurfaceVariant.withAlpha(190),
+                              height: 1.45,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                        if (showTranslation &&
+                            dua.localizedTranslation(translationLang) != null) ...<Widget>[
+                          const SizedBox(height: 14),
+                          Divider(
+                            height: 1,
+                            color: colors.outlineVariant.withAlpha(118),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            dua.localizedTranslation(translationLang)!,
+                            textAlign: TextAlign.justify,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              height: 1.55,
+                            ),
+                          ),
+                        ],
+                        if (metadata.isNotEmpty) ...<Widget>[
+                          const SizedBox(height: 14),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: metadata
+                                .map((String item) => _DuaMetadataPill(text: item))
+                                .toList(growable: false),
+                          ),
+                        ],
+                      ],
                     ),
-                    if (dua.transliteration != null) ...<Widget>[
-                      const SizedBox(height: 14),
-                      Text(
-                        dua.transliteration!,
-                        textAlign: TextAlign.justify,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colors.onSurfaceVariant.withAlpha(190),
-                          height: 1.45,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                    if (dua.localizedTranslation(
-                          Localizations.localeOf(context).languageCode,
-                        ) !=
-                        null) ...<Widget>[
-                      const SizedBox(height: 14),
-                      Divider(
-                        height: 1,
-                        color: colors.outlineVariant.withAlpha(118),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        dua.localizedTranslation(
-                          Localizations.localeOf(context).languageCode,
-                        )!,
-                        textAlign: TextAlign.justify,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: colors.onSurfaceVariant,
-                          height: 1.55,
-                        ),
-                      ),
-                    ],
-                    if (metadata.isNotEmpty) ...<Widget>[
-                      const SizedBox(height: 14),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: metadata
-                            .map((String item) => _DuaMetadataPill(text: item))
-                            .toList(growable: false),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

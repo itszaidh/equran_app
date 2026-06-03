@@ -226,6 +226,30 @@ abstract class AppLocalizations {
   /// **'Bengali'**
   String get bengali;
 
+  /// No description provided for @german.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get german;
+
+  /// No description provided for @quranScriptStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quran Script Style'**
+  String get quranScriptStyle;
+
+  /// No description provided for @uthmaniMadinah.
+  ///
+  /// In en, this message translates to:
+  /// **'Uthmani (Madinah)'**
+  String get uthmaniMadinah;
+
+  /// No description provided for @indoPak.
+  ///
+  /// In en, this message translates to:
+  /// **'IndoPak'**
+  String get indoPak;
+
   /// No description provided for @vibration.
   ///
   /// In en, this message translates to:
@@ -597,6 +621,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Daily Ayah'**
   String get dailyAyah;
+
+  /// No description provided for @dailyDua.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Dua'**
+  String get dailyDua;
 
   /// No description provided for @seeAll.
   ///
@@ -6388,6 +6418,276 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'General'**
   String get duaGroupMisc;
+
+  /// No description provided for @highLatitudeMosqueNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Some high-latitude mosque timetables use fixed or capped Isha times during summer.'**
+  String get highLatitudeMosqueNotice;
+
+  /// No description provided for @latestIshaTimeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Use calculated Isha, but do not allow it later than {time}.'**
+  String latestIshaTimeHelp(String time);
+
+  /// No description provided for @locationCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Location cleared.'**
+  String get locationCleared;
+
+  /// No description provided for @useSunset.
+  ///
+  /// In en, this message translates to:
+  /// **'Use sunset'**
+  String get useSunset;
+
+  /// No description provided for @failedDownloadAyahAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download ayah audio.'**
+  String get failedDownloadAyahAudio;
+
+  /// No description provided for @failedDeleteDownloadedAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete downloaded ayah.'**
+  String get failedDeleteDownloadedAyah;
+
+  /// No description provided for @unablePlayAudioWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to play audio on web. Try downloading the app for better experience.'**
+  String get unablePlayAudioWeb;
+
+  /// No description provided for @failedPlayAudioConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to play audio. Please check your internet connection.'**
+  String get failedPlayAudioConnection;
+
+  /// No description provided for @failedToPlayAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to play audio: {error}'**
+  String failedToPlayAudio(String error);
+
+  /// No description provided for @ishaModeAngle.
+  ///
+  /// In en, this message translates to:
+  /// **'Angle'**
+  String get ishaModeAngle;
+
+  /// No description provided for @ishaModeAngleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the custom Isha angle.'**
+  String get ishaModeAngleSubtitle;
+
+  /// No description provided for @ishaModeInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval after Maghrib'**
+  String get ishaModeInterval;
+
+  /// No description provided for @ishaModeIntervalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Isha a fixed number of minutes after Maghrib.'**
+  String get ishaModeIntervalSubtitle;
+
+  /// No description provided for @ishaModeFixedTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed time'**
+  String get ishaModeFixedTime;
+
+  /// No description provided for @ishaModeFixedTimeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the same clock time on each selected prayer date.'**
+  String get ishaModeFixedTimeSubtitle;
+
+  /// No description provided for @ishaModeLatestCap.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest time cap'**
+  String get ishaModeLatestCap;
+
+  /// No description provided for @ishaModeLatestCapSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use calculated Isha unless it goes later than a cap.'**
+  String get ishaModeLatestCapSubtitle;
+
+  /// No description provided for @bestMethodSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a method from the saved country when available.'**
+  String get bestMethodSubtitle;
+
+  /// No description provided for @highLatitudeRuleAutoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply a rule only for high-latitude locations.'**
+  String get highLatitudeRuleAutoSubtitle;
+
+  /// No description provided for @highLatitudeRuleNoneSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not apply a high-latitude rule.'**
+  String get highLatitudeRuleNoneSubtitle;
+
+  /// No description provided for @highLatitudeRuleMiddleOfTheNightSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cap Fajr and Isha using the middle of the night.'**
+  String get highLatitudeRuleMiddleOfTheNightSubtitle;
+
+  /// No description provided for @highLatitudeRuleOneSeventhSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use one seventh of the night.'**
+  String get highLatitudeRuleOneSeventhSubtitle;
+
+  /// No description provided for @highLatitudeRuleAngleBasedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the Fajr and Isha angles as the night fraction.'**
+  String get highLatitudeRuleAngleBasedSubtitle;
+
+  /// No description provided for @twelveHour.
+  ///
+  /// In en, this message translates to:
+  /// **'12-hour'**
+  String get twelveHour;
+
+  /// No description provided for @twentyFourHour.
+  ///
+  /// In en, this message translates to:
+  /// **'24-hour'**
+  String get twentyFourHour;
+
+  /// No description provided for @notificationPermissionOffRemindersNotEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission is off. Prayer reminders were not enabled.'**
+  String get notificationPermissionOffRemindersNotEnabled;
+
+  /// No description provided for @notificationPermissionTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission request timed out.'**
+  String get notificationPermissionTimeout;
+
+  /// No description provided for @notificationPermissionTimeoutMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission request timed out. Try reopening the app or enabling notifications in system settings.'**
+  String get notificationPermissionTimeoutMessage;
+
+  /// No description provided for @notificationPermissionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not request notification permission.'**
+  String get notificationPermissionError;
+
+  /// No description provided for @notificationPermissionErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not request notification permission. Try again or enable notifications in system settings.'**
+  String get notificationPermissionErrorMessage;
+
+  /// No description provided for @openNotificationSettingsTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening notification settings timed out. Open Android app settings manually and enable notifications.'**
+  String get openNotificationSettingsTimeout;
+
+  /// No description provided for @openNotificationSettingsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open notification settings. Open Android app settings manually and enable notifications.'**
+  String get openNotificationSettingsError;
+
+  /// No description provided for @openExactAlarmSettingsTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening alarm permission settings timed out. Open Android alarms & reminders settings manually and enable exact alarms.'**
+  String get openExactAlarmSettingsTimeout;
+
+  /// No description provided for @openExactAlarmSettingsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open alarm permission settings. Open Android alarms & reminders settings manually and enable exact alarms.'**
+  String get openExactAlarmSettingsError;
+
+  /// No description provided for @debugReminderScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug prayer reminder scheduled for {time}.'**
+  String debugReminderScheduled(String time);
+
+  /// No description provided for @debugReminderCouldNotBeScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug prayer reminder could not be scheduled.'**
+  String get debugReminderCouldNotBeScheduled;
+
+  /// No description provided for @degrees.
+  ///
+  /// In en, this message translates to:
+  /// **'degrees'**
+  String get degrees;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'minutes'**
+  String get minutes;
+
+  /// No description provided for @prayerOffsetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{prayerName} offset'**
+  String prayerOffsetTitle(String prayerName);
+
+  /// No description provided for @steppedIntOffsetHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Type minutes as digits only. Use the sign button for before or after the calculated time.'**
+  String get steppedIntOffsetHelper;
+
+  /// No description provided for @enterValueBetweenMinMaxSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a value between {min} and {max} {suffix}.'**
+  String enterValueBetweenMinMaxSuffix(String min, String max, String suffix);
+
+  /// No description provided for @steppedIntSuffixHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Type {suffix} as digits only. Use - and + to adjust the value.'**
+  String steppedIntSuffixHelper(String suffix);
+
+  /// No description provided for @optionalSteppedIntHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'{emptyLabel} Blank saves 0. Type digits only and use - or + to adjust.'**
+  String optionalSteppedIntHelper(String emptyLabel);
+
+  /// No description provided for @enterValueFromMinToMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a value from {min} to {max}.'**
+  String enterValueFromMinToMax(String min, String max);
+
+  /// No description provided for @enterValidValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid value.'**
+  String get enterValidValue;
 }
 
 class _AppLocalizationsDelegate

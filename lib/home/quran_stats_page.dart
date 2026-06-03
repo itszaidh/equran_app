@@ -451,7 +451,7 @@ class StatisticsRepository {
     // Count consecutive days (going back from today)
     // where HifzDB.hasActivityOnDate returns true
     int streak = 0;
-    DateTime day = DateTime.now();
+    DateTime day = _getShiftedNow();
     while (HifzDB.hasActivityOnDate(day)) {
       streak++;
       day = day.subtract(const Duration(days: 1));
@@ -462,7 +462,7 @@ class StatisticsRepository {
   Future<OverviewStats> overview(AppLocalizations localizations) {
     final String cacheKey = localizations.localeName;
     return _overviewCache.putIfAbsent(cacheKey, () async {
-      final DateTime now = DateTime.now();
+      final DateTime now = _getShiftedNow();
       final String todayKey = _dateKey(now);
       final Map<String, QuranActivityDay> quranDays = _quranDaysByDate();
       final List<DhikrSessionEntry> sessions = _dhikrSessions();
@@ -520,7 +520,7 @@ class StatisticsRepository {
   ) {
     final String cacheKey = '${range.name}:${localizations.localeName}';
     return _quranCache.putIfAbsent(cacheKey, () async {
-      final DateTime now = DateTime.now();
+      final DateTime now = _getShiftedNow();
       final List<QuranActivityDay> activityDays = _quranDays();
       final Map<String, QuranActivityDay> byDate = <String, QuranActivityDay>{
         for (final QuranActivityDay day in activityDays) day.dateKey: day,
@@ -569,7 +569,7 @@ class StatisticsRepository {
 
   Future<TasbihStatsData> tasbih(StatRange range) {
     return _tasbihCache.putIfAbsent(range, () async {
-      final DateTime now = DateTime.now();
+      final DateTime now = _getShiftedNow();
       final List<DhikrSessionEntry> sessions = _dhikrSessions()
           .where((entry) => _inRange(_dhikrDate(entry), range, now))
           .toList(growable: false);
@@ -604,7 +604,7 @@ class StatisticsRepository {
 
   Future<DuasStatsData> duas(StatRange range) {
     return _duasCache.putIfAbsent(range, () async {
-      final DateTime now = DateTime.now();
+      final DateTime now = _getShiftedNow();
       final List<DuaInteractionEntry> interactions = _duaInteractions()
           .where((entry) => _inRange(entry.date, range, now))
           .toList(growable: false);
@@ -645,7 +645,7 @@ class StatisticsRepository {
 
   Future<SalahSectionData> getSalahData(StatRange range) {
     return _salahCache.putIfAbsent(range, () async {
-      final DateTime now = DateTime.now();
+      final DateTime now = _getShiftedNow();
       final String todayKey = _dateKey(now);
       final bool enabled = _prayerTrackingEnabled();
       final SalahLogEntry todayEntry =
@@ -736,7 +736,7 @@ class StatisticsRepository {
         _dhikrSessions(),
         _duaInteractions(),
         _salahLogs(),
-        DateTime.now(),
+        _getShiftedNow(),
       );
     });
   }
@@ -4434,7 +4434,7 @@ class _MonthlyCalendarGrid extends StatelessWidget {
             final MonthlyActivityDay? day = cells[index];
             return _MonthlyCalendarCell(
               day: day,
-              isToday: day != null && _isSameDate(day.date, DateTime.now()),
+              isToday: day != null && _isSameDate(day.date, _getShiftedNow()),
               onTap: onDayTap,
             );
           },
@@ -5779,6 +5779,19 @@ String _monthCacheKey(int year, int month) {
       '${date.month.toString().padLeft(2, '0')}';
 }
 
+DateTime _getShiftedNow() {
+  final DateTime now = DateTime.now();
+  final PrayerSettingsStore store = PrayerSettingsStore();
+  final prayer_models.PrayerLocation? location = store.getLocation();
+  final prayer_models.PrayerTimeSettings settings = store.getSettings();
+  if (location == null) return now;
+  return const PrayerTimesService().calendarDateForInstant(
+    instant: now,
+    location: location,
+    settings: settings,
+  );
+}
+
 String _dateKey(DateTime date) {
   return '${date.year.toString().padLeft(4, '0')}-'
       '${date.month.toString().padLeft(2, '0')}-'
@@ -6202,7 +6215,7 @@ class _HifzNextDueCard extends StatelessWidget {
       entry.ayah,
     );
 
-    final now = DateTime.now();
+    final now = _getShiftedNow();
     final today = DateTime(now.year, now.month, now.day);
     final due = DateTime(
       entry.dueDate.year,

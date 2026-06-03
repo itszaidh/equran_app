@@ -4,6 +4,7 @@ import 'package:equran/backend/library.dart' show DuaInteractionsDB;
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/widgets/dua_card.dart';
+import 'package:equran/duas/widgets/dua_settings_card.dart';
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -113,9 +114,15 @@ class _CategoryContent extends StatefulWidget {
 }
 
 class _CategoryContentState extends State<_CategoryContent> {
+  late final ScrollController _scrollController;
+  bool _showSettings = true;
+  double _lastOffset = 0.0;
+
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(
         DuaInteractionsDB().recordCategoryView(
@@ -128,6 +135,36 @@ class _CategoryContentState extends State<_CategoryContent> {
   }
 
   @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final double offset = _scrollController.offset;
+    final double delta = offset - _lastOffset;
+    _lastOffset = offset;
+
+    if (offset <= 0) {
+      if (!_showSettings) {
+        setState(() {
+          _showSettings = true;
+        });
+      }
+    } else if (delta > 3 && _showSettings && offset > 30) {
+      setState(() {
+        _showSettings = false;
+      });
+    } else if (delta < -3 && !_showSettings) {
+      setState(() {
+        _showSettings = true;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
@@ -135,6 +172,7 @@ class _CategoryContentState extends State<_CategoryContent> {
     final DuaCategory category = widget.category;
 
     return ListView(
+      controller: _scrollController,
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 28),
       children: <Widget>[
@@ -155,14 +193,38 @@ class _CategoryContentState extends State<_CategoryContent> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        Text(
-                          category.localizedTitle(context),
-                          textDirection: Directionality.of(context),
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            height: 1.45,
-                            letterSpacing: 0,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                category.localizedTitle(context),
+                                textDirection: Directionality.of(context),
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.45,
+                                  letterSpacing: 0,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showSettings = !_showSettings;
+                                });
+                              },
+                              tooltip: _showSettings ? 'Hide settings' : 'Show settings',
+                              icon: AnimatedRotation(
+                                duration: const Duration(milliseconds: 250),
+                                turns: _showSettings ? 0.25 : 0.0,
+                                child: Icon(
+                                  _showSettings ? Icons.tune_rounded : Icons.tune_outlined,
+                                  color: _showSettings ? colors.primary : colors.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -180,6 +242,18 @@ class _CategoryContentState extends State<_CategoryContent> {
                       ],
                     ),
                   ),
+                ),
+                AnimatedCrossFade(
+                  firstChild: const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: DuaTypographySettingsCard(),
+                  ),
+                  secondChild: const SizedBox.shrink(),
+                  crossFadeState: _showSettings ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                  duration: const Duration(milliseconds: 250),
+                  sizeCurve: Curves.easeInOutCubic,
+                  firstCurve: Curves.easeIn,
+                  secondCurve: Curves.easeOut,
                 ),
                 const SizedBox(height: 12),
                 for (int index = 0; index < category.duas.length; index++)

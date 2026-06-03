@@ -24,17 +24,22 @@ import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:quran/quran.dart' as quran;
+import 'package:equran/duas/daily_dua_repository.dart';
+import 'package:equran/duas/hisn_al_muslim_repository.dart';
+import 'package:equran/duas/hisn_al_muslim_models.dart';
+import 'package:equran/duas/duas_category_page.dart';
+import 'package:equran/backend/daily_tools_config.dart';
+import 'package:equran/home_dashboard/daily_tools_edit_sheet.dart';
+import 'package:equran/home/hijri_calendar_page.dart';
+import 'package:equran/home/zakah_calculator_page.dart';
+import 'package:equran/hifz/hifz.dart';
+import 'package:equran/duas/asma_ul_husna_page.dart';
 
 const String _appAssetBase = 'assets/media/images/app';
 const String _quranAsset = '$_appAssetBase/quran.webp';
 const String _lastReadAsset = '$_appAssetBase/last_read.webp';
-const String _quranReadAsset = '$_appAssetBase/read.webp';
-const String _prayerTimeAsset = '$_appAssetBase/prayer_time.webp';
-const String _qiblaAsset = '$_appAssetBase/qiblah.webp';
 const String _playerAsset = '$_appAssetBase/player.webp';
-const String _tasbihAsset = '$_appAssetBase/tasbih.webp';
 const String _duaAsset = '$_appAssetBase/dua.webp';
-const String _downloadAsset = '$_appAssetBase/download.webp';
 const String _designAsset = '$_appAssetBase/design.webp';
 const String _routineAsset = '$_appAssetBase/routine.webp';
 const String _settingsAsset = '$_appAssetBase/settings.webp';
@@ -146,8 +151,17 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     final EquranColors colors = context.equranColors;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerLocation? location = _prayerStore.getLocation();
+    final PrayerTimeSettings settings = _prayerStore.getSettings();
     final String locationLabel =
         location?.displayLabel ?? localizations.setPrayerLocation;
+
+    final DateTime todayDate = location == null
+        ? DateTime(_now.year, _now.month, _now.day)
+        : _prayerService.calendarDateForInstant(
+            instant: _now,
+            location: location,
+            settings: settings,
+          );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -232,7 +246,7 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  _formatDashboardDate(_now),
+                  _formatDashboardDate(todayDate),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -434,6 +448,11 @@ class _DashboardContent extends StatelessWidget {
               ayah: summary.dailyAyah,
               onOpenQuran: actions.onOpenQuran,
             ),
+            const SizedBox(height: 22),
+            _DailyDuaPreview(
+              date: summary.todayDate,
+              onOpenDuas: actions.onOpenDuas,
+            ),
             // const SizedBox(height: 22),
             // _PersonalLibraryPreview(
             //   bookmarks: summary.bookmarks,
@@ -448,6 +467,7 @@ class _DashboardContent extends StatelessWidget {
 
 class _DashboardSummary {
   const _DashboardSummary({
+    required this.todayDate,
     required this.latestReading,
     required this.latestListening,
     required this.prayerSummary,
@@ -459,6 +479,7 @@ class _DashboardSummary {
     required this.bookmarks,
   });
 
+  final DateTime todayDate;
   final ResumeStateEntry? latestReading;
   final ResumeStateEntry? latestListening;
   final _PrayerSummary prayerSummary;
@@ -490,7 +511,16 @@ class _DashboardSummary {
             .where((ReadingPlanEntry plan) => plan.active)
             .toList(growable: false)
           ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
-    final String todayKey = _dateKey(now);
+    final PrayerLocation? location = prayerStore.getLocation();
+    final PrayerTimeSettings settings = prayerStore.getSettings();
+    final DateTime todayDate = location == null
+        ? DateTime(now.year, now.month, now.day)
+        : prayerService.calendarDateForInstant(
+            instant: now,
+            location: location,
+            settings: settings,
+          );
+    final String todayKey = _dateKey(todayDate);
     final dynamic activityValue = QuranActivityDB().get(todayKey);
     final dynamic statsValue = QuranStatsDB().get('summary');
     final DateTime? latestReadingActivityDate = latestQuranReadingActivityDate(
@@ -498,6 +528,7 @@ class _DashboardSummary {
     );
 
     return _DashboardSummary(
+      todayDate: todayDate,
       latestReading: latestReading,
       latestListening: latestListening,
       prayerSummary: _PrayerSummary.load(
@@ -508,7 +539,7 @@ class _DashboardSummary {
       ),
       todayActivity: activityValue is QuranActivityDay ? activityValue : null,
       activePlan: plans.isEmpty ? null : plans.first,
-      dailyAyah: _DailyAyah.forDate(now),
+      dailyAyah: _DailyAyah.forDate(todayDate),
       stats: statsValue is QuranStatsSnapshot ? statsValue : null,
       latestReadingActivityDate: latestReadingActivityDate,
       bookmarks: const QuranBookmarkService()
@@ -1202,6 +1233,16 @@ class _DailyQuranCompanionSection extends StatelessWidget {
               title: localizations.dailyTools,
               subtitle: localizations.dailyToolsSubtitle,
               compact: true,
+              trailing: IconButton(
+                icon: Icon(Icons.tune_rounded, color: context.equranColors.primary, size: 20),
+                tooltip: localizations.localeName == 'ar' ? 'تخصيص' : 'Customize',
+                style: IconButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(32, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: () => DailyToolsEditSheet.show(context),
+              ),
             ),
             const SizedBox(height: 10),
             _MuslimDailyQuickActions(actions: actions),
@@ -1218,12 +1259,14 @@ class _CompanionSectionHeader extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.compact = false,
+    this.trailing,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final bool compact;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -1268,6 +1311,10 @@ class _CompanionSectionHeader extends StatelessWidget {
             ],
           ),
         ),
+        if (trailing != null) ...<Widget>[
+          const SizedBox(width: 10),
+          trailing!,
+        ],
       ],
     );
   }
@@ -1345,119 +1392,160 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final localizations = AppLocalizations.of(context)!;
-    final List<_QuickAction> items = <_QuickAction>[
-      _QuickAction(
-        Icons.menu_book_outlined,
-        localizations.quran,
-        widget.actions.onOpenQuran,
-        assetPath: _quranReadAsset,
-      ),
-      _QuickAction(
-        Icons.schedule_outlined,
-        localizations.prayer,
-        widget.actions.onOpenPrayerTimes,
-        assetPath: _prayerTimeAsset,
-      ),
-      _QuickAction(
-        Icons.explore_outlined,
-        localizations.qibla,
-        widget.actions.onOpenQibla,
-        assetPath: _qiblaAsset,
-      ),
-      _QuickAction(
-        Icons.graphic_eq_rounded,
-        localizations.player,
-        widget.actions.onOpenPlayer,
-        assetPath: _playerAsset,
-      ),
-      _QuickAction(
-        Icons.auto_awesome_outlined,
-        localizations.tasbih,
-        widget.actions.onOpenTasbih,
-        assetPath: _tasbihAsset,
-      ),
-      _QuickAction(
-        Icons.auto_stories_outlined,
-        localizations.dua,
-        widget.actions.onOpenDuas,
-        assetPath: _duaAsset,
-      ),
-      _QuickAction(
-        Icons.download_outlined,
-        localizations.downloads,
-        widget.actions.onOpenDownloads,
-        assetPath: _downloadAsset,
-      ),
-      _QuickAction(
-        Icons.search_rounded,
-        localizations.search,
-        widget.actions.onOpenSearch,
-        assetPath: _quranAsset,
-      ),
-    ];
-    final List<List<_QuickAction>> pages = <List<_QuickAction>>[
-      items.take(4).toList(growable: false),
-      items.skip(4).take(4).toList(growable: false),
-    ];
 
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 760),
-        child: _HomePremiumCard(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
-          baseColor: colors.surface,
-          accentColor: colors.primary,
-          assetPath: _designAsset,
-          assetOpacity: 0.035,
-          assetWidth: 170,
-          child: Column(
-            children: <Widget>[
-              SizedBox(
-                height: 166,
-                child: PageView.builder(
-                  controller: _pageController,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: pages.length,
-                  onPageChanged: (int value) {
-                    setState(() {
-                      _page = value;
-                    });
-                  },
-                  itemBuilder: (context, pageIndex) {
-                    final List<_QuickAction> pageItems = pages[pageIndex];
-                    return GridView.builder(
-                      itemCount: pageItems.length,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisExtent: 78,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 8,
+    return ValueListenableBuilder<Box<dynamic>>(
+      valueListenable: SettingsDB().listener,
+      builder: (context, box, child) {
+        final List<DailyToolType> visibleTools = SettingsDB().getVisibleDailyTools();
+
+        final List<_QuickAction> items = visibleTools.map((tool) {
+          return _QuickAction(
+            tool.icon,
+            tool.getTitle(localizations),
+            () {
+              switch (tool) {
+                case DailyToolType.quran:
+                  widget.actions.onOpenQuran();
+                  break;
+                case DailyToolType.prayer:
+                  widget.actions.onOpenPrayerTimes();
+                  break;
+                case DailyToolType.qibla:
+                  widget.actions.onOpenQibla();
+                  break;
+                case DailyToolType.player:
+                  widget.actions.onOpenPlayer();
+                  break;
+                case DailyToolType.tasbih:
+                  widget.actions.onOpenTasbih();
+                  break;
+                case DailyToolType.dua:
+                  widget.actions.onOpenDuas();
+                  break;
+                case DailyToolType.downloads:
+                  widget.actions.onOpenDownloads();
+                  break;
+                case DailyToolType.search:
+                  widget.actions.onOpenSearch();
+                  break;
+                case DailyToolType.readingPlans:
+                  widget.actions.onOpenReadingPlans();
+                  break;
+                case DailyToolType.hifz:
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => const HifzHomePage(),
+                    ),
+                  );
+                  break;
+                case DailyToolType.asmaUlHusna:
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => const AsmaUlHusnaPage(),
+                    ),
+                  );
+                  break;
+                case DailyToolType.statistics:
+                  widget.actions.onOpenStats();
+                  break;
+                case DailyToolType.calendar:
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => const HijriCalendarPage(),
+                    ),
+                  );
+                  break;
+                case DailyToolType.zakah:
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (context) => const ZakahCalculatorPage(),
+                    ),
+                  );
+                  break;
+              }
+            },
+            assetPath: tool.assetPath,
+          );
+        }).toList();
+
+        final List<List<_QuickAction>> pages = <List<_QuickAction>>[];
+        for (int i = 0; i < items.length; i += 4) {
+          pages.add(items.skip(i).take(4).toList(growable: false));
+        }
+
+        if (_page >= pages.length && pages.isNotEmpty) {
+          _page = pages.length - 1;
+        }
+
+        final int maxItemsOnPage = pages.isEmpty
+            ? 0
+            : pages.map((p) => p.length).reduce((a, b) => a > b ? a : b);
+        final double pageViewHeight = maxItemsOnPage <= 2 ? 78.0 : 166.0;
+
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: _HomePremiumCard(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+              baseColor: colors.surface,
+              accentColor: colors.primary,
+              assetPath: _designAsset,
+              assetOpacity: 0.035,
+              assetWidth: 170,
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: pageViewHeight,
+                    child: pages.isEmpty
+                        ? const SizedBox.shrink()
+                        : PageView.builder(
+                            controller: _pageController,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: pages.length,
+                            onPageChanged: (int value) {
+                              setState(() {
+                                _page = value;
+                              });
+                            },
+                            itemBuilder: (context, pageIndex) {
+                              final List<_QuickAction> pageItems = pages[pageIndex];
+                              return GridView.builder(
+                                itemCount: pageItems.length,
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                padding: EdgeInsets.zero,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      mainAxisExtent: 78,
+                                      mainAxisSpacing: 10,
+                                      crossAxisSpacing: 8,
+                                    ),
+                                itemBuilder: (context, index) {
+                                  final _QuickAction item = pageItems[index];
+                                  return _DashboardActionTile(
+                                    icon: item.icon,
+                                    label: item.label,
+                                    onTap: item.onTap,
+                                    assetPath: item.assetPath,
+                                  );
+                                },
+                              );
+                            },
                           ),
-                      itemBuilder: (context, index) {
-                        final _QuickAction item = pageItems[index];
-                        return _DashboardActionTile(
-                          icon: item.icon,
-                          label: item.label,
-                          onTap: item.onTap,
-                          assetPath: item.assetPath,
-                        );
-                      },
-                    );
-                  },
-                ),
+                  ),
+                  if (pages.length > 1) ...<Widget>[
+                    const SizedBox(height: 6),
+                    _QuickActionPageDots(itemCount: pages.length, activeIndex: _page),
+                  ],
+                  const SizedBox(height: 9),
+                  _ExploreAllFeaturesRow(onTap: widget.actions.onOpenMore),
+                ],
               ),
-              const SizedBox(height: 6),
-              _QuickActionPageDots(itemCount: pages.length, activeIndex: _page),
-              const SizedBox(height: 9),
-              _ExploreAllFeaturesRow(onTap: widget.actions.onOpenMore),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -1747,6 +1835,151 @@ class _DailyAyahPreview extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DailyDuaPreview extends StatefulWidget {
+  const _DailyDuaPreview({
+    required this.date,
+    required this.onOpenDuas,
+  });
+
+  final DateTime date;
+  final VoidCallback onOpenDuas;
+
+  @override
+  State<_DailyDuaPreview> createState() => _DailyDuaPreviewState();
+}
+
+class _DailyDuaPreviewState extends State<_DailyDuaPreview> {
+  late final DailyDuaRepository _dailyDuaRepository;
+  Future<DailyDuaPayload>? _dailyDuaFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _dailyDuaRepository = DailyDuaRepository();
+    _dailyDuaFuture = _dailyDuaRepository.getDailyDua(widget.date);
+  }
+
+  @override
+  void didUpdateWidget(_DailyDuaPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.date != widget.date) {
+      _dailyDuaFuture = _dailyDuaRepository.getDailyDua(widget.date);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<DailyDuaPayload>(
+      future: _dailyDuaFuture,
+      builder: (BuildContext context, AsyncSnapshot<DailyDuaPayload> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 150,
+            child: Center(
+              child: SizedBox.square(
+                dimension: 30,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        }
+        if (snapshot.hasError || !snapshot.hasData) {
+          return const SizedBox.shrink();
+        }
+
+        final DailyDuaPayload payload = snapshot.data!;
+        final DuaEntry dua = payload.dua;
+        final DuaCategoryIndex categoryIndex = payload.categoryIndex;
+        final ThemeData theme = Theme.of(context);
+        final EquranColors colors = context.equranColors;
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            EquranSectionHeader(
+              icon: Icons.wb_twilight_rounded,
+              title: localizations.dailyDua,
+              actionLabel: localizations.seeAll,
+              onAction: widget.onOpenDuas,
+            ),
+            const SizedBox(height: 10),
+            _HomePremiumCard(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) => DuasCategoryPage(
+                    categoryIndex: categoryIndex,
+                    repository: HisnAlMuslimRepository(),
+                  ),
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(18, 15, 18, 17),
+              baseColor: colors.surface,
+              accentColor: colors.accentGold,
+              assetPath: _duaAsset,
+              assetOpacity: 0.055,
+              assetWidth: 170,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          categoryIndex.localizedTitle(context),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        localizations.localeName == 'ar'
+                            ? Icons.arrow_back_rounded
+                            : Icons.arrow_forward_rounded,
+                        color: colors.accentGold,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    dua.text,
+                    textDirection: TextDirection.rtl,
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: EquranTextStyles.arabicBody(
+                      context,
+                      color: colors.textPrimary,
+                    ).copyWith(height: 1.7),
+                  ),
+                  if (dua.localizedTranslation(localizations.localeName) != null) ...<Widget>[
+                    const SizedBox(height: 12),
+                    Text(
+                      dua.localizedTranslation(localizations.localeName)!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.textSecondary,
+                        height: 1.45,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -2490,6 +2723,7 @@ class _HomeQuranLastReadCard extends StatelessWidget {
             : '${localizations.startReading} ->',
         trailingAssetPath: _quranAsset,
         onTap: onOpenQuran,
+        enforceCompactWidth: false,
       );
     } else {
       card = EquranResumeImageCard(
@@ -2504,6 +2738,7 @@ class _HomeQuranLastReadCard extends StatelessWidget {
             builder: (context) => ReadPage(chapter: surah, startVerse: ayah),
           ),
         ),
+        enforceCompactWidth: false,
       );
     }
 
@@ -2539,6 +2774,7 @@ class _ContinueListeningCard extends StatelessWidget {
         artworkScale: 1.3,
         artworkOffsetX: 18,
         onTap: onOpenPlayer,
+        enforceCompactWidth: false,
       );
     } else {
       final int? positionMillis = current.positionMillis;
@@ -2569,6 +2805,7 @@ class _ContinueListeningCard extends StatelessWidget {
           );
           onOpenPlayer();
         },
+        enforceCompactWidth: false,
       );
     }
 

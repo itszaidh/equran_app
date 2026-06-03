@@ -4,6 +4,7 @@ import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/prayer/manual_prayer_location_page.dart';
 import 'package:equran/prayer/prayer_location_service.dart';
 import 'package:equran/prayer/prayer_map_location_page.dart';
+import 'package:equran/prayer/prayer_localizations.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_notification_service.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
@@ -44,6 +45,8 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   PrayerExactAlarmPermissionStatus? _exactAlarmPermission;
   String? _notificationMessage;
   String? _exactAlarmMessage;
+
+  AppLocalizations get localizations => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -242,19 +245,22 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   }
 
   Widget _buildProhibitedTimesSection(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return _buildSettingsGroup(
       context: context,
-      title: 'Prohibited Times',
-      subtitle: 'Sunrise, Zawal and Sunset windows',
+      title: localizations.prohibitedTimes,
+      subtitle: localizations.prohibitedTimesSubtitle,
       icon: Icons.block_outlined,
       children: <Widget>[
         ListTile(
-          title: const Text('Sunrise prohibited time'),
+          title: Text(localizations.sunriseProhibitedTime),
           subtitle: Text(
-            '${_settings.sunriseProhibitedDurationMinutes} minutes after Sunrise',
+            localizations.sunriseProhibitedTimeMinutes(
+              _settings.sunriseProhibitedDurationMinutes,
+            ),
           ),
           onTap: () => _editProhibitedDuration(
-            title: 'Sunrise prohibited time',
+            title: localizations.sunriseProhibitedTime,
             currentValue: _settings.sunriseProhibitedDurationMinutes,
             min: minSunriseProhibitedDurationMinutes,
             max: maxSunriseProhibitedDurationMinutes,
@@ -264,12 +270,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           ),
         ),
         ListTile(
-          title: const Text('Zawal prohibited time'),
+          title: Text(localizations.zawalProhibitedTime),
           subtitle: Text(
-            '${_settings.dhuhrProhibitedDurationMinutes} minutes before Dhuhr',
+            localizations.zawalProhibitedTimeMinutes(
+              _settings.dhuhrProhibitedDurationMinutes,
+            ),
           ),
           onTap: () => _editProhibitedDuration(
-            title: 'Zawal prohibited time',
+            title: localizations.zawalProhibitedTime,
             currentValue: _settings.dhuhrProhibitedDurationMinutes,
             min: minDhuhrProhibitedDurationMinutes,
             max: maxDhuhrProhibitedDurationMinutes,
@@ -279,12 +287,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           ),
         ),
         ListTile(
-          title: const Text('Sunset prohibited time'),
+          title: Text(localizations.sunsetProhibitedTime),
           subtitle: Text(
-            '${_settings.sunsetProhibitedDurationMinutes} minutes before Maghrib',
+            localizations.sunsetProhibitedTimeMinutes(
+              _settings.sunsetProhibitedDurationMinutes,
+            ),
           ),
           onTap: () => _editProhibitedDuration(
-            title: 'Sunset prohibited time',
+            title: localizations.sunsetProhibitedTime,
             currentValue: _settings.sunsetProhibitedDurationMinutes,
             min: minSunsetProhibitedDurationMinutes,
             max: maxSunsetProhibitedDurationMinutes,
@@ -398,8 +408,8 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
               if (kDebugMode)
                 ListTile(
                   leading: const Icon(Icons.bug_report_outlined),
-                  title: const Text('Schedule 1-minute exact test'),
-                  subtitle: const Text('Uses the prayer reminder scheduler.'),
+                  title: Text(localizations.schedule1MinuteExactTest),
+                  subtitle: Text(localizations.schedule1MinuteExactTestSubtitle),
                   enabled: !_isUpdatingReminders,
                   onTap: _isUpdatingReminders
                       ? null
@@ -456,7 +466,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                   Expanded(
                     child: Text(
                       _notificationMessage ??
-                          'Notification permission is off. Enable it to receive prayer reminders.',
+                          localizations.notificationPermissionOffEnable,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.onSurfaceVariant,
                         height: 1.35,
@@ -480,10 +490,10 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                     ),
                     label: Text(
                       error
-                          ? 'Retry'
+                          ? localizations.retry
                           : openSettings
-                          ? 'Open app settings'
-                          : 'Request permission',
+                          ? localizations.openAppSettings
+                          : localizations.requestPermission,
                     ),
                   ),
                 ),
@@ -518,7 +528,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                   Expanded(
                     child: Text(
                       _exactAlarmMessage ??
-                          'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+                          localizations.exactAlarmPermissionDisabled,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.onSurfaceVariant,
                         height: 1.35,
@@ -540,7 +550,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                     error ? Icons.refresh_rounded : Icons.settings_outlined,
                   ),
                   label: Text(
-                    error ? 'Retry' : 'Open alarm permission settings',
+                    error ? localizations.retry : localizations.openAlarmPermissionSettings,
                   ),
                 ),
               ),
@@ -571,7 +581,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Custom Method',
+                      localizations.customMethod,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -581,12 +591,12 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
               ),
             ),
             ListTile(
-              title: const Text('Fajr angle'),
+              title: Text(localizations.fajrAngle),
               subtitle: Text(
                 '${_settings.customFajrAngle.toStringAsFixed(1)}°',
               ),
               onTap: () => _editDoubleSetting(
-                title: 'Fajr angle',
+                title: localizations.fajrAngle,
                 currentValue: _settings.customFajrAngle,
                 min: 0,
                 max: 30,
@@ -595,34 +605,34 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                     _saveSettings(_settings.copyWith(customFajrAngle: value)),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 8, 16, 2),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: Text(
-                  'Some high-latitude mosque timetables use fixed or capped Isha times during summer.',
+                  localizations.highLatitudeMosqueNotice,
                 ),
               ),
             ),
             ListTile(
-              title: const Text('Isha mode'),
-              subtitle: Text(_settings.customIshaMode.label),
+              title: Text(localizations.ishaMode),
+              subtitle: Text(_localizedIshaModeLabel(_settings.customIshaMode)),
               onTap: _selectCustomIshaMode,
             ),
             ..._buildCustomIshaFields(),
             ListTile(
-              title: const Text('Maghrib angle'),
+              title: Text(localizations.maghribAngle),
               subtitle: Text(
                 _settings.customMaghribAngle == null
-                    ? 'Use sunset'
+                    ? localizations.useSunset
                     : '${_settings.customMaghribAngle!.toStringAsFixed(1)}°',
               ),
               onTap: () => _editOptionalDoubleSetting(
-                title: 'Maghrib angle',
+                title: localizations.maghribAngle,
                 currentValue: _settings.customMaghribAngle,
                 min: 0,
                 max: 30,
-                emptyLabel: 'Leave blank to use sunset.',
+                emptyLabel: localizations.leaveBlankToUseSunset,
                 onChanged: (double? value) =>
                     _saveSettings(_settings.withCustomMaghribAngle(value)),
               ),
@@ -633,6 +643,15 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     );
   }
 
+  String _localizedIshaModeLabel(PrayerCustomIshaMode mode) {
+    return switch (mode) {
+      PrayerCustomIshaMode.angle => localizations.ishaModeAngle,
+      PrayerCustomIshaMode.interval => localizations.ishaModeInterval,
+      PrayerCustomIshaMode.fixedTime => localizations.ishaModeFixedTime,
+      PrayerCustomIshaMode.latestCap => localizations.ishaModeLatestCap,
+    };
+  }
+
   List<Widget> _buildCustomIshaFields() {
     return switch (_settings.customIshaMode) {
       PrayerCustomIshaMode.angle => <Widget>[_buildCustomIshaAngleTile()],
@@ -641,7 +660,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       ],
       PrayerCustomIshaMode.fixedTime => <Widget>[
         ListTile(
-          title: const Text('Fixed Isha time'),
+          title: Text(localizations.fixedIshaTime),
           subtitle: Text(
             _clockLabel(
               _settings.customIshaFixedTimeHour,
@@ -649,7 +668,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
             ),
           ),
           onTap: () => _editCustomIshaClockTime(
-            title: 'Fixed Isha time',
+            title: localizations.fixedIshaTime,
             initialHour: _settings.customIshaFixedTimeHour,
             initialMinute: _settings.customIshaFixedTimeMinute,
             onChanged: (TimeOfDay value) => _saveSettings(
@@ -662,16 +681,20 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         ),
       ],
       PrayerCustomIshaMode.latestCap => <Widget>[
-        _buildCustomIshaAngleTile(title: 'Base Isha angle'),
+        _buildCustomIshaAngleTile(title: localizations.baseIshaAngle),
         _buildCustomIshaIntervalTile(requiredValue: false),
         ListTile(
-          title: const Text('Latest Isha time'),
+          title: Text(localizations.latestIshaTime),
           subtitle: Text(
-            'Use calculated Isha, but do not allow it later than '
-            '${_clockLabel(_settings.customIshaLatestCapHour, _settings.customIshaLatestCapMinute)}.',
+            localizations.latestIshaTimeHelp(
+              _clockLabel(
+                _settings.customIshaLatestCapHour,
+                _settings.customIshaLatestCapMinute,
+              ),
+            ),
           ),
           onTap: () => _editCustomIshaClockTime(
-            title: 'Latest Isha time',
+            title: localizations.latestIshaTime,
             initialHour: _settings.customIshaLatestCapHour,
             initialMinute: _settings.customIshaLatestCapMinute,
             onChanged: (TimeOfDay value) => _saveSettings(
@@ -686,16 +709,17 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     };
   }
 
-  Widget _buildCustomIshaAngleTile({String title = 'Isha angle'}) {
+  Widget _buildCustomIshaAngleTile({String? title}) {
+    final String resolvedTitle = title ?? localizations.ishaAngle;
     return ListTile(
-      title: Text(title),
+      title: Text(resolvedTitle),
       subtitle: Text('${_settings.customIshaAngle.toStringAsFixed(1)}°'),
       onTap: () => _editDoubleSetting(
-        title: title,
+        title: resolvedTitle,
         currentValue: _settings.customIshaAngle,
         min: 0,
         max: 30,
-        suffix: 'degrees',
+        suffix: localizations.degrees,
         onChanged: (double value) =>
             _saveSettings(_settings.copyWith(customIshaAngle: value)),
       ),
@@ -704,28 +728,28 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   Widget _buildCustomIshaIntervalTile({required bool requiredValue}) {
     return ListTile(
-      title: Text(requiredValue ? 'Isha interval' : 'Base Isha interval'),
+      title: Text(requiredValue ? localizations.ishaInterval : localizations.baseIshaInterval),
       subtitle: Text(
         _settings.customIshaInterval == null
-            ? 'Use Isha angle'
-            : '${_settings.customIshaInterval} minutes after Maghrib',
+            ? localizations.useIshaAngle
+            : localizations.minutesAfterMaghrib(_settings.customIshaInterval!),
       ),
       onTap: () => requiredValue
           ? _editIntSetting(
-              title: 'Isha interval',
+              title: localizations.ishaInterval,
               currentValue: _settings.customIshaInterval ?? 90,
               min: 0,
               max: 240,
-              suffix: 'minutes',
+              suffix: localizations.minutes,
               onChanged: (int value) =>
                   _saveSettings(_settings.withCustomIshaInterval(value)),
             )
           : _editOptionalIntSetting(
-              title: 'Base Isha interval',
+              title: localizations.baseIshaInterval,
               currentValue: _settings.customIshaInterval,
               min: 0,
               max: 240,
-              emptyLabel: 'Leave blank to use the base Isha angle.',
+              emptyLabel: localizations.leaveBlankToUseBaseIshaAngle,
               onChanged: (int? value) =>
                   _saveSettings(_settings.withCustomIshaInterval(value)),
             ),
@@ -752,7 +776,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Prayer times are currently experimental and may differ from local mosque or official timetables. Please verify before relying on them.',
+                  localizations.prayerTimesExperimental,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                     height: 1.35,
@@ -769,7 +793,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   Future<void> _selectCalculationMethod() async {
     final PrayerCalculationMethod? selected =
         await _showSelectionDialog<PrayerCalculationMethod>(
-          title: 'Calculation Method',
+          title: localizations.calculationMethod,
           icon: Icons.calculate_outlined,
           selectedValue: _settings.method,
           options: PrayerCalculationMethod.values
@@ -780,7 +804,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                   value: method,
                   title: method.label,
                   subtitle: method == PrayerCalculationMethod.auto
-                      ? 'Choose a method from the saved country when available.'
+                      ? localizations.bestMethodSubtitle
                       : null,
                 ),
               )
@@ -793,7 +817,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   Future<void> _selectAsrMethod() async {
     final PrayerAsrMethod? selected =
         await _showSelectionDialog<PrayerAsrMethod>(
-          title: 'Asr Method',
+          title: localizations.asrMethod,
           icon: Icons.wb_sunny_outlined,
           selectedValue: _settings.asrMethod,
           options: PrayerAsrMethod.values
@@ -812,7 +836,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   Future<void> _selectHighLatitudeRule() async {
     final PrayerHighLatitudeRule? selected =
         await _showSelectionDialog<PrayerHighLatitudeRule>(
-          title: 'High Latitude Adjustment',
+          title: localizations.highLatitudeAdjustment,
           icon: Icons.public_rounded,
           selectedValue: _settings.highLatitudeRule,
           options: PrayerHighLatitudeRule.values
@@ -823,15 +847,15 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                       title: rule.label,
                       subtitle: switch (rule) {
                         PrayerHighLatitudeRule.auto =>
-                          'Apply a rule only for high-latitude locations.',
+                          localizations.highLatitudeRuleAutoSubtitle,
                         PrayerHighLatitudeRule.none =>
-                          'Do not apply a high-latitude rule.',
+                          localizations.highLatitudeRuleNoneSubtitle,
                         PrayerHighLatitudeRule.middleOfTheNight =>
-                          'Cap Fajr and Isha using the middle of the night.',
+                          localizations.highLatitudeRuleMiddleOfTheNightSubtitle,
                         PrayerHighLatitudeRule.oneSeventh =>
-                          'Use one seventh of the night.',
+                          localizations.highLatitudeRuleOneSeventhSubtitle,
                         PrayerHighLatitudeRule.angleBased =>
-                          'Use the Fajr and Isha angles as the night fraction.',
+                          localizations.highLatitudeRuleAngleBasedSubtitle,
                       },
                     ),
               )
@@ -844,7 +868,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
   Future<void> _selectCustomIshaMode() async {
     final PrayerCustomIshaMode? selected =
         await _showSelectionDialog<PrayerCustomIshaMode>(
-          title: 'Isha Mode',
+          title: localizations.ishaMode,
           icon: Icons.dark_mode_outlined,
           selectedValue: _settings.customIshaMode,
           options: PrayerCustomIshaMode.values
@@ -853,15 +877,16 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                   PrayerCustomIshaMode mode,
                 ) => AppSelectionOption<PrayerCustomIshaMode>(
                   value: mode,
-                  title: mode.label,
+                  title: _localizedIshaModeLabel(mode),
                   subtitle: switch (mode) {
-                    PrayerCustomIshaMode.angle => 'Use the custom Isha angle.',
+                    PrayerCustomIshaMode.angle =>
+                      localizations.ishaModeAngleSubtitle,
                     PrayerCustomIshaMode.interval =>
-                      'Set Isha a fixed number of minutes after Maghrib.',
+                      localizations.ishaModeIntervalSubtitle,
                     PrayerCustomIshaMode.fixedTime =>
-                      'Use the same clock time on each selected prayer date.',
+                      localizations.ishaModeFixedTimeSubtitle,
                     PrayerCustomIshaMode.latestCap =>
-                      'Use calculated Isha unless it goes later than a cap.',
+                      localizations.ishaModeLatestCapSubtitle,
                   },
                 ),
               )
@@ -878,12 +903,12 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   Future<void> _selectTimeFormat() async {
     final bool? use24HourFormat = await _showSelectionDialog<bool>(
-      title: 'Time Format',
+      title: localizations.timeFormat,
       icon: Icons.schedule_rounded,
       selectedValue: _settings.use24HourFormat,
-      options: const <AppSelectionOption<bool>>[
-        AppSelectionOption<bool>(value: false, title: '12-hour'),
-        AppSelectionOption<bool>(value: true, title: '24-hour'),
+      options: <AppSelectionOption<bool>>[
+        AppSelectionOption<bool>(value: false, title: localizations.twelveHour),
+        AppSelectionOption<bool>(value: true, title: localizations.twentyFourHour),
       ],
     );
     if (use24HourFormat == null) return;
@@ -922,8 +947,8 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         });
         _showMessage(
           permission == PrayerNotificationPermissionStatus.unsupported
-              ? 'Prayer reminders are not supported on this platform.'
-              : 'Notification permission is off. Prayer reminders were not enabled.',
+              ? localizations.prayerRemindersUnsupported
+              : localizations.notificationPermissionOffRemindersNotEnabled,
         );
         return;
       }
@@ -934,17 +959,17 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       setState(() {
         _notificationPermissionHasError = true;
         _notificationMessage =
-            'Notification permission request timed out. Try reopening the app or enabling notifications in system settings.';
+            localizations.notificationPermissionTimeoutMessage;
       });
-      _showMessage('Notification permission request timed out.');
+      _showMessage(localizations.notificationPermissionTimeout);
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _notificationPermissionHasError = true;
         _notificationMessage =
-            'Could not request notification permission. Try again or enable notifications in system settings.';
+            localizations.notificationPermissionErrorMessage;
       });
-      _showMessage('Could not request notification permission.');
+      _showMessage(localizations.notificationPermissionError);
     } finally {
       if (mounted) {
         setState(() {
@@ -976,15 +1001,15 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   Future<void> _selectReminderOffset() async {
     final int? selected = await _showSelectionDialog<int>(
-      title: 'Reminder Time',
+      title: localizations.reminderTime,
       icon: Icons.schedule_rounded,
       selectedValue: _settings.reminderSettings.reminderOffsetMinutes,
-      options: const <AppSelectionOption<int>>[
-        AppSelectionOption<int>(value: 0, title: 'At prayer time'),
-        AppSelectionOption<int>(value: 5, title: '5 minutes before'),
-        AppSelectionOption<int>(value: 10, title: '10 minutes before'),
-        AppSelectionOption<int>(value: 15, title: '15 minutes before'),
-        AppSelectionOption<int>(value: 30, title: '30 minutes before'),
+      options: <AppSelectionOption<int>>[
+        AppSelectionOption<int>(value: 0, title: localizations.atPrayerTime),
+        AppSelectionOption<int>(value: 5, title: localizations.minutesBeforePrayer(5)),
+        AppSelectionOption<int>(value: 10, title: localizations.minutesBeforePrayer(10)),
+        AppSelectionOption<int>(value: 15, title: localizations.minutesBeforePrayer(15)),
+        AppSelectionOption<int>(value: 30, title: localizations.minutesBeforePrayer(30)),
       ],
     );
     if (selected == null) return;
@@ -1029,14 +1054,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       setState(() {
         _notificationPermissionHasError = true;
         _notificationMessage =
-            'Notification permission request timed out. Try reopening the app or enabling notifications in system settings.';
+            localizations.notificationPermissionTimeoutMessage;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _notificationPermissionHasError = true;
         _notificationMessage =
-            'Could not request notification permission. Try again or enable notifications in system settings.';
+            localizations.notificationPermissionErrorMessage;
       });
     } finally {
       if (mounted) {
@@ -1059,14 +1084,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       setState(() {
         _notificationPermissionHasError = true;
         _notificationMessage =
-            'Opening notification settings timed out. Open Android app settings manually and enable notifications.';
+            localizations.openNotificationSettingsTimeout;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _notificationPermissionHasError = true;
         _notificationMessage =
-            'Could not open notification settings. Open Android app settings manually and enable notifications.';
+            localizations.openNotificationSettingsError;
       });
     }
   }
@@ -1083,14 +1108,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       setState(() {
         _exactAlarmPermissionHasError = true;
         _exactAlarmMessage =
-            'Opening alarm permission settings timed out. Open Android alarms & reminders settings manually and enable exact alarms.';
+            localizations.openExactAlarmSettingsTimeout;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _exactAlarmPermissionHasError = true;
         _exactAlarmMessage =
-            'Could not open alarm permission settings. Open Android alarms & reminders settings manually and enable exact alarms.';
+            localizations.openExactAlarmSettingsError;
       });
     }
   }
@@ -1113,15 +1138,15 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           final DateTime scheduledAt =
               result.scheduledNotifications.single.scheduledAt;
           _showMessage(
-            'Debug prayer reminder scheduled for ${_formatClockTime(scheduledAt)}.',
+            localizations.debugReminderScheduled(_formatClockTime(scheduledAt)),
           );
           break;
         case PrayerNotificationScheduleStatus.permissionDenied:
-          _showMessage('Notification permission is off.');
+          _showMessage(localizations.notificationPermissionOff);
           break;
         case PrayerNotificationScheduleStatus.exactAlarmDenied:
           _showMessage(
-            'Exact alarm permission is disabled. Prayer reminders may be delayed.',
+            localizations.exactAlarmPermissionDisabled,
           );
           break;
         case PrayerNotificationScheduleStatus.unsupported:
@@ -1129,7 +1154,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         case PrayerNotificationScheduleStatus.disabled:
         case PrayerNotificationScheduleStatus.missingLocation:
           _showMessage(
-            result.message ?? 'Debug prayer reminder could not be scheduled.',
+            result.message ?? localizations.debugReminderCouldNotBeScheduled,
           );
           break;
       }
@@ -1170,12 +1195,11 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   Future<void> _editOffset(PrayerTimeKind prayer) async {
     final int? value = await _showSteppedIntDialog(
-      title: '${prayer.label} offset',
+      title: localizations.prayerOffsetTitle(localizedPrayerName(localizations, prayer)),
       currentValue: _settings.offsets.forPrayer(prayer),
       min: -120,
       max: 120,
-      helperText:
-          'Type minutes as digits only. Use the sign button for before or after the calculated time.',
+      helperText: localizations.steppedIntOffsetHelper,
     );
     if (value == null) return;
     await _saveSettings(
@@ -1196,8 +1220,11 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     final double? value = await _showNumberDialog<double>(
       title: title,
       currentValue: currentValue,
-      helperText:
-          'Enter a value between ${min.toStringAsFixed(0)} and ${max.toStringAsFixed(0)} $suffix.',
+      helperText: localizations.enterValueBetweenMinMaxSuffix(
+        min.toStringAsFixed(0),
+        max.toStringAsFixed(0),
+        suffix,
+      ),
       parser: double.tryParse,
       validator: (double value) => value >= min && value <= max,
       formatter: (double value) => value.toStringAsFixed(1),
@@ -1219,8 +1246,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       currentValue: currentValue,
       min: min,
       max: max,
-      helperText:
-          'Type $suffix as digits only. Use - and + to adjust the value.',
+      helperText: localizations.steppedIntSuffixHelper(suffix),
     );
     if (value == null) return;
     onChanged(value);
@@ -1238,7 +1264,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       currentValue: currentValue,
       min: min,
       max: max,
-      suffix: 'minutes',
+      suffix: localizations.minutes,
       onChanged: onChanged,
     );
   }
@@ -1272,8 +1298,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       currentValue: currentValue,
       min: min,
       max: max,
-      helperText:
-          '$emptyLabel Blank saves 0. Type digits only and use - or + to adjust.',
+      helperText: localizations.optionalSteppedIntHelper(emptyLabel),
     );
     if (result == null) return;
     onChanged(result.value);
@@ -1458,11 +1483,11 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                     onPressed: () => Navigator.of(
                       context,
                     ).pop(const _OptionalNumberResult<Never>(null)),
-                    child: const Text('Clear'),
+                    child: Text(localizations.clear),
                   ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
+                  child: Text(localizations.cancel),
                 ),
                 FilledButton(
                   onPressed: () {
@@ -1470,7 +1495,12 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                     if (value < min || value > max) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Enter a value from $min to $max.'),
+                          content: Text(
+                            localizations.enterValueFromMinToMax(
+                              min.toString(),
+                              max.toString(),
+                            ),
+                          ),
                         ),
                       );
                       return;
@@ -1479,7 +1509,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                       context,
                     ).pop(_OptionalNumberResult<int>(value));
                   },
-                  child: const Text('Save'),
+                  child: Text(localizations.save),
                 ),
               ],
             );
@@ -1518,7 +1548,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(localizations.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -1530,13 +1560,13 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                 final T? value = parser(raw);
                 if (value == null || !validator(value)) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Enter a valid value.')),
+                    SnackBar(content: Text(localizations.enterValidValue)),
                   );
                   return;
                 }
                 Navigator.of(context).pop(value);
               },
-              child: const Text('Save'),
+              child: Text(localizations.save),
             ),
           ],
         );
@@ -1574,7 +1604,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(localizations.cancel),
             ),
             FilledButton(
               onPressed: () {
@@ -1588,13 +1618,13 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                 final T? value = parser(raw);
                 if (value == null || !validator(value)) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Enter a valid value.')),
+                    SnackBar(content: Text(localizations.enterValidValue)),
                   );
                   return;
                 }
                 Navigator.of(context).pop(_OptionalNumberResult<T>(value));
               },
-              child: const Text('Save'),
+              child: Text(localizations.save),
             ),
           ],
         );
@@ -1625,7 +1655,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     setState(() {
       _location = resolvedLocation;
     });
-    _showMessage('Location saved.');
+    _showMessage(localizations.locationSaved);
   }
 
   Future<void> _chooseManually(PrayerLocation? initialLocation) async {
@@ -1643,7 +1673,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     setState(() {
       _location = resolvedLocation;
     });
-    _showMessage('Location saved.');
+    _showMessage(localizations.locationSaved);
   }
 
   Future<void> _chooseOnMap(PrayerLocation? initialLocation) async {
@@ -1659,7 +1689,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     setState(() {
       _location = resolvedLocation;
     });
-    _showMessage('Location saved.');
+    _showMessage(localizations.locationSaved);
   }
 
   Future<PrayerLocation> _saveResolvedLocation(PrayerLocation location) async {
@@ -1681,7 +1711,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     setState(() {
       _location = null;
     });
-    _showMessage('Location cleared.');
+    _showMessage(localizations.locationCleared);
   }
 
   Future<void> _saveSettings(PrayerTimeSettings settings) async {
@@ -1720,8 +1750,8 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         });
         _showMessage(
           reminderResult.status == PrayerNotificationScheduleStatus.unsupported
-              ? 'Prayer reminders are not supported on this platform.'
-              : 'Notification permission is off. Reminders were disabled.',
+              ? localizations.prayerRemindersUnsupported
+              : localizations.notificationPermissionOffWarning,
         );
       }
     } else if (reminderResult.status ==
@@ -1730,7 +1760,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
         setState(() {
           _notificationMessage =
               reminderResult.message ??
-              'Prayer reminders could not be scheduled.';
+              localizations.prayerRemindersCouldNotBeScheduled;
         });
         _showMessage(_notificationMessage!);
       }
@@ -1741,7 +1771,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           _exactAlarmPermission = PrayerExactAlarmPermissionStatus.denied;
           _exactAlarmMessage =
               reminderResult.message ??
-              'Exact alarm permission is disabled. Prayer reminders may be delayed.';
+              localizations.exactAlarmPermissionOffWarning;
         });
         _showMessage(_exactAlarmMessage!);
       }
@@ -2054,7 +2084,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   void _showLocationError(PrayerLocationResult result) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String message = result.message ?? 'Unable to get location.';
+    final String message = result.message ?? localizations.unableGetLocation;
     final PrayerLocationFailureReason? reason = result.failureReason;
     final SnackBarAction? action = switch (reason) {
       PrayerLocationFailureReason.servicesDisabled => SnackBarAction(

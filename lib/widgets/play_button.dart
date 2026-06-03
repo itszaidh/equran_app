@@ -8,6 +8,7 @@ import 'package:equran/backend/library.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:equran/l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
 class PlayButton extends StatefulWidget {

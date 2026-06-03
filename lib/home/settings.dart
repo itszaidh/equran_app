@@ -222,27 +222,31 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildScriptStyleTile(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     final String currentStyle = SettingsDB().quranScriptStyle;
     final String label = currentStyle == 'indopak'
-        ? 'IndoPak'
-        : 'Uthmani (Madinah)';
+        ? localizations.indoPak
+        : localizations.uthmaniMadinah;
 
     return ListTile(
       leading: const Icon(Icons.font_download_outlined),
-      title: const Text('Quran Script Style'),
+      title: Text(localizations.quranScriptStyle),
       subtitle: Text(label),
       onTap: () async {
         final String? value = await _showSelectionDialog<String>(
           context: context,
-          title: 'Quran Script Style',
+          title: localizations.quranScriptStyle,
           icon: Icons.font_download_outlined,
           selectedValue: currentStyle,
-          options: const <AppSelectionOption<String>>[
+          options: <AppSelectionOption<String>>[
             AppSelectionOption<String>(
               value: 'uthmani',
-              title: 'Uthmani (Madinah)',
+              title: localizations.uthmaniMadinah,
             ),
-            AppSelectionOption<String>(value: 'indopak', title: 'IndoPak'),
+            AppSelectionOption<String>(
+              value: 'indopak',
+              title: localizations.indoPak,
+            ),
           ],
         );
         if (value == null) return;
@@ -1337,6 +1341,7 @@ class _SettingsPageState extends State<SettingsPage> {
       "ur" => localizations.urdu,
       "tr" => localizations.turkish,
       "bn" => localizations.bengali,
+      "de" => localizations.german,
       _ => localizations.systemDefault,
     };
   }
@@ -1394,6 +1399,12 @@ class _SettingsPageState extends State<SettingsPage> {
           value: "bn",
           title: localizations.bengali,
           subtitle: "বাংলা / Bengali",
+          leading: const Icon(Icons.translate_rounded),
+        ),
+        AppSelectionOption<String>(
+          value: "de",
+          title: localizations.german,
+          subtitle: "Deutsch / German",
           leading: const Icon(Icons.translate_rounded),
         ),
       ],

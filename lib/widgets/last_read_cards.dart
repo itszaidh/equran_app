@@ -14,9 +14,14 @@ const double _resumeImageCardMaxWidth = 620;
 const double _resumeImageCardHeight = 160;
 
 class LastReadCard extends StatefulWidget {
-  const LastReadCard({super.key, required this.entries});
+  const LastReadCard({
+    super.key,
+    required this.entries,
+    this.enforceCompactWidth = true,
+  });
 
   final List<ReadingEntry> entries;
+  final bool enforceCompactWidth;
 
   static List<ReadingEntry> displayReadingHistory(Iterable<dynamic> values) {
     final rawEntries = values.whereType<ReadingEntry>().toList();
@@ -81,6 +86,7 @@ class _LastReadCardState extends State<LastReadCard> {
                   subtitle: localizations.ayahLabel(entry.verse),
                   actionText: localizations.continueReading,
                   trailingAssetPath: equranResumeQuranAsset,
+                  enforceCompactWidth: widget.enforceCompactWidth,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (context) => ReadPage(
@@ -168,6 +174,7 @@ class EquranResumeImageCard extends StatelessWidget {
     this.artworkScale = 1,
     this.artworkOffsetX = -2,
     this.maxWidth = _resumeImageCardMaxWidth,
+    this.enforceCompactWidth = true,
   });
 
   final String primary;
@@ -179,194 +186,201 @@ class EquranResumeImageCard extends StatelessWidget {
   final double artworkScale;
   final double artworkOffsetX;
   final double maxWidth;
+  final bool enforceCompactWidth;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
 
-    return Align(
-      alignment: Alignment.center,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool compact = constraints.maxWidth < 300;
-            final double artworkEdgePadding = _artworkEdgePadding(
-              constraints.maxWidth,
-            );
-            final double scale = artworkScale.clamp(0.82, 1.28).toDouble();
-            final double artWidth = (compact ? 108 : 132) * scale;
-            final double textRightPadding =
-                ((compact ? 94 : 124) * scale.clamp(0.94, 1.16)) +
-                artworkEdgePadding;
-            final double horizontalPadding = compact ? 16 : 18;
-            final double topPadding = compact ? 13 : 14;
-            final double bottomPadding = compact ? 13 : 13;
-            final double titleSubtitleGap = compact ? 4 : 5;
-            final double subtitleDividerGap = compact ? 19 : 28;
-            final double dividerActionGap = compact ? 8 : 10;
-            final double dividerWidth = 170;
-            final bool isRtl = Directionality.of(context) == TextDirection.rtl;
-            final TextStyle? titleStyle = compact
-                ? theme.textTheme.titleLarge?.copyWith(
-                    color: colors.onPrimary,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                  )
-                : theme.textTheme.headlineSmall?.copyWith(
-                    color: colors.onPrimary,
-                    fontWeight: FontWeight.w900,
-                    height: 1.05,
-                  );
-            final TextStyle? subtitleStyle =
-                (compact
-                        ? theme.textTheme.bodyMedium
-                        : theme.textTheme.titleSmall)
-                    ?.copyWith(
-                      color: colors.onPrimaryMuted,
-                      fontWeight: FontWeight.w800,
-                    );
-            final TextStyle? actionStyle = theme.textTheme.labelLarge?.copyWith(
-              color: colors.onPrimary,
-              fontWeight: FontWeight.w900,
-            );
-            final BorderRadius radius = BorderRadius.circular(AppRadii.large);
-            final bool isLight =
-                Theme.of(context).brightness == Brightness.light;
-            final Gradient cardGradient = secondary
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: <Color>[
-                      Color.alphaBlend(
-                        colors.primary.withAlpha(isLight ? 120 : 80),
-                        colors.surface,
-                      ),
-                      Color.alphaBlend(
-                        colors.primaryStrong.withAlpha(isLight ? 130 : 92),
-                        colors.surface,
-                      ),
-                      Color.alphaBlend(
-                        colors.accentGold.withAlpha(isLight ? 45 : 22),
-                        colors.primaryStrong,
-                      ),
-                    ],
-                  )
-                : colors.heroGradient;
-            return SizedBox(
-              width: double.infinity,
-              height: _resumeImageCardHeight,
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: radius,
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: onTap,
+    final Widget cardContent = LayoutBuilder(
+      builder: (context, constraints) {
+        final bool compact = constraints.maxWidth < 300;
+        final double artworkEdgePadding = _artworkEdgePadding(
+          constraints.maxWidth,
+        );
+        final double scale = artworkScale.clamp(0.82, 1.28).toDouble();
+        final double artWidth = (compact ? 108 : 132) * scale;
+        final double textRightPadding =
+            ((compact ? 94 : 124) * scale.clamp(0.94, 1.16)) +
+            artworkEdgePadding;
+        final double horizontalPadding = compact ? 16 : 18;
+        final double topPadding = compact ? 13 : 14;
+        final double bottomPadding = compact ? 13 : 13;
+        final double titleSubtitleGap = compact ? 4 : 5;
+        final double subtitleDividerGap = compact ? 19 : 28;
+        final double dividerActionGap = compact ? 8 : 10;
+        final double dividerWidth = 170;
+        final bool isRtl = Directionality.of(context) == TextDirection.rtl;
+        final TextStyle? titleStyle = compact
+            ? theme.textTheme.titleLarge?.copyWith(
+                color: colors.onPrimary,
+                fontWeight: FontWeight.w900,
+                height: 1.05,
+              )
+            : theme.textTheme.headlineSmall?.copyWith(
+                color: colors.onPrimary,
+                fontWeight: FontWeight.w900,
+                height: 1.05,
+              );
+        final TextStyle? subtitleStyle =
+            (compact
+                    ? theme.textTheme.bodyMedium
+                    : theme.textTheme.titleSmall)
+                ?.copyWith(
+                  color: colors.onPrimaryMuted,
+                  fontWeight: FontWeight.w800,
+                );
+        final TextStyle? actionStyle = theme.textTheme.labelLarge?.copyWith(
+          color: colors.onPrimary,
+          fontWeight: FontWeight.w900,
+        );
+        final BorderRadius radius = BorderRadius.circular(AppRadii.large);
+        final bool isLight =
+            Theme.of(context).brightness == Brightness.light;
+        final Gradient cardGradient = secondary
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  Color.alphaBlend(
+                    colors.primary.withAlpha(isLight ? 120 : 80),
+                    colors.surface,
+                  ),
+                  Color.alphaBlend(
+                    colors.primaryStrong.withAlpha(isLight ? 130 : 92),
+                    colors.surface,
+                  ),
+                  Color.alphaBlend(
+                    colors.accentGold.withAlpha(isLight ? 45 : 22),
+                    colors.primaryStrong,
+                  ),
+                ],
+              )
+            : colors.heroGradient;
+        return SizedBox(
+          width: double.infinity,
+          height: _resumeImageCardHeight,
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: radius,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: radius,
+              child: Ink(
+                decoration: BoxDecoration(
+                  gradient: cardGradient,
                   borderRadius: radius,
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      gradient: cardGradient,
-                      borderRadius: radius,
-                      border: Border.all(color: colors.onPrimary.withAlpha(36)),
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: colors.primaryStrong.withAlpha(
-                            Theme.of(context).brightness == Brightness.light
-                                ? 34
-                                : 54,
-                          ),
-                          blurRadius: 20,
-                          offset: const Offset(0, 9),
-                        ),
-                      ],
+                  border: Border.all(color: colors.onPrimary.withAlpha(36)),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: colors.primaryStrong.withAlpha(
+                        Theme.of(context).brightness == Brightness.light
+                            ? 34
+                            : 54,
+                      ),
+                      blurRadius: 20,
+                      offset: const Offset(0, 9),
                     ),
-                    child: Stack(
-                      children: <Widget>[
-                        Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.only(
-                              end: artworkEdgePadding,
+                  ],
+                ),
+                child: Stack(
+                  children: <Widget>[
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          end: artworkEdgePadding,
+                        ),
+                        child: Transform.translate(
+                          offset: Offset(
+                            (compact
+                                        ? artworkOffsetX.clamp(0, 15)
+                                        : artworkOffsetX.clamp(0, 22))
+                                    .toDouble() *
+                                (isRtl ? -1 : 1),
+                            0,
+                          ),
+                          child: SizedBox(
+                            width: artWidth,
+                            child: Image.asset(
+                              trailingAssetPath,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const SizedBox.shrink(),
                             ),
-                            child: Transform.translate(
-                              offset: Offset(
-                                (compact
-                                            ? artworkOffsetX.clamp(0, 15)
-                                            : artworkOffsetX.clamp(0, 22))
-                                        .toDouble() *
-                                    (isRtl ? -1 : 1),
-                                0,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                          horizontalPadding,
+                          topPadding,
+                          textRightPadding,
+                          bottomPadding,
+                        ),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                primary,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: titleStyle,
                               ),
-                              child: SizedBox(
-                                width: artWidth,
-                                child: Image.asset(
-                                  trailingAssetPath,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const SizedBox.shrink(),
+                              SizedBox(height: titleSubtitleGap),
+                              Text(
+                                subtitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: subtitleStyle,
+                              ),
+                              SizedBox(height: subtitleDividerGap),
+                              SizedBox(
+                                width: dividerWidth,
+                                child: Divider(
+                                  height: 1,
+                                  color: colors.onPrimary.withAlpha(52),
                                 ),
                               ),
-                            ),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: Padding(
-                            padding: EdgeInsetsDirectional.fromSTEB(
-                              horizontalPadding,
-                              topPadding,
-                              textRightPadding,
-                              bottomPadding,
-                            ),
-                            child: Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    primary,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: titleStyle,
-                                  ),
-                                  SizedBox(height: titleSubtitleGap),
-                                  Text(
-                                    subtitle,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: subtitleStyle,
-                                  ),
-                                  SizedBox(height: subtitleDividerGap),
-                                  SizedBox(
-                                    width: dividerWidth,
-                                    child: Divider(
-                                      height: 1,
-                                      color: colors.onPrimary.withAlpha(52),
-                                    ),
-                                  ),
-                                  SizedBox(height: dividerActionGap),
-                                  Text(
-                                    actionText,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: actionStyle,
-                                  ),
-                                ],
+                              SizedBox(height: dividerActionGap),
+                              Text(
+                                actionText,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: actionStyle,
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            );
-          },
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
+
+    if (enforceCompactWidth) {
+      return Align(
+        alignment: Alignment.center,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: cardContent,
+        ),
+      );
+    }
+
+    return cardContent;
   }
 
   double _artworkEdgePadding(double width) {

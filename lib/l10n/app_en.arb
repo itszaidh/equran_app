@@ -20,6 +20,10 @@
   "urdu": "Urdu",
   "turkish": "Turkish",
   "bengali": "Bengali",
+  "german": "German",
+  "quranScriptStyle": "Quran Script Style",
+  "uthmaniMadinah": "Uthmani (Madinah)",
+  "indoPak": "IndoPak",
   "vibration": "Vibration",
   "vibrationSubtitle": "Enable haptic feedback when navigating.",
   "showReadingHistory": "Show reading history",
@@ -89,6 +93,7 @@
   "dailyToolsSubtitle": "Fast access to the essentials",
   "exploreAllFeatures": "Explore all features",
   "dailyAyah": "Daily Ayah",
+  "dailyDua": "Daily Dua",
   "seeAll": "See all",
   "surahs": "Surahs",
   "juz": "Juz",
@@ -1897,5 +1902,116 @@
         "type": "int"
       }
     }
-  }
+  },
+  "highLatitudeMosqueNotice": "Some high-latitude mosque timetables use fixed or capped Isha times during summer.",
+  "latestIshaTimeHelp": "Use calculated Isha, but do not allow it later than {time}.",
+  "@latestIshaTimeHelp": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "locationCleared": "Location cleared.",
+  "useSunset": "Use sunset",
+  "failedDownloadAyahAudio": "Failed to download ayah audio.",
+  "failedDeleteDownloadedAyah": "Failed to delete downloaded ayah.",
+  "unablePlayAudioWeb": "Unable to play audio on web. Try downloading the app for better experience.",
+  "failedPlayAudioConnection": "Failed to play audio. Please check your internet connection.",
+  "failedToPlayAudio": "Failed to play audio: {error}",
+  "@failedToPlayAudio": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaModeAngle": "Angle",
+  "ishaModeAngleSubtitle": "Use the custom Isha angle.",
+  "ishaModeInterval": "Interval after Maghrib",
+  "ishaModeIntervalSubtitle": "Set Isha a fixed number of minutes after Maghrib.",
+  "ishaModeFixedTime": "Fixed time",
+  "ishaModeFixedTimeSubtitle": "Use the same clock time on each selected prayer date.",
+  "ishaModeLatestCap": "Latest time cap",
+  "ishaModeLatestCapSubtitle": "Use calculated Isha unless it goes later than a cap.",
+  "bestMethodSubtitle": "Choose a method from the saved country when available.",
+  "highLatitudeRuleAutoSubtitle": "Apply a rule only for high-latitude locations.",
+  "highLatitudeRuleNoneSubtitle": "Do not apply a high-latitude rule.",
+  "highLatitudeRuleMiddleOfTheNightSubtitle": "Cap Fajr and Isha using the middle of the night.",
+  "highLatitudeRuleOneSeventhSubtitle": "Use one seventh of the night.",
+  "highLatitudeRuleAngleBasedSubtitle": "Use the Fajr and Isha angles as the night fraction.",
+  "twelveHour": "12-hour",
+  "twentyFourHour": "24-hour",
+  "notificationPermissionOffRemindersNotEnabled": "Notification permission is off. Prayer reminders were not enabled.",
+  "notificationPermissionTimeout": "Notification permission request timed out.",
+  "notificationPermissionTimeoutMessage": "Notification permission request timed out. Try reopening the app or enabling notifications in system settings.",
+  "notificationPermissionError": "Could not request notification permission.",
+  "notificationPermissionErrorMessage": "Could not request notification permission. Try again or enable notifications in system settings.",
+  "openNotificationSettingsTimeout": "Opening notification settings timed out. Open Android app settings manually and enable notifications.",
+  "openNotificationSettingsError": "Could not open notification settings. Open Android app settings manually and enable notifications.",
+  "openExactAlarmSettingsTimeout": "Opening alarm permission settings timed out. Open Android alarms & reminders settings manually and enable exact alarms.",
+  "openExactAlarmSettingsError": "Could not open alarm permission settings. Open Android alarms & reminders settings manually and enable exact alarms.",
+  "debugReminderScheduled": "Debug prayer reminder scheduled for {time}.",
+  "@debugReminderScheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReminderCouldNotBeScheduled": "Debug prayer reminder could not be scheduled.",
+  "degrees": "degrees",
+  "minutes": "minutes",
+  "prayerOffsetTitle": "{prayerName} offset",
+  "@prayerOffsetTitle": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntOffsetHelper": "Type minutes as digits only. Use the sign button for before or after the calculated time.",
+  "enterValueBetweenMinMaxSuffix": "Enter a value between {min} and {max} {suffix}.",
+  "@enterValueBetweenMinMaxSuffix": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntSuffixHelper": "Type {suffix} as digits only. Use - and + to adjust the value.",
+  "@steppedIntSuffixHelper": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalSteppedIntHelper": "{emptyLabel} Blank saves 0. Type digits only and use - or + to adjust.",
+  "@optionalSteppedIntHelper": {
+    "placeholders": {
+      "emptyLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValueFromMinToMax": "Enter a value from {min} to {max}.",
+  "@enterValueFromMinToMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidValue": "Enter a valid value.",
+  "prayerRemindersCouldNotBeScheduled": "Prayer reminders could not be scheduled."
 }

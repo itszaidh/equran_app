@@ -1,5 +1,6 @@
 import 'package:quran/quran.dart' as quran;
 import 'base_db.dart';
+import 'daily_tools_config.dart';
 
 class SettingsDB extends BaseDB {
   // Private constructor
@@ -29,5 +30,24 @@ class SettingsDB extends BaseDB {
     await put('quran_script_style', style);
     quran.setQuranTextAssetBase('assets/data/quran/text/$style');
     await quran.initializeQuran();
+  }
+
+  /// Get visible daily tools from settings
+  List<DailyToolType> getVisibleDailyTools() {
+    final List<dynamic>? saved = get('daily_tools_visible') as List<dynamic>?;
+    if (saved == null) {
+      return DailyToolType.defaultTools;
+    }
+    return saved
+        .map((e) => DailyToolType.values.firstWhere(
+              (t) => t.name == e,
+              orElse: () => DailyToolType.quran,
+            ))
+        .toList();
+  }
+
+  /// Save visible daily tools to settings
+  Future<void> setVisibleDailyTools(List<DailyToolType> tools) async {
+    await put('daily_tools_visible', tools.map((t) => t.name).toList());
   }
 }

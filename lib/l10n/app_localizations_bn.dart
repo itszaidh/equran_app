@@ -69,6 +69,18 @@ class AppLocalizationsBn extends AppLocalizations {
   String get bengali => 'বাংলা';
 
   @override
+  String get german => 'জার্মান';
+
+  @override
+  String get quranScriptStyle => 'কুরআনের লিপি শৈলী';
+
+  @override
+  String get uthmaniMadinah => 'উসমানী (মদীনা)';
+
+  @override
+  String get indoPak => 'ইন্দোপাক';
+
+  @override
   String get vibration => 'কম্পন';
 
   @override
@@ -269,6 +281,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get dailyAyah => 'দৈনিক আয়াহ';
+
+  @override
+  String get dailyDua => 'দৈনিক দুয়া';
 
   @override
   String get seeAll => 'সব দেখুন';
@@ -3645,4 +3660,178 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get duaGroupMisc => 'সাধারণ';
+
+  @override
+  String get highLatitudeMosqueNotice =>
+      'কিছু উচ্চ-অক্ষাংশ মসজিদের সময়সূচী গ্রীষ্মকালে নির্দিষ্ট বা ক্যাপড এশার সময় ব্যবহার করে।';
+
+  @override
+  String latestIshaTimeHelp(String time) {
+    return 'হিসাবকৃত এশা ব্যবহার করুন, তবে $time এর পরে অনুমতি দেবেন না।';
+  }
+
+  @override
+  String get locationCleared => 'অবস্থান সাফ করা হয়েছে।';
+
+  @override
+  String get useSunset => 'Use sunset';
+
+  @override
+  String get failedDownloadAyahAudio => 'Failed to download ayah audio.';
+
+  @override
+  String get failedDeleteDownloadedAyah => 'Failed to delete downloaded ayah.';
+
+  @override
+  String get unablePlayAudioWeb =>
+      'Unable to play audio on web. Try downloading the app for better experience.';
+
+  @override
+  String get failedPlayAudioConnection =>
+      'Failed to play audio. Please check your internet connection.';
+
+  @override
+  String failedToPlayAudio(String error) {
+    return 'Failed to play audio: $error';
+  }
+
+  @override
+  String get ishaModeAngle => 'Angle';
+
+  @override
+  String get ishaModeAngleSubtitle => 'Use the custom Isha angle.';
+
+  @override
+  String get ishaModeInterval => 'Interval after Maghrib';
+
+  @override
+  String get ishaModeIntervalSubtitle =>
+      'Set Isha a fixed number of minutes after Maghrib.';
+
+  @override
+  String get ishaModeFixedTime => 'Fixed time';
+
+  @override
+  String get ishaModeFixedTimeSubtitle =>
+      'Use the same clock time on each selected prayer date.';
+
+  @override
+  String get ishaModeLatestCap => 'Latest time cap';
+
+  @override
+  String get ishaModeLatestCapSubtitle =>
+      'Use calculated Isha unless it goes later than a cap.';
+
+  @override
+  String get bestMethodSubtitle =>
+      'Choose a method from the saved country when available.';
+
+  @override
+  String get highLatitudeRuleAutoSubtitle =>
+      'Apply a rule only for high-latitude locations.';
+
+  @override
+  String get highLatitudeRuleNoneSubtitle =>
+      'Do not apply a high-latitude rule.';
+
+  @override
+  String get highLatitudeRuleMiddleOfTheNightSubtitle =>
+      'Cap Fajr and Isha using the middle of the night.';
+
+  @override
+  String get highLatitudeRuleOneSeventhSubtitle =>
+      'Use one seventh of the night.';
+
+  @override
+  String get highLatitudeRuleAngleBasedSubtitle =>
+      'Use the Fajr and Isha angles as the night fraction.';
+
+  @override
+  String get twelveHour => '12-hour';
+
+  @override
+  String get twentyFourHour => '24-hour';
+
+  @override
+  String get notificationPermissionOffRemindersNotEnabled =>
+      'Notification permission is off. Prayer reminders were not enabled.';
+
+  @override
+  String get notificationPermissionTimeout =>
+      'Notification permission request timed out.';
+
+  @override
+  String get notificationPermissionTimeoutMessage =>
+      'Notification permission request timed out. Try reopening the app or enabling notifications in system settings.';
+
+  @override
+  String get notificationPermissionError =>
+      'Could not request notification permission.';
+
+  @override
+  String get notificationPermissionErrorMessage =>
+      'Could not request notification permission. Try again or enable notifications in system settings.';
+
+  @override
+  String get openNotificationSettingsTimeout =>
+      'Opening notification settings timed out. Open Android app settings manually and enable notifications.';
+
+  @override
+  String get openNotificationSettingsError =>
+      'Could not open notification settings. Open Android app settings manually and enable notifications.';
+
+  @override
+  String get openExactAlarmSettingsTimeout =>
+      'Opening alarm permission settings timed out. Open Android alarms & reminders settings manually and enable exact alarms.';
+
+  @override
+  String get openExactAlarmSettingsError =>
+      'Could not open alarm permission settings. Open Android alarms & reminders settings manually and enable exact alarms.';
+
+  @override
+  String debugReminderScheduled(String time) {
+    return 'Debug prayer reminder scheduled for $time.';
+  }
+
+  @override
+  String get debugReminderCouldNotBeScheduled =>
+      'Debug prayer reminder could not be scheduled.';
+
+  @override
+  String get degrees => 'degrees';
+
+  @override
+  String get minutes => 'minutes';
+
+  @override
+  String prayerOffsetTitle(String prayerName) {
+    return '$prayerName offset';
+  }
+
+  @override
+  String get steppedIntOffsetHelper =>
+      'Type minutes as digits only. Use the sign button for before or after the calculated time.';
+
+  @override
+  String enterValueBetweenMinMaxSuffix(String min, String max, String suffix) {
+    return 'Enter a value between $min and $max $suffix.';
+  }
+
+  @override
+  String steppedIntSuffixHelper(String suffix) {
+    return 'Type $suffix as digits only. Use - and + to adjust the value.';
+  }
+
+  @override
+  String optionalSteppedIntHelper(String emptyLabel) {
+    return '$emptyLabel Blank saves 0. Type digits only and use - or + to adjust.';
+  }
+
+  @override
+  String enterValueFromMinToMax(String min, String max) {
+    return 'Enter a value from $min to $max.';
+  }
+
+  @override
+  String get enterValidValue => 'Enter a valid value.';
 }

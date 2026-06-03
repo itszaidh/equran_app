@@ -723,6 +723,10 @@
   "urdu": "bahasa Urdu",
   "turkish": "Turki",
   "bengali": "Benggala",
+  "german": "Jerman",
+  "quranScriptStyle": "Gaya Tulisan Al-Qur'an",
+  "uthmaniMadinah": "Utsmani (Madinah)",
+  "indoPak": "IndoPak",
   "vibration": "Getaran",
   "vibrationSubtitle": "Aktifkan umpan balik haptik saat bernavigasi.",
   "showReadingHistory": "Tampilkan riwayat bacaan",
@@ -785,6 +789,7 @@
   "dailyToolsSubtitle": "Akses cepat ke hal-hal penting",
   "exploreAllFeatures": "Jelajahi semua fitur",
   "dailyAyah": "Ayah Harian",
+  "dailyDua": "Doa Harian",
   "seeAll": "Lihat semuanya",
   "surahs": "Surat",
   "juz": "Juz",
@@ -1897,5 +1902,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "highLatitudeMosqueNotice": "Beberapa jadwal masjid di lintang tinggi menggunakan waktu Isya yang tetap atau dibatasi selama musim panas.",
+  "latestIshaTimeHelp": "Gunakan waktu Isya yang dihitung, tetapi jangan biarkan lebih lambat dari {time}.",
+  "locationCleared": "Lokasi dibersihkan."
 }
