@@ -202,7 +202,7 @@ class _QuranTextSearchTile extends StatelessWidget {
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleLarge?.copyWith(
-                    fontFamily: 'Hafs',
+                    fontFamily: 'UthmanicHafs',
                     height: 1.65,
                     color: colors.textPrimary,
                   ),

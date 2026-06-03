@@ -72,7 +72,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get german => 'الألمانية';
 
   @override
-  String get quranScriptStyle => 'خط المصحف';
+  String get quranScriptStyle => 'رسم المصحف';
 
   @override
   String get uthmaniMadinah => 'عثماني (المدينة المنورة)';
@@ -1577,12 +1577,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String autoAdvancesToNextPreset(String nextPreset) {
     return 'يتقدم تلقائياً إلى $nextPreset';
   }
-
-  @override
-  String get previousDhikr => 'الذكر السابق';
-
-  @override
-  String get nextDhikr => 'الذكر التالي';
 
   @override
   String counts33To33To34(int target) {
@@ -3600,6 +3594,46 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get zakatCalculator => 'حاسبة الزكاة';
+
+  @override
+  String get zakatCalculatorSubtitle => 'تقييم الثروة والنصاب';
+
+  @override
+  String get islamicCalendar => 'التقويم الإسلامي';
+
+  @override
+  String get islamicCalendarSubtitle => 'جدول زمني هجري متزامن';
+
+  @override
+  String get customizeNavigation => 'تخصيص شريط التنقل';
+
+  @override
+  String get allCategories => 'جميع الفئات';
+
+  @override
+  String get meccan => 'مكية';
+
+  @override
+  String get medinan => 'مدنية';
+
+  @override
+  String get appearanceTileSubtitle =>
+      'إعدادات المظهر والوضع الداكن والفاتح وتدرج الألوان';
+
+  @override
+  String get navigationSettingsSubtitle =>
+      'إعادة ترتيب وتبديل تبويبات شريط التنقل السفلي';
+
+  @override
+  String get downloadQpcFontsTitle => 'تنزيل خطوط التجويد QPC V4؟';
+
+  @override
+  String downloadQpcFontsBody(String size) {
+    return 'يتطلب التجويد ملف TTF واحدًا لكل صفحة من صفحات القرآن البالغ عددها 604 صفحة. قم بتنزيل حزمة الخطوط$size قبل تمكينها.';
+  }
+
+  @override
   String get locationCleared => 'تم مسح الموقع.';
 
   @override
@@ -3763,4 +3797,253 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get enterValidValue => 'Enter a valid value.';
+
+  @override
+  String get prayerRemindersCouldNotBeScheduled =>
+      'Prayer reminders could not be scheduled.';
+
+  @override
+  String get qpcFontsDownloadError =>
+      'لم يتضمن تنزيل خط التجويد جميع الصفحات الـ 604.';
+
+  @override
+  String get sysDefaultSubtitle => 'System default / لغة النظام';
+
+  @override
+  String get enSubtitle => 'English';
+
+  @override
+  String get arSubtitle => 'العربية / Arabic';
+
+  @override
+  String get idSubtitle => 'Bahasa Indonesia / Indonesian';
+
+  @override
+  String get urSubtitle => 'اردو / Urdu';
+
+  @override
+  String get trSubtitle => 'Türkçe / Turkish';
+
+  @override
+  String get bnSubtitle => 'বাংলা / Bengali';
+
+  @override
+  String get subhanAllah => 'سبحان الله';
+
+  @override
+  String get alhamdulillah => 'الحمد لله';
+
+  @override
+  String get allahuAkbar => 'الله أكبر';
+
+  @override
+  String get astaghfirullah => 'أستغفر الله';
+
+  @override
+  String get custom => 'مخصص';
+
+  @override
+  String get previousDhikr => 'الذكر السابق';
+
+  @override
+  String get nextDhikr => 'الذكر التالي';
+
+  @override
+  String get zakatAlMal => 'زكاة المال';
+
+  @override
+  String get purifyWealthSubtitle => 'طهر مالك. ضاعف بركتك.';
+
+  @override
+  String get liveMarketRates => 'أسعار السوق المباشرة';
+
+  @override
+  String get fetchingLiveRates => 'جاري جلب أسعار السوق المباشرة...';
+
+  @override
+  String get ratesSyncSuccess => 'تم تحديث أسعار المعادن بنجاح';
+
+  @override
+  String get ratesSyncOffline =>
+      'السوق غير متصل. يتم استخدام القيم الافتراضية.';
+
+  @override
+  String get overridePrices => 'تعديل الأسعار';
+
+  @override
+  String get reset => 'إعادة ضبط';
+
+  @override
+  String get silverDefault => 'الفضة';
+
+  @override
+  String get gold => 'الذهب';
+
+  @override
+  String get nisabThresholdLabel => 'حد النصاب';
+
+  @override
+  String get yourWealth => 'أموالك';
+
+  @override
+  String get cashHint => 'البنوك، النقود، المحافظ الرقمية، الديون المستحقة لك';
+
+  @override
+  String get goldHint => 'الذهب الاستثماري + المجوهرات (يرجى مراجعة مذهبك)';
+
+  @override
+  String get investmentsHint =>
+      'الأسهم، الصناديق الاستثمارية، العملات الرقمية — القيمة السوقية الحالية';
+
+  @override
+  String get businessHint => 'البضائع والسلع التجارية بقيمتها الحالية';
+
+  @override
+  String get agricultureHint =>
+      'المحاصيل والمنتجات الزراعية (يطبق عليها نسبة 5-10%)';
+
+  @override
+  String get otherHint => 'أي أصول زكوية أخرى';
+
+  @override
+  String get liabilitiesDeduct => 'الالتزامات والديون (خصم)';
+
+  @override
+  String get liabilitiesHint =>
+      'القروض، بطاقات الائتمان، الدفعات المستحقة التي يجب سدادها';
+
+  @override
+  String get netZakatableWealth => 'صافي المال الخاضع للزكاة';
+
+  @override
+  String get eligible => 'تجب فيه الزكاة';
+
+  @override
+  String get belowNisab => 'دون النصاب';
+
+  @override
+  String get zakatDueLabel => 'الزكاة الواجبة (2.5%)';
+
+  @override
+  String get resetCalculator => 'إعادة ضبط الحاسبة';
+
+  @override
+  String get goldPriceGram => 'سعر الذهب للجرام (بالدولار)';
+
+  @override
+  String get silverPriceGram => 'سعر الفضة للجرام (بالدولار)';
+
+  @override
+  String get zakatSavedLedger => 'تم حفظ حساب الزكاة في سجلك الشخصي';
+
+  @override
+  String get zakatPaidDistributed => 'الزكاة المدفوعة/الموزعة:';
+
+  @override
+  String get updateZakatPaidAmount => 'تحديث مبلغ الزكاة المدفوع';
+
+  @override
+  String get enterPaidAmountUsd => 'أدخل المبلغ المدفوع بالدولار الأمريكي';
+
+  @override
+  String get calculatorTab => 'الحاسبة';
+
+  @override
+  String get historyTab => 'السجل';
+
+  @override
+  String get fastingReminder => 'تنبيه الصيام';
+
+  @override
+  String get dateNotFound => 'تعذر العثور على هذا التاريخ في المستقبل القريب';
+
+  @override
+  String get customizeCalendar => 'تخصيص التقويم';
+
+  @override
+  String get shareDate => 'مشاركة هذا التاريخ';
+
+  @override
+  String get dateCopiedClipboard => 'تم نسخ تفاصيل التاريخ إلى الحافظة';
+
+  @override
+  String get moonSighting => 'رؤية الهلال';
+
+  @override
+  String get fastingAlerts => 'تنبيهات الصيام';
+
+  @override
+  String get standard => 'معياري';
+
+  @override
+  String daysPlural(int count) {
+    return '$count أيام';
+  }
+
+  @override
+  String daySingular(int count) {
+    return 'يوم $count';
+  }
+
+  @override
+  String get calendarSettings => 'إعدادات التقويم';
+
+  @override
+  String get calendarSettingsSubtitle =>
+      'اضبط لرؤية الهلال المحلية وتنبيهات الصيام';
+
+  @override
+  String get sightingOffsetLabel => 'فارق رؤية الهلال';
+
+  @override
+  String get fastingRemindersSubtitle =>
+      'احصل على تنبيه مساء اليوم السابق للصيام المستحب';
+
+  @override
+  String get hijriDateDisclaimer =>
+      'ملاحظة: التواريخ الهجرية تقريبية وتعتمد على رؤية الهلال. يتيح لك الفارق مواءمة التقويم مع رؤية مجتمعك المحلي.';
+
+  @override
+  String get recommendedFast => 'صيام مستحب';
+
+  @override
+  String get recommendedForThisDay => 'مستحب في هذا اليوم';
+
+  @override
+  String get todayLegend => 'اليوم';
+
+  @override
+  String get eidLegend => 'العيد';
+
+  @override
+  String get ramadanLegend => 'رمضان';
+
+  @override
+  String get blessedNightLegend => 'ليلة مباركة';
+
+  @override
+  String get fastLegend => 'الصيام';
+
+  @override
+  String keyDatesInYear(int year) {
+    return 'تواريخ رئيسية في عام $year';
+  }
+
+  @override
+  String get fastingAlertsActive => 'تنبيهات الصيام نشطة';
+
+  @override
+  String get quranFonts => 'خطوط المصحف';
+
+  @override
+  String get allReciters => 'جميع القراء';
+
+  @override
+  String get tapToAdjust => 'اضغط للضبط';
+
+  @override
+  String get currency => 'العملة';
+
+  @override
+  String get selectCurrency => 'اختر العملة';
 }

@@ -1608,12 +1608,6 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String get previousDhikr => 'Dzikir sebelumnya';
-
-  @override
-  String get nextDhikr => 'Dzikir selanjutnya';
-
-  @override
   String counts33To33To34(int target) {
     return '$target hitungan • 33 → 33 → 34';
   }
@@ -3692,6 +3686,46 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
+  String get zakatCalculator => 'Kalkulator Zakat';
+
+  @override
+  String get zakatCalculatorSubtitle => 'Evaluasi kekayaan & nisab';
+
+  @override
+  String get islamicCalendar => 'Kalender Islam';
+
+  @override
+  String get islamicCalendarSubtitle => 'Garis waktu Hijriah yang disinkronkan';
+
+  @override
+  String get customizeNavigation => 'Sesuaikan Navigasi';
+
+  @override
+  String get allCategories => 'Semua Kategori';
+
+  @override
+  String get meccan => 'Makkiyah';
+
+  @override
+  String get medinan => 'Madaniyah';
+
+  @override
+  String get appearanceTileSubtitle =>
+      'Pengaturan tema, mode terang/gelap, dan aksen warna';
+
+  @override
+  String get navigationSettingsSubtitle =>
+      'Atur ulang dan tukar tab navigasi bawah';
+
+  @override
+  String get downloadQpcFontsTitle => 'Unduh font Tajwid QPC V4?';
+
+  @override
+  String downloadQpcFontsBody(String size) {
+    return 'Tajwid membutuhkan satu TTF untuk masing-masing dari 604 halaman Al-Qur\'an. Unduh paket font$size sebelum mengaktifkannya.';
+  }
+
+  @override
   String get locationCleared => 'Lokasi dibersihkan.';
 
   @override
@@ -3855,4 +3889,255 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get enterValidValue => 'Enter a valid value.';
+
+  @override
+  String get prayerRemindersCouldNotBeScheduled =>
+      'Prayer reminders could not be scheduled.';
+
+  @override
+  String get qpcFontsDownloadError =>
+      'Unduhan font Tajwid tidak mencakup semua 604 halaman.';
+
+  @override
+  String get sysDefaultSubtitle => 'System default / لغة النظام';
+
+  @override
+  String get enSubtitle => 'English';
+
+  @override
+  String get arSubtitle => 'العربية / Arabic';
+
+  @override
+  String get idSubtitle => 'Bahasa Indonesia / Indonesian';
+
+  @override
+  String get urSubtitle => 'اردو / Urdu';
+
+  @override
+  String get trSubtitle => 'Türkçe / Turkish';
+
+  @override
+  String get bnSubtitle => 'বাংলা / Bengali';
+
+  @override
+  String get subhanAllah => 'SubhanAllah';
+
+  @override
+  String get alhamdulillah => 'Alhamdulillah';
+
+  @override
+  String get allahuAkbar => 'Allahu Akbar';
+
+  @override
+  String get astaghfirullah => 'Astaghfirullah';
+
+  @override
+  String get custom => 'Kustom';
+
+  @override
+  String get previousDhikr => 'Dzikir Sebelumnya';
+
+  @override
+  String get nextDhikr => 'Dzikir Selanjutnya';
+
+  @override
+  String get zakatAlMal => 'Zakat Mal';
+
+  @override
+  String get purifyWealthSubtitle => 'Bersihkan hartamu. Tumbuhkan berkahmu.';
+
+  @override
+  String get liveMarketRates => 'Harga Pasar Langsung';
+
+  @override
+  String get fetchingLiveRates => 'Mengambil harga pasar langsung...';
+
+  @override
+  String get ratesSyncSuccess => 'Harga logam langsung berhasil disinkronkan';
+
+  @override
+  String get ratesSyncOffline =>
+      'Pasar luring. Menggunakan nilai standar tersimpan.';
+
+  @override
+  String get overridePrices => 'Ubah Harga';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get silverDefault => 'Perak';
+
+  @override
+  String get gold => 'Emas';
+
+  @override
+  String get nisabThresholdLabel => 'BATAS NISAB';
+
+  @override
+  String get yourWealth => 'KEKAYAAN ANDA';
+
+  @override
+  String get cashHint =>
+      'Tabungan, tunai, dompet digital, piutang yang jatuh tempo';
+
+  @override
+  String get goldHint => 'Emas investasi + perhiasan (periksa madzhab Anda)';
+
+  @override
+  String get investmentsHint =>
+      'Saham, reksa dana, kripto — nilai pasar saat ini';
+
+  @override
+  String get businessHint => 'Nilai persediaan barang dagang saat ini';
+
+  @override
+  String get agricultureHint => 'Hasil pertanian (dikenakan tarif 5-10%)';
+
+  @override
+  String get otherHint => 'Aset wajib zakat lainnya';
+
+  @override
+  String get liabilitiesDeduct => 'Kewajiban (Pengurang)';
+
+  @override
+  String get liabilitiesHint =>
+      'Utang, kartu kredit, cicilan jatuh tempo yang harus diselesaikan';
+
+  @override
+  String get netZakatableWealth => 'Kekayaan Wajib Zakat Bersih';
+
+  @override
+  String get eligible => 'WAJIB ZAKAT';
+
+  @override
+  String get belowNisab => 'DI BAWAH NISAB';
+
+  @override
+  String get zakatDueLabel => 'ZAKAT WAJIB (2.5%)';
+
+  @override
+  String get resetCalculator => 'Reset Kalkulator';
+
+  @override
+  String get goldPriceGram => 'Harga emas per gram (USD)';
+
+  @override
+  String get silverPriceGram => 'Harga perak per gram (USD)';
+
+  @override
+  String get zakatSavedLedger =>
+      'Perhitungan Zakat disimpan di buku kas pribadi Anda';
+
+  @override
+  String get zakatPaidDistributed => 'Zakat Terbayar/Terdistribusi:';
+
+  @override
+  String get updateZakatPaidAmount => 'Perbarui Jumlah Zakat Terbayar';
+
+  @override
+  String get enterPaidAmountUsd => 'Masukkan jumlah terbayar dalam USD';
+
+  @override
+  String get calculatorTab => 'Kalkulator';
+
+  @override
+  String get historyTab => 'Riwayat';
+
+  @override
+  String get fastingReminder => 'Pengingat Puasa';
+
+  @override
+  String get dateNotFound =>
+      'Tidak dapat menemukan tanggal tersebut dalam waktu dekat';
+
+  @override
+  String get customizeCalendar => 'Sesuaikan kalender';
+
+  @override
+  String get shareDate => 'Bagikan tanggal ini';
+
+  @override
+  String get dateCopiedClipboard => 'Detail tanggal disalin ke papan klip';
+
+  @override
+  String get moonSighting => 'Rukyatul Hilal';
+
+  @override
+  String get fastingAlerts => 'Pemberitahuan Puasa';
+
+  @override
+  String get standard => 'Standar';
+
+  @override
+  String daysPlural(int count) {
+    return '$count hari';
+  }
+
+  @override
+  String daySingular(int count) {
+    return '$count hari';
+  }
+
+  @override
+  String get calendarSettings => 'Pengaturan Kalender';
+
+  @override
+  String get calendarSettingsSubtitle =>
+      'Sesuaikan dengan rukyatul hilal lokal dan pengingat puasa';
+
+  @override
+  String get sightingOffsetLabel => 'Offset Rukyatul Hilal';
+
+  @override
+  String get fastingRemindersSubtitle =>
+      'Dapatkan notifikasi di malam hari sebelum puasa sunnah';
+
+  @override
+  String get hijriDateDisclaimer =>
+      'Catatan: Tanggal Hijriah merupakan perkiraan dan bergantung pada rukyatul hilal lokal. Offset ini membantu menyelaraskan kalender dengan komunitas Anda.';
+
+  @override
+  String get recommendedFast => 'Puasa Sunnah';
+
+  @override
+  String get recommendedForThisDay => 'Dianjurkan untuk hari ini';
+
+  @override
+  String get todayLegend => 'Hari Ini';
+
+  @override
+  String get eidLegend => 'Idul Fitri';
+
+  @override
+  String get ramadanLegend => 'Ramadhan';
+
+  @override
+  String get blessedNightLegend => 'Malam Diberkahi';
+
+  @override
+  String get fastLegend => 'Puasa';
+
+  @override
+  String keyDatesInYear(int year) {
+    return 'Tanggal Penting pada Tahun $year';
+  }
+
+  @override
+  String get fastingAlertsActive => 'Notifikasi Puasa Aktif';
+
+  @override
+  String get quranFonts => 'Font Al-Qur\'an';
+
+  @override
+  String get allReciters => 'Semua Qari';
+
+  @override
+  String get tapToAdjust => 'Ketuk untuk menyesuaikan';
+
+  @override
+  String get currency => 'Mata Uang';
+
+  @override
+  String get selectCurrency => 'Pilih Mata Uang';
 }

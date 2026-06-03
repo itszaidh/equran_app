@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:equran/backend/library.dart';
+import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/home/read.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
@@ -689,258 +691,317 @@ class _LibraryOptionChip extends StatelessWidget {
   }
 }
 
-class _BookmarkRow extends StatelessWidget {
+class _BookmarkRow extends StatefulWidget {
   const _BookmarkRow({required this.entry});
 
   final QuranBookmarkEntry entry;
 
   @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final EquranColors colors = context.equranColors;
-    final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String preview = _previewText(context, entry);
-    final String arabicSnippet = quranVerseText(entry.surah, entry.verse);
-    final bool hasMeta =
-        entry.folder != QuranBookmarkService.defaultFolder ||
-        entry.tags.isNotEmpty;
-    final BorderRadius radius = BorderRadius.circular(16);
+  State<_BookmarkRow> createState() => _BookmarkRowState();
+}
 
-    return Material(
-      color: colors.background.withAlpha(0),
-      borderRadius: radius,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (context) =>
-                ReadPage(chapter: entry.surah, startVerse: entry.verse),
-          ),
-        ),
-        borderRadius: radius,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: radius,
-            border: Border.all(color: colors.border.withAlpha(145)),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: colors.shadow.withAlpha(22),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
+class _BookmarkRowState extends State<_BookmarkRow> {
+  @override
+  void initState() {
+    super.initState();
+    _loadFontIfNeeded();
+  }
+
+  @override
+  void didUpdateWidget(covariant _BookmarkRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.entry.surah != widget.entry.surah ||
+        oldWidget.entry.verse != widget.entry.verse) {
+      _loadFontIfNeeded();
+    }
+  }
+
+  Future<void> _loadFontIfNeeded() async {
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'qpc-v4') {
+      final int page = EquranTextStyles.getPageNumber(
+        widget.entry.surah,
+        widget.entry.verse,
+      );
+      final bool loaded = await QpcV4FontService.instance
+          .ensureFontLoadedForPage(page);
+      if (loaded && mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Box<dynamic>>(
+      valueListenable: SettingsDB().listener,
+      builder: (BuildContext context, Box<dynamic> box, _) {
+        final QuranBookmarkEntry entry = widget.entry;
+        final ThemeData theme = Theme.of(context);
+        final EquranColors colors = context.equranColors;
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
+        final String preview = _previewText(context, entry);
+        final String arabicSnippet = quranVerseText(entry.surah, entry.verse);
+        final bool hasMeta =
+            entry.folder != QuranBookmarkService.defaultFolder ||
+            entry.tags.isNotEmpty;
+        final BorderRadius radius = BorderRadius.circular(16);
+        final String style = SettingsDB().quranScriptStyle;
+
+        final String fontFamily = style == 'qpc-v4'
+            ? EquranTextStyles.fontFamilyForVerse(entry.surah, entry.verse)
+            : EquranTextStyles.activeFontFamily;
+
+        return Material(
+          color: colors.background.withAlpha(0),
+          borderRadius: radius,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) =>
+                    ReadPage(chapter: entry.surah, startVerse: entry.verse),
               ),
-            ],
-          ),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Container(width: 3, color: colors.primary),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Container(
-                          width: 42,
-                          height: 42,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: <Color>[
-                                colors.primaryGradientStart,
-                                colors.primaryGradientEnd,
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            entry.verse.toString(),
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              color: colors.onPrimary,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                localizedSurahAyahLabel(
-                                  localizations,
-                                  entry.surah,
-                                  entry.verse,
+            ),
+            borderRadius: radius,
+            child: Ink(
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: radius,
+                border: Border.all(color: colors.border.withAlpha(145)),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: colors.shadow.withAlpha(22),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Container(width: 3, color: colors.primary),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Container(
+                              width: 42,
+                              height: 42,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: <Color>[
+                                    colors.primaryGradientStart,
+                                    colors.primaryGradientEnd,
+                                  ],
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                entry.verse.toString(),
                                 style: theme.textTheme.titleSmall?.copyWith(
-                                  color: colors.textPrimary,
+                                  color: colors.onPrimary,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
-                              const SizedBox(height: 3),
-                              Text(
-                                arabicSnippet,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textDirection: TextDirection.rtl,
-                                style:
-                                    const TextStyle(
-                                      fontFamily: 'Hafs',
-                                      fontSize: 15,
-                                      height: 1.3,
-                                    ).copyWith(
-                                      color: colors.textPrimary.withAlpha(102),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    localizedSurahAyahLabel(
+                                      localizations,
+                                      entry.surah,
+                                      entry.verse,
                                     ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                preview,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: colors.textSecondary,
-                                  height: 1.24,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              if (hasMeta) ...<Widget>[
-                                const SizedBox(height: 7),
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 5,
-                                  children: <Widget>[
-                                    if (entry.folder !=
-                                        QuranBookmarkService.defaultFolder)
-                                      _BookmarkMetaChip(
-                                        label: _folderLabel(
-                                          context,
-                                          entry.folder,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      color: colors.textPrimary,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    arabicSnippet,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textDirection: TextDirection.rtl,
+                                    style:
+                                        TextStyle(
+                                          fontFamily: fontFamily,
+                                          fontFamilyFallback: const <String>[
+                                            'UthmanicHafs',
+                                          ],
+                                          fontSize: 15,
+                                          height: 1.3,
+                                        ).copyWith(
+                                          color: colors.textPrimary.withAlpha(
+                                            102,
+                                          ),
                                         ),
-                                      ),
-                                    for (final String tag in entry.tags.take(3))
-                                      _BookmarkMetaChip(label: '#$tag'),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    preview,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: colors.textSecondary,
+                                      height: 1.24,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (hasMeta) ...<Widget>[
+                                    const SizedBox(height: 7),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 5,
+                                      children: <Widget>[
+                                        if (entry.folder !=
+                                            QuranBookmarkService.defaultFolder)
+                                          _BookmarkMetaChip(
+                                            label: _folderLabel(
+                                              context,
+                                              entry.folder,
+                                            ),
+                                          ),
+                                        for (final String tag
+                                            in entry.tags.take(3))
+                                          _BookmarkMetaChip(label: '#$tag'),
+                                      ],
+                                    ),
                                   ],
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 5),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            SizedBox(
-                              width: 36,
-                              height: 34,
-                              child: Center(
-                                child: LikeButton(
-                                  size: 22,
-                                  isLiked: entry.isFavourite,
-                                  circleColor: CircleColor(
-                                    start: colors.primary,
-                                    end: colors.primaryGradientStart,
-                                  ),
-                                  bubblesColor: BubblesColor(
-                                    dotPrimaryColor: colors.primary,
-                                    dotSecondaryColor: colors.accentGold,
-                                  ),
-                                  likeBuilder: (bool liked) {
-                                    return Icon(
-                                      liked
-                                          ? Icons.favorite_rounded
-                                          : Icons.favorite_border_rounded,
-                                      color: liked
-                                          ? colors.primary
-                                          : colors.textMuted,
-                                      size: 22,
-                                    );
-                                  },
-                                  onTap: (bool liked) async {
-                                    if (liked) {
-                                      await const QuranBookmarkService()
-                                          .removeFavourite(
-                                            entry.surah,
-                                            entry.verse,
-                                          );
-                                      return false;
-                                    }
-                                    await const QuranBookmarkService()
-                                        .saveFavourite(
-                                          entry.surah,
-                                          entry.verse,
-                                        );
-                                    return true;
-                                  },
-                                ),
+                                ],
                               ),
                             ),
-                            SizedBox(
-                              width: 36,
-                              height: 34,
-                              child: PopupMenuButton<_BookmarkAction>(
-                                tooltip: localizations.folderTagsAndNote,
-                                padding: EdgeInsets.zero,
-                                icon: Icon(
-                                  Icons.more_horiz_rounded,
-                                  color: colors.textMuted,
+                            const SizedBox(width: 5),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                SizedBox(
+                                  width: 36,
+                                  height: 34,
+                                  child: Center(
+                                    child: LikeButton(
+                                      size: 22,
+                                      isLiked: entry.isFavourite,
+                                      circleColor: CircleColor(
+                                        start: colors.primary,
+                                        end: colors.primaryGradientStart,
+                                      ),
+                                      bubblesColor: BubblesColor(
+                                        dotPrimaryColor: colors.primary,
+                                        dotSecondaryColor: colors.accentGold,
+                                      ),
+                                      likeBuilder: (bool liked) {
+                                        return Icon(
+                                          liked
+                                              ? Icons.favorite_rounded
+                                              : Icons.favorite_border_rounded,
+                                          color: liked
+                                              ? colors.primary
+                                              : colors.textMuted,
+                                          size: 22,
+                                        );
+                                      },
+                                      onTap: (bool liked) async {
+                                        if (liked) {
+                                          await const QuranBookmarkService()
+                                              .removeFavourite(
+                                                entry.surah,
+                                                entry.verse,
+                                              );
+                                          return false;
+                                        }
+                                        await const QuranBookmarkService()
+                                            .saveFavourite(
+                                              entry.surah,
+                                              entry.verse,
+                                            );
+                                        return true;
+                                      },
+                                    ),
+                                  ),
                                 ),
-                                onSelected: (action) async {
-                                  switch (action) {
-                                    case _BookmarkAction.edit:
-                                    case _BookmarkAction.folder:
-                                    case _BookmarkAction.tags:
-                                      await _showBookmarkEditor(context, entry);
-                                    case _BookmarkAction.delete:
-                                      if (!context.mounted) return;
-                                      final bool confirmed =
-                                          await _confirmDeleteBookmark(context);
-                                      if (!confirmed) return;
-                                      await const QuranBookmarkService()
-                                          .deleteBookmark(
-                                            entry.surah,
-                                            entry.verse,
+                                SizedBox(
+                                  width: 36,
+                                  height: 34,
+                                  child: PopupMenuButton<_BookmarkAction>(
+                                    tooltip: localizations.folderTagsAndNote,
+                                    padding: EdgeInsets.zero,
+                                    icon: Icon(
+                                      Icons.more_horiz_rounded,
+                                      color: colors.textMuted,
+                                    ),
+                                    onSelected: (action) async {
+                                      switch (action) {
+                                        case _BookmarkAction.edit:
+                                        case _BookmarkAction.folder:
+                                        case _BookmarkAction.tags:
+                                          await _showBookmarkEditor(
+                                            context,
+                                            entry,
                                           );
-                                  }
-                                },
-                                itemBuilder: (context) =>
-                                    <PopupMenuEntry<_BookmarkAction>>[
-                                      PopupMenuItem<_BookmarkAction>(
-                                        value: _BookmarkAction.edit,
-                                        child: Text(localizations.editNote),
-                                      ),
-                                      PopupMenuItem<_BookmarkAction>(
-                                        value: _BookmarkAction.folder,
-                                        child: Text(localizations.moveToFolder),
-                                      ),
-                                      PopupMenuItem<_BookmarkAction>(
-                                        value: _BookmarkAction.tags,
-                                        child: Text(localizations.editTags),
-                                      ),
-                                      const PopupMenuDivider(),
-                                      PopupMenuItem<_BookmarkAction>(
-                                        value: _BookmarkAction.delete,
-                                        child: Text(localizations.delete),
-                                      ),
-                                    ],
-                              ),
+                                        case _BookmarkAction.delete:
+                                          if (!context.mounted) return;
+                                          final bool confirmed =
+                                              await _confirmDeleteBookmark(
+                                                context,
+                                              );
+                                          if (!confirmed) return;
+                                          await const QuranBookmarkService()
+                                              .deleteBookmark(
+                                                entry.surah,
+                                                entry.verse,
+                                              );
+                                      }
+                                    },
+                                    itemBuilder: (context) =>
+                                        <PopupMenuEntry<_BookmarkAction>>[
+                                          PopupMenuItem<_BookmarkAction>(
+                                            value: _BookmarkAction.edit,
+                                            child: Text(localizations.editNote),
+                                          ),
+                                          PopupMenuItem<_BookmarkAction>(
+                                            value: _BookmarkAction.folder,
+                                            child: Text(
+                                              localizations.moveToFolder,
+                                            ),
+                                          ),
+                                          PopupMenuItem<_BookmarkAction>(
+                                            value: _BookmarkAction.tags,
+                                            child: Text(localizations.editTags),
+                                          ),
+                                          const PopupMenuDivider(),
+                                          PopupMenuItem<_BookmarkAction>(
+                                            value: _BookmarkAction.delete,
+                                            child: Text(localizations.delete),
+                                          ),
+                                        ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -1093,6 +1154,20 @@ Future<void> _showBookmarkEditor(
             if (!folders.contains(selectedFolder)) {
               selectedFolder = QuranBookmarkService.defaultFolder;
             }
+            final String style = SettingsDB().quranScriptStyle;
+            if (style == 'qpc-v4') {
+              final int page = EquranTextStyles.getPageNumber(
+                entry.surah,
+                entry.verse,
+              );
+              QpcV4FontService.instance.ensureFontLoadedForPage(page).then((
+                loaded,
+              ) {
+                if (loaded && context.mounted) {
+                  setSheetState(() {});
+                }
+              });
+            }
             return Padding(
               padding: EdgeInsets.fromLTRB(
                 20,
@@ -1127,7 +1202,13 @@ Future<void> _showBookmarkEditor(
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontFamily: 'Hafs',
+                          fontFamily: style == 'qpc-v4'
+                              ? EquranTextStyles.fontFamilyForVerse(
+                                  entry.surah,
+                                  entry.verse,
+                                )
+                              : EquranTextStyles.activeFontFamily,
+                          fontFamilyFallback: const <String>['UthmanicHafs'],
                           color: colors.textPrimary,
                           fontSize: 22,
                           height: 1.6,

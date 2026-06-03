@@ -852,8 +852,6 @@
       }
     }
   },
-  "previousDhikr": "Previous dhikr",
-  "nextDhikr": "Next dhikr",
   "counts33To33To34": "{target} counts • 33 → 33 → 34",
   "@counts33To33To34": {
     "placeholders": {
@@ -1912,6 +1910,25 @@
       }
     }
   },
+  "zakatCalculator": "Zakat Calculator",
+  "zakatCalculatorSubtitle": "Wealth & Nisab evaluations",
+  "islamicCalendar": "Islamic Calendar",
+  "islamicCalendarSubtitle": "Synchronized Hijri timeline",
+  "customizeNavigation": "Customize Navigation",
+  "allCategories": "All Categories",
+  "meccan": "Meccan",
+  "medinan": "Medinan",
+  "appearanceTileSubtitle": "Theme, light/dark mode, and color accent settings",
+  "navigationSettingsSubtitle": "Rearrange and swap bottom navigation tabs",
+  "downloadQpcFontsTitle": "Download QPC V4 Tajweed fonts?",
+  "downloadQpcFontsBody": "Tajweed needs one TTF for each of the 604 Quran pages. Download the font package{size} before enabling it.",
+  "@downloadQpcFontsBody": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
   "locationCleared": "Location cleared.",
   "useSunset": "Use sunset",
   "failedDownloadAyahAudio": "Failed to download ayah audio.",
@@ -2013,5 +2030,104 @@
     }
   },
   "enterValidValue": "Enter a valid value.",
-  "prayerRemindersCouldNotBeScheduled": "Prayer reminders could not be scheduled."
+  "prayerRemindersCouldNotBeScheduled": "Prayer reminders could not be scheduled.",
+  "qpcFontsDownloadError": "The Tajweed font download did not include all 604 pages.",
+  "sysDefaultSubtitle": "System default / لغة النظام",
+  "enSubtitle": "English",
+  "arSubtitle": "العربية / Arabic",
+  "idSubtitle": "Bahasa Indonesia / Indonesian",
+  "urSubtitle": "اردو / Urdu",
+  "trSubtitle": "Türkçe / Turkish",
+  "bnSubtitle": "বাংলা / Bengali",
+  "subhanAllah": "SubhanAllah",
+  "alhamdulillah": "Alhamdulillah",
+  "allahuAkbar": "Allahu Akbar",
+  "astaghfirullah": "Astaghfirullah",
+  "custom": "Custom",
+  "previousDhikr": "Previous dhikr",
+  "nextDhikr": "Next dhikr",
+  "zakatAlMal": "Zakat al-Māl",
+  "purifyWealthSubtitle": "Purify your wealth. Grow your blessings.",
+  "liveMarketRates": "Live Market Rates",
+  "fetchingLiveRates": "Fetching live market rates...",
+  "ratesSyncSuccess": "Live metal rates synchronized successfully",
+  "ratesSyncOffline": "Market offline. Using standard cached values.",
+  "overridePrices": "Override Prices",
+  "reset": "Reset",
+  "silverDefault": "Silver",
+  "gold": "Gold",
+  "nisabThresholdLabel": "NISAB THRESHOLD",
+  "yourWealth": "YOUR WEALTH",
+  "cashHint": "Bank, cash, digital wallets, money owed to you",
+  "goldHint": "Investment gold + jewelry (check your madhhab)",
+  "investmentsHint": "Stocks, ETFs, crypto, funds — current market value",
+  "businessHint": "Inventory & trade goods at current value",
+  "agricultureHint": "Crops & produce (5-10% rate applied)",
+  "otherHint": "Any other Zakatable assets",
+  "liabilitiesDeduct": "Liabilities (Deduct)",
+  "liabilitiesHint": "Loans, credit cards, due payments you must settle",
+  "netZakatableWealth": "Net Zakatable Wealth",
+  "eligible": "ELIGIBLE",
+  "belowNisab": "BELOW NISAB",
+  "zakatDueLabel": "ZAKAT DUE (2.5%)",
+  "resetCalculator": "Reset Calculator",
+  "goldPriceGram": "Gold price per gram (USD)",
+  "silverPriceGram": "Silver price per gram (USD)",
+  "zakatSavedLedger": "Zakat calculation saved to your personal ledger",
+  "zakatPaidDistributed": "Zakat Paid/Distributed:",
+  "updateZakatPaidAmount": "Update Zakat Paid Amount",
+  "enterPaidAmountUsd": "Enter paid amount in USD",
+  "calculatorTab": "Calculator",
+  "historyTab": "History",
+  "fastingReminder": "Fasting Reminder",
+  "dateNotFound": "Could not locate that date in the near future",
+  "customizeCalendar": "Customize calendar",
+  "shareDate": "Share this date",
+  "dateCopiedClipboard": "Date details copied to clipboard",
+  "moonSighting": "Moon Sighting",
+  "fastingAlerts": "Fasting Alerts",
+  "standard": "Standard",
+  "daysPlural": "{count} days",
+  "@daysPlural": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySingular": "{count} day",
+  "@daySingular": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSettings": "Calendar Settings",
+  "calendarSettingsSubtitle": "Adjust for local moon sighting and fasting reminders",
+  "sightingOffsetLabel": "Moon Sighting Offset",
+  "fastingRemindersSubtitle": "Get notified the evening before recommended fasts",
+  "hijriDateDisclaimer": "Note: Hijri dates are approximate and depend on local moon sighting. The offset lets you align the calendar with your community’s observation.",
+  "recommendedFast": "Recommended Fast",
+  "recommendedForThisDay": "Recommended for this day",
+  "todayLegend": "Today",
+  "eidLegend": "Eid",
+  "ramadanLegend": "Ramadan",
+  "blessedNightLegend": "Blessed Night",
+  "fastLegend": "Fast",
+  "keyDatesInYear": "Key Dates in {year}",
+  "@keyDatesInYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "fastingAlertsActive": "Fasting Alerts Active",
+  "quranFonts": "Quran Fonts",
+  "allReciters": "All Reciters",
+  "tapToAdjust": "Tap to adjust",
+  "currency": "Currency",
+  "quranScriptStyle": "Quran Script Style",
+  "selectCurrency": "Select Currency"
 }

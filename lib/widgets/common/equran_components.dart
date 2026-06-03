@@ -238,12 +238,15 @@ class EquranShortcutTile extends StatelessWidget {
               ),
               child: assetPath == null
                   ? Icon(icon, color: colors.primary, size: 30)
-                  : Image.asset(
-                      assetPath!,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(icon, color: colors.primary, size: 30);
-                      },
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(EquranRadii.small),
+                      child: Image.asset(
+                        assetPath!,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(icon, color: colors.primary, size: 30);
+                        },
+                      ),
                     ),
             ),
             const SizedBox(height: 9),

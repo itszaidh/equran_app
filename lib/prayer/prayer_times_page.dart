@@ -18,6 +18,7 @@ import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:equran/widgets/prayer_widget_service.dart';
+import 'package:equran/prayer/hijri_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
@@ -420,20 +421,39 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
-                    vertical: 8,
+                    vertical: 6,
                   ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      dateLabel,
-                      maxLines: 1,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: colors.textPrimary,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          dateLabel,
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0,
+                          ),
+                        ),
                       ),
-                    ),
+                      // Integrated current Hijri date (small elegant gold text)
+                      Builder(
+                        builder: (BuildContext context) {
+                          final int offset = SettingsDB().get('hijri_offset', defaultValue: 0) as int;
+                          final HijriCalendar hijri = HijriCalendar.fromDate(day.date, offset: offset);
+                          return Text(
+                            hijri.toString(),
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: colors.accentGold,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),

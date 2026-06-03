@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:equran/backend/resource_install_store.dart';
 import 'package:equran/backend/resource_models.dart';
 import 'package:equran/backend/settings_db.dart';
 import 'package:equran/utils/reciter.dart';
@@ -13,6 +15,8 @@ class ResourceRepository {
       'downloadableResourceManifestFetchedAt.v1';
   static const String _assetLatestDownloadBase =
       'https://github.com/ya27hw/equran-assets/releases/latest/download';
+  static const String _asset100DownloadBase =
+      'https://github.com/ya27hw/equran-assets/releases/download/1.0.0';
   static const List<String> _remoteManifestUrls = <String>[
     '$_assetLatestDownloadBase/resource_manifest.json',
     '$_assetLatestDownloadBase/manifest.json',
@@ -146,7 +150,7 @@ class ResourceRepository {
         'language': 'en',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/en_al_jalalayn.zip',
-        'sizeBytes': 857088,
+        'sizeBytes': 856901,
       },
       <String, Object?>{
         'id': 'en_al_mukhtasar',
@@ -155,6 +159,7 @@ class ResourceRepository {
         'language': 'en',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/en_al_mukhtasar.zip',
+        'sizeBytes': 666054,
       },
       <String, Object?>{
         'id': '2',
@@ -190,6 +195,16 @@ class ResourceRepository {
         'language': 'en',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/en_clear_quran.zip',
+        'sizeBytes': 394045,
+      },
+      <String, Object?>{
+        'id': 'qpc_v4_tajweed_fonts',
+        'type': 'quran_fonts',
+        'name': 'QPC V4 Tajweed fonts',
+        'version': '1.0.0',
+        'url': '$_asset100DownloadBase/tajweed.zip',
+        'sizeBytes': 69230903,
+        'requiredPages': 604,
       },
       <String, Object?>{
         'id': 'tr_saheeh',
@@ -198,6 +213,7 @@ class ResourceRepository {
         'language': 'tr',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/tr_saheeh.zip',
+        'sizeBytes': 374009,
       },
       <String, Object?>{
         'id': 'ml_abdul_hameed',
@@ -206,6 +222,7 @@ class ResourceRepository {
         'language': 'ml',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/ml_abdul_hameed.zip',
+        'sizeBytes': 560936,
       },
       <String, Object?>{
         'id': 'fa_hussein_dari',
@@ -214,6 +231,7 @@ class ResourceRepository {
         'language': 'fa',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/fa_hussein_dari.zip',
+        'sizeBytes': 463000,
       },
       <String, Object?>{
         'id': 'fr_hamidullah',
@@ -222,6 +240,7 @@ class ResourceRepository {
         'language': 'fr',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/fr_hamidullah.zip',
+        'sizeBytes': 417681,
       },
       <String, Object?>{
         'id': 'it_piccardo',
@@ -230,6 +249,7 @@ class ResourceRepository {
         'language': 'it',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/it_piccardo.zip',
+        'sizeBytes': 379499,
       },
       <String, Object?>{
         'id': 'nl_siregar',
@@ -238,6 +258,7 @@ class ResourceRepository {
         'language': 'nl',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/nl_siregar.zip',
+        'sizeBytes': 398706,
       },
       <String, Object?>{
         'id': 'portuguese',
@@ -246,6 +267,7 @@ class ResourceRepository {
         'language': 'pt',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/portuguese.zip',
+        'sizeBytes': 420000,
       },
       <String, Object?>{
         'id': 'ru_kuliev',
@@ -254,6 +276,7 @@ class ResourceRepository {
         'language': 'ru',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/ru_kuliev.zip',
+        'sizeBytes': 453329,
       },
       <String, Object?>{
         'id': 'urdu',
@@ -262,6 +285,7 @@ class ResourceRepository {
         'language': 'ur',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/urdu.zip',
+        'sizeBytes': 491574,
       },
       <String, Object?>{
         'id': 'bengali',
@@ -270,6 +294,7 @@ class ResourceRepository {
         'language': 'bn',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/bengali.zip',
+        'sizeBytes': 474157,
       },
       <String, Object?>{
         'id': 'chinese',
@@ -278,6 +303,7 @@ class ResourceRepository {
         'language': 'zh',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/chinese.zip',
+        'sizeBytes': 372520,
       },
       <String, Object?>{
         'id': 'indonesian',
@@ -286,6 +312,7 @@ class ResourceRepository {
         'language': 'id',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/indonesian.zip',
+        'sizeBytes': 407684,
       },
       <String, Object?>{
         'id': 'spanish',
@@ -294,6 +321,7 @@ class ResourceRepository {
         'language': 'es',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/spanish.zip',
+        'sizeBytes': 410751,
       },
       <String, Object?>{
         'id': 'swedish',
@@ -302,9 +330,67 @@ class ResourceRepository {
         'language': 'sv',
         'version': '1.0.0',
         'url': '$_assetLatestDownloadBase/swedish.zip',
+        'sizeBytes': 455052,
       },
     ],
   };
+}
+
+int? getResourceSize(DownloadableResource resource) {
+  // 1. Try to get size from installed metadata
+  final InstalledResource? installed =
+      ResourceInstallStore.instance.installedFor(resource);
+  if (installed != null &&
+      installed.sizeBytes != null &&
+      installed.sizeBytes! > 0) {
+    return installed.sizeBytes;
+  }
+  // 2. Try to get size from actual disk files if installed
+  if (installed != null) {
+    try {
+      final Directory dir = Directory(installed.localPath);
+      if (dir.existsSync()) {
+        int total = 0;
+        for (final FileSystemEntity entity in dir.listSync(recursive: true)) {
+          if (entity is File) {
+            total += entity.lengthSync();
+          }
+        }
+        if (total > 0) return total;
+      }
+    } catch (_) {}
+  }
+  // 3. Try to get size from manifest resource
+  if (resource.sizeBytes != null && resource.sizeBytes! > 0) {
+    return resource.sizeBytes;
+  }
+  // 4. Try to get size from hardcoded fallbacks
+  final String id = resource.id;
+  final int? fallbackSize = switch (id) {
+    'en_al_jalalayn' => 856901,
+    'en_al_mukhtasar' => 666054,
+    '2' => 35778,
+    '3' => 36122,
+    '4' => 35905,
+    'en_clear_quran' => 394045,
+    'qpc_v4_tajweed_fonts' => 69230903,
+    'tr_saheeh' => 374009,
+    'ml_abdul_hameed' => 560936,
+    'fa_hussein_dari' => 463000,
+    'fr_hamidullah' => 417681,
+    'it_piccardo' => 379499,
+    'nl_siregar' => 398706,
+    'portuguese' => 420000,
+    'ru_kuliev' => 453329,
+    'urdu' => 491574,
+    'bengali' => 474157,
+    'chinese' => 372520,
+    'indonesian' => 407684,
+    'spanish' => 410751,
+    'swedish' => 455052,
+    _ => null,
+  };
+  return fallbackSize;
 }
 
 String prettyBytes(int? bytes) {
@@ -316,9 +402,10 @@ String prettyBytes(int? bytes) {
     value /= 1024;
     unitIndex++;
   }
-  final String formatted = unitIndex == 0 || value >= 10
-      ? value.toStringAsFixed(0)
-      : value.toStringAsFixed(1);
+  final String formatted =
+      unitIndex == 0 || value >= 10
+          ? value.toStringAsFixed(0)
+          : value.toStringAsFixed(1);
   return '$formatted ${units[unitIndex]}';
 }
 
@@ -327,7 +414,7 @@ String resourceDetailsLabel(DownloadableResource resource) {
     if (resource.language != null) resource.language!.toUpperCase(),
     if (resource.reciterCode != null) 'Reciter ${resource.reciterCode}',
     'v${resource.version}',
-    prettyBytes(resource.sizeBytes),
+    prettyBytes(getResourceSize(resource)),
   ];
   return parts.join(' • ');
 }

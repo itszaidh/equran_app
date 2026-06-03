@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:equran/backend/library.dart';
+import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/prayer/prayer_hero_card.dart';
 import 'package:equran/prayer/prayer_localizations.dart';
@@ -19,6 +20,7 @@ import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/quran_text.dart';
 import 'package:equran/widgets/common/equran_components.dart';
 import 'package:equran/widgets/holographic_card.dart';
+import 'package:equran/prayer/hijri_calendar.dart';
 import 'package:equran/widgets/last_read_cards.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
@@ -30,7 +32,7 @@ import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/duas_category_page.dart';
 import 'package:equran/backend/daily_tools_config.dart';
 import 'package:equran/home_dashboard/daily_tools_edit_sheet.dart';
-import 'package:equran/home/hijri_calendar_page.dart';
+import 'package:equran/home/hijri_calendar_page.dart' hide HijriCalendar;
 import 'package:equran/home/zakah_calculator_page.dart';
 import 'package:equran/hifz/hifz.dart';
 import 'package:equran/duas/asma_ul_husna_page.dart';
@@ -38,7 +40,6 @@ import 'package:equran/duas/asma_ul_husna_page.dart';
 const String _appAssetBase = 'assets/media/images/app';
 const String _quranAsset = '$_appAssetBase/quran.webp';
 const String _lastReadAsset = '$_appAssetBase/last_read.webp';
-const String _playerAsset = '$_appAssetBase/player.webp';
 const String _duaAsset = '$_appAssetBase/dua.webp';
 const String _designAsset = '$_appAssetBase/design.webp';
 const String _routineAsset = '$_appAssetBase/routine.webp';
@@ -49,7 +50,7 @@ class HomeDashboardPage extends StatefulWidget {
     super.key,
     required this.onOpenMore,
     required this.onOpenQuran,
-    required this.onOpenPlayer,
+    required this.onOpenZakat,
     required this.onOpenPrayerTimes,
     required this.onOpenQibla,
     required this.onOpenDuas,
@@ -62,7 +63,7 @@ class HomeDashboardPage extends StatefulWidget {
 
   final VoidCallback onOpenMore;
   final VoidCallback onOpenQuran;
-  final VoidCallback onOpenPlayer;
+  final VoidCallback onOpenZakat;
   final VoidCallback onOpenPrayerTimes;
   final VoidCallback onOpenQibla;
   final VoidCallback onOpenDuas;
@@ -151,17 +152,8 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
     final EquranColors colors = context.equranColors;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final PrayerLocation? location = _prayerStore.getLocation();
-    final PrayerTimeSettings settings = _prayerStore.getSettings();
     final String locationLabel =
         location?.displayLabel ?? localizations.setPrayerLocation;
-
-    final DateTime todayDate = location == null
-        ? DateTime(_now.year, _now.month, _now.day)
-        : _prayerService.calendarDateForInstant(
-            instant: _now,
-            location: location,
-            settings: settings,
-          );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -245,14 +237,34 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
           Row(
             children: <Widget>[
               Expanded(
-                child: Text(
-                  _formatDashboardDate(todayDate),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      _formatDashboardDate(_now),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    // Integrated Hijri date (beautiful small gold text)
+                    Builder(
+                      builder: (BuildContext context) {
+                        final int offset = SettingsDB().get('hijri_offset', defaultValue: 0) as int;
+                        final HijriCalendar hijri = HijriCalendar.fromDate(_now, offset: offset);
+                        return Text(
+                          hijri.toString(),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: colors.accentGold,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
               // TextButton(
@@ -1223,9 +1235,7 @@ class _DailyQuranCompanionSection extends StatelessWidget {
             _ContinueExperience(
               wide: wide,
               latestReading: latestReading,
-              latestListening: latestListening,
               onOpenQuran: actions.onOpenQuran,
-              onOpenPlayer: actions.onOpenPlayer,
             ),
             const SizedBox(height: 16),
             _CompanionSectionHeader(
@@ -1324,46 +1334,18 @@ class _ContinueExperience extends StatelessWidget {
   const _ContinueExperience({
     required this.wide,
     required this.latestReading,
-    required this.latestListening,
     required this.onOpenQuran,
-    required this.onOpenPlayer,
   });
 
   final bool wide;
   final ResumeStateEntry? latestReading;
-  final ResumeStateEntry? latestListening;
   final VoidCallback onOpenQuran;
-  final VoidCallback onOpenPlayer;
 
   @override
   Widget build(BuildContext context) {
-    final Widget readingCard = _HomeQuranLastReadCard(
+    return _HomeQuranLastReadCard(
       entry: latestReading,
       onOpenQuran: onOpenQuran,
-    );
-    final Widget listeningCard = _ContinueListeningCard(
-      entry: latestListening,
-      onOpenPlayer: onOpenPlayer,
-    );
-
-    if (!wide) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          readingCard,
-          const SizedBox(height: 10),
-          listeningCard,
-        ],
-      );
-    }
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Expanded(flex: 6, child: readingCard),
-        const SizedBox(width: 12),
-        Expanded(flex: 5, child: listeningCard),
-      ],
     );
   }
 }
@@ -1393,6 +1375,7 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
     final EquranColors colors = context.equranColors;
     final localizations = AppLocalizations.of(context)!;
 
+
     return ValueListenableBuilder<Box<dynamic>>(
       valueListenable: SettingsDB().listener,
       builder: (context, box, child) {
@@ -1414,7 +1397,13 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
                   widget.actions.onOpenQibla();
                   break;
                 case DailyToolType.player:
-                  widget.actions.onOpenPlayer();
+                  unawaited(
+                    SettingsDB().put(
+                      'resumeListeningRequestAt',
+                      DateTime.now().microsecondsSinceEpoch,
+                    ),
+                  );
+                  widget.actions.onOpenQuran();
                   break;
                 case DailyToolType.tasbih:
                   widget.actions.onOpenTasbih();
@@ -1744,14 +1733,52 @@ class _QuickActionPageDots extends StatelessWidget {
   }
 }
 
-class _DailyAyahPreview extends StatelessWidget {
+class _DailyAyahPreview extends StatefulWidget {
   const _DailyAyahPreview({required this.ayah, required this.onOpenQuran});
 
   final _DailyAyah ayah;
   final VoidCallback onOpenQuran;
 
   @override
+  State<_DailyAyahPreview> createState() => _DailyAyahPreviewState();
+}
+
+class _DailyAyahPreviewState extends State<_DailyAyahPreview> {
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFontIfNeeded();
+  }
+
+  @override
+  void didUpdateWidget(covariant _DailyAyahPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.ayah.surah != widget.ayah.surah ||
+        oldWidget.ayah.verse != widget.ayah.verse) {
+      _loadFontIfNeeded();
+    }
+  }
+
+  Future<void> _loadFontIfNeeded() async {
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'qpc-v4') {
+      final int page = EquranTextStyles.getPageNumber(
+        widget.ayah.surah,
+        widget.ayah.verse,
+      );
+      final bool loaded = await QpcV4FontService.instance
+          .ensureFontLoadedForPage(page);
+      if (loaded && mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final _DailyAyah ayah = widget.ayah;
+    final VoidCallback onOpenQuran = widget.onOpenQuran;
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final localizations = AppLocalizations.of(context)!;
@@ -1809,15 +1836,22 @@ class _DailyAyahPreview extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                ayah.arabic,
+                quranVerseText(ayah.surah, ayah.verse),
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.center,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: EquranTextStyles.arabicBody(
-                  context,
-                  color: colors.textPrimary,
-                ).copyWith(height: 1.7),
+                style:
+                    EquranTextStyles.arabicBody(
+                      context,
+                      color: colors.textPrimary,
+                    ).copyWith(
+                      fontFamily: EquranTextStyles.fontFamilyForVerse(
+                        ayah.surah,
+                        ayah.verse,
+                      ),
+                      height: 1.7,
+                    ),
               ),
               const SizedBox(height: 12),
               Text(
@@ -2746,72 +2780,7 @@ class _HomeQuranLastReadCard extends StatelessWidget {
   }
 }
 
-class _ContinueListeningCard extends StatelessWidget {
-  const _ContinueListeningCard({
-    required this.entry,
-    required this.onOpenPlayer,
-  });
-
-  final ResumeStateEntry? entry;
-  final VoidCallback onOpenPlayer;
-
-  @override
-  Widget build(BuildContext context) {
-    final ResumeStateEntry? current = entry;
-    final localizations = AppLocalizations.of(context)!;
-    final Widget card;
-    if (current == null) {
-      card = EquranResumeImageCard(
-        primary: localizations.localeName == 'ar'
-            ? localizations.quranRecitation
-            : localizations.quranRecitation,
-        subtitle: localizations.beginListeningSubtitle,
-        actionText: localizations.localeName == 'ar'
-            ? '<- ${localizations.openPlayer}'
-            : '${localizations.openPlayer} ->',
-        trailingAssetPath: _playerAsset,
-        secondary: false,
-        artworkScale: 1.3,
-        artworkOffsetX: 18,
-        onTap: onOpenPlayer,
-        enforceCompactWidth: false,
-      );
-    } else {
-      final int? positionMillis = current.positionMillis;
-      final String progress = positionMillis == null || positionMillis <= 0
-          ? ''
-          : ' - ${_formatShortDuration(Duration(milliseconds: positionMillis))}';
-
-      card = EquranResumeImageCard(
-        primary: current.surah == null
-            ? localizations.quranRecitation
-            : localizedSurahName(localizations, current.surah!),
-        subtitle: current.ayah == null
-            ? localizations.resumeRecitation(progress)
-            : localizations.ayahNumber(current.ayah!),
-        actionText: localizations.localeName == 'ar'
-            ? '<- ${localizations.continueListening}'
-            : '${localizations.continueListening} ->',
-        trailingAssetPath: _playerAsset,
-        secondary: false,
-        artworkScale: 1.18,
-        artworkOffsetX: 16,
-        onTap: () {
-          unawaited(
-            SettingsDB().put(
-              'resumeListeningRequestAt',
-              DateTime.now().microsecondsSinceEpoch,
-            ),
-          );
-          onOpenPlayer();
-        },
-        enforceCompactWidth: false,
-      );
-    }
-
-    return HolographicCardWrapper(child: card);
-  }
-}
+// _ContinueListeningCard retired
 
 // ignore: unused_element
 class _DailyGoalCard extends StatelessWidget {
@@ -3013,7 +2982,7 @@ class _DailyAyahCard extends StatelessWidget {
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontFamily: 'Hafs',
+              fontFamily: 'UthmanicHafs',
               fontSize: 28,
               height: 1.65,
             ),
@@ -3611,16 +3580,6 @@ String _formatTime(
   return '$hour:${time.minute.toString().padLeft(2, '0')} $suffix';
 }
 
-String _formatShortDuration(Duration duration) {
-  final Duration normalized = duration.isNegative ? Duration.zero : duration;
-  final int hours = normalized.inHours;
-  final int minutes = normalized.inMinutes.remainder(60);
-  final int seconds = normalized.inSeconds.remainder(60);
-  if (hours > 0) {
-    return '${hours}h ${minutes.toString().padLeft(2, '0')}m';
-  }
-  return '$minutes:${seconds.toString().padLeft(2, '0')}';
-}
 
 String _formatCountdown(Duration duration) {
   final Duration normalized = duration.isNegative ? Duration.zero : duration;

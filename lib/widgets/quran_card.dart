@@ -49,7 +49,7 @@ class QuranCard extends StatelessWidget {
                 : theme.textTheme.titleMedium)
             ?.copyWith(
               color: colors.textPrimary,
-              fontFamily: 'Hafs',
+              fontFamily: 'UthmanicHafs',
               fontSize: compactText
                   ? 19
                   : compact

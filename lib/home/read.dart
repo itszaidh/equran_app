@@ -41,7 +41,9 @@ import 'package:equran/backend/library.dart'
         SettingsDB,
         TafsirVerseResult,
         TafsirService,
-        prettyBytes;
+        prettyBytes,
+        getResourceSize;
+import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
 import 'package:equran/theme/equran_text_styles.dart';
@@ -399,6 +401,20 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   static const double _playerBarMinVelocity = 220;
   static const double _ayahDetailsArabicFontSize = 31.0;
   static const String _ayahDelaySettingsKey = 'ayahDelaySeconds';
+  static const List<double> _delaySteps = <double>[
+    0.0,
+    0.5,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0,
+  ];
   static const String _intervalRepeatSettingsKey = 'intervalRepeatCount';
   static const String _repeatAyahSettingsKey = 'repeatAyahCount';
   static const String _playbackIntervalSettingsKey = 'playbackInterval';
@@ -406,6 +422,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     milliseconds: 33,
   );
   static const Duration _readingTimeFlushInterval = Duration(seconds: 20);
+  int? _loadedChapter;
+  int? _loadedVerse;
   static const Duration _lowRefreshIdleDelay = Duration(milliseconds: 900);
   static const Duration _playerSettleAnimationDelay = Duration(
     milliseconds: 280,
@@ -444,12 +462,19 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   final Set<String> _downloadingAyahKeys = <String>{};
   bool _hasDownloadedSurahAyahs = false;
   bool _hasDownloadedCurrentAyah = false;
+  static const String _sleepTimerDurationMode = 'duration';
+  static const String _sleepTimerEndSurahMode = 'endSurah';
+
+  Timer? _sleepTimer;
+  DateTime? _sleepTimerEndsAt;
+  String? _sleepTimerLabel;
+  String? _sleepTimerMode;
   bool _continuousPlayback = false;
   bool _repeatIntervalEnabled = false;
   PlaybackInterval? _playbackInterval;
   RepeatChoice _intervalRepeatChoice = RepeatChoice.infinite;
   RepeatChoice _repeatAyahChoice = RepeatChoice.one;
-  int _ayahDelaySeconds = 0;
+  double _ayahDelaySeconds = 0.0;
   int _intervalCyclesCompleted = 0;
   int _currentAyahPlayCount = 1;
   final Set<String> _preloadingAyahKeys = <String>{};
@@ -464,6 +489,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   double _currentVersePlaybackRate = 1.0;
   final ValueNotifier<Duration> _playerPositionValue = ValueNotifier<Duration>(
     Duration.zero,
+  );
+  final ValueNotifier<double?> _surahDownloadProgressNotifier = ValueNotifier<double?>(
+    null,
   );
   final ValueNotifier<Duration> _playerDurationValue = ValueNotifier<Duration>(
     Duration.zero,
@@ -561,6 +589,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         BookmarkDB().addReadingEntry(_currentChapter, _currentVerse);
       }
     }
+    _sleepTimer?.cancel();
     unawaited(_setKeepScreenOn(false));
     _lowRefreshIdleTimer?.cancel();
     _playerSettleTimer?.cancel();
@@ -616,6 +645,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     _versePlayer.dispose();
     _playerPositionValue.dispose();
     _playerDurationValue.dispose();
+    _surahDownloadProgressNotifier.dispose();
     _scrollController.dispose();
     _pageFocusNode.dispose();
     super.dispose();
@@ -1701,8 +1731,57 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     return quranVerseText(chapter, verse);
   }
 
+  Future<void> _loadFontsForCurrentSurah() async {
+    if (SettingsDB().quranScriptStyle != 'qpc-v4') return;
+
+    final int currentPage = EquranTextStyles.getPageNumber(
+      _currentChapter,
+      _currentVerse,
+    );
+    final bool currentLoaded = await QpcV4FontService.instance
+        .ensureFontLoadedForPage(currentPage);
+    if (currentLoaded && mounted) {
+      setState(() {});
+    }
+
+    if (currentPage != 1) {
+      unawaited(
+        QpcV4FontService.instance.ensureFontLoadedForPage(1).then((success) {
+          if (success && mounted) {
+            setState(() {});
+          }
+        }),
+      );
+    }
+
+    final List<int> pages = quran.getSurahPages(_currentChapter);
+    for (final int page in pages) {
+      if (page == currentPage) continue;
+      unawaited(
+        QpcV4FontService.instance.ensureFontLoadedForPage(page).then((success) {
+          if (success && mounted) {
+            setState(() {});
+          }
+        }),
+      );
+    }
+  }
+
+  void _ensureFontsLoadedForCurrentState() {
+    if (SettingsDB().quranScriptStyle != 'qpc-v4') return;
+    if (_loadedChapter == _currentChapter && _loadedVerse == _currentVerse) {
+      return;
+    }
+
+    _loadedChapter = _currentChapter;
+    _loadedVerse = _currentVerse;
+
+    _loadFontsForCurrentSurah();
+  }
+
   @override
   Widget build(BuildContext context) {
+    _ensureFontsLoadedForCurrentState();
     Size screenSize = MediaQuery.of(context).size;
     final EquranColors colors = context.equranColors;
 
@@ -1932,7 +2011,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           title: localizations.displayAndSharing,
                           children: <Widget>[
                             SwitchListTile(
-                              secondary: const Icon(Icons.translate_rounded),
+                              secondary: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withAlpha(18),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.small,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.translate_rounded,
+                                  color: colorScheme.primary,
+                                  size: 21,
+                                ),
+                              ),
                               title: Text(localizations.translation),
                               subtitle: Text(localizations.showAyahTranslation),
                               value: translationEnabled,
@@ -1947,7 +2040,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               },
                             ),
                             SwitchListTile(
-                              secondary: const Icon(Icons.text_fields_rounded),
+                              secondary: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withAlpha(18),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.small,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.text_fields_rounded,
+                                  color: colorScheme.primary,
+                                  size: 21,
+                                ),
+                              ),
                               title: Text(localizations.transliterationOption),
                               subtitle: Text(
                                 localizations.showLatinTransliteration,
@@ -1964,7 +2071,21 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               },
                             ),
                             SwitchListTile(
-                              secondary: const Icon(Icons.view_agenda_outlined),
+                              secondary: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withAlpha(18),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.small,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.view_agenda_outlined,
+                                  color: colorScheme.primary,
+                                  size: 21,
+                                ),
+                              ),
                               title: Text(localizations.cardViewOption),
                               subtitle: Text(localizations.readOneAyahPerCard),
                               value: cardViewEnabled,
@@ -3134,6 +3255,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           title: '${quran.getSurahName(position.surah)} ${position.ayah}',
           artist: reciter.englishName,
           displayDescription: 'Ayah ${position.surah}:${position.ayah}',
+          artUri: Uri.parse('asset:///assets/media/images/icon.webp'),
         ),
       ),
     );
@@ -3144,7 +3266,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required int repeatOrdinal,
     required int cycleOrdinal,
   }) async {
-    final Duration duration = Duration(seconds: _ayahDelaySeconds);
+    final Duration duration = Duration(milliseconds: (_ayahDelaySeconds * 1000).round());
     final File file = await _silenceAudioFile(duration);
     return _PreparedReadingAudioSource(
       item: _ReadingAudioSequenceItem(
@@ -3166,6 +3288,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           displayDescription:
               'Delay after ayah '
               '${afterPosition.surah}:${afterPosition.ayah}',
+          artUri: Uri.parse('asset:///assets/media/images/icon.webp'),
         ),
       ),
     );
@@ -3457,9 +3580,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _loadPlaybackOptions() {
-    final int delaySeconds =
-        _readInt(SettingsDB().get(_ayahDelaySettingsKey, defaultValue: 0)) ?? 0;
-    _ayahDelaySeconds = delaySeconds.clamp(0, 10).toInt();
+    final dynamic delayVal = SettingsDB().get(_ayahDelaySettingsKey, defaultValue: 0.0);
+    double delaySeconds = 0.0;
+    if (delayVal is num) {
+      delaySeconds = delayVal.toDouble();
+    }
+    _ayahDelaySeconds = delaySeconds.clamp(0.0, 10.0);
     _intervalRepeatChoice = RepeatChoice.fromStorage(
       SettingsDB().get(
         _intervalRepeatSettingsKey,
@@ -3587,7 +3713,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Future<void> _delayBeforeNextPlayback(int requestId) async {
     if (_ayahDelaySeconds <= 0) return;
-    await Future<void>.delayed(Duration(seconds: _ayahDelaySeconds));
+    await Future<void>.delayed(Duration(milliseconds: (_ayahDelaySeconds * 1000).round()));
     _throwIfPlaybackRequestCancelled(requestId);
   }
 
@@ -3700,6 +3826,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final QuranPosition? nextContinuousPosition = _nextQuranPosition(
       completedPosition,
     );
+    if (_sleepTimerMode == _sleepTimerEndSurahMode) {
+      if (nextContinuousPosition == null ||
+          nextContinuousPosition.surah != completedPosition.surah) {
+        _cancelSleepTimer();
+        if (mounted) {
+          await _stopBottomPlayer();
+        }
+        return;
+      }
+    }
     if (_continuousPlayback && nextContinuousPosition != null) {
       await _delayBeforeNextPlayback(requestId);
       await _playVerse(
@@ -3797,6 +3933,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     setState(() {
       _isDownloadingSurahAyahs = true;
     });
+    _surahDownloadProgressNotifier.value = 0.0;
 
     final int notificationId = DownloadNotifications.notificationId(
       'surah-ayahs-$_currentChapter',
@@ -3813,13 +3950,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       );
       await AudioDownloadService().downloadSurahAyahs(
         _currentChapter,
-        onProgress: (progress) => unawaited(
-          DownloadNotifications.progress(
-            id: notificationId,
-            title: title,
-            progress: progress.fraction,
-          ),
-        ),
+        onProgress: (progress) {
+          _surahDownloadProgressNotifier.value = progress.fraction;
+          unawaited(
+            DownloadNotifications.progress(
+              id: notificationId,
+              title: title,
+              progress: progress.fraction,
+            ),
+          );
+        },
       );
       await DownloadNotifications.complete(
         id: notificationId,
@@ -3834,7 +3974,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           ),
         );
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint('Error downloading surah: $e');
+      debugPrint('$stackTrace');
       await DownloadNotifications.fail(
         id: notificationId,
         title: localizations.failedDownloadSurahAyahs(surahName),
@@ -3847,40 +3989,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         );
       }
     } finally {
+      _surahDownloadProgressNotifier.value = null;
       if (mounted) {
         setState(() {
           _isDownloadingSurahAyahs = false;
         });
       }
     }
-  }
-
-  Future<void> _confirmDownloadCurrentSurahAyahs() async {
-    final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String surahName = localizedSurahName(localizations, _currentChapter);
-    final bool? confirm = await _withLowFpsSuppressed(() {
-      return showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          icon: const Icon(Icons.download_for_offline_rounded),
-          title: Text(localizations.downloadAllAyahs),
-          content: Text(localizations.downloadAllAyahsForSurah(surahName)),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(localizations.cancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(localizations.download),
-            ),
-          ],
-        ),
-      );
-    });
-
-    if (confirm != true) return;
-    await _downloadCurrentSurahAyahs();
   }
 
   Future<void> _downloadCurrentAyah() async {
@@ -3989,6 +4104,362 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     }
   }
 
+  Future<void> _setSleepTimer(
+    Duration duration,
+    String label, {
+    String mode = _sleepTimerDurationMode,
+    bool startPlayback = true,
+  }) async {
+    if (duration <= Duration.zero) return;
+    _sleepTimer?.cancel();
+    final DateTime endsAt = DateTime.now().add(duration);
+    _sleepTimer = Timer(duration, () async {
+      await _stopBottomPlayer();
+      if (mounted) {
+        setState(() {
+          _sleepTimer = null;
+          _sleepTimerEndsAt = null;
+          _sleepTimerLabel = null;
+          _sleepTimerMode = null;
+        });
+      }
+    });
+    if (mounted) {
+      setState(() {
+        _sleepTimerEndsAt = endsAt;
+        _sleepTimerLabel = label;
+        _sleepTimerMode = mode;
+        _continuousPlayback = true;
+        _repeatIntervalEnabled = false;
+      });
+    }
+    if (startPlayback) {
+      await _startOrContinuePlaybackForSleepTimer();
+    }
+  }
+
+  Future<void> _startOrContinuePlaybackForSleepTimer() async {
+    if (_isVersePlaying || _isVerseLoading) return;
+    if (_playingVerse != null && _playerPosition > Duration.zero) {
+      await _resumeCurrentVerseAudio();
+      return;
+    }
+    await _playVerse(
+      _currentChapter,
+      _playingVerse ?? _currentVerse,
+      continuous: _continuousPlayback,
+    );
+  }
+
+  void _cancelSleepTimer() {
+    _sleepTimer?.cancel();
+    if (mounted) {
+      setState(() {
+        _sleepTimer = null;
+        _sleepTimerEndsAt = null;
+        _sleepTimerLabel = null;
+        _sleepTimerMode = null;
+      });
+    }
+  }
+
+  String _sleepTimerSummary() {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    final DateTime? endsAt = _sleepTimerEndsAt;
+    if (endsAt == null) return l10n.off;
+    final Duration remaining = endsAt.difference(DateTime.now());
+    if (remaining.isNegative) return l10n.sleepingSoon;
+    final int minutes =
+        remaining.inMinutes + (remaining.inSeconds % 60 == 0 ? 0 : 1);
+    return l10n.sleepingInMinutes(minutes);
+  }
+
+  String _sleepTimerOptionsSubtitle() {
+    final AppLocalizations l10n = AppLocalizations.of(context)!;
+    if (_sleepTimerEndsAt != null) return _sleepTimerSummary();
+    if (_sleepTimerMode == _sleepTimerEndSurahMode) {
+      return l10n.pendingLabel(_sleepTimerLabel ?? l10n.endOfSurah);
+    }
+    return l10n.off;
+  }
+
+  Future<void> _applySleepTimerSelection(String value) async {
+    if (value.startsWith('duration:')) {
+      final int? minutes = int.tryParse(value.substring('duration:'.length));
+      if (minutes == null) return;
+      await _setSleepTimer(
+        Duration(minutes: minutes),
+        AppLocalizations.of(context)!.minutesShort(minutes),
+        mode: _sleepTimerDurationMode,
+      );
+      return;
+    }
+
+    if (value == _sleepTimerEndSurahMode) {
+      final AppLocalizations l10n = AppLocalizations.of(context)!;
+      if (mounted) {
+        setState(() {
+          _sleepTimerLabel = l10n.endOfSurah;
+          _sleepTimerMode = _sleepTimerEndSurahMode;
+          _continuousPlayback = true;
+          _repeatIntervalEnabled = false;
+        });
+      }
+      await _startOrContinuePlaybackForSleepTimer();
+    }
+  }
+
+  Future<void> _showUpgradedSleepTimerSheet() async {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+    final EquranColors colors = context.equranColors;
+
+    int minutes = 15;
+    if (_sleepTimerEndsAt != null) {
+      minutes = _sleepTimerEndsAt!
+          .difference(DateTime.now())
+          .inMinutes
+          .clamp(1, 120);
+    }
+    bool endOfSurah = _sleepTimerMode == _sleepTimerEndSurahMode;
+
+    final TextEditingController textController = TextEditingController(
+      text: '$minutes',
+    );
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      backgroundColor: colorScheme.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadii.large),
+        ),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            void increment(int val) {
+              int current = int.tryParse(textController.text) ?? 15;
+              current = (current + val).clamp(1, 240);
+              textController.text = '$current';
+              setSheetState(() {
+                minutes = current;
+              });
+            }
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                8,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 28,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withAlpha(18),
+                          borderRadius: BorderRadius.circular(AppRadii.medium),
+                        ),
+                        child: Icon(
+                          Icons.bedtime_outlined,
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Sleep Timer Settings',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Numeric Minute Picker Container
+                  Card(
+                    color: colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const Text(
+                            'Numeric Minutes Duration',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: <Widget>[
+                              // Minus Button
+                              IconButton(
+                                onPressed: endOfSurah
+                                    ? null
+                                    : () => increment(-5),
+                                icon: const Icon(
+                                  Icons.remove_circle_outline_rounded,
+                                ),
+                                color: colorScheme.primary,
+                                iconSize: 28,
+                              ),
+                              // Text Field Input
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  child: TextField(
+                                    controller: textController,
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
+                                    enabled: !endOfSurah,
+                                    style: theme.textTheme.headlineMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: endOfSurah
+                                              ? colorScheme.onSurfaceVariant
+                                                    .withAlpha(128)
+                                              : colorScheme.onSurface,
+                                        ),
+                                    decoration: const InputDecoration(
+                                      suffixText: 'min',
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    onChanged: (val) {
+                                      final int? parsed = int.tryParse(val);
+                                      if (parsed != null) {
+                                        minutes = parsed.clamp(1, 240);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                              // Plus Button
+                              IconButton(
+                                onPressed: endOfSurah
+                                    ? null
+                                    : () => increment(5),
+                                icon: const Icon(
+                                  Icons.add_circle_outline_rounded,
+                                ),
+                                color: colorScheme.primary,
+                                iconSize: 28,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // End of Surah Toggle Card
+                  Card(
+                    color: colorScheme.surfaceContainerLow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadii.medium),
+                      side: BorderSide(color: colorScheme.outlineVariant),
+                    ),
+                    child: SwitchListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.medium),
+                      ),
+                      secondary: Icon(
+                        Icons.queue_music_rounded,
+                        color: endOfSurah
+                            ? colorScheme.primary
+                            : colors.textSecondary,
+                      ),
+                      title: const Text(
+                        'End of Surah',
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      subtitle: const Text(
+                        'Auto-kill the stream exactly when the current track finishes',
+                      ),
+                      value: endOfSurah,
+                      onChanged: (val) {
+                        setSheetState(() {
+                          endOfSurah = val;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Apply / Stop Buttons
+                  Row(
+                    children: <Widget>[
+                      if (_sleepTimerEndsAt != null ||
+                          _sleepTimerMode != null) ...<Widget>[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              _cancelSleepTimer();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Turn Off'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: () async {
+                            if (endOfSurah) {
+                              await _applySleepTimerSelection(
+                                _sleepTimerEndSurahMode,
+                              );
+                            } else {
+                              final int val =
+                                  int.tryParse(textController.text) ?? minutes;
+                              await _setSleepTimer(
+                                Duration(minutes: val),
+                                localizations.minutesShort(val),
+                                mode: _sleepTimerDurationMode,
+                              );
+                            }
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: const Text('Set Timer'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ).whenComplete(textController.dispose);
+  }
+
   Future<void> _refreshSurahAyahDownloadState() async {
     if (kIsWeb) return;
 
@@ -4011,6 +4482,29 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         _hasDownloadedSurahAyahs = true;
       });
     }
+  }
+
+  bool _isVerseDownloaded(int chapter, int verse) {
+    if (kIsWeb) return false;
+    if (_hasDownloadedSurahAyahs) return true;
+    if (chapter == _currentChapter && verse == _currentVerse) {
+      return _hasDownloadedCurrentAyah;
+    }
+    return false;
+  }
+
+  Future<bool> _isSurahDownloadedForReciter(int chapter, String reciterCode) async {
+    if (kIsWeb) return false;
+    final int totalVerses = quran.getVerseCount(chapter);
+    final Directory dir = await AudioDownloadService().ayahDirectory();
+    for (int ayah = 1; ayah <= totalVerses; ayah++) {
+      final String fileName = '${reciterCode}_${chapter.toString().padLeft(3, '0')}_${ayah.toString().padLeft(3, '0')}.mp3';
+      final File file = File('${dir.path}/$fileName');
+      if (!file.existsSync() || file.lengthSync() == 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<void> _stopBottomPlayer() async {
@@ -4049,6 +4543,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _toggleContinuousPlayback(bool value) {
+    if (!value) {
+      _sleepTimer?.cancel();
+    }
     final bool shouldRefreshUpcomingSequence =
         (_playerMounted || _isVersePlaying || _isVerseLoading) &&
         _playingVerse != null;
@@ -4060,6 +4557,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       _continuousPlayback = value;
       if (value) {
         _repeatIntervalEnabled = false;
+      } else {
+        _sleepTimer = null;
+        _sleepTimerEndsAt = null;
+        _sleepTimerLabel = null;
+        _sleepTimerMode = null;
       }
       _playerVisible = true;
       _playerMounted = true;
@@ -5432,6 +5934,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         onPlayNext: () => unawaited(_playAdjacentPageViewAyah(1)),
         canPlayPrevious: _canPlayPreviousAyah,
         canPlayNext: _canPlayNextAyah,
+        isDownloaded: _isVerseDownloaded(_currentChapter, _playingVerse ?? _currentVerse),
       ),
     );
   }
@@ -5530,18 +6033,35 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           height: double.infinity,
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text(
-                              localizedSurahAyahLabel(
-                                AppLocalizations.of(context)!,
-                                _currentChapter,
-                                verse,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Flexible(
+                                  child: Text(
+                                    localizedSurahAyahLabel(
+                                      AppLocalizations.of(context)!,
+                                      _currentChapter,
+                                      verse,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                if (_isVerseDownloaded(_currentChapter, verse)) ...[
+                                  const SizedBox(width: 6),
+                                  Icon(
+                                    Icons.offline_pin_rounded,
+                                    size: 15,
+                                    color: _isVersePlaying
+                                        ? Colors.green
+                                        : colorScheme.onSurfaceVariant.withAlpha(140),
+                                  ),
+                                ],
+                              ],
                             ),
                           ),
                         ),
@@ -5744,17 +6264,51 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
               Future<void> downloadSurahAudio() async {
                 if (!sheetContext.mounted) return;
-                Navigator.of(sheetContext).pop();
-                await _confirmDownloadCurrentSurahAyahs();
+                final AppLocalizations localizations = AppLocalizations.of(context)!;
+                final String surahName = localizedSurahName(localizations, _currentChapter);
+                final bool? confirm = await _withLowFpsSuppressed(() {
+                  return showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      icon: const Icon(Icons.download_for_offline_rounded),
+                      title: Text(localizations.downloadAllAyahs),
+                      content: Text(localizations.downloadAllAyahsForSurah(surahName)),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(localizations.cancel),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: Text(localizations.download),
+                        ),
+                      ],
+                    ),
+                  );
+                });
+
+                if (confirm != true) return;
+
+                // Rebuild sheet to show downloading state immediately
+                setSheetState(() {});
+
+                // Trigger download in background without blocking the sheet
+                unawaited(_downloadCurrentSurahAyahs().then((_) {
+                  if (sheetContext.mounted) {
+                    setSheetState(() {});
+                  }
+                }));
               }
 
               Future<void> toggleCurrentAyahAudio() async {
                 if (!sheetContext.mounted) return;
-                Navigator.of(sheetContext).pop();
                 if (_hasDownloadedCurrentAyah) {
                   await _confirmDeleteCurrentAyahDownload();
                 } else {
                   await _downloadCurrentAyah();
+                }
+                if (sheetContext.mounted) {
+                  setSheetState(() {});
                 }
               }
 
@@ -5813,6 +6367,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         onDownloadSurah: () => unawaited(downloadSurahAudio()),
                         onToggleCurrentAyah: () =>
                             unawaited(toggleCurrentAyahAudio()),
+                        downloadProgressNotifier: _surahDownloadProgressNotifier,
                       ),
                       const SizedBox(height: 10),
                       _buildPlaybackOptionsSection(
@@ -5862,14 +6417,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             context: context,
                             title: localizations.ayahDelay,
                             subtitle: _delayLabel(_ayahDelaySeconds),
-                            value: _ayahDelaySeconds.toDouble(),
+                            value: _delaySteps.indexOf(_ayahDelaySeconds).clamp(0, 11).toDouble(),
                             min: 0,
-                            max: 10,
-                            divisions: 10,
+                            max: 11,
+                            divisions: 11,
                             label: _delayLabel(_ayahDelaySeconds),
                             onChanged: (value) {
                               setState(() {
-                                _ayahDelaySeconds = value.round().clamp(0, 10);
+                                final int idx = value.round().clamp(0, _delaySteps.length - 1);
+                                _ayahDelaySeconds = _delaySteps[idx];
                               });
                               setSheetState(() {});
                               unawaited(_persistPlaybackOptions());
@@ -5931,6 +6487,25 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             ),
                             trailing: const Icon(Icons.chevron_right_rounded),
                             onTap: selectRepeatAyah,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildPlaybackOptionsSection(
+                        context: context,
+                        title: localizations.sleepTimerOption,
+                        children: <Widget>[
+                          ListTile(
+                            leading: const Icon(Icons.bedtime_outlined),
+                            title: Text(localizations.sleepTimerOption),
+                            subtitle: Text(_sleepTimerOptionsSubtitle()),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: () async {
+                              await _showUpgradedSleepTimerSheet();
+                              if (sheetContext.mounted) {
+                                setSheetState(() {});
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -6064,6 +6639,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     try {
       await _pauseReadingAudioForShare();
       await _loadChapterTransliterations();
+      if (SettingsDB().quranScriptStyle == 'qpc-v4') {
+        final int currentPage = EquranTextStyles.getPageNumber(
+          _currentChapter,
+          _currentVerse,
+        );
+        await QpcV4FontService.instance.ensureFontLoadedForPage(currentPage);
+      }
       if (!mounted) return;
 
       _isPreparingShareImage = true;
@@ -6360,6 +6942,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           width: layout.cardWidth,
                           height: layout.cardHeight,
                           child: _ShareImageAyahContent(
+                            chapter: _currentChapter,
+                            verse: _currentVerse,
                             verseText: verseText,
                             translation: translation,
                             transliteration: transliteration,
@@ -6745,8 +7329,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   TextStyle _shareArabicTextStyle(double fontSize) {
     return TextStyle(
-      fontFamily: EquranTextStyles.activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamily: EquranTextStyles.fontFamilyForVerse(
+        _currentChapter,
+        _currentVerse,
+      ),
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: fontSize,
       height: 1.82,
       fontWeight: FontWeight.w400,
@@ -6950,12 +7537,18 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       Text(
                         SettingsDB().quranScriptStyle == 'indopak'
                             ? 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ'
+                            : SettingsDB().quranScriptStyle == 'qpc-hafs'
+                            ? 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'
+                            : SettingsDB().quranScriptStyle == 'qpc-v4'
+                            ? 'ﱁ ﱂ ﱃ ﱄ'
                             : quranBasmalaText,
                         textDirection: TextDirection.rtl,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontFamily: EquranTextStyles.activeFontFamily,
-                          fontFamilyFallback: const <String>['Hafs'],
+                          fontFamily: SettingsDB().quranScriptStyle == 'qpc-v4'
+                              ? EquranTextStyles.fontFamilyForPage(1)
+                              : EquranTextStyles.activeFontFamily,
+                          fontFamilyFallback: const <String>['UthmanicHafs'],
                           color: colors.onPrimary,
                           fontSize: 36,
                           fontWeight: FontWeight.w400,
@@ -7233,9 +7826,30 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   TextSpan _buildInlineSurahTextSpan(double fontSize, ColorScheme colorScheme) {
+    if (SettingsDB().quranScriptStyle == 'qpc-v4') {
+      final List<InlineSpan> children = <InlineSpan>[];
+      final int? highlightedVerse = _selectedInlineVerse ?? _playingVerse;
+      for (int verse = 1; verse <= _totalVerses; verse++) {
+        final int page = EquranTextStyles.getPageNumber(_currentChapter, verse);
+        final TextStyle style = TextStyle(
+          fontFamily: EquranTextStyles.fontFamilyForPage(page),
+          fontFamilyFallback: const <String>['UthmanicHafs'],
+          height: 1.8,
+          fontSize: fontSize,
+          color: highlightedVerse == verse
+              ? colorScheme.primary
+              : colorScheme.onSurface,
+        );
+        children.add(
+          TextSpan(text: _inlineVerseTextSegment(verse), style: style),
+        );
+      }
+      return TextSpan(children: children);
+    }
+
     final TextStyle baseStyle = TextStyle(
       fontFamily: EquranTextStyles.activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       height: 1.8,
       fontSize: fontSize,
       color: colorScheme.onSurface,
@@ -7441,30 +8055,28 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required List<Widget> children,
   }) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: colorScheme.outlineVariant),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w800,
-                ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w800,
               ),
             ),
-            ...children,
-          ],
-        ),
+          ),
+          ...children,
+        ],
       ),
     );
   }
@@ -7474,59 +8086,90 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required bool currentAyahDownloading,
     required VoidCallback onDownloadSurah,
     required VoidCallback onToggleCurrentAyah,
+    required ValueNotifier<double?> downloadProgressNotifier,
   }) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     return _buildPlaybackOptionsSection(
       context: context,
       title: localizations.audioDownloads,
       children: <Widget>[
-        ListTile(
-          leading: Icon(
-            _hasDownloadedSurahAyahs
-                ? Icons.offline_pin_rounded
-                : _isDownloadingSurahAyahs
-                ? Icons.downloading_rounded
-                : Icons.download_for_offline_rounded,
-          ),
-          title: Text(
-            _hasDownloadedSurahAyahs
-                ? localizations.surahAudioDownloaded
-                : localizations.downloadSurahAudio,
-          ),
-          subtitle: Text(
-            _hasDownloadedSurahAyahs
-                ? localizations.allAyahsAvailableOffline
-                : localizations.downloadEveryAyahInSurah,
-          ),
-          enabled: !_isDownloadingSurahAyahs && !_hasDownloadedSurahAyahs,
-          onTap: !_isDownloadingSurahAyahs && !_hasDownloadedSurahAyahs
-              ? onDownloadSurah
-              : null,
+        ValueListenableBuilder<double?>(
+          valueListenable: downloadProgressNotifier,
+          builder: (context, progressFraction, _) {
+            final bool isCurrentlyDownloading = _isDownloadingSurahAyahs || progressFraction != null;
+            return ListTile(
+              leading: isCurrentlyDownloading
+                  ? SizedBox.square(
+                      dimension: 30,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            value: (progressFraction == 0.0 || progressFraction == null)
+                                ? null
+                                : progressFraction,
+                            color: Theme.of(context).colorScheme.primary,
+                            backgroundColor: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                          if (progressFraction != null && progressFraction > 0.0)
+                            Text(
+                              '${(progressFraction * 100).round()}%',
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                        ],
+                      ),
+                    )
+                  : Icon(
+                      _hasDownloadedSurahAyahs
+                          ? Icons.offline_pin_rounded
+                          : Icons.download_for_offline_rounded,
+                    ),
+              title: Text(
+                _hasDownloadedSurahAyahs
+                    ? localizations.surahAudioDownloaded
+                    : localizations.downloadSurahAudio,
+              ),
+              subtitle: Text(
+                _hasDownloadedSurahAyahs
+                    ? localizations.allAyahsAvailableOffline
+                    : localizations.downloadEveryAyahInSurah,
+              ),
+              enabled: !isCurrentlyDownloading && !_hasDownloadedSurahAyahs,
+              onTap: !isCurrentlyDownloading && !_hasDownloadedSurahAyahs
+                  ? onDownloadSurah
+                  : null,
+            );
+          },
         ),
-        ListTile(
-          leading: Icon(
-            currentAyahDownloading
-                ? Icons.downloading_rounded
-                : _hasDownloadedCurrentAyah
-                ? Icons.delete_outline_rounded
-                : Icons.download_rounded,
-          ),
-          title: Text(
-            currentAyahDownloading
-                ? localizations.downloadingCurrentAyah
-                : _hasDownloadedCurrentAyah
-                ? localizations.deleteCurrentAyahAudio
-                : localizations.downloadCurrentAyah,
-          ),
-          subtitle: Text(
-            localizations.surahLabel(
-              localizedSurahName(localizations, _currentChapter),
-              _currentVerse,
+        if (!_hasDownloadedSurahAyahs)
+          ListTile(
+            leading: Icon(
+              currentAyahDownloading
+                  ? Icons.downloading_rounded
+                  : _hasDownloadedCurrentAyah
+                  ? Icons.delete_outline_rounded
+                  : Icons.download_rounded,
             ),
+            title: Text(
+              currentAyahDownloading
+                  ? localizations.downloadingCurrentAyah
+                  : _hasDownloadedCurrentAyah
+                  ? localizations.deleteCurrentAyahAudio
+                  : localizations.downloadCurrentAyah,
+            ),
+            subtitle: Text(
+              localizations.surahLabel(
+                localizedSurahName(localizations, _currentChapter),
+                _currentVerse,
+              ),
+            ),
+            enabled: !currentAyahDownloading,
+            onTap: currentAyahDownloading ? null : onToggleCurrentAyah,
           ),
-          enabled: !currentAyahDownloading,
-          onTap: currentAyahDownloading ? null : onToggleCurrentAyah,
-        ),
       ],
     );
   }
@@ -7563,28 +8206,164 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  Future<AppReciter?> _showReciterPickerDialog() {
+  Future<AppReciter?> _showReciterPickerDialog() async {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final List<AppReciter> reciters = AppReciter.values.toList()
       ..sort(
         (a, b) =>
             a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase()),
       );
+
+    // Pre-fetch download status for all reciters in parallel
+    final Map<String, bool> reciterDownloadedMap = {};
+    await Future.wait(reciters.map((reciter) async {
+      final bool downloaded = await _isSurahDownloadedForReciter(
+        _currentChapter,
+        reciter.code,
+      );
+      reciterDownloadedMap[reciter.code] = downloaded;
+    }));
+
+    final AppReciter currentReciter = QuranAudioService().selectedReciter;
+
+    if (!mounted) return null;
+
+    bool groupByDownloaded = false;
+
     return showDialog<AppReciter>(
       context: context,
-      builder: (context) => AppSelectionDialog<AppReciter>(
-        title: localizations.reciter,
-        icon: Icons.record_voice_over_rounded,
-        selectedValue: QuranAudioService().selectedReciter,
-        options: reciters
-            .map(
-              (reciter) => AppSelectionOption<AppReciter>(
-                value: reciter,
-                title: _localizedReciterName(reciter, localizations),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final List<AppReciter> displayReciters = List.from(reciters);
+            if (groupByDownloaded) {
+              displayReciters.sort((a, b) {
+                final bool aDownloaded = reciterDownloadedMap[a.code] ?? false;
+                final bool bDownloaded = reciterDownloadedMap[b.code] ?? false;
+                if (aDownloaded && !bDownloaded) return -1;
+                if (!aDownloaded && bDownloaded) return 1;
+                return a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase());
+              });
+            } else {
+              displayReciters.sort((a, b) =>
+                  a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase()));
+            }
+
+            final ThemeData theme = Theme.of(context);
+            final ColorScheme colorScheme = theme.colorScheme;
+            final BorderRadius borderRadius = BorderRadius.circular(AppRadii.large);
+
+            return Dialog(
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              backgroundColor: colorScheme.surfaceContainer,
+              shape: RoundedRectangleBorder(borderRadius: borderRadius),
+              clipBehavior: Clip.antiAlias,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440, maxHeight: 560),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    ColoredBox(
+                      color: colorScheme.surfaceContainer,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 18, 12, 10),
+                        child: Row(
+                          children: <Widget>[
+                            Icon(Icons.record_voice_over_rounded, color: colorScheme.primary),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                localizations.reciter,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: groupByDownloaded ? 'Show Alphabetical' : 'Group Downloaded',
+                              onPressed: () {
+                                setDialogState(() {
+                                  groupByDownloaded = !groupByDownloaded;
+                                });
+                              },
+                              icon: Icon(
+                                groupByDownloaded
+                                    ? Icons.offline_pin_rounded
+                                    : Icons.offline_pin_outlined,
+                                color: groupByDownloaded ? Colors.green : colorScheme.onSurfaceVariant.withAlpha(160),
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: localizations.close,
+                              onPressed: () => Navigator.of(context).pop(),
+                              icon: const Icon(Icons.close_rounded),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    Flexible(
+                      child: ClipRect(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          itemCount: displayReciters.length,
+                          itemBuilder: (context, index) {
+                            final AppReciter reciter = displayReciters[index];
+                            final bool isSelected = reciter == currentReciter;
+                            final bool isDownloaded = reciterDownloadedMap[reciter.code] ?? false;
+
+                            Widget? leadingWidget;
+                            if (isDownloaded) {
+                              leadingWidget = const Icon(
+                                Icons.offline_pin_rounded,
+                                color: Colors.green,
+                                size: 20,
+                              );
+                            } else {
+                              leadingWidget = Icon(
+                                Icons.record_voice_over_rounded,
+                                color: colorScheme.onSurfaceVariant.withAlpha(60),
+                                size: 20,
+                              );
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Material(
+                                color: isSelected
+                                    ? colorScheme.primaryContainer.withValues(
+                                        alpha: 0.42,
+                                      )
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(AppRadii.medium),
+                                clipBehavior: Clip.antiAlias,
+                                child: ListTile(
+                                  leading: leadingWidget,
+                                  title: Text(_localizedReciterName(reciter, localizations)),
+                                  trailing: isSelected
+                                      ? Icon(
+                                          Icons.check_circle_rounded,
+                                          color: colorScheme.primary,
+                                        )
+                                      : null,
+                                  onTap: () => Navigator.of(context).pop(reciter),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )
-            .toList(),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -7644,10 +8423,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     );
   }
 
-  String _delayLabel(int seconds) {
+  String _delayLabel(double seconds) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     if (seconds <= 0) return localizations.noDelay;
-    return localizations.secondsCount(seconds);
+    if (seconds == 0.5) return '0.5 seconds';
+    return localizations.secondsCount(seconds.toInt());
   }
 
   Future<void> _showAyahDetailsSheet(int verse) async {
@@ -7726,7 +8506,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         textAlign: TextAlign.justify,
                         style: TextStyle(
                           fontFamily: EquranTextStyles.activeFontFamily,
-                          fontFamilyFallback: const <String>['Hafs'],
+                          fontFamilyFallback: const <String>['UthmanicHafs'],
                           fontSize: _ayahDetailsArabicFontSize,
                           height: 1.7,
                           color: colorScheme.onSurface,
@@ -7848,7 +8628,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           ),
           content: Text(
             localizations.translationNotInstalled(
-              prettyBytes(resource.sizeBytes),
+              prettyBytes(getResourceSize(resource)),
             ),
           ),
           actions: <Widget>[
@@ -8048,7 +8828,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 children: <Widget>[
                   Text(
                     localizations.tafsirNeedsDownload(
-                      prettyBytes(result.resource.sizeBytes),
+                      prettyBytes(getResourceSize(result.resource)),
                     ),
                     style: theme.textTheme.bodyMedium,
                   ),
@@ -8192,7 +8972,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       ),
       title: Text(resource.name),
       subtitle: Text(
-        '${resource.language?.toUpperCase() ?? resource.typeLabel} • ${state.label} • ${prettyBytes(resource.sizeBytes)}',
+        '${resource.language?.toUpperCase() ?? resource.typeLabel} • ${state.label} • ${prettyBytes(getResourceSize(resource))}',
       ),
       trailing: state == ResourceInstallState.installed
           ? const Icon(Icons.check_circle_rounded)
@@ -8364,7 +9144,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontFamily: EquranTextStyles.activeFontFamily,
-                                fontFamilyFallback: const <String>['Hafs'],
+                                fontFamilyFallback: const <String>[
+                                  'UthmanicHafs',
+                                ],
                                 color: colors.textPrimary,
                                 fontSize: 22,
                                 height: 1.6,
@@ -8600,30 +9382,28 @@ class _ReadingOptionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.medium),
-        border: Border.all(color: colorScheme.outlineVariant),
+        side: BorderSide(color: colorScheme.outlineVariant),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.medium),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w800,
-                ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w800,
               ),
             ),
-            ...children,
-          ],
-        ),
+          ),
+          ...children,
+        ],
       ),
     );
   }
@@ -8837,6 +9617,8 @@ class _ShareImageHeader extends StatelessWidget {
 
 class _ShareImageAyahContent extends StatelessWidget {
   const _ShareImageAyahContent({
+    required this.chapter,
+    required this.verse,
     required this.verseText,
     required this.translation,
     required this.transliteration,
@@ -8846,6 +9628,8 @@ class _ShareImageAyahContent extends StatelessWidget {
     required this.layout,
   });
 
+  final int chapter;
+  final int verse;
   final String verseText;
   final String translation;
   final String transliteration;
@@ -8879,6 +9663,8 @@ class _ShareImageAyahContent extends StatelessWidget {
             final Widget content = SizedBox(
               width: constraints.maxWidth,
               child: _ShareImageAyahTextColumn(
+                chapter: chapter,
+                verse: verse,
                 verseText: verseText,
                 translation: translation,
                 transliteration: transliteration,
@@ -8895,7 +9681,7 @@ class _ShareImageAyahContent extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.center,
                       child: content,
-                    )
+                      )
                   : content,
             );
           },
@@ -8907,6 +9693,8 @@ class _ShareImageAyahContent extends StatelessWidget {
 
 class _ShareImageAyahTextColumn extends StatelessWidget {
   const _ShareImageAyahTextColumn({
+    required this.chapter,
+    required this.verse,
     required this.verseText,
     required this.translation,
     required this.transliteration,
@@ -8916,6 +9704,8 @@ class _ShareImageAyahTextColumn extends StatelessWidget {
     required this.layout,
   });
 
+  final int chapter;
+  final int verse;
   final String verseText;
   final String translation;
   final String transliteration;
@@ -8939,8 +9729,8 @@ class _ShareImageAyahTextColumn extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: colors.textPrimary,
-            fontFamily: EquranTextStyles.activeFontFamily,
-            fontFamilyFallback: const <String>['Hafs'],
+            fontFamily: EquranTextStyles.fontFamilyForVerse(chapter, verse),
+            fontFamilyFallback: const <String>['UthmanicHafs'],
             fontSize: layout.arabicFontSize,
             height: 1.82,
             fontWeight: FontWeight.w400,

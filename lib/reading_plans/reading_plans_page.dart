@@ -13,7 +13,9 @@ import 'package:quran/quran.dart' as quran;
 const String _routineDesignAsset = 'assets/media/images/app/design.webp';
 
 class ReadingPlansPage extends StatelessWidget {
-  const ReadingPlansPage({super.key});
+  const ReadingPlansPage({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   Widget build(BuildContext context) {
@@ -22,20 +24,22 @@ class ReadingPlansPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: colors.background,
-      appBar: AppBar(
-        title: Text(localizations.readingRoutine),
-        centerTitle: true,
-        backgroundColor: colors.background,
-        foregroundColor: colors.textPrimary,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
-          color: colors.textPrimary,
-          fontWeight: FontWeight.w600,
-        ),
-        iconTheme: IconThemeData(color: colors.textSecondary),
-        actionsIconTheme: IconThemeData(color: colors.textSecondary),
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: Text(localizations.readingRoutine),
+              centerTitle: true,
+              backgroundColor: colors.background,
+              foregroundColor: colors.textPrimary,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              titleTextStyle: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+              iconTheme: IconThemeData(color: colors.textSecondary),
+              actionsIconTheme: IconThemeData(color: colors.textSecondary),
+            )
+          : null,
       body: ValueListenableBuilder<Box<dynamic>>(
         valueListenable: ReadingPlansDB().listener,
         builder: (BuildContext context, Box<dynamic> box, Widget? child) {

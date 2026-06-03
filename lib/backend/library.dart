@@ -23,3 +23,4 @@ export 'resource_install_store.dart';
 export 'resource_models.dart';
 export 'resource_repository.dart';
 export 'tafsir_service.dart';
+export 'navigation_bloc.dart';

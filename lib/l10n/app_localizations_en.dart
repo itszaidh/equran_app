@@ -1593,12 +1593,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get previousDhikr => 'Previous dhikr';
-
-  @override
-  String get nextDhikr => 'Next dhikr';
-
-  @override
   String counts33To33To34(int target) {
     return '$target counts • 33 → 33 → 34';
   }
@@ -3661,6 +3655,46 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get zakatCalculator => 'Zakat Calculator';
+
+  @override
+  String get zakatCalculatorSubtitle => 'Wealth & Nisab evaluations';
+
+  @override
+  String get islamicCalendar => 'Islamic Calendar';
+
+  @override
+  String get islamicCalendarSubtitle => 'Synchronized Hijri timeline';
+
+  @override
+  String get customizeNavigation => 'Customize Navigation';
+
+  @override
+  String get allCategories => 'All Categories';
+
+  @override
+  String get meccan => 'Meccan';
+
+  @override
+  String get medinan => 'Medinan';
+
+  @override
+  String get appearanceTileSubtitle =>
+      'Theme, light/dark mode, and color accent settings';
+
+  @override
+  String get navigationSettingsSubtitle =>
+      'Rearrange and swap bottom navigation tabs';
+
+  @override
+  String get downloadQpcFontsTitle => 'Download QPC V4 Tajweed fonts?';
+
+  @override
+  String downloadQpcFontsBody(String size) {
+    return 'Tajweed needs one TTF for each of the 604 Quran pages. Download the font package$size before enabling it.';
+  }
+
+  @override
   String get locationCleared => 'Location cleared.';
 
   @override
@@ -3824,4 +3858,253 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterValidValue => 'Enter a valid value.';
+
+  @override
+  String get prayerRemindersCouldNotBeScheduled =>
+      'Prayer reminders could not be scheduled.';
+
+  @override
+  String get qpcFontsDownloadError =>
+      'The Tajweed font download did not include all 604 pages.';
+
+  @override
+  String get sysDefaultSubtitle => 'System default / لغة النظام';
+
+  @override
+  String get enSubtitle => 'English';
+
+  @override
+  String get arSubtitle => 'العربية / Arabic';
+
+  @override
+  String get idSubtitle => 'Bahasa Indonesia / Indonesian';
+
+  @override
+  String get urSubtitle => 'اردو / Urdu';
+
+  @override
+  String get trSubtitle => 'Türkçe / Turkish';
+
+  @override
+  String get bnSubtitle => 'বাংলা / Bengali';
+
+  @override
+  String get subhanAllah => 'SubhanAllah';
+
+  @override
+  String get alhamdulillah => 'Alhamdulillah';
+
+  @override
+  String get allahuAkbar => 'Allahu Akbar';
+
+  @override
+  String get astaghfirullah => 'Astaghfirullah';
+
+  @override
+  String get custom => 'Custom';
+
+  @override
+  String get previousDhikr => 'Previous dhikr';
+
+  @override
+  String get nextDhikr => 'Next dhikr';
+
+  @override
+  String get zakatAlMal => 'Zakat al-Māl';
+
+  @override
+  String get purifyWealthSubtitle => 'Purify your wealth. Grow your blessings.';
+
+  @override
+  String get liveMarketRates => 'Live Market Rates';
+
+  @override
+  String get fetchingLiveRates => 'Fetching live market rates...';
+
+  @override
+  String get ratesSyncSuccess => 'Live metal rates synchronized successfully';
+
+  @override
+  String get ratesSyncOffline =>
+      'Market offline. Using standard cached values.';
+
+  @override
+  String get overridePrices => 'Override Prices';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get silverDefault => 'Silver';
+
+  @override
+  String get gold => 'Gold';
+
+  @override
+  String get nisabThresholdLabel => 'NISAB THRESHOLD';
+
+  @override
+  String get yourWealth => 'YOUR WEALTH';
+
+  @override
+  String get cashHint => 'Bank, cash, digital wallets, money owed to you';
+
+  @override
+  String get goldHint => 'Investment gold + jewelry (check your madhhab)';
+
+  @override
+  String get investmentsHint =>
+      'Stocks, ETFs, crypto, funds — current market value';
+
+  @override
+  String get businessHint => 'Inventory & trade goods at current value';
+
+  @override
+  String get agricultureHint => 'Crops & produce (5-10% rate applied)';
+
+  @override
+  String get otherHint => 'Any other Zakatable assets';
+
+  @override
+  String get liabilitiesDeduct => 'Liabilities (Deduct)';
+
+  @override
+  String get liabilitiesHint =>
+      'Loans, credit cards, due payments you must settle';
+
+  @override
+  String get netZakatableWealth => 'Net Zakatable Wealth';
+
+  @override
+  String get eligible => 'ELIGIBLE';
+
+  @override
+  String get belowNisab => 'BELOW NISAB';
+
+  @override
+  String get zakatDueLabel => 'ZAKAT DUE (2.5%)';
+
+  @override
+  String get resetCalculator => 'Reset Calculator';
+
+  @override
+  String get goldPriceGram => 'Gold price per gram (USD)';
+
+  @override
+  String get silverPriceGram => 'Silver price per gram (USD)';
+
+  @override
+  String get zakatSavedLedger =>
+      'Zakat calculation saved to your personal ledger';
+
+  @override
+  String get zakatPaidDistributed => 'Zakat Paid/Distributed:';
+
+  @override
+  String get updateZakatPaidAmount => 'Update Zakat Paid Amount';
+
+  @override
+  String get enterPaidAmountUsd => 'Enter paid amount in USD';
+
+  @override
+  String get calculatorTab => 'Calculator';
+
+  @override
+  String get historyTab => 'History';
+
+  @override
+  String get fastingReminder => 'Fasting Reminder';
+
+  @override
+  String get dateNotFound => 'Could not locate that date in the near future';
+
+  @override
+  String get customizeCalendar => 'Customize calendar';
+
+  @override
+  String get shareDate => 'Share this date';
+
+  @override
+  String get dateCopiedClipboard => 'Date details copied to clipboard';
+
+  @override
+  String get moonSighting => 'Moon Sighting';
+
+  @override
+  String get fastingAlerts => 'Fasting Alerts';
+
+  @override
+  String get standard => 'Standard';
+
+  @override
+  String daysPlural(int count) {
+    return '$count days';
+  }
+
+  @override
+  String daySingular(int count) {
+    return '$count day';
+  }
+
+  @override
+  String get calendarSettings => 'Calendar Settings';
+
+  @override
+  String get calendarSettingsSubtitle =>
+      'Adjust for local moon sighting and fasting reminders';
+
+  @override
+  String get sightingOffsetLabel => 'Moon Sighting Offset';
+
+  @override
+  String get fastingRemindersSubtitle =>
+      'Get notified the evening before recommended fasts';
+
+  @override
+  String get hijriDateDisclaimer =>
+      'Note: Hijri dates are approximate and depend on local moon sighting. The offset lets you align the calendar with your community’s observation.';
+
+  @override
+  String get recommendedFast => 'Recommended Fast';
+
+  @override
+  String get recommendedForThisDay => 'Recommended for this day';
+
+  @override
+  String get todayLegend => 'Today';
+
+  @override
+  String get eidLegend => 'Eid';
+
+  @override
+  String get ramadanLegend => 'Ramadan';
+
+  @override
+  String get blessedNightLegend => 'Blessed Night';
+
+  @override
+  String get fastLegend => 'Fast';
+
+  @override
+  String keyDatesInYear(int year) {
+    return 'Key Dates in $year';
+  }
+
+  @override
+  String get fastingAlertsActive => 'Fasting Alerts Active';
+
+  @override
+  String get quranFonts => 'Quran Fonts';
+
+  @override
+  String get allReciters => 'All Reciters';
+
+  @override
+  String get tapToAdjust => 'Tap to adjust';
+
+  @override
+  String get currency => 'Currency';
+
+  @override
+  String get selectCurrency => 'Select Currency';
 }

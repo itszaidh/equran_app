@@ -33,7 +33,7 @@ class SurahDB extends BaseDB {
     } catch (e) {
       // Robust structural fallback safety check to avoid application crashes on upgrade cycles
       final String fallbackTarget =
-          'assets/data/quran/text/uthmani/$surahNumber.json';
+          'assets/data/quran/text/qpc-hafs/$surahNumber.json';
       try {
         final String jsonString = await rootBundle.loadString(fallbackTarget);
         final Map<String, dynamic> decoded =
@@ -58,9 +58,12 @@ class QuranTextAssetRepository {
 
   /// Dynamically resolves the correct text asset path depending on font choices
   Future<List<String>> loadSurahVerses(int surahNumber) async {
-    final String activeStyle =
-        _settingsBox.get('quran_script_style', defaultValue: 'uthmani')
+    final String savedStyle =
+        _settingsBox.get('quran_script_style', defaultValue: 'qpc-hafs')
             as String;
+    final String activeStyle = savedStyle == 'uthmani'
+        ? 'qpc-hafs'
+        : savedStyle;
     final String assetTarget =
         'assets/data/quran/text/$activeStyle/$surahNumber.json';
 
@@ -78,7 +81,7 @@ class QuranTextAssetRepository {
     } catch (e) {
       // Robust structural fallback safety check to avoid application crashes on upgrade cycles
       final String fallbackTarget =
-          'assets/data/quran/text/uthmani/$surahNumber.json';
+          'assets/data/quran/text/qpc-hafs/$surahNumber.json';
       try {
         final String jsonString = await rootBundle.loadString(fallbackTarget);
         final Map<String, dynamic> decoded =

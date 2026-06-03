@@ -116,12 +116,8 @@ class DuaCard extends StatelessWidget {
                           textAlign: TextAlign.justify,
                           style: TextStyle(
                             fontFamily: 'Hafs',
-
                             height: 1.95,
-                            fontSize: SettingsDB().get(
-                              "fontSize",
-                              defaultValue: 31.0,
-                            ),
+                            fontSize: settingsBox.get("fontSize", defaultValue: 31.0) as double,
                             letterSpacing: 0,
                             color: colors.onSurface,
                           ),
@@ -138,8 +134,7 @@ class DuaCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                        if (showTranslation &&
-                            dua.localizedTranslation(translationLang) != null) ...<Widget>[
+                        if (showTranslation && dua.localizedTranslation(translationLang) != null) ...<Widget>[
                           const SizedBox(height: 14),
                           Divider(
                             height: 1,

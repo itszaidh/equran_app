@@ -1,6 +1,9 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:equran/backend/settings_db.dart';
+import 'package:quran/quran.dart' as quran;
 
 class EquranTextStyles {
   const EquranTextStyles._();
@@ -113,13 +116,123 @@ class EquranTextStyles {
   }
 
   static String get activeFontFamily {
-    return SettingsDB().quranScriptStyle == 'indopak' ? 'QuranIndoPak' : 'Hafs';
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'indopak') {
+      return 'QuranIndoPak';
+    } else if (style == 'qpc-hafs') {
+      return 'UthmanicHafs';
+    }
+    return 'UthmanicHafs';
+  }
+
+  static bool _isAppDarkMode() {
+    final String? themeMode = SettingsDB().get('themeMode') as String?;
+    return themeMode == 'dark' ||
+        (themeMode == null) ||
+        (themeMode == 'auto' &&
+            PlatformDispatcher.instance.platformBrightness == Brightness.dark);
+  }
+
+  static String fontFamilyForPage(int page) {
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'indopak') {
+      return 'QuranIndoPak';
+    } else if (style == 'qpc-hafs') {
+      return 'UthmanicHafs';
+    } else if (style == 'qpc-v4') {
+      final String suffix = _isAppDarkMode() ? 'dark' : 'light';
+      return 'QPCV4_Page_${page}_$suffix';
+    }
+    return 'UthmanicHafs';
+  }
+
+  static const Map<String, int> _qpcV4PageOffsets = {
+    '5:77': 120,
+    '5:83': 121,
+    '5:90': 122,
+    '6:131': 145,
+    '55:17': 531,
+    '55:18': 531,
+    '55:41': 532,
+    '55:68': 533,
+    '55:69': 533,
+    '68:16': 564,
+    '69:35': 567,
+    '70:40': 569,
+    '74:18': 575,
+    '79:16': 583,
+    '80:41': 586,
+    '80:42': 586,
+    '83:5': 588,
+    '83:6': 588,
+    '83:34': 589,
+    '84:25': 590,
+    '87:11': 592,
+    '87:12': 592,
+    '87:13': 592,
+    '87:14': 592,
+    '87:15': 592,
+    '88:23': 593,
+    '88:24': 593,
+    '88:25': 593,
+    '88:26': 593,
+    '89:23': 594,
+    '90:19': 595,
+    '90:20': 595,
+    '92:10': 596,
+    '92:11': 596,
+    '92:12': 596,
+    '92:13': 596,
+    '92:14': 596,
+    '94:3': 597,
+    '94:4': 597,
+    '94:5': 597,
+    '94:6': 597,
+    '94:7': 597,
+    '94:8': 597,
+    '96:13': 598,
+    '96:14': 598,
+    '96:15': 598,
+    '96:16': 598,
+    '96:17': 598,
+    '96:18': 598,
+    '96:19': 598,
+    '98:6': 599,
+    '98:7': 599,
+    '100:6': 600,
+    '100:7': 600,
+    '100:8': 600,
+    '100:9': 600,
+  };
+
+  static int getPageNumber(int chapter, int verse) {
+    if (SettingsDB().quranScriptStyle == 'qpc-v4') {
+      final String key = '$chapter:$verse';
+      if (_qpcV4PageOffsets.containsKey(key)) {
+        return _qpcV4PageOffsets[key]!;
+      }
+    }
+    return quran.getPageNumber(chapter, verse);
+  }
+
+  static String fontFamilyForVerse(int chapter, int verse) {
+    final String style = SettingsDB().quranScriptStyle;
+    if (style == 'indopak') {
+      return 'QuranIndoPak';
+    } else if (style == 'qpc-hafs') {
+      return 'UthmanicHafs';
+    } else if (style == 'qpc-v4') {
+      final int page = getPageNumber(chapter, verse);
+      final String suffix = _isAppDarkMode() ? 'dark' : 'light';
+      return 'QPCV4_Page_${page}_$suffix';
+    }
+    return 'UthmanicHafs';
   }
 
   static TextStyle arabicDisplay(BuildContext context, {Color? color}) {
     return TextStyle(
       fontFamily: activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: 30,
       height: 1.7,
       color: color ?? Theme.of(context).colorScheme.onSurface,
@@ -129,7 +242,7 @@ class EquranTextStyles {
   static TextStyle arabicBody(BuildContext context, {Color? color}) {
     return TextStyle(
       fontFamily: activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: 24,
       height: 1.75,
       color: color ?? Theme.of(context).colorScheme.onSurface,
@@ -139,7 +252,7 @@ class EquranTextStyles {
   static TextStyle arabicSmall(BuildContext context, {Color? color}) {
     return TextStyle(
       fontFamily: activeFontFamily,
-      fontFamilyFallback: const <String>['Hafs'],
+      fontFamilyFallback: const <String>['UthmanicHafs'],
       fontSize: 19,
       height: 1.55,
       color: color ?? Theme.of(context).colorScheme.onSurface,

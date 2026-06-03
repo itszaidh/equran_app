@@ -14,7 +14,6 @@ const String _appDownloadUrl =
 const String _issueReportUrl = 'https://github.com/ya27hw/equran_app/issues';
 const String _contactEmail = 'equran@elbaesy.com';
 const String _appAssetBase = 'assets/media/images/app';
-const String _playerAsset = '$_appAssetBase/player.webp';
 const String _qiblaAsset = '$_appAssetBase/qiblah.webp';
 const String _downloadAsset = '$_appAssetBase/download.webp';
 const String _quranAsset = '$_appAssetBase/quran.webp';
@@ -23,8 +22,9 @@ const String _tasbihAsset = '$_appAssetBase/tasbih.webp';
 const String _duaAsset = '$_appAssetBase/dua.webp';
 const String _lastReadAsset = '$_appAssetBase/last_read.webp';
 const String _settingsAsset = '$_appAssetBase/settings.webp';
+const String _zakatAsset = '$_appAssetBase/zakat.webp';
 // const String _designAsset = '$_appAssetBase/design.webp';
-const String _mosqueAsset = '$_appAssetBase/mosque.webp';
+const String _appIconAsset = 'assets/media/images/icon.webp';
 const String _themeAsset = '$_appAssetBase/theme_mode.webp';
 const String _hifzAsset = '$_appAssetBase/hifz.webp';
 const String _shareAppAsset = '$_appAssetBase/share_app.webp';
@@ -33,7 +33,6 @@ const String _feedbackAsset = '$_appAssetBase/feedback.webp';
 class MorePage extends StatelessWidget {
   const MorePage({
     super.key,
-    required this.onOpenPlayer,
     required this.onOpenQibla,
     required this.onOpenDownloads,
     required this.onOpenSearch,
@@ -42,10 +41,11 @@ class MorePage extends StatelessWidget {
     required this.onOpenAsmaUlHusna,
     required this.onOpenSettings,
     required this.onOpenStats,
+    required this.onOpenZakat,
+    required this.onOpenCalendar,
     required this.onToggleTheme,
   });
 
-  final VoidCallback onOpenPlayer;
   final VoidCallback onOpenQibla;
   final VoidCallback onOpenDownloads;
   final VoidCallback onOpenSearch;
@@ -54,6 +54,8 @@ class MorePage extends StatelessWidget {
   final VoidCallback onOpenAsmaUlHusna;
   final VoidCallback onOpenSettings;
   final VoidCallback onOpenStats;
+  final VoidCallback onOpenZakat;
+  final VoidCallback onOpenCalendar;
   final VoidCallback onToggleTheme;
 
   @override
@@ -82,13 +84,6 @@ class MorePage extends StatelessWidget {
                   const SizedBox(height: 18),
                   _MoreShortcutsGrid(
                     items: <_MoreAction>[
-                      _MoreAction(
-                        icon: Icons.library_music_outlined,
-                        assetPath: _playerAsset,
-                        title: localizations.player,
-                        subtitle: localizations.recitationsAndAudioControls,
-                        onTap: onOpenPlayer,
-                      ),
                       _MoreAction(
                         icon: Icons.explore_outlined,
                         assetPath: _qiblaAsset,
@@ -153,12 +148,27 @@ class MorePage extends StatelessWidget {
                         onTap: onOpenStats,
                       ),
                       _MoreAction(
+                        icon: Icons.calculate_outlined,
+                        assetPath: _zakatAsset,
+                        title: localizations.zakatCalculator,
+                        subtitle: localizations.zakatCalculatorSubtitle,
+                        onTap: onOpenZakat,
+                      ),
+                      _MoreAction(
+                        icon: Icons.calendar_month_outlined,
+                        assetPath: _routineAsset,
+                        title: localizations.islamicCalendar,
+                        subtitle: localizations.islamicCalendarSubtitle,
+                        onTap: onOpenCalendar,
+                      ),
+                      _MoreAction(
                         icon: Icons.settings_outlined,
                         assetPath: _settingsAsset,
                         title: localizations.settings,
                         subtitle: localizations.fontsReciterAppBehavior,
                         onTap: onOpenSettings,
                       ),
+
                       _MoreAction(
                         icon: Icons.brightness_6_outlined,
                         assetPath: _themeAsset,
@@ -472,12 +482,15 @@ class _MoreActionArtwork extends StatelessWidget {
       ),
       child: assetPath == null
           ? Icon(icon, color: colors.primary, size: 23)
-          : Image.asset(
-              assetPath!,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Icon(icon, color: colors.primary, size: 23);
-              },
+          : ClipRRect(
+              borderRadius: BorderRadius.circular(EquranRadii.small),
+              child: Image.asset(
+                assetPath!,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(icon, color: colors.primary, size: 23);
+                },
+              ),
             ),
     );
   }
@@ -503,7 +516,7 @@ class _MoreSupportSection extends StatelessWidget {
         _MoreActionTile(
           action: _MoreAction(
             icon: Icons.info_outline_rounded,
-            assetPath: _mosqueAsset,
+            assetPath: _appIconAsset,
             title: localizations.aboutThisApp,
             subtitle: localizations.appDetailsAndVersion,
             onTap: onAbout,
@@ -647,10 +660,14 @@ class _CustomAboutDialogState extends State<_CustomAboutDialog> {
       surfaceTintColor: Colors.transparent,
       title: Row(
         children: <Widget>[
-          Icon(
-            Icons.menu_book_rounded,
-            color: theme.colorScheme.primary,
-            size: 40,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(EquranRadii.medium),
+            child: Image.asset(
+              _appIconAsset,
+              width: 40,
+              height: 40,
+              fit: BoxFit.contain,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -721,10 +738,17 @@ class _CustomAboutDialogState extends State<_CustomAboutDialog> {
               context: context,
               applicationName: 'eQuran',
               applicationVersion: widget.version,
-              applicationIcon: Icon(
-                Icons.menu_book_rounded,
-                color: theme.colorScheme.primary,
-                size: 40,
+              applicationIcon: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(EquranRadii.medium),
+                  child: Image.asset(
+                    _appIconAsset,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
             );
           },

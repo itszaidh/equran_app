@@ -48,6 +48,7 @@ class ReadVersePlayerBar extends StatelessWidget {
     required this.onPlayNext,
     this.canPlayPrevious = true,
     this.canPlayNext = true,
+    this.isDownloaded = false,
   });
 
   final bool viewMode;
@@ -86,6 +87,7 @@ class ReadVersePlayerBar extends StatelessWidget {
   final VoidCallback onPlayNext;
   final bool canPlayPrevious;
   final bool canPlayNext;
+  final bool isDownloaded;
 
   @override
   Widget build(BuildContext context) {
@@ -354,18 +356,35 @@ class ReadVersePlayerBar extends StatelessWidget {
                 height: double.infinity,
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
-                  child: Text(
-                    localizedSurahAyahLabel(
-                      localizations,
-                      currentChapter,
-                      verse,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Flexible(
+                        child: Text(
+                          localizedSurahAyahLabel(
+                            localizations,
+                            currentChapter,
+                            verse,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (isDownloaded) ...[
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.offline_pin_rounded,
+                          size: 15,
+                          color: isPlaying
+                              ? Colors.green
+                              : colorScheme.onSurfaceVariant.withAlpha(140),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),

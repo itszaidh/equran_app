@@ -1,18 +1,17 @@
 import 'dart:async';
 
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:equran/backend/library.dart'
-    show AndroidAudioDisplayMode, SettingsDB;
+import 'package:equran/backend/library.dart';
 import 'package:equran/duas/asma_ul_husna_page.dart';
 import 'package:equran/duas/duas_page.dart';
 import 'package:equran/duas/tasbih_page.dart';
 import 'package:equran/home/downloads.dart';
 import 'package:equran/home/main_page.dart';
 import 'package:equran/home/more_page.dart';
-import 'package:equran/home/player.dart';
 import 'package:equran/home/quran_stats_page.dart';
 import 'package:equran/home/settings.dart';
 import 'package:equran/home_dashboard/home_dashboard_page.dart';
+import 'package:equran/hifz/hifz.dart';
 import 'package:equran/prayer/prayer_times_page.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/prayer/qibla_page.dart';
@@ -20,21 +19,11 @@ import 'package:equran/reading_plans/reading_plans_page.dart';
 import 'package:equran/services/frame_rate_policy_manager.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/responsive_nav.dart';
+import 'package:equran/zakat/zakat_page.dart';
+import 'package:equran/prayer/islamic_calendar_page.dart';
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
 
-const int _homeDestinationIndex = 0;
-const int _quranDestinationIndex = 1;
-const int _prayerDestinationIndex = 2;
-const int _duasDestinationIndex = 3;
-const int _moreDestinationIndex = 4;
-const List<int> _bottomDestinationIndices = <int>[
-  _homeDestinationIndex,
-  _quranDestinationIndex,
-  _prayerDestinationIndex,
-  _duasDestinationIndex,
-  _moreDestinationIndex,
-];
 const String _homePointerRefreshBlocker = 'home.userPointerActive';
 const String _routeTransitionRefreshBlocker = 'home.routeTransitionActive';
 const String _secondaryRouteRefreshBlocker = 'home.settingsOrDownloadsActive';
@@ -62,67 +51,221 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
   final ValueNotifier<QuranSearchRequest?> _quranSearchRequest =
       ValueNotifier<QuranSearchRequest?>(null);
 
-  List<Destinations> _getDestinations(BuildContext context) {
+  void _selectTabByWidgetType<T>(Widget Function() fallbackBuilder) {
+    final state = NavigationBloc.instance.value;
+    final List<Destinations> destinations = _getDestinationsFromState(
+      context,
+      state,
+    );
+    final int idx = destinations.indexWhere((d) => d.destination is T);
+    if (idx != -1) {
+      _onItemTapped(idx);
+    } else {
+      final localizations = AppLocalizations.of(context)!;
+      String label = '';
+      bool showAppBar = true;
+      if (T == MorePage) {
+        label = localizations.more;
+      } else if (T == MainPage) {
+        label = localizations.quran;
+      } else if (T == PrayerTimesPage) {
+        label = localizations.prayer;
+      } else if (T == DuasPage) {
+        label = localizations.duas;
+      } else if (T == DownloadsPage) {
+        label = localizations.downloads;
+      } else if (T == SettingsPage) {
+        label = localizations.settings;
+      } else if (T == StatisticsPage) {
+        label = localizations.statistics;
+      } else if (T == ReadingPlansPage) {
+        label = localizations.readingRoutine;
+      } else if (T == TasbihPage) {
+        label = localizations.tasbih;
+      } else if (T == AsmaUlHusnaPage) {
+        label = localizations.asmaUlHusna;
+      } else if (T == QiblaPage) {
+        label = localizations.qibla;
+      } else if (T == ZakatCalculatorPage) {
+        label = 'Zakat';
+      } else if (T == IslamicCalendarPage) {
+        label = 'Calendar';
+      }
+
+      _pushSecondaryPage(
+        label: label,
+        page: fallbackBuilder(),
+        reason: '${T.toString().toLowerCase()}_fallback_route',
+        showAppBar: showAppBar,
+      );
+    }
+  }
+
+  Destinations _getDestination(BuildContext context, NavItem item) {
     final localizations = AppLocalizations.of(context)!;
-    return <Destinations>[
-      Destinations(
-        localizations.home,
-        const Icon(Icons.home_outlined),
-        const Icon(Icons.home_rounded),
-        HomeDashboardPage(
-          onOpenMore: () => _onItemTapped(_moreDestinationIndex),
-          onOpenQuran: () => _onItemTapped(_quranDestinationIndex),
-          onOpenPlayer: _openPlayerPage,
-          onOpenPrayerTimes: () => _onItemTapped(_prayerDestinationIndex),
-          onOpenQibla: _openQiblaPage,
-          onOpenDuas: () => _onItemTapped(_duasDestinationIndex),
-          onOpenTasbih: _openTasbihPage,
-          onOpenReadingPlans: _openReadingPlansPage,
-          onOpenDownloads: _openDownloadsPage,
-          onOpenSearch: _openQuranTextSearch,
-          onOpenStats: _openStatisticsPage,
-        ),
-      ),
-      Destinations(
-        localizations.quran,
-        const Icon(Icons.menu_book_outlined),
-        const Icon(Icons.menu_book_rounded),
-        MainPage(searchRequestListenable: _quranSearchRequest),
-      ),
-      Destinations(
-        localizations.prayer,
-        const Icon(Icons.access_time_outlined),
-        const Icon(Icons.schedule_rounded),
-        const PrayerTimesPage(),
-      ),
-      Destinations(
-        localizations.duas,
-        const Icon(Icons.auto_stories_outlined),
-        const Icon(Icons.auto_stories_rounded),
-        DuasPage(),
-      ),
-      Destinations(
-        localizations.more,
-        const Icon(Icons.grid_view_outlined),
-        const Icon(Icons.grid_view_rounded),
-        MorePage(
-          onOpenPlayer: _openPlayerPage,
-          onOpenQibla: _openQiblaPage,
-          onOpenDownloads: _openDownloadsPage,
-          onOpenSearch: _openQuranTextSearch,
-          onOpenReadingPlans: _openReadingPlansPage,
-          onOpenTasbih: _openTasbihPage,
-          onOpenAsmaUlHusna: _openAsmaUlHusnaPage,
-          onOpenSettings: _openSettingsPage,
-          onOpenStats: _openStatisticsPage,
-          onToggleTheme: () => unawaited(_toggleQuickTheme()),
-        ),
-      ),
-    ];
+
+    switch (item) {
+      case NavItem.home:
+        return Destinations(
+          localizations.home,
+          const Icon(Icons.home_outlined),
+          const Icon(Icons.home_rounded),
+          HomeDashboardPage(
+            onOpenMore: () => _selectTabByWidgetType<MorePage>(
+              () => MorePage(
+                onOpenQibla: _openQiblaPage,
+                onOpenDownloads: _openDownloadsPage,
+                onOpenSearch: _openQuranTextSearch,
+                onOpenReadingPlans: _openReadingPlansPage,
+                onOpenTasbih: _openTasbihPage,
+                onOpenAsmaUlHusna: _openAsmaUlHusnaPage,
+                onOpenSettings: _openSettingsPage,
+                onOpenStats: _openStatisticsPage,
+                onOpenZakat: _openZakatPage,
+                onOpenCalendar: _openCalendarPage,
+                onToggleTheme: _toggleQuickTheme,
+              ),
+            ),
+            onOpenQuran: () => _selectTabByWidgetType<MainPage>(
+              () => MainPage(searchRequestListenable: _quranSearchRequest),
+            ),
+            onOpenZakat: _openZakatPage,
+            onOpenPrayerTimes: () => _selectTabByWidgetType<PrayerTimesPage>(
+              () => const PrayerTimesPage(),
+            ),
+            onOpenQibla: _openQiblaPage,
+            onOpenDuas: () =>
+                _selectTabByWidgetType<DuasPage>(() => DuasPage()),
+            onOpenTasbih: _openTasbihPage,
+            onOpenReadingPlans: _openReadingPlansPage,
+            onOpenDownloads: _openDownloadsPage,
+            onOpenSearch: _openQuranTextSearch,
+            onOpenStats: _openStatisticsPage,
+          ),
+        );
+      case NavItem.quran:
+        return Destinations(
+          localizations.quran,
+          const Icon(Icons.menu_book_outlined),
+          const Icon(Icons.menu_book_rounded),
+          MainPage(searchRequestListenable: _quranSearchRequest),
+        );
+      case NavItem.prayer:
+        return Destinations(
+          localizations.prayer,
+          const Icon(Icons.access_time_outlined),
+          const Icon(Icons.schedule_rounded),
+          const PrayerTimesPage(),
+        );
+      case NavItem.duas:
+        return Destinations(
+          localizations.duas,
+          const Icon(Icons.auto_stories_outlined),
+          const Icon(Icons.auto_stories_rounded),
+          DuasPage(),
+        );
+      case NavItem.statistics:
+        return Destinations(
+          localizations.statistics,
+          const Icon(Icons.bar_chart_outlined),
+          const Icon(Icons.bar_chart_rounded),
+          const StatisticsPage(),
+        );
+      case NavItem.qibla:
+        return Destinations(
+          localizations.qibla,
+          const Icon(Icons.explore_outlined),
+          const Icon(Icons.explore_rounded),
+          const QiblaPage(),
+        );
+      case NavItem.downloads:
+        return Destinations(
+          localizations.downloads,
+          const Icon(Icons.download_outlined),
+          const Icon(Icons.download_rounded),
+          const DownloadsPage(),
+        );
+      case NavItem.readingPlans:
+        return Destinations(
+          localizations.readingRoutine,
+          const Icon(Icons.route_outlined),
+          const Icon(Icons.route_rounded),
+          const ReadingPlansPage(showAppBar: false),
+        );
+      case NavItem.hifz:
+        return Destinations(
+          localizations.hifz,
+          const Icon(Icons.menu_book_rounded),
+          const Icon(Icons.menu_book_rounded),
+          HifzHomePage(),
+        );
+      case NavItem.tasbih:
+        return Destinations(
+          localizations.tasbih,
+          const Icon(Icons.auto_awesome_outlined),
+          const Icon(Icons.auto_awesome_rounded),
+          const TasbihPage(showAppBar: false),
+        );
+      case NavItem.asmaUlHusna:
+        return Destinations(
+          localizations.asmaUlHusna,
+          const Icon(Icons.diamond_outlined),
+          const Icon(Icons.diamond_rounded),
+          const AsmaUlHusnaPage(showAppBar: false),
+        );
+      case NavItem.settings:
+        return Destinations(
+          localizations.settings,
+          const Icon(Icons.settings_outlined),
+          const Icon(Icons.settings_rounded),
+          const SettingsPage(),
+        );
+      case NavItem.zakat:
+        return Destinations(
+          'Zakat',
+          const Icon(Icons.calculate_outlined),
+          const Icon(Icons.calculate_rounded),
+          const ZakatCalculatorPage(showAppBar: false),
+        );
+      case NavItem.calendar:
+        return Destinations(
+          'Calendar',
+          const Icon(Icons.calendar_month_outlined),
+          const Icon(Icons.calendar_month_rounded),
+          const IslamicCalendarPage(),
+        );
+      case NavItem.more:
+        return Destinations(
+          localizations.more,
+          const Icon(Icons.grid_view_outlined),
+          const Icon(Icons.grid_view_rounded),
+          MorePage(
+            onOpenQibla: _openQiblaPage,
+            onOpenDownloads: _openDownloadsPage,
+            onOpenSearch: _openQuranTextSearch,
+            onOpenReadingPlans: _openReadingPlansPage,
+            onOpenTasbih: _openTasbihPage,
+            onOpenAsmaUlHusna: _openAsmaUlHusnaPage,
+            onOpenSettings: _openSettingsPage,
+            onOpenStats: _openStatisticsPage,
+            onOpenZakat: _openZakatPage,
+            onOpenCalendar: _openCalendarPage,
+            onToggleTheme: () => unawaited(_toggleQuickTheme()),
+          ),
+        );
+    }
+  }
+
+  List<Destinations> _getDestinationsFromState(
+    BuildContext context,
+    NavigationState state,
+  ) {
+    return state.activeNavbarItems
+        .map((item) => _getDestination(context, item))
+        .toList();
   }
 
   @override
@@ -152,81 +295,94 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final double navIconSize = ResponsiveNav.iconSize(context);
     final EquranColors equranColors = context.equranColors;
-    final List<Destinations> destinations = _getDestinations(context);
 
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: (_) => _handleGlobalPointerDown(),
-      onPointerUp: (_) => _handleGlobalPointerReleased(),
-      onPointerCancel: (_) => _handleGlobalPointerReleased(),
-      onPointerSignal: (_) => AndroidAudioDisplayMode.notifyUserActivity(),
-      child: Scaffold(
-        appBar:
-            (_selectedIndex == _prayerDestinationIndex ||
-                _selectedIndex == _duasDestinationIndex ||
-                _selectedIndex == _moreDestinationIndex)
-            ? AppBar(
-                toolbarHeight: ResponsiveNav.toolbarHeight(context),
-                title: Text(destinations[_selectedIndex].label),
-                centerTitle: true,
-                backgroundColor: _selectedIndex == _prayerDestinationIndex
-                    ? Colors.transparent
-                    : equranColors.background,
-                foregroundColor: equranColors.textPrimary,
-                elevation: 0,
-                scrolledUnderElevation: 0,
-                surfaceTintColor: Colors.transparent,
-                titleTextStyle: Theme.of(context).textTheme.titleLarge
-                    ?.copyWith(
-                      color: equranColors.textPrimary,
-                      fontWeight: FontWeight.w600,
+    return ValueListenableBuilder<NavigationState>(
+      valueListenable: NavigationBloc.instance,
+      builder: (context, state, child) {
+        final List<Destinations> destinations = _getDestinationsFromState(
+          context,
+          state,
+        );
+        final int selectedIdx = state.selectedIndex.clamp(
+          0,
+          destinations.length - 1,
+        );
+
+        return Listener(
+          behavior: HitTestBehavior.translucent,
+          onPointerDown: (_) => _handleGlobalPointerDown(),
+          onPointerUp: (_) => _handleGlobalPointerReleased(),
+          onPointerCancel: (_) => _handleGlobalPointerReleased(),
+          onPointerSignal: (_) => AndroidAudioDisplayMode.notifyUserActivity(),
+          child: Scaffold(
+            appBar:
+                (destinations[selectedIdx].destination is PrayerTimesPage ||
+                    destinations[selectedIdx].destination is DuasPage ||
+                    destinations[selectedIdx].destination is MorePage)
+                ? AppBar(
+                    toolbarHeight: ResponsiveNav.toolbarHeight(context),
+                    title: Text(destinations[selectedIdx].label),
+                    centerTitle: true,
+                    backgroundColor:
+                        destinations[selectedIdx].destination is PrayerTimesPage
+                        ? Colors.transparent
+                        : equranColors.background,
+                    foregroundColor: equranColors.textPrimary,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    surfaceTintColor: Colors.transparent,
+                    titleTextStyle: Theme.of(context).textTheme.titleLarge
+                        ?.copyWith(
+                          color: equranColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                    iconTheme: IconThemeData(
+                      color: equranColors.textSecondary,
+                      size: navIconSize,
                     ),
-                iconTheme: IconThemeData(
-                  color: equranColors.textSecondary,
-                  size: navIconSize,
-                ),
-                actionsIconTheme: IconThemeData(
-                  color: equranColors.textSecondary,
-                  size: navIconSize,
-                ),
-                actions: <Widget>[
-                  if (destinations[_selectedIndex].destination
-                      is PrayerTimesPage) ...<Widget>[
-                    IconButton(
-                      tooltip: AppLocalizations.of(
-                        context,
-                      )!.prayerTimesSettings,
-                      onPressed: _openPrayerSettingsPage,
-                      icon: const Icon(Icons.settings_outlined),
+                    actionsIconTheme: IconThemeData(
+                      color: equranColors.textSecondary,
+                      size: navIconSize,
                     ),
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(end: 6),
-                      child: IconButton(
-                        tooltip: AppLocalizations.of(context)!.qibla,
-                        onPressed: _openQiblaPage,
-                        icon: const Icon(Icons.explore_outlined),
-                      ),
-                    ),
-                  ],
-                ],
-              )
-            : null,
-        body: destinations[_selectedIndex].destination,
-        bottomNavigationBar: _buildBottomNavigation(),
-      ),
+                    actions: <Widget>[
+                      if (destinations[selectedIdx].destination
+                          is PrayerTimesPage) ...<Widget>[
+                        IconButton(
+                          tooltip: AppLocalizations.of(
+                            context,
+                          )!.prayerTimesSettings,
+                          onPressed: _openPrayerSettingsPage,
+                          icon: const Icon(Icons.settings_outlined),
+                        ),
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(end: 6),
+                          child: IconButton(
+                            tooltip: AppLocalizations.of(context)!.qibla,
+                            onPressed: _openQiblaPage,
+                            icon: const Icon(Icons.explore_outlined),
+                          ),
+                        ),
+                      ],
+                    ],
+                  )
+                : null,
+            body: destinations[selectedIdx].destination,
+            bottomNavigationBar: _buildBottomNavigation(state, destinations),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildBottomNavigation() {
+  Widget _buildBottomNavigation(
+    NavigationState state,
+    List<Destinations> destinations,
+  ) {
     final EquranColors colors = context.equranColors;
-    final localizations = AppLocalizations.of(context)!;
-    final int navIndex = switch (_selectedIndex) {
-      _homeDestinationIndex => 0,
-      _quranDestinationIndex => 1,
-      _prayerDestinationIndex => 2,
-      _duasDestinationIndex => 3,
-      _ => 4,
-    };
+    final int selectedIdx = state.selectedIndex.clamp(
+      0,
+      destinations.length - 1,
+    );
 
     return ColoredBox(
       color: colors.primary,
@@ -234,38 +390,18 @@ class _HomePageState extends State<HomePage> {
         top: false,
         child: NavigationBar(
           height: 68,
-          selectedIndex: navIndex,
+          selectedIndex: selectedIdx,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           onDestinationSelected: (int index) {
-            _onItemTapped(_bottomDestinationIndices[index]);
+            _onItemTapped(index);
           },
-          destinations: <NavigationDestination>[
-            NavigationDestination(
-              icon: const Icon(Icons.home_outlined),
-              selectedIcon: const Icon(Icons.home_rounded),
-              label: localizations.home,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.menu_book_outlined),
-              selectedIcon: const Icon(Icons.menu_book_rounded),
-              label: localizations.quran,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.schedule_outlined),
-              selectedIcon: const Icon(Icons.schedule_rounded),
-              label: localizations.prayer,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.auto_stories_outlined),
-              selectedIcon: const Icon(Icons.auto_stories_rounded),
-              label: localizations.duas,
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.grid_view_rounded),
-              selectedIcon: const Icon(Icons.grid_view_rounded),
-              label: localizations.more,
-            ),
-          ],
+          destinations: destinations.map((d) {
+            return NavigationDestination(
+              icon: d.icon,
+              selectedIcon: d.selectedIcon,
+              label: d.label,
+            );
+          }).toList(),
         ),
       ),
     );
@@ -304,7 +440,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openQuranTextSearch() {
-    _onItemTapped(_quranDestinationIndex);
+    _selectTabByWidgetType<MainPage>(
+      () => MainPage(searchRequestListenable: _quranSearchRequest),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _quranSearchRequest.value = QuranSearchRequest(
         mode: QuranSearchMode.quranText,
@@ -427,122 +565,53 @@ class _HomePageState extends State<HomePage> {
       false,
       reason: 'primary_tab_visible',
     );
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  void _openPlayerPage() {
-    final localizations = AppLocalizations.of(context)!;
-    _pushSecondaryPage(
-      label: localizations.player,
-      page: const PlayerPage(),
-      reason: 'player_route',
-      showAppBar: false,
-    );
+    NavigationBloc.instance.selectTab(index);
   }
 
   void _openDownloadsPage() {
-    final localizations = AppLocalizations.of(context)!;
-    _pushSecondaryPage(
-      label: localizations.downloads,
-      page: const DownloadsPage(),
-      reason: 'downloads_route',
-    );
+    _selectTabByWidgetType<DownloadsPage>(() => const DownloadsPage());
   }
 
   void _openSettingsPage() {
-    final localizations = AppLocalizations.of(context)!;
-    _pushSecondaryPage(
-      label: localizations.settings,
-      page: const SettingsPage(),
-      reason: 'settings_route',
-    );
+    _selectTabByWidgetType<SettingsPage>(() => const SettingsPage());
   }
 
   void _openStatisticsPage() {
-    final localizations = AppLocalizations.of(context)!;
-    _pushSecondaryPage(
-      label: localizations.statistics,
-      page: const StatisticsPage(),
-      reason: 'statistics_route',
-    );
+    _selectTabByWidgetType<StatisticsPage>(() => const StatisticsPage());
   }
 
   void _openReadingPlansPage() {
-    FrameRatePolicyManager.instance.setRouteTransitionActive(
-      true,
-      reason: 'reading_plans_route_opening',
+    _selectTabByWidgetType<ReadingPlansPage>(
+      () => const ReadingPlansPage(showAppBar: false),
     );
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => const ReadingPlansPage(),
-          ),
-        )
-        .whenComplete(() {
-          FrameRatePolicyManager.instance.setRouteTransitionActive(
-            false,
-            reason: 'reading_plans_route_closed',
-          );
-        });
   }
 
   void _openTasbihPage() {
-    FrameRatePolicyManager.instance.setRouteTransitionActive(
-      true,
-      reason: 'tasbih_route_opening',
+    _selectTabByWidgetType<TasbihPage>(
+      () => const TasbihPage(showAppBar: false),
     );
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => const TasbihPage(),
-          ),
-        )
-        .whenComplete(() {
-          FrameRatePolicyManager.instance.setRouteTransitionActive(
-            false,
-            reason: 'tasbih_route_closed',
-          );
-        });
   }
 
   void _openAsmaUlHusnaPage() {
-    FrameRatePolicyManager.instance.setRouteTransitionActive(
-      true,
-      reason: 'asma_ul_husna_route_opening',
+    _selectTabByWidgetType<AsmaUlHusnaPage>(
+      () => const AsmaUlHusnaPage(showAppBar: false),
     );
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => const AsmaUlHusnaPage(),
-          ),
-        )
-        .whenComplete(() {
-          FrameRatePolicyManager.instance.setRouteTransitionActive(
-            false,
-            reason: 'asma_ul_husna_route_closed',
-          );
-        });
   }
 
   void _openQiblaPage() {
-    FrameRatePolicyManager.instance.setRouteTransitionActive(
-      true,
-      reason: 'qibla_route_opening',
+    _selectTabByWidgetType<QiblaPage>(() => const QiblaPage());
+  }
+
+  void _openZakatPage() {
+    _selectTabByWidgetType<ZakatCalculatorPage>(
+      () => const ZakatCalculatorPage(showAppBar: false),
     );
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => const QiblaPage(),
-          ),
-        )
-        .whenComplete(() {
-          FrameRatePolicyManager.instance.setRouteTransitionActive(
-            false,
-            reason: 'qibla_route_closed',
-          );
-        });
+  }
+
+  void _openCalendarPage() {
+    _selectTabByWidgetType<IslamicCalendarPage>(
+      () => const IslamicCalendarPage(),
+    );
   }
 
   void _openPrayerSettingsPage() {

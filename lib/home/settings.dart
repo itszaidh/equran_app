@@ -1,4 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
+import 'appearance_settings_page.dart';
+import 'navigation_settings_page.dart';
 import 'package:equran/backend/library.dart'
     show
         BookmarkDB,
@@ -22,7 +24,9 @@ import 'package:equran/backend/library.dart'
         ResourceType,
         RoutineDayProgressDB,
         SettingsDB,
-        prettyBytes;
+        prettyBytes,
+        getResourceSize;
+import 'package:equran/backend/qpc_v4_font_service.dart';
 import 'package:equran/backend/backup_service.dart';
 import 'package:equran/prayer/prayer_times_settings_page.dart';
 import 'package:equran/utils/app_theme.dart';
@@ -83,12 +87,58 @@ class _SettingsPageState extends State<SettingsPage> {
             initiallyExpanded: true,
             children: <Widget>[
               _buildLanguageTile(context),
+              ListTile(
+                leading: const Icon(Icons.access_time_rounded),
+                title: Text(localizations.prayerTimesSettings),
+                subtitle: Text(localizations.prayerTimesSettingsSubtitle),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const PrayerTimesSettingsPage(),
+                  ),
+                ),
+              ),
               SettingsSwitch(
+                leading: const Icon(Icons.vibration_rounded),
                 title: localizations.vibration,
                 subtitle: localizations.vibrationSubtitle,
                 settingsKey: "vibration",
               ),
+            ],
+          ),
+          _buildSettingsGroup(
+            context: context,
+            title: localizations.appearance,
+            subtitle: localizations.appearanceSubtitle,
+            icon: Icons.palette_rounded,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.palette_rounded),
+                title: Text(localizations.appearance),
+                subtitle: Text(
+                  localizations.appearanceTileSubtitle,
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const AppearanceSettingsPage(),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.linear_scale_rounded),
+                title: Text(localizations.customizeNavigation),
+                subtitle: Text(
+                  localizations.navigationSettingsSubtitle,
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const NavigationSettingsPage(),
+                  ),
+                ),
+              ),
               SettingsSwitch(
+                leading: const Icon(Icons.history_rounded),
                 title: localizations.showReadingHistory,
                 settingsKey: "showLastRead",
                 subtitle: localizations.showReadingHistorySubtitle,
@@ -103,6 +153,7 @@ class _SettingsPageState extends State<SettingsPage> {
             initiallyExpanded: true,
             children: <Widget>[
               SettingsSwitch(
+                leading: const Icon(Icons.view_day_rounded),
                 title: localizations.cardView,
                 subtitle: localizations.cardViewSubtitle,
                 settingsKey: "viewMode",
@@ -110,6 +161,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               if (cardViewEnabled)
                 SettingsSwitch(
+                  leading: const Icon(Icons.subtitles_rounded),
                   title: localizations.displayTranslation,
                   subtitle: localizations.displayTranslationSubtitle,
                   settingsKey: "enableTranslation",
@@ -117,7 +169,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   defaultValue: true,
                 ),
               if (cardViewEnabled) _buildTransliterationToggle(context),
-
               _buildDailyQuranGoalTile(context),
               _buildTranslationTile(context),
               _buildScriptStyleTile(context),
@@ -140,34 +191,6 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: localizations.downloadableResourcesSubtitle,
             icon: Icons.cloud_download_outlined,
             children: <Widget>[_buildDownloadableResourcesSection(context)],
-          ),
-          _buildSettingsGroup(
-            context: context,
-            title: localizations.prayerTimes,
-            subtitle: localizations.locationAndCalculationSettings,
-            icon: Icons.access_time_outlined,
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.tune_rounded),
-                title: Text(localizations.prayerTimesSettings),
-                subtitle: Text(localizations.prayerTimesSettingsSubtitle),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const PrayerTimesSettingsPage(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          _buildSettingsGroup(
-            context: context,
-            title: localizations.appearance,
-            subtitle: localizations.appearanceSubtitle,
-            icon: Icons.palette_outlined,
-            children: <Widget>[
-              _buildThemeModeTile(context),
-              _buildThemeColorTile(context),
-            ],
           ),
           _buildSettingsGroup(
             context: context,
@@ -225,12 +248,12 @@ class _SettingsPageState extends State<SettingsPage> {
     final localizations = AppLocalizations.of(context)!;
     final String currentStyle = SettingsDB().quranScriptStyle;
     final String label = currentStyle == 'indopak'
-        ? localizations.indoPak
-        : localizations.uthmaniMadinah;
+        ? 'IndoPak'
+        : 'Uthmani (Madinah)';
 
     return ListTile(
       leading: const Icon(Icons.font_download_outlined),
-      title: Text(localizations.quranScriptStyle),
+      title: const Text('Quran Script Style'),
       subtitle: Text(label),
       onTap: () async {
         final String? value = await _showSelectionDialog<String>(
@@ -238,18 +261,20 @@ class _SettingsPageState extends State<SettingsPage> {
           title: localizations.quranScriptStyle,
           icon: Icons.font_download_outlined,
           selectedValue: currentStyle,
-          options: <AppSelectionOption<String>>[
+          options: const <AppSelectionOption<String>>[
             AppSelectionOption<String>(
               value: 'uthmani',
-              title: localizations.uthmaniMadinah,
+              title: 'Uthmani (Madinah)',
             ),
-            AppSelectionOption<String>(
-              value: 'indopak',
-              title: localizations.indoPak,
-            ),
+            AppSelectionOption<String>(value: 'indopak', title: 'IndoPak'),
           ],
         );
         if (value == null) return;
+        if (value == 'qpc-v4') {
+          final bool ready = await _ensureQpcV4FontsReady();
+          if (!ready) return;
+          await QpcV4FontService.instance.ensureFontLoadedForPage(1);
+        }
         await SettingsDB().setQuranScriptStyle(value);
         if (mounted) {
           setState(() {});
@@ -261,6 +286,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildTranslationTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
+      leading: const Icon(Icons.g_translate_rounded),
       title: Text(localizations.translation),
       subtitle: Text(_selectedTranslationName(localizations)),
       onTap: () async {
@@ -326,6 +352,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildTransliterationToggle(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return SettingsSwitch(
+      leading: const Icon(Icons.abc_rounded),
       title: localizations.displayTransliteration,
       subtitle: localizations.displayTransliterationSubtitle,
       settingsKey: "showTransliteration",
@@ -336,6 +363,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildReciterTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
+      leading: const Icon(Icons.record_voice_over_rounded),
       title: Text(localizations.reciter),
       subtitle: Text(_selectedReciterName()),
       onTap: () async {
@@ -423,8 +451,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     _buildResourceSubsection(
                       context: context,
                       manifest: manifest,
-                      title: localizations.audioTimings,
-                      resources: manifest.resourcesOfType(ResourceType.timings),
+                      title: localizations.quranFonts,
+                      resources: _quranFontResources(manifest),
                       downloads: downloads,
                     ),
                     _buildResourceSubsection(
@@ -462,6 +490,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (resources.isEmpty) {
       final localizations = AppLocalizations.of(context)!;
       return ListTile(
+        leading: const Icon(Icons.cloud_off_rounded),
         title: Text(title),
         subtitle: Text(localizations.noResourcesListed),
       );
@@ -499,6 +528,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final ResourceInstallStore store = ResourceInstallStore.instance;
     final bool isTafsir = resource.type == ResourceType.tafsir;
     final bool isTranslation = resource.type == ResourceType.translation;
+    final bool isQuranFonts = resource.type == ResourceType.quranFonts;
     final bool selected =
         (isTafsir &&
             store.selectedTafsirResourceIds(manifest).contains(resource.id)) ||
@@ -529,6 +559,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   ? selected
                         ? Icons.radio_button_checked_rounded
                         : Icons.translate_rounded
+                  : isQuranFonts
+                  ? Icons.font_download_outlined
                   : Icons.graphic_eq_rounded,
             ),
       title: Text(resource.name),
@@ -593,9 +625,84 @@ class _SettingsPageState extends State<SettingsPage> {
           resource.reciterCode,
         ).displayName(arabic: isArabicLocalizations(localizations)),
       'v${resource.version}',
-      prettyBytes(resource.sizeBytes),
+      prettyBytes(getResourceSize(resource)),
     ];
     return parts.join(' • ');
+  }
+
+  List<DownloadableResource> _quranFontResources(ResourceManifest manifest) {
+    final List<DownloadableResource> resources = manifest.resourcesOfType(
+      ResourceType.quranFonts,
+    );
+    if (resources.any(
+      (resource) => resource.id == QpcV4FontService.tajweedFontsResource.id,
+    )) {
+      return resources;
+    }
+    return <DownloadableResource>[
+      QpcV4FontService.tajweedFontsResource,
+      ...resources,
+    ];
+  }
+
+  Future<bool> _ensureQpcV4FontsReady() async {
+    if (await QpcV4FontService.instance.hasAllPageFonts()) return true;
+
+    if (!mounted) return false;
+    final DownloadableResource resource = await _qpcV4FontsResource();
+    if (!mounted) return false;
+    final int? size = getResourceSize(resource);
+    final String sizeLabel = size == null
+        ? ''
+        : ' (${prettyBytes(size)})';
+    final localizations = AppLocalizations.of(context)!;
+    final bool? download = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(localizations.downloadQpcFontsTitle),
+        content: Text(
+          localizations.downloadQpcFontsBody(sizeLabel),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(localizations.cancel),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).pop(true),
+            icon: const Icon(Icons.download_rounded),
+            label: Text(localizations.download),
+          ),
+        ],
+      ),
+    );
+    if (download != true) return false;
+
+    final bool installed = await _downloadResource(resource);
+    if (!installed) return false;
+    QpcV4FontService.instance.clearCache();
+
+    final bool ready = await QpcV4FontService.instance.hasAllPageFonts();
+    if (!ready && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizations.qpcFontsDownloadError,
+          ),
+        ),
+      );
+    }
+    return ready;
+  }
+
+  Future<DownloadableResource> _qpcV4FontsResource() async {
+    try {
+      final ResourceManifest manifest = await _resourceManifestFuture;
+      return manifest.resourceById(QpcV4FontService.tajweedFontsResource.id) ??
+          QpcV4FontService.tajweedFontsResource;
+    } catch (_) {
+      return QpcV4FontService.tajweedFontsResource;
+    }
   }
 
   Future<void> _toggleTafsirSelection({
@@ -686,7 +793,7 @@ class _SettingsPageState extends State<SettingsPage> {
         content: Text(
           AppLocalizations.of(
             context,
-          )!.translationNotInstalled(prettyBytes(resource.sizeBytes)),
+          )!.translationNotInstalled(prettyBytes(getResourceSize(resource))),
         ),
         actions: <Widget>[
           TextButton(
@@ -715,6 +822,9 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<bool> _downloadResource(DownloadableResource resource) async {
     try {
       await ResourceDownloadService.instance.downloadAndInstall(resource);
+      if (resource.id == QpcV4FontService.tajweedFontsResource.id) {
+        QpcV4FontService.instance.clearCache();
+      }
       await QuranTranslationService.instance
           .loadInstalledTranslationForResource(resource);
       if (!mounted) return false;
@@ -762,6 +872,12 @@ class _SettingsPageState extends State<SettingsPage> {
     );
     if (confirmed != true) return;
     await ResourceDownloadService.instance.uninstall(resource);
+    if (resource.id == QpcV4FontService.tajweedFontsResource.id) {
+      QpcV4FontService.instance.clearCache();
+      if (SettingsDB().quranScriptStyle == 'qpc-v4') {
+        await SettingsDB().setQuranScriptStyle('qpc-hafs');
+      }
+    }
     if (!mounted) return;
     final localizations = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -776,139 +892,11 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  Widget _buildThemeColorTile(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
-    return ListTile(
-      onTap: () async {
-        final String? selectedScheme = await _showThemeSchemeDialog(context);
-        if (selectedScheme == null) return;
-        await SettingsDB().put("themeScheme", selectedScheme);
-        if (mounted) {
-          setState(() {});
-        }
-
-        final MaterialColor color = _savedMaterialColor();
-        if (context.mounted) {
-          AdaptiveTheme.of(context).setTheme(
-            light: AppTheme.buildLightTheme(color, schemeId: selectedScheme),
-            dark: AppTheme.buildDarkTheme(color, schemeId: selectedScheme),
-          );
-        }
-      },
-      title: Text(localizations.colorScheme),
-      subtitle: Text(_selectedThemeName(localizations)),
-    );
-  }
-
-  Future<String?> _showThemeSchemeDialog(BuildContext context) {
-    final String selectedScheme = _selectedThemeScheme();
-
-    return showDialog<String>(
-      context: context,
-      builder: (context) {
-        final AppLocalizations localizations = AppLocalizations.of(context)!;
-        final ThemeData theme = Theme.of(context);
-        final ColorScheme colorScheme = theme.colorScheme;
-        final BorderRadius radius = BorderRadius.circular(AppRadii.large);
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 32,
-          ),
-          backgroundColor: colorScheme.surfaceContainer,
-          shape: RoundedRectangleBorder(borderRadius: radius),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 420,
-                maxHeight: MediaQuery.sizeOf(context).height - 64,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Icon(
-                          Icons.format_paint_rounded,
-                          color: colorScheme.primary,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.colorSchemeDialogTitle,
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: AppLocalizations.of(context)!.close,
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.close_rounded),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Flexible(
-                      child: Scrollbar(
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          itemCount: _themeSchemeOptions.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final _ThemeSchemeOption option =
-                                _themeSchemeOptions[index];
-                            return ListTile(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AppRadii.medium,
-                                ),
-                                side: BorderSide(
-                                  color: option.id == selectedScheme
-                                      ? colorScheme.primary
-                                      : colorScheme.outlineVariant,
-                                ),
-                              ),
-                              tileColor: option.id == selectedScheme
-                                  ? colorScheme.primaryContainer.withAlpha(90)
-                                  : colorScheme.surfaceContainerLow,
-                              leading: _ThemeSchemeSwatch(option: option),
-                              title: Text(option.title(localizations)),
-                              subtitle: Text(option.subtitle(localizations)),
-                              trailing: option.id == selectedScheme
-                                  ? Icon(
-                                      Icons.check_circle_rounded,
-                                      color: colorScheme.primary,
-                                    )
-                                  : null,
-                              onTap: () => Navigator.of(context).pop(option.id),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildDailyQuranGoalTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     final int goal = _dailyQuranGoalAyahs();
     return ListTile(
-      leading: const Icon(Icons.flag_outlined),
+      leading: const Icon(Icons.flag_rounded),
       title: Text(localizations.dailyQuranGoal),
       subtitle: Text(localizations.dailyQuranGoalSubtitle(goal)),
       onTap: () async {
@@ -982,6 +970,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildClearReadingHistoryTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
+      leading: const Icon(Icons.delete_sweep_rounded),
       title: Text(localizations.clearReadingHistory),
       subtitle: Text(localizations.clearReadingHistorySubtitle),
       onTap: () => _showClearDataDialog(
@@ -996,7 +985,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildBackupDataTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
-      leading: const Icon(Icons.backup_outlined),
+      leading: const Icon(Icons.backup_rounded),
       title: Text(localizations.backupData),
       subtitle: Text(localizations.backupDataSubtitle),
       onTap: () async {
@@ -1023,7 +1012,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildRestoreDataTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
-      leading: const Icon(Icons.restore_page_outlined),
+      leading: const Icon(Icons.settings_backup_restore_rounded),
       title: Text(localizations.restoreData),
       subtitle: Text(localizations.restoreDataSubtitle),
       onTap: () async {
@@ -1061,6 +1050,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildClearFavouritesTile(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
     return ListTile(
+      leading: const Icon(Icons.delete_forever_rounded),
       title: Text(localizations.clearFavourites),
       subtitle: Text(localizations.clearFavouritesSubtitle),
       onTap: () => _showClearDataDialog(
@@ -1158,6 +1148,29 @@ class _SettingsPageState extends State<SettingsPage> {
     AdaptiveTheme.of(context).setThemeMode(themeMode);
   }
 
+  String _selectedThemeScheme() {
+    final dynamic savedScheme = SettingsDB().get("themeScheme");
+    return switch (savedScheme) {
+      AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
+      AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
+      AppTheme.sepiaScheme => AppTheme.sepiaScheme,
+      AppTheme.blackScheme => AppTheme.blackScheme,
+      AppTheme.redScheme => AppTheme.redScheme,
+      _ => AppTheme.defaultScheme,
+    };
+  }
+
+  MaterialColor _savedMaterialColor() {
+    final dynamic savedColorIndex = SettingsDB().get("color");
+    final int colorIndex =
+        savedColorIndex is int &&
+            savedColorIndex >= 0 &&
+            savedColorIndex < Colors.primaries.length
+        ? savedColorIndex
+        : 7;
+    return Colors.primaries[colorIndex];
+  }
+
   Future<bool> _showRestoreConfirmation(BuildContext context) async {
     final bool? shouldRestore = await showDialog<bool>(
       context: context,
@@ -1185,110 +1198,6 @@ class _SettingsPageState extends State<SettingsPage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Widget _buildThemeModeTile(BuildContext context) {
-    final AdaptiveThemeMode themeMode = AdaptiveTheme.of(context).mode;
-    final localizations = AppLocalizations.of(context)!;
-
-    return ListTile(
-      leading: Icon(_themeModeIcon(themeMode)),
-      title: Text(localizations.themeMode),
-      subtitle: Text(_themeModeLabel(themeMode, localizations)),
-      onTap: () => _showThemeModeDialog(context),
-    );
-  }
-
-  Future<void> _showThemeModeDialog(BuildContext context) async {
-    final AdaptiveThemeMode currentMode = AdaptiveTheme.of(context).mode;
-    final localizations = AppLocalizations.of(context)!;
-    final AdaptiveThemeMode? selectedMode =
-        await _showSelectionDialog<AdaptiveThemeMode>(
-          context: context,
-          title: localizations.themeModeDialogTitle,
-          icon: Icons.palette_outlined,
-          selectedValue: currentMode,
-          options: <AppSelectionOption<AdaptiveThemeMode>>[
-            AppSelectionOption<AdaptiveThemeMode>(
-              value: AdaptiveThemeMode.dark,
-              title: localizations.themeModeDark,
-              subtitle: localizations.themeModeDarkSubtitle,
-              leading: const Icon(Icons.dark_mode_rounded),
-            ),
-            AppSelectionOption<AdaptiveThemeMode>(
-              value: AdaptiveThemeMode.light,
-              title: localizations.themeModeLight,
-              subtitle: localizations.themeModeLightSubtitle,
-              leading: const Icon(Icons.light_mode_rounded),
-            ),
-            AppSelectionOption<AdaptiveThemeMode>(
-              value: AdaptiveThemeMode.system,
-              title: localizations.themeModeSystem,
-              subtitle: localizations.themeModeSystemSubtitle,
-              leading: const Icon(Icons.brightness_auto_rounded),
-            ),
-          ],
-        );
-
-    if (selectedMode == null) return;
-    await SettingsDB().put("themeMode", _themeModeSettingValue(selectedMode));
-    if (context.mounted) {
-      AdaptiveTheme.of(context).setThemeMode(selectedMode);
-      setState(() {});
-    }
-  }
-
-  IconData _themeModeIcon(AdaptiveThemeMode themeMode) {
-    if (themeMode.isDark) return Icons.dark_mode_rounded;
-    if (themeMode.isSystem) return Icons.brightness_auto_rounded;
-    return Icons.light_mode_rounded;
-  }
-
-  String _themeModeLabel(
-    AdaptiveThemeMode themeMode,
-    AppLocalizations localizations,
-  ) {
-    if (themeMode.isDark) return localizations.themeModeDark;
-    if (themeMode.isSystem) return localizations.themeModeSystem;
-    return localizations.themeModeLight;
-  }
-
-  String _themeModeSettingValue(AdaptiveThemeMode themeMode) {
-    if (themeMode.isDark) return "dark";
-    if (themeMode.isSystem) return "auto";
-    return "light";
-  }
-
-  String _selectedThemeName(AppLocalizations localizations) {
-    return _themeSchemeOptions
-        .firstWhere(
-          (option) => option.id == _selectedThemeScheme(),
-          orElse: () => _themeSchemeOptions.first,
-        )
-        .title(localizations);
-  }
-
-  String _selectedThemeScheme() {
-    final dynamic savedScheme = SettingsDB().get("themeScheme");
-    return switch (savedScheme) {
-      AppTheme.fancyBlueScheme => AppTheme.fancyBlueScheme,
-      AppTheme.fancyPurpleScheme => AppTheme.fancyPurpleScheme,
-      AppTheme.sepiaScheme => AppTheme.sepiaScheme,
-      AppTheme.blackScheme => AppTheme.blackScheme,
-      AppTheme.redScheme => AppTheme.redScheme,
-      _ => AppTheme.defaultScheme,
-    };
-  }
-
-  MaterialColor _savedMaterialColor() {
-    final dynamic savedColorIndex = SettingsDB().get("color");
-    final int colorIndex =
-        savedColorIndex is int &&
-            savedColorIndex >= 0 &&
-            savedColorIndex < Colors.primaries.length
-        ? savedColorIndex
-        : 7;
-    return Colors.primaries[colorIndex];
   }
 
   int _dailyQuranGoalAyahs() {
@@ -1362,43 +1271,43 @@ class _SettingsPageState extends State<SettingsPage> {
         AppSelectionOption<String>(
           value: "system",
           title: localizations.systemDefault,
-          subtitle: "System default / لغة النظام",
+          subtitle: localizations.sysDefaultSubtitle,
           leading: const Icon(Icons.brightness_auto_rounded),
         ),
         AppSelectionOption<String>(
           value: "en",
           title: localizations.english,
-          subtitle: "English",
+          subtitle: localizations.enSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "ar",
           title: localizations.arabic,
-          subtitle: "العربية / Arabic",
+          subtitle: localizations.arSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "id",
           title: localizations.indonesian,
-          subtitle: "Bahasa Indonesia / Indonesian",
+          subtitle: localizations.idSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "ur",
           title: localizations.urdu,
-          subtitle: "اردو / Urdu",
+          subtitle: localizations.urSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "tr",
           title: localizations.turkish,
-          subtitle: "Türkçe / Turkish",
+          subtitle: localizations.trSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
           value: "bn",
           title: localizations.bengali,
-          subtitle: "বাংলা / Bengali",
+          subtitle: localizations.bnSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
         AppSelectionOption<String>(
@@ -1429,77 +1338,3 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-
-class _ThemeSchemeOption {
-  const _ThemeSchemeOption({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.colors,
-  });
-
-  final String id;
-  final String Function(AppLocalizations localizations) title;
-  final String Function(AppLocalizations localizations) subtitle;
-  final List<Color> colors;
-}
-
-class _ThemeSchemeSwatch extends StatelessWidget {
-  const _ThemeSchemeSwatch({required this.option});
-
-  final _ThemeSchemeOption option;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 46,
-      height: 46,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(colors: option.colors),
-          border: Border.all(color: Theme.of(context).colorScheme.outline),
-        ),
-      ),
-    );
-  }
-}
-
-final List<_ThemeSchemeOption> _themeSchemeOptions = <_ThemeSchemeOption>[
-  _ThemeSchemeOption(
-    id: AppTheme.defaultScheme,
-    title: (localizations) => localizations.themeSchemeEmeraldGreen,
-    subtitle: (localizations) => localizations.themeSchemeEmeraldGreenSubtitle,
-    colors: <Color>[Color(0xFF07110E), Color(0xFF1E7A61)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.fancyBlueScheme,
-    title: (localizations) => localizations.themeSchemeSapphireBlue,
-    subtitle: (localizations) => localizations.themeSchemeSapphireBlueSubtitle,
-    colors: <Color>[Color(0xFF06101C), Color(0xFF3B8DD6)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.fancyPurpleScheme,
-    title: (localizations) => localizations.themeSchemeRoyalPurple,
-    subtitle: (localizations) => localizations.themeSchemeRoyalPurpleSubtitle,
-    colors: <Color>[Color(0xFF100A19), Color(0xFF9368D0)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.sepiaScheme,
-    title: (localizations) => localizations.themeSchemeSepia,
-    subtitle: (localizations) => localizations.themeSchemeSepiaSubtitle,
-    colors: <Color>[Color(0xFF130E09), Color(0xFFC08A4C)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.blackScheme,
-    title: (localizations) => localizations.themeSchemeBlack,
-    subtitle: (localizations) => localizations.themeSchemeBlackSubtitle,
-    colors: <Color>[Color(0xFF000000), Color(0xFF18A28D)],
-  ),
-  _ThemeSchemeOption(
-    id: AppTheme.redScheme,
-    title: (localizations) => localizations.themeSchemeRubyRed,
-    subtitle: (localizations) => localizations.themeSchemeRubyRedSubtitle,
-    colors: <Color>[Color(0xFF12070A), Color(0xFFC8475D)],
-  ),
-];

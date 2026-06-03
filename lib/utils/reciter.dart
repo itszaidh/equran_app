@@ -1,3 +1,4 @@
+// ignore_for_file: constant_identifier_names
 class ReciterProfile {
   final String
   id; // Existing lookup ID matching the current settings database key

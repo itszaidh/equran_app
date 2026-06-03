@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:archive/archive_io.dart';
 import 'package:equran/backend/download_notifications.dart';
 import 'package:equran/backend/quran_stream_url.dart';
 import 'package:equran/utils/reciter.dart';
@@ -30,17 +31,16 @@ class AudioDownloadEntry {
   final int sizeBytes;
   final List<File> additionalFiles;
 
-  String get title => type == AudioDownloadType.surah
+  String get title =>
+      type == AudioDownloadType.surah || type == AudioDownloadType.ayahSurah
       ? quran.getSurahName(surah)
-      : type == AudioDownloadType.ayahSurah
-      ? '${quran.getSurahName(surah)} • All Ayahs'
       : '${quran.getSurahName(surah)} • Ayah $ayah';
 
   String get subtitle => type == AudioDownloadType.surah
-      ? 'Surah ${surah.toString().padLeft(3, '0')}'
+      ? ''
       : type == AudioDownloadType.ayahSurah
-      ? 'Surah $surah, ${quran.getVerseCount(surah)} ayahs'
-      : 'Surah $surah, Ayah $ayah';
+      ? '${quran.getVerseCount(surah)} ayahs'
+      : 'Ayah $ayah';
 
   int get ayahCount => type == AudioDownloadType.surah
       ? 0
@@ -70,10 +70,34 @@ class AudioDownloadsSummary {
   int get totalSizeBytes =>
       allDownloads.fold<int>(0, (total, entry) => total + entry.sizeBytes);
 
-  int get surahCount => surahDownloads.length;
+  int get surahCount {
+    final explicit = surahDownloads.length;
+    final completeAyahSets = ayahDownloads
+        .where((e) => e.type == AudioDownloadType.ayahSurah)
+        .length;
+    return explicit + completeAyahSets;
+  }
 
-  int get ayahCount =>
-      ayahDownloads.fold<int>(0, (total, entry) => total + entry.ayahCount);
+  int get ayahCount {
+    int count = 0;
+
+    // Ayahs covered by full surah downloads (one big file per surah)
+    for (final entry in surahDownloads) {
+      count += quran.getVerseCount(entry.surah);
+    }
+
+    // Ayahs from complete ayah bundles (ayahSurah)
+    count += ayahDownloads
+        .where((e) => e.type == AudioDownloadType.ayahSurah)
+        .fold<int>(0, (total, entry) => total + entry.ayahCount);
+
+    // Remaining individual ayah files
+    count += ayahDownloads
+        .where((e) => e.type == AudioDownloadType.ayah)
+        .fold<int>(0, (total, entry) => total + entry.ayahCount);
+
+    return count;
+  }
 }
 
 class AudioDownloadService {
@@ -323,9 +347,7 @@ class AudioDownloadService {
   }) async {
     final int totalAyahs = quran.getVerseCount(surah);
     final List<File?> files = List<File?>.filled(totalAyahs, null);
-    final List<({int ayah, File file})> pendingDownloads =
-        <({int ayah, File file})>[];
-    final Map<int, double> fileFractions = <int, double>{};
+    bool anyMissing = false;
 
     for (int ayah = 1; ayah <= totalAyahs; ayah++) {
       final File file = await ayahFile(surah, ayah);
@@ -341,85 +363,116 @@ class AudioDownloadService {
         continue;
       }
 
-      pendingDownloads.add((ayah: ayah, file: file));
-      fileFractions[ayah] = 0.0;
+      anyMissing = true;
     }
 
-    final int totalPendingFiles = pendingDownloads.length;
-    if (totalPendingFiles == 0) {
+    if (!anyMissing) {
       return files.whereType<File>().toList(growable: false);
     }
 
-    int nextIndex = 0;
-    final int workerCount = min(6, totalPendingFiles);
-    Future<void> worker() async {
-      while (true) {
-        final int taskIndex = nextIndex++;
-        if (taskIndex >= pendingDownloads.length) return;
+    final String reciterCode = _reciterCode();
+    final ReciterProfile reciterProfile = QuranAudioCatalog.findById(
+      reciterCode,
+    );
+    final String paddedSurah = surah.toString().padLeft(3, '0');
+    final String zipUrl =
+        'https://everyayah.com/data/${reciterProfile.everyAyahFolder}/zips/$paddedSurah.zip';
 
-        final task = pendingDownloads[taskIndex];
-        final String reciterCode = _reciterCode();
-        final ReciterProfile reciterProfile = QuranAudioCatalog.findById(
-          reciterCode,
-        );
-        final String url = QuranAudioStreamResolver.buildAyahUrl(
-          reciter: reciterProfile,
-          surah: surah,
-          ayah: task.ayah,
-        );
-        await _downloadToFile(
-          url,
-          task.file,
-          onProgress: (receivedBytes, totalBytes) {
-            if (totalBytes != null && totalBytes > 0) {
-              fileFractions[task.ayah] = (receivedBytes / totalBytes).clamp(
-                0.0,
-                1.0,
-              );
-              _reportAggregateAyahProgress(
-                onProgress: onProgress,
-                fileFractions: fileFractions,
-                totalFiles: totalPendingFiles,
-              );
-            }
-          },
-        );
-        files[task.ayah - 1] = task.file;
-        fileFractions[task.ayah] = 1.0;
-        _reportAggregateAyahProgress(
-          onProgress: onProgress,
-          fileFractions: fileFractions,
-          totalFiles: totalPendingFiles,
-        );
+    final Directory tempDir = await tempAyahDirectory();
+    final File zipFile = File('${tempDir.path}/$reciterCode-$paddedSurah.zip');
+    final Directory extractDir = Directory(
+      '${tempDir.path}/extract-$reciterCode-$paddedSurah',
+    );
+
+    try {
+      if (await zipFile.exists()) {
+        await zipFile.delete();
       }
+      if (await extractDir.exists()) {
+        await extractDir.delete(recursive: true);
+      }
+      await extractDir.create(recursive: true);
+
+      // 1. Download ZIP file
+      await _downloadToFile(
+        zipUrl,
+        zipFile,
+        onProgress: onProgress == null
+            ? null
+            : (receivedBytes, totalBytes) => onProgress(
+                DownloadProgress(
+                  receivedBytes: receivedBytes,
+                  totalBytes: totalBytes,
+                  completedFiles: 0,
+                  totalFiles: 1,
+                ),
+              ),
+      );
+
+      // 2. Decode and extract ZIP
+      // Update progress to indeterminate/extracting state
+      onProgress?.call(
+        const DownloadProgress(
+          receivedBytes: 0,
+          totalBytes: null,
+          completedFiles: 0,
+          totalFiles: 1,
+        ),
+      );
+
+      final Archive archive = ZipDecoder().decodeBytes(
+        await zipFile.readAsBytes(),
+      );
+      for (final ArchiveFile entry in archive.files) {
+        if (!entry.isFile || entry.isSymbolicLink) continue;
+
+        final RegExpMatch? match = RegExp(
+          r'(\d{3})(\d{3})\.mp3$',
+        ).firstMatch(entry.name);
+        if (match == null) continue;
+
+        final int? entrySurah = int.tryParse(match.group(1)!);
+        final int? entryAyah = int.tryParse(match.group(2)!);
+        if (entrySurah == null || entryAyah == null) continue;
+        if (entrySurah != surah) continue;
+        if (entryAyah < 1 || entryAyah > totalAyahs) continue;
+
+        final File finalFile = await ayahFile(surah, entryAyah);
+        final File tempExtractFile = File(
+          '${extractDir.path}${Platform.pathSeparator}${entrySurah}_$entryAyah.mp3',
+        );
+        await tempExtractFile.parent.create(recursive: true);
+
+        final OutputFileStream output = OutputFileStream(tempExtractFile.path);
+        try {
+          entry.writeContent(output);
+        } finally {
+          output.closeSync();
+        }
+
+        if (await finalFile.exists()) {
+          await finalFile.delete();
+        }
+        try {
+          await tempExtractFile.rename(finalFile.path);
+        } on FileSystemException {
+          await tempExtractFile.copy(finalFile.path);
+          await tempExtractFile.delete();
+        }
+        files[entryAyah - 1] = finalFile;
+      }
+    } finally {
+      try {
+        if (await zipFile.exists()) {
+          await zipFile.delete();
+        }
+        if (await extractDir.exists()) {
+          await extractDir.delete(recursive: true);
+        }
+      } catch (_) {}
     }
 
-    await Future.wait<void>(
-      List<Future<void>>.generate(workerCount, (_) => worker()),
-    );
-
     return files.whereType<File>().toList(growable: false);
-  }
-
-  void _reportAggregateAyahProgress({
-    required AudioDownloadProgressCallback? onProgress,
-    required Map<int, double> fileFractions,
-    required int totalFiles,
-  }) {
-    if (onProgress == null || totalFiles <= 0) return;
-
-    final double completedFraction =
-        fileFractions.values.fold<double>(0.0, (sum, value) => sum + value) /
-        totalFiles;
-    const int progressUnits = 1000000;
-    onProgress(
-      DownloadProgress(
-        receivedBytes: (completedFraction * progressUnits).round(),
-        totalBytes: progressUnits,
-        completedFiles: 0,
-        totalFiles: 1,
-      ),
-    );
   }
 
   Future<void> _downloadToFile(
@@ -683,6 +736,18 @@ class AudioDownloadService {
 
   String _basename(String path) {
     return path.split(Platform.pathSeparator).last;
+  }
+
+  bool isCompleteDownload(File file) {
+    return _isCompleteDownload(file);
+  }
+
+  Future<bool> hasSurahForReciter(int surah, String reciterCode) async {
+    final Directory dir = await surahDirectory();
+    final File file = File(
+      '${dir.path}/${reciterCode}_${surah.toString().padLeft(3, '0')}.mp3',
+    );
+    return _isCompleteDownload(file);
   }
 
   bool _isCompleteDownload(File file) {

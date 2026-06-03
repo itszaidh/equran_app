@@ -58,7 +58,9 @@ class AsmaUlHusnaName {
 }
 
 class AsmaUlHusnaPage extends StatefulWidget {
-  const AsmaUlHusnaPage({super.key});
+  const AsmaUlHusnaPage({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   State<AsmaUlHusnaPage> createState() => _AsmaUlHusnaPageState();
@@ -130,13 +132,15 @@ class _AsmaUlHusnaPageState extends State<AsmaUlHusnaPage> {
     final ThemeData theme = Theme.of(context);
     final EquranColors colors = context.equranColors;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
+    final bool showAppBar = widget.showAppBar;
 
     return Scaffold(
       backgroundColor: colors.background,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: <Widget>[
-          SliverAppBar(
+          if (showAppBar)
+            SliverAppBar(
             pinned: true,
             toolbarHeight: 64,
             title: AnimatedSwitcher(
@@ -182,6 +186,19 @@ class _AsmaUlHusnaPageState extends State<AsmaUlHusnaPage> {
               ),
             ],
           ),
+          if (!showAppBar)
+            SliverToBoxAdapter(
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: _NavSearchField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
+                  ),
+                ),
+              ),
+            ),
           SliverSafeArea(
             top: false,
             bottom: true,
