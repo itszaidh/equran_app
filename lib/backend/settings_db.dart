@@ -40,14 +40,14 @@ class SettingsDB extends BaseDB {
   List<DailyToolType> getVisibleDailyTools() {
     final List<dynamic>? saved = get('daily_tools_visible') as List<dynamic>?;
     if (saved == null) {
-      return DailyToolType.defaultTools;
+      return List<DailyToolType>.from(DailyToolType.defaultTools);
     }
-    return saved
-        .map((e) => DailyToolType.values.firstWhere(
-              (t) => t.name == e,
-              orElse: () => DailyToolType.quran,
-            ))
-        .toList();
+    return List<DailyToolType>.from(
+      saved.map((e) => DailyToolType.values.firstWhere(
+            (t) => t.name == e,
+            orElse: () => DailyToolType.quran,
+          )),
+    );
   }
 
   /// Save visible daily tools to settings

@@ -387,7 +387,10 @@ enum Translation {
   chinese('chinese', 'Chinese', false),
   indonesian('indonesian', 'Indonesian', false),
   spanish('spanish', 'Spanish', false),
-  swedish('swedish', 'Swedish', false);
+  swedish('swedish', 'Swedish', false),
+  deBubenheim('de_bubenheim', 'German (Bubenheim)', false),
+  deNadeem('de_nadeem', 'German (Nadeem)', false),
+  deAburida('de_aburida', 'German (Abu Rida)', false);
 
   const Translation(this.resourceId, this.label, this.isBundled);
 
@@ -522,8 +525,8 @@ Map<int, String> _parseSurahJson(String raw, int expectedSurah) {
   final Map<int, String> mapped = <int, String>{};
   for (final Object? entry in decoded['ayahs'] as List) {
     if (entry is! Map) continue;
-    final int? surah = _readInt(entry['surah']);
-    final int? ayah = _readInt(entry['ayah']);
+    final int? surah = _readInt(entry['surah']) ?? _readInt(entry['surahNumber']);
+    final int? ayah = _readInt(entry['ayah']) ?? _readInt(entry['ayahNumber']);
     final Object? text = entry['text'];
     if (surah != expectedSurah || ayah == null || text is! String) continue;
     mapped[ayah] = text;

@@ -136,19 +136,9 @@ class AudioDownloadService {
       _tempAudioDirectory(_tempAyahDirectoryName);
 
   String _reciterCode() => QuranAudioService().selectedReciter.code;
-  String _playerReciterCode() => PlayerAudioService().selectedReciter.code;
-
-  String surahFileName(int surah) {
-    return '${_playerReciterCode()}_${surah.toString().padLeft(3, '0')}.mp3';
-  }
 
   String ayahFileName(int surah, int ayah) {
     return '${_reciterCode()}_${surah.toString().padLeft(3, '0')}_${ayah.toString().padLeft(3, '0')}.mp3';
-  }
-
-  Future<File> surahFile(int surah) async {
-    final Directory dir = await surahDirectory();
-    return File('${dir.path}/${surahFileName(surah)}');
   }
 
   Future<File> ayahFile(int surah, int ayah) async {
@@ -159,11 +149,6 @@ class AudioDownloadService {
   Future<File> tempAyahFile(int surah, int ayah) async {
     final Directory dir = await tempAyahDirectory();
     return File('${dir.path}/${ayahFileName(surah, ayah)}');
-  }
-
-  Future<bool> hasSurah(int surah) async {
-    final File file = await surahFile(surah);
-    return _isCompleteDownload(file);
   }
 
   Future<bool> hasAyah(int surah, int ayah) async {
@@ -195,28 +180,7 @@ class AudioDownloadService {
     return _surahAyahDownloads.containsKey('${_reciterCode()}-$surah');
   }
 
-  Future<File> downloadSurah(
-    int surah, {
-    AudioDownloadProgressCallback? onProgress,
-  }) async {
-    final String url = await PlayerAudioService().getSurahUrl(surah);
-    final File file = await surahFile(surah);
-    await _downloadToFile(
-      url,
-      file,
-      onProgress: onProgress == null
-          ? null
-          : (receivedBytes, totalBytes) => onProgress(
-              DownloadProgress(
-                receivedBytes: receivedBytes,
-                totalBytes: totalBytes,
-                completedFiles: 0,
-                totalFiles: 1,
-              ),
-            ),
-    );
-    return file;
-  }
+
 
   Future<File> downloadAyah(
     int surah,
@@ -572,12 +536,7 @@ class AudioDownloadService {
     }
   }
 
-  Future<void> deleteSurah(int surah) async {
-    final File file = await surahFile(surah);
-    if (file.existsSync()) {
-      await file.delete();
-    }
-  }
+
 
   Future<void> deleteAyah(int surah, int ayah) async {
     final File file = await ayahFile(surah, ayah);
@@ -742,13 +701,7 @@ class AudioDownloadService {
     return _isCompleteDownload(file);
   }
 
-  Future<bool> hasSurahForReciter(int surah, String reciterCode) async {
-    final Directory dir = await surahDirectory();
-    final File file = File(
-      '${dir.path}/${reciterCode}_${surah.toString().padLeft(3, '0')}.mp3',
-    );
-    return _isCompleteDownload(file);
-  }
+
 
   bool _isCompleteDownload(File file) {
     return file.existsSync() && file.lengthSync() > 0;

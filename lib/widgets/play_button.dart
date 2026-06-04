@@ -30,6 +30,8 @@ class PlayButton extends StatefulWidget {
 }
 
 class _PlayButtonState extends State<PlayButton> {
+  AppLocalizations get localizations => AppLocalizations.of(context)!;
+
   static const int _maxCachedAyahs = 10;
   static final LinkedHashMap<String, Uint8List> _audioCache =
       LinkedHashMap<String, Uint8List>();
@@ -237,7 +239,7 @@ class _PlayButtonState extends State<PlayButton> {
       final int notificationId = DownloadNotifications.notificationId(
         'ayah-${widget.surah}-${widget.ayah}',
       );
-      final String title = 'Downloading ayah ${widget.surah}:${widget.ayah}';
+      final String title = localizations.downloadingName('ayah ${widget.surah}:${widget.ayah}');
       await DownloadNotifications.progress(
         id: notificationId,
         title: title,
@@ -256,13 +258,13 @@ class _PlayButtonState extends State<PlayButton> {
       );
       await DownloadNotifications.complete(
         id: notificationId,
-        title: 'Downloaded ayah ${widget.surah}:${widget.ayah}',
+        title: localizations.downloadedName('ayah ${widget.surah}:${widget.ayah}'),
       );
       await _refreshDownloadState();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Downloaded ayah ${widget.surah}:${widget.ayah}'),
+            content: Text(localizations.downloadedName('ayah ${widget.surah}:${widget.ayah}')),
           ),
         );
       }
@@ -271,11 +273,11 @@ class _PlayButtonState extends State<PlayButton> {
         id: DownloadNotifications.notificationId(
           'ayah-${widget.surah}-${widget.ayah}',
         ),
-        title: 'Failed to download ayah ${widget.surah}:${widget.ayah}',
+        title: localizations.failedDownloadName('ayah ${widget.surah}:${widget.ayah}'),
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to download ayah audio.')),
+          SnackBar(content: Text(localizations.failedDownloadAyahAudio)),
         );
       }
     } finally {
@@ -291,18 +293,18 @@ class _PlayButtonState extends State<PlayButton> {
       builder: (context) {
         return AlertDialog(
           icon: const Icon(Icons.warning_amber_rounded),
-          title: const Text('Delete Downloaded Ayah?'),
+          title: Text(localizations.deleteDownloadedAyah),
           content: Text(
-            'This will remove ayah ${widget.surah}:${widget.ayah} from offline storage.',
+            localizations.removeSurahFromOffline('ayah ${widget.surah}:${widget.ayah}'),
           ),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(localizations.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
+              child: Text(localizations.delete),
             ),
           ],
         );
@@ -321,14 +323,14 @@ class _PlayButtonState extends State<PlayButton> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Deleted ayah ${widget.surah}:${widget.ayah} audio'),
+            content: Text(localizations.deletedDownload('ayah ${widget.surah}:${widget.ayah} audio')),
           ),
         );
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to delete downloaded ayah.')),
+          SnackBar(content: Text(localizations.failedDeleteDownloadedAyah)),
         );
       }
     }
@@ -400,13 +402,13 @@ class _PlayButtonState extends State<PlayButton> {
       // Show error message to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
               kIsWeb
-                  ? 'Unable to play audio on web. Try downloading the app for better experience.'
-                  : 'Failed to play audio. Please check your internet connection.',
+                  ? localizations.unablePlayAudioWeb
+                  : localizations.failedPlayAudioConnection,
             ),
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
           ),
         );
       }

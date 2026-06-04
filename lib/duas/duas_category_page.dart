@@ -214,7 +214,7 @@ class _CategoryContentState extends State<_CategoryContent> {
                                   _showSettings = !_showSettings;
                                 });
                               },
-                              tooltip: _showSettings ? 'Hide settings' : 'Show settings',
+                              tooltip: _showSettings ? localizations.hideSettings : localizations.showSettings,
                               icon: AnimatedRotation(
                                 duration: const Duration(milliseconds: 250),
                                 turns: _showSettings ? 0.25 : 0.0,
@@ -311,6 +311,10 @@ class _CategoryContentState extends State<_CategoryContent> {
                                 DropdownMenuItem<String>(
                                   value: 'tr',
                                   child: Text(localizations.turkish),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'de',
+                                  child: Text(localizations.german),
                                 ),
                               ],
                             ),

@@ -521,9 +521,10 @@ class _HifzSessionPageState extends State<HifzSessionPage>
       }
     } catch (e) {
       if (mounted) {
+        final AppLocalizations localizations = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to play audio: $e'),
+            content: Text(localizations.failedToPlayAudio(e.toString())),
             backgroundColor: context.equranColors.warning,
           ),
         );

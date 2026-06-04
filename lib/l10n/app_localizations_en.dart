@@ -78,6 +78,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uthmaniMadinah => 'Uthmani (Madinah)';
 
   @override
+  String get qpcV4Tajweed => 'QPC V4 (Tajweed)';
+
+  @override
   String get indoPak => 'IndoPak';
 
   @override
@@ -4107,4 +4110,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectCurrency => 'Select Currency';
+
+  @override
+  String get sleepTimerSettings => 'Sleep Timer Settings';
+
+  @override
+  String get numericMinutesDuration => 'Numeric Minutes Duration';
+
+  @override
+  String get endOfSurahSubtitle =>
+      'Auto-kill the stream exactly when the current track finishes';
+
+  @override
+  String get turnOff => 'Turn Off';
+
+  @override
+  String get setTimer => 'Set Timer';
+
+  @override
+  String decreaseLabel(String label) {
+    return 'Decrease $label';
+  }
+
+  @override
+  String increaseLabel(String label) {
+    return 'Increase $label';
+  }
+
+  @override
+  String exampleCoordinate(String value) {
+    return 'Example: $value';
+  }
+
+  @override
+  String get filterAndSort => 'Filter & sort';
+
+  @override
+  String get deleteDownloadsQuestion => 'Delete downloads?';
+
+  @override
+  String get searchRecitationsOrSurahs => 'Search recitations or surahs...';
+
+  @override
+  String get dailyGoal => 'Daily goal';
+
+  @override
+  String get readingPlan => 'Reading plan';
+
+  @override
+  String get quickActions => 'Quick actions';
+
+  @override
+  String get bookmarksAndNotes => 'Bookmarks and notes';
+
+  @override
+  String get hideSettings => 'Hide settings';
+
+  @override
+  String get showSettings => 'Show settings';
 }

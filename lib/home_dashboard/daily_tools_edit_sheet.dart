@@ -16,6 +16,30 @@ class DailyToolsEditSheet extends StatefulWidget {
     );
   }
 
+  static String translateCustomizeTitle(String lang) {
+    return switch (lang) {
+      'ar' => 'تخصيص الأدوات اليومية',
+      'bn' => 'দৈনিক সরঞ্জাম কাস্টمাইজ করুন',
+      'id' => 'Kustomisasi Alat Sehari-hari',
+      'tr' => 'Günlük Araçları Özelleştir',
+      'ur' => 'روزانہ کے اوزار ترتیب دیں',
+      'de' => 'Tägliche Werkzeuge anpassen',
+      _ => 'Customize Daily Tools',
+    };
+  }
+
+  static String translateCustomizeDesc(String lang) {
+    return switch (lang) {
+      'ar' => 'اسحب لإعادة الترتيب. قم بتفعيل المفاتيح لإظهار أو إخفاء الأدوات في لوحتك.',
+      'bn' => 'ক্রম পরিবর্তন করতে ড্র্যাগ করুন। আপনার ড্যাশবোর্ডে দেখাতে বা লুকাতে টগল করুন।',
+      'id' => 'Seret untuk mengatur ulang. Aktifkan sakelar untuk menampilkan/menyembunyikan alat.',
+      'tr' => 'Yeniden sıralamak için sürükleyin. Panonuzda araçları göstermek veya gizlemek için açın/kapatın.',
+      'ur' => 'ترتیب بدلنے کے لیے ڈریگ کریں۔ اپنے ڈیش بورڈ پر اوزار دکھانے یا چھپانے کے لیے ٹوگل کریں۔',
+      'de' => 'Ziehen, um neu anzuordnen. Schalter umlegen, um Werkzeuge auf dem Dashboard anzuzeigen oder auszublenden.',
+      _ => 'Drag to reorder. Toggle switches to show/hide tools on your dashboard.',
+    };
+  }
+
   @override
   State<DailyToolsEditSheet> createState() => _DailyToolsEditSheetState();
 }
@@ -31,7 +55,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
   }
 
   void _loadTools() {
-    _visibleTools = SettingsDB().getVisibleDailyTools();
+    _visibleTools = List<DailyToolType>.from(SettingsDB().getVisibleDailyTools());
     
     // Construct the ordered list of all tools: visible ones first in their order,
     // followed by hidden ones.
@@ -103,28 +127,6 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
     });
   }
 
-  String _translateCustomizeTitle(String lang) {
-    return switch (lang) {
-      'ar' => 'تخصيص الأدوات اليومية',
-      'bn' => 'দৈনিক সরঞ্জাম কাস্টমাইজ করুন',
-      'id' => 'Kustomisasi Alat Sehari-hari',
-      'tr' => 'Günlük Araçları Özelleştir',
-      'ur' => 'روزانہ کے اوزار ترتیب دیں',
-      _ => 'Customize Daily Tools',
-    };
-  }
-
-  String _translateCustomizeDesc(String lang) {
-    return switch (lang) {
-      'ar' => 'اسحب لإعادة الترتيب. قم بتفعيل المفاتيح لإظهار أو إخفاء الأدوات في لوحتك.',
-      'bn' => 'ক্রম পরিবর্তন করতে ড্র্যাগ করুন। আপনার ড্যাশবোর্ডে দেখাতে বা লুকাতে টগল করুন।',
-      'id' => 'Seret untuk mengatur ulang. Aktifkan sakelar untuk menampilkan/menyembunyikan alat.',
-      'tr' => 'Yeniden sıralamak için sürükleyin. Panonuzda araçları göstermek veya gizlemek için açın/kapatın.',
-      'ur' => 'ترتیب بدلنے کے لیے ڈریگ کریں۔ اپنے ڈیش بورڈ پر اوزار دکھانے یا چھپانے کے لیے ٹوگل کریں۔',
-      _ => 'Drag to reorder. Toggle switches to show/hide tools on your dashboard.',
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
@@ -172,7 +174,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _translateCustomizeTitle(lang),
+                      DailyToolsEditSheet.translateCustomizeTitle(lang),
                       style: theme.textTheme.titleLarge?.copyWith(
                         color: colors.textPrimary,
                         fontWeight: FontWeight.w900,
@@ -180,7 +182,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      _translateCustomizeDesc(lang),
+                      DailyToolsEditSheet.translateCustomizeDesc(lang),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colors.textSecondary,
                         height: 1.3,
@@ -262,7 +264,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
                               onChanged: (_) => _toggleTool(tool),
                             ),
                             const SizedBox(width: 4),
-                            ReorderableDelayedDragStartListener(
+                            ReorderableDragStartListener(
                               index: index,
                               child: Icon(
                                 Icons.drag_handle_rounded,

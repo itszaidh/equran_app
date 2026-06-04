@@ -332,6 +332,33 @@ class ResourceRepository {
         'url': '$_assetLatestDownloadBase/swedish.zip',
         'sizeBytes': 455052,
       },
+      <String, Object?>{
+        'id': 'de_bubenheim',
+        'type': 'translation',
+        'name': 'German (Bubenheim)',
+        'language': 'de',
+        'version': '1.0.0',
+        'url': 'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_bubenheim.zip',
+        'sizeBytes': 428148,
+      },
+      <String, Object?>{
+        'id': 'de_nadeem',
+        'type': 'translation',
+        'name': 'German (Nadeem)',
+        'language': 'de',
+        'version': '1.0.0',
+        'url': 'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_nadeem.zip',
+        'sizeBytes': 427435,
+      },
+      <String, Object?>{
+        'id': 'de_aburida',
+        'type': 'translation',
+        'name': 'German (Abu Rida)',
+        'language': 'de',
+        'version': '1.0.0',
+        'url': 'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_aburida.zip',
+        'sizeBytes': 430441,
+      },
     ],
   };
 }

@@ -9,7 +9,6 @@ import 'package:equran/l10n/app_localizations.dart';
 import 'package:flutter_carousel_widget/flutter_carousel_widget.dart';
 
 const String equranResumeQuranAsset = 'assets/media/images/app/quran.webp';
-const String equranResumePlayerAsset = 'assets/media/images/app/player.webp';
 const double _resumeImageCardMaxWidth = 620;
 const double _resumeImageCardHeight = 160;
 

@@ -23,6 +23,7 @@
   "german": "Deutsch",
   "quranScriptStyle": "Koran-Schriftstil",
   "uthmaniMadinah": "Uthmani (Medina)",
+  "qpcV4Tajweed": "QPC V4 (Tajweed)",
   "indoPak": "IndoPak",
   "vibration": "Vibration",
   "vibrationSubtitle": "Aktivieren Sie haptisches Feedback beim Navigieren.",
@@ -852,8 +853,6 @@
       }
     }
   },
-  "previousDhikr": "Vorheriger Dhikr",
-  "nextDhikr": "Nächster Dhikr",
   "counts33To33To34": "{target} zählt • 33 → 33 → 34",
   "@counts33To33To34": {
     "placeholders": {
@@ -1912,5 +1911,261 @@
       }
     }
   },
-  "locationCleared": "Standort gelöscht."
+  "zakatCalculator": "Zakat-Rechner",
+  "zakatCalculatorSubtitle": "Vermögens- und Nisab-Bewertungen",
+  "islamicCalendar": "Islamischer Kalender",
+  "islamicCalendarSubtitle": "Synchronisierte Hijri-Zeitleiste",
+  "customizeNavigation": "Passen Sie die Navigation an",
+  "allCategories": "Alle Kategorien",
+  "meccan": "Mekkan",
+  "medinan": "Medinan",
+  "appearanceTileSubtitle": "Einstellungen für Thema, Hell-/Dunkelmodus und Farbakzente",
+  "navigationSettingsSubtitle": "Ordnen Sie die unteren Navigationsregisterkarten neu an und tauschen Sie sie aus",
+  "downloadQpcFontsTitle": "QPC V4 Tajweed-Schriftarten herunterladen?",
+  "downloadQpcFontsBody": "Tajweed benötigt ein TTF für jede der 604 Koranseiten. Laden Sie das Schriftartenpaket{size} herunter, bevor Sie es aktivieren.",
+  "@downloadQpcFontsBody": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "locationCleared": "Standort gelöscht.",
+  "useSunset": "Nutzen Sie den Sonnenuntergang",
+  "failedDownloadAyahAudio": "Ayah-Audio konnte nicht heruntergeladen werden.",
+  "failedDeleteDownloadedAyah": "Die heruntergeladene Ayah konnte nicht gelöscht werden.",
+  "unablePlayAudioWeb": "Audio kann im Web nicht abgespielt werden. Versuchen Sie für ein besseres Erlebnis, die App herunterzuladen.",
+  "failedPlayAudioConnection": "Audio konnte nicht abgespielt werden. Bitte überprüfen Sie Ihre Internetverbindung.",
+  "failedToPlayAudio": "Audio konnte nicht abgespielt werden: {error}",
+  "@failedToPlayAudio": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaModeAngle": "Winkel",
+  "ishaModeAngleSubtitle": "Verwenden Sie den benutzerdefinierten Isha-Winkel.",
+  "ishaModeInterval": "Intervall nach Maghrib",
+  "ishaModeIntervalSubtitle": "Stellen Sie Isha auf eine feste Anzahl von Minuten nach Maghrib ein.",
+  "ishaModeFixedTime": "Feste Zeit",
+  "ishaModeFixedTimeSubtitle": "Verwenden Sie an jedem ausgewählten Gebetstermin die gleiche Uhrzeit.",
+  "ishaModeLatestCap": "Letzte Zeitbegrenzung",
+  "ishaModeLatestCapSubtitle": "Verwenden Sie berechnetes Isha, es sei denn, es geht später als eine Obergrenze.",
+  "bestMethodSubtitle": "Wählen Sie eine Methode aus dem gespeicherten Land, sofern verfügbar.",
+  "highLatitudeRuleAutoSubtitle": "Wenden Sie eine Regel nur für Standorte mit hohen Breitengraden an.",
+  "highLatitudeRuleNoneSubtitle": "Wenden Sie keine Regel für hohe Breitengrade an.",
+  "highLatitudeRuleMiddleOfTheNightSubtitle": "Cap Fajr und Isha nutzen mitten in der Nacht.",
+  "highLatitudeRuleOneSeventhSubtitle": "Nutzen Sie ein Siebtel der Nacht.",
+  "highLatitudeRuleAngleBasedSubtitle": "Verwenden Sie die Fajr- und Isha-Winkel als Nachtanteil.",
+  "twelveHour": "12 Stunden",
+  "twentyFourHour": "24 Stunden",
+  "notificationPermissionOffRemindersNotEnabled": "Die Benachrichtigungsberechtigung ist deaktiviert. Gebetserinnerungen waren nicht aktiviert.",
+  "notificationPermissionTimeout": "Zeitüberschreitung bei der Anfrage zur Benachrichtigungsberechtigung.",
+  "notificationPermissionTimeoutMessage": "Zeitüberschreitung bei der Anfrage zur Benachrichtigungsberechtigung. Versuchen Sie, die App erneut zu öffnen oder Benachrichtigungen in den Systemeinstellungen zu aktivieren.",
+  "notificationPermissionError": "Die Benachrichtigungsberechtigung konnte nicht angefordert werden.",
+  "notificationPermissionErrorMessage": "Die Benachrichtigungsberechtigung konnte nicht angefordert werden. Versuchen Sie es erneut oder aktivieren Sie Benachrichtigungen in den Systemeinstellungen.",
+  "openNotificationSettingsTimeout": "Beim Öffnen der Benachrichtigungseinstellungen ist eine Zeitüberschreitung aufgetreten. Öffnen Sie die Android-App-Einstellungen manuell und aktivieren Sie Benachrichtigungen.",
+  "openNotificationSettingsError": "Die Benachrichtigungseinstellungen konnten nicht geöffnet werden. Öffnen Sie die Android-App-Einstellungen manuell und aktivieren Sie Benachrichtigungen.",
+  "openExactAlarmSettingsTimeout": "Beim Öffnen der Alarmberechtigungseinstellungen ist eine Zeitüberschreitung aufgetreten. Öffnen Sie die Alarm- und Erinnerungseinstellungen für Android manuell und aktivieren Sie genaue Alarme.",
+  "openExactAlarmSettingsError": "Die Alarmberechtigungseinstellungen konnten nicht geöffnet werden. Öffnen Sie die Alarm- und Erinnerungseinstellungen für Android manuell und aktivieren Sie genaue Alarme.",
+  "debugReminderScheduled": "Debug-Gebetserinnerung für {time} geplant.",
+  "@debugReminderScheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReminderCouldNotBeScheduled": "Debug-Gebetserinnerung konnte nicht geplant werden.",
+  "degrees": "Grad",
+  "minutes": "Minuten",
+  "prayerOffsetTitle": "{prayerName}-Versatz",
+  "@prayerOffsetTitle": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntOffsetHelper": "Geben Sie die Minuten nur als Ziffern ein. Verwenden Sie die Schaltfläche „Signieren“ für vor oder nach der berechneten Zeit.",
+  "enterValueBetweenMinMaxSuffix": "Geben Sie einen Wert zwischen {min} und {max} {suffix} ein.",
+  "@enterValueBetweenMinMaxSuffix": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntSuffixHelper": "Geben Sie {suffix} nur als Ziffern ein. Verwenden Sie - und +, um den Wert anzupassen.",
+  "@steppedIntSuffixHelper": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalSteppedIntHelper": "{emptyLabel} Leerzeichen speichert 0. Geben Sie nur Ziffern ein und verwenden Sie - oder + zum Anpassen.",
+  "@optionalSteppedIntHelper": {
+    "placeholders": {
+      "emptyLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValueFromMinToMax": "Geben Sie einen Wert von {min} bis {max} ein.",
+  "@enterValueFromMinToMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidValue": "Geben Sie einen gültigen Wert ein.",
+  "prayerRemindersCouldNotBeScheduled": "Gebetserinnerungen konnten nicht geplant werden.",
+  "qpcFontsDownloadError": "Der Download der Tajweed-Schriftart umfasste nicht alle 604 Seiten.",
+  "sysDefaultSubtitle": "Systemstandard / Standardeinstellung",
+  "enSubtitle": "Englisch",
+  "arSubtitle": "العربية / Arabisch",
+  "idSubtitle": "Bahasa Indonesia / Indonesisch",
+  "urSubtitle": "اردو / Urdu",
+  "trSubtitle": "Türkçe / Türkisch",
+  "bnSubtitle": "বাংলা / Bengali",
+  "subhanAllah": "SubhanAllah",
+  "alhamdulillah": "Alhamdulillah",
+  "allahuAkbar": "Allahu Akbar",
+  "astaghfirullah": "Astaghfirullah",
+  "custom": "Brauch",
+  "previousDhikr": "Vorheriger Dhikr",
+  "nextDhikr": "Nächster Dhikr",
+  "zakatAlMal": "Zakat al-Māl",
+  "purifyWealthSubtitle": "Reinigen Sie Ihren Reichtum. Erweitern Sie Ihren Segen.",
+  "liveMarketRates": "Live-Marktkurse",
+  "fetchingLiveRates": "Live-Marktkurse werden abgerufen...",
+  "ratesSyncSuccess": "Live-Metallpreise wurden erfolgreich synchronisiert",
+  "ratesSyncOffline": "Offline vermarkten. Verwendung von zwischengespeicherten Standardwerten.",
+  "overridePrices": "Preise überschreiben",
+  "reset": "Zurücksetzen",
+  "silverDefault": "Silber",
+  "gold": "Gold",
+  "nisabThresholdLabel": "NISAB-SCHWELLE",
+  "yourWealth": "IHR VERMÖGEN",
+  "cashHint": "Bank, Bargeld, digitale Geldbörsen, Ihnen geschuldetes Geld",
+  "goldHint": "Anlagegold + Schmuck (überprüfen Sie Ihr Madhhab)",
+  "investmentsHint": "Aktien, ETFs, Krypto, Fonds – aktueller Marktwert",
+  "businessHint": "Lagern und handeln Sie Waren zum aktuellen Wert",
+  "agricultureHint": "Pflanzen und Produkte (angewandter Steuersatz von 5–10 %)",
+  "otherHint": "Alle anderen zakfähigen Vermögenswerte",
+  "liabilitiesDeduct": "Verbindlichkeiten (Abzug)",
+  "liabilitiesHint": "Kredite, Kreditkarten, fällige Zahlungen, die Sie begleichen müssen",
+  "netZakatableWealth": "Zakierbares Nettovermögen",
+  "eligible": "BERECHTIGT",
+  "belowNisab": "UNTER NISAB",
+  "zakatDueLabel": "ZAKAT-FÄLLIGKEIT (2,5 %)",
+  "resetCalculator": "Rechner zurücksetzen",
+  "goldPriceGram": "Goldpreis pro Gramm (USD)",
+  "silverPriceGram": "Silberpreis pro Gramm (USD)",
+  "zakatSavedLedger": "Die Zakat-Berechnung wird in Ihrem persönlichen Hauptbuch gespeichert",
+  "zakatPaidDistributed": "Bezahlte/verteilte Zakat:",
+  "updateZakatPaidAmount": "Aktualisieren Sie den gezahlten Zakat-Betrag",
+  "enterPaidAmountUsd": "Geben Sie den gezahlten Betrag in USD ein",
+  "calculatorTab": "Kalkulator",
+  "historyTab": "Geschichte",
+  "fastingReminder": "Fasten-Erinnerung",
+  "dateNotFound": "Dieses Datum konnte in naher Zukunft nicht gefunden werden",
+  "customizeCalendar": "Kalender anpassen",
+  "shareDate": "Teilen Sie dieses Datum",
+  "dateCopiedClipboard": "Datumsdetails in die Zwischenablage kopiert",
+  "moonSighting": "Mondsichtung",
+  "fastingAlerts": "Fastenwarnungen",
+  "standard": "Standard",
+  "daysPlural": "{count} Tage",
+  "@daysPlural": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySingular": "{count} Tag",
+  "@daySingular": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSettings": "Kalendereinstellungen",
+  "calendarSettingsSubtitle": "Passen Sie die lokale Mondsichtung und Fastenerinnerungen an",
+  "sightingOffsetLabel": "Mondsichtungsversatz",
+  "fastingRemindersSubtitle": "Lassen Sie sich am Abend vor den empfohlenen Fastenzeiten benachrichtigen",
+  "hijriDateDisclaimer": "Hinweis: Hijri-Daten sind ungefähre Angaben und hängen von der Mondsichtung vor Ort ab. Durch den Versatz können Sie den Kalender an der Beobachtung Ihrer Community ausrichten.",
+  "recommendedFast": "Schnell empfohlen",
+  "recommendedForThisDay": "Empfohlen für diesen Tag",
+  "todayLegend": "Heute",
+  "eidLegend": "Eid",
+  "ramadanLegend": "Ramadan",
+  "blessedNightLegend": "Gesegnete Nacht",
+  "fastLegend": "Schnell",
+  "keyDatesInYear": "Schlüsseldaten in {year}",
+  "@keyDatesInYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "fastingAlertsActive": "Fastenwarnungen aktiv",
+  "quranFonts": "Koran-Schriftarten",
+  "allReciters": "Alle Rezitatoren",
+  "tapToAdjust": "Zum Anpassen tippen",
+  "currency": "Währung",
+  "selectCurrency": "Wählen Sie Währung aus",
+  "sleepTimerSettings": "Sleep-Timer-Einstellungen",
+  "numericMinutesDuration": "Numerische Minutendauer",
+  "endOfSurahSubtitle": "Beenden Sie den Stream automatisch genau dann, wenn der aktuelle Titel endet",
+  "turnOff": "Ausschalten",
+  "setTimer": "Timer einstellen",
+  "decreaseLabel": "Verringern Sie {label}",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "Erhöhen Sie {label}",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "exampleCoordinate": "Beispiel: {value}",
+  "@exampleCoordinate": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "filterAndSort": "Filtern und sortieren",
+  "deleteDownloadsQuestion": "Downloads löschen?",
+  "searchRecitationsOrSurahs": "Suchen Sie nach Rezitationen oder Suren...",
+  "dailyGoal": "Tagesziel",
+  "readingPlan": "Leseplan",
+  "quickActions": "Schnelle Aktionen",
+  "bookmarksAndNotes": "Lesezeichen und Notizen",
+  "hideSettings": "Einstellungen ausblenden",
+  "showSettings": "Einstellungen anzeigen"
 }

@@ -78,6 +78,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get uthmaniMadinah => 'Uthmani (Medina)';
 
   @override
+  String get qpcV4Tajweed => 'QPC V4 (Tajweed)';
+
+  @override
   String get indoPak => 'IndoPak';
 
   @override
@@ -3727,235 +3730,239 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get zakatCalculator => 'Zakat Calculator';
+  String get zakatCalculator => 'Zakat-Rechner';
 
   @override
-  String get zakatCalculatorSubtitle => 'Wealth & Nisab evaluations';
+  String get zakatCalculatorSubtitle => 'Vermögens- und Nisab-Bewertungen';
 
   @override
-  String get islamicCalendar => 'Islamic Calendar';
+  String get islamicCalendar => 'Islamischer Kalender';
 
   @override
-  String get islamicCalendarSubtitle => 'Synchronized Hijri timeline';
+  String get islamicCalendarSubtitle => 'Synchronisierte Hijri-Zeitleiste';
 
   @override
-  String get customizeNavigation => 'Customize Navigation';
+  String get customizeNavigation => 'Passen Sie die Navigation an';
 
   @override
-  String get allCategories => 'All Categories';
+  String get allCategories => 'Alle Kategorien';
 
   @override
-  String get meccan => 'Meccan';
+  String get meccan => 'Mekkan';
 
   @override
   String get medinan => 'Medinan';
 
   @override
   String get appearanceTileSubtitle =>
-      'Theme, light/dark mode, and color accent settings';
+      'Einstellungen für Thema, Hell-/Dunkelmodus und Farbakzente';
 
   @override
   String get navigationSettingsSubtitle =>
-      'Rearrange and swap bottom navigation tabs';
+      'Ordnen Sie die unteren Navigationsregisterkarten neu an und tauschen Sie sie aus';
 
   @override
-  String get downloadQpcFontsTitle => 'Download QPC V4 Tajweed fonts?';
+  String get downloadQpcFontsTitle =>
+      'QPC V4 Tajweed-Schriftarten herunterladen?';
 
   @override
   String downloadQpcFontsBody(String size) {
-    return 'Tajweed needs one TTF for each of the 604 Quran pages. Download the font package$size before enabling it.';
+    return 'Tajweed benötigt ein TTF für jede der 604 Koranseiten. Laden Sie das Schriftartenpaket$size herunter, bevor Sie es aktivieren.';
   }
 
   @override
   String get locationCleared => 'Standort gelöscht.';
 
   @override
-  String get useSunset => 'Use sunset';
+  String get useSunset => 'Nutzen Sie den Sonnenuntergang';
 
   @override
-  String get failedDownloadAyahAudio => 'Failed to download ayah audio.';
+  String get failedDownloadAyahAudio =>
+      'Ayah-Audio konnte nicht heruntergeladen werden.';
 
   @override
-  String get failedDeleteDownloadedAyah => 'Failed to delete downloaded ayah.';
+  String get failedDeleteDownloadedAyah =>
+      'Die heruntergeladene Ayah konnte nicht gelöscht werden.';
 
   @override
   String get unablePlayAudioWeb =>
-      'Unable to play audio on web. Try downloading the app for better experience.';
+      'Audio kann im Web nicht abgespielt werden. Versuchen Sie für ein besseres Erlebnis, die App herunterzuladen.';
 
   @override
   String get failedPlayAudioConnection =>
-      'Failed to play audio. Please check your internet connection.';
+      'Audio konnte nicht abgespielt werden. Bitte überprüfen Sie Ihre Internetverbindung.';
 
   @override
   String failedToPlayAudio(String error) {
-    return 'Failed to play audio: $error';
+    return 'Audio konnte nicht abgespielt werden: $error';
   }
 
   @override
-  String get ishaModeAngle => 'Angle';
+  String get ishaModeAngle => 'Winkel';
 
   @override
-  String get ishaModeAngleSubtitle => 'Use the custom Isha angle.';
+  String get ishaModeAngleSubtitle =>
+      'Verwenden Sie den benutzerdefinierten Isha-Winkel.';
 
   @override
-  String get ishaModeInterval => 'Interval after Maghrib';
+  String get ishaModeInterval => 'Intervall nach Maghrib';
 
   @override
   String get ishaModeIntervalSubtitle =>
-      'Set Isha a fixed number of minutes after Maghrib.';
+      'Stellen Sie Isha auf eine feste Anzahl von Minuten nach Maghrib ein.';
 
   @override
-  String get ishaModeFixedTime => 'Fixed time';
+  String get ishaModeFixedTime => 'Feste Zeit';
 
   @override
   String get ishaModeFixedTimeSubtitle =>
-      'Use the same clock time on each selected prayer date.';
+      'Verwenden Sie an jedem ausgewählten Gebetstermin die gleiche Uhrzeit.';
 
   @override
-  String get ishaModeLatestCap => 'Latest time cap';
+  String get ishaModeLatestCap => 'Letzte Zeitbegrenzung';
 
   @override
   String get ishaModeLatestCapSubtitle =>
-      'Use calculated Isha unless it goes later than a cap.';
+      'Verwenden Sie berechnetes Isha, es sei denn, es geht später als eine Obergrenze.';
 
   @override
   String get bestMethodSubtitle =>
-      'Choose a method from the saved country when available.';
+      'Wählen Sie eine Methode aus dem gespeicherten Land, sofern verfügbar.';
 
   @override
   String get highLatitudeRuleAutoSubtitle =>
-      'Apply a rule only for high-latitude locations.';
+      'Wenden Sie eine Regel nur für Standorte mit hohen Breitengraden an.';
 
   @override
   String get highLatitudeRuleNoneSubtitle =>
-      'Do not apply a high-latitude rule.';
+      'Wenden Sie keine Regel für hohe Breitengrade an.';
 
   @override
   String get highLatitudeRuleMiddleOfTheNightSubtitle =>
-      'Cap Fajr and Isha using the middle of the night.';
+      'Cap Fajr und Isha nutzen mitten in der Nacht.';
 
   @override
   String get highLatitudeRuleOneSeventhSubtitle =>
-      'Use one seventh of the night.';
+      'Nutzen Sie ein Siebtel der Nacht.';
 
   @override
   String get highLatitudeRuleAngleBasedSubtitle =>
-      'Use the Fajr and Isha angles as the night fraction.';
+      'Verwenden Sie die Fajr- und Isha-Winkel als Nachtanteil.';
 
   @override
-  String get twelveHour => '12-hour';
+  String get twelveHour => '12 Stunden';
 
   @override
-  String get twentyFourHour => '24-hour';
+  String get twentyFourHour => '24 Stunden';
 
   @override
   String get notificationPermissionOffRemindersNotEnabled =>
-      'Notification permission is off. Prayer reminders were not enabled.';
+      'Die Benachrichtigungsberechtigung ist deaktiviert. Gebetserinnerungen waren nicht aktiviert.';
 
   @override
   String get notificationPermissionTimeout =>
-      'Notification permission request timed out.';
+      'Zeitüberschreitung bei der Anfrage zur Benachrichtigungsberechtigung.';
 
   @override
   String get notificationPermissionTimeoutMessage =>
-      'Notification permission request timed out. Try reopening the app or enabling notifications in system settings.';
+      'Zeitüberschreitung bei der Anfrage zur Benachrichtigungsberechtigung. Versuchen Sie, die App erneut zu öffnen oder Benachrichtigungen in den Systemeinstellungen zu aktivieren.';
 
   @override
   String get notificationPermissionError =>
-      'Could not request notification permission.';
+      'Die Benachrichtigungsberechtigung konnte nicht angefordert werden.';
 
   @override
   String get notificationPermissionErrorMessage =>
-      'Could not request notification permission. Try again or enable notifications in system settings.';
+      'Die Benachrichtigungsberechtigung konnte nicht angefordert werden. Versuchen Sie es erneut oder aktivieren Sie Benachrichtigungen in den Systemeinstellungen.';
 
   @override
   String get openNotificationSettingsTimeout =>
-      'Opening notification settings timed out. Open Android app settings manually and enable notifications.';
+      'Beim Öffnen der Benachrichtigungseinstellungen ist eine Zeitüberschreitung aufgetreten. Öffnen Sie die Android-App-Einstellungen manuell und aktivieren Sie Benachrichtigungen.';
 
   @override
   String get openNotificationSettingsError =>
-      'Could not open notification settings. Open Android app settings manually and enable notifications.';
+      'Die Benachrichtigungseinstellungen konnten nicht geöffnet werden. Öffnen Sie die Android-App-Einstellungen manuell und aktivieren Sie Benachrichtigungen.';
 
   @override
   String get openExactAlarmSettingsTimeout =>
-      'Opening alarm permission settings timed out. Open Android alarms & reminders settings manually and enable exact alarms.';
+      'Beim Öffnen der Alarmberechtigungseinstellungen ist eine Zeitüberschreitung aufgetreten. Öffnen Sie die Alarm- und Erinnerungseinstellungen für Android manuell und aktivieren Sie genaue Alarme.';
 
   @override
   String get openExactAlarmSettingsError =>
-      'Could not open alarm permission settings. Open Android alarms & reminders settings manually and enable exact alarms.';
+      'Die Alarmberechtigungseinstellungen konnten nicht geöffnet werden. Öffnen Sie die Alarm- und Erinnerungseinstellungen für Android manuell und aktivieren Sie genaue Alarme.';
 
   @override
   String debugReminderScheduled(String time) {
-    return 'Debug prayer reminder scheduled for $time.';
+    return 'Debug-Gebetserinnerung für $time geplant.';
   }
 
   @override
   String get debugReminderCouldNotBeScheduled =>
-      'Debug prayer reminder could not be scheduled.';
+      'Debug-Gebetserinnerung konnte nicht geplant werden.';
 
   @override
-  String get degrees => 'degrees';
+  String get degrees => 'Grad';
 
   @override
-  String get minutes => 'minutes';
+  String get minutes => 'Minuten';
 
   @override
   String prayerOffsetTitle(String prayerName) {
-    return '$prayerName offset';
+    return '$prayerName-Versatz';
   }
 
   @override
   String get steppedIntOffsetHelper =>
-      'Type minutes as digits only. Use the sign button for before or after the calculated time.';
+      'Geben Sie die Minuten nur als Ziffern ein. Verwenden Sie die Schaltfläche „Signieren“ für vor oder nach der berechneten Zeit.';
 
   @override
   String enterValueBetweenMinMaxSuffix(String min, String max, String suffix) {
-    return 'Enter a value between $min and $max $suffix.';
+    return 'Geben Sie einen Wert zwischen $min und $max $suffix ein.';
   }
 
   @override
   String steppedIntSuffixHelper(String suffix) {
-    return 'Type $suffix as digits only. Use - and + to adjust the value.';
+    return 'Geben Sie $suffix nur als Ziffern ein. Verwenden Sie - und +, um den Wert anzupassen.';
   }
 
   @override
   String optionalSteppedIntHelper(String emptyLabel) {
-    return '$emptyLabel Blank saves 0. Type digits only and use - or + to adjust.';
+    return '$emptyLabel Leerzeichen speichert 0. Geben Sie nur Ziffern ein und verwenden Sie - oder + zum Anpassen.';
   }
 
   @override
   String enterValueFromMinToMax(String min, String max) {
-    return 'Enter a value from $min to $max.';
+    return 'Geben Sie einen Wert von $min bis $max ein.';
   }
 
   @override
-  String get enterValidValue => 'Enter a valid value.';
+  String get enterValidValue => 'Geben Sie einen gültigen Wert ein.';
 
   @override
   String get prayerRemindersCouldNotBeScheduled =>
-      'Prayer reminders could not be scheduled.';
+      'Gebetserinnerungen konnten nicht geplant werden.';
 
   @override
   String get qpcFontsDownloadError =>
-      'The Tajweed font download did not include all 604 pages.';
+      'Der Download der Tajweed-Schriftart umfasste nicht alle 604 Seiten.';
 
   @override
-  String get sysDefaultSubtitle => 'System default / لغة النظام';
+  String get sysDefaultSubtitle => 'Systemstandard / Standardeinstellung';
 
   @override
-  String get enSubtitle => 'English';
+  String get enSubtitle => 'Englisch';
 
   @override
-  String get arSubtitle => 'العربية / Arabic';
+  String get arSubtitle => 'العربية / Arabisch';
 
   @override
-  String get idSubtitle => 'Bahasa Indonesia / Indonesian';
+  String get idSubtitle => 'Bahasa Indonesia / Indonesisch';
 
   @override
   String get urSubtitle => 'اردو / Urdu';
 
   @override
-  String get trSubtitle => 'Türkçe / Turkish';
+  String get trSubtitle => 'Türkçe / Türkisch';
 
   @override
   String get bnSubtitle => 'বাংলা / Bengali';
@@ -3973,7 +3980,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get astaghfirullah => 'Astaghfirullah';
 
   @override
-  String get custom => 'Custom';
+  String get custom => 'Brauch';
 
   @override
   String get previousDhikr => 'Vorheriger Dhikr';
@@ -3985,165 +3992,172 @@ class AppLocalizationsDe extends AppLocalizations {
   String get zakatAlMal => 'Zakat al-Māl';
 
   @override
-  String get purifyWealthSubtitle => 'Purify your wealth. Grow your blessings.';
+  String get purifyWealthSubtitle =>
+      'Reinigen Sie Ihren Reichtum. Erweitern Sie Ihren Segen.';
 
   @override
-  String get liveMarketRates => 'Live Market Rates';
+  String get liveMarketRates => 'Live-Marktkurse';
 
   @override
-  String get fetchingLiveRates => 'Fetching live market rates...';
+  String get fetchingLiveRates => 'Live-Marktkurse werden abgerufen...';
 
   @override
-  String get ratesSyncSuccess => 'Live metal rates synchronized successfully';
+  String get ratesSyncSuccess =>
+      'Live-Metallpreise wurden erfolgreich synchronisiert';
 
   @override
   String get ratesSyncOffline =>
-      'Market offline. Using standard cached values.';
+      'Offline vermarkten. Verwendung von zwischengespeicherten Standardwerten.';
 
   @override
-  String get overridePrices => 'Override Prices';
+  String get overridePrices => 'Preise überschreiben';
 
   @override
-  String get reset => 'Reset';
+  String get reset => 'Zurücksetzen';
 
   @override
-  String get silverDefault => 'Silver';
+  String get silverDefault => 'Silber';
 
   @override
   String get gold => 'Gold';
 
   @override
-  String get nisabThresholdLabel => 'NISAB THRESHOLD';
+  String get nisabThresholdLabel => 'NISAB-SCHWELLE';
 
   @override
-  String get yourWealth => 'YOUR WEALTH';
+  String get yourWealth => 'IHR VERMÖGEN';
 
   @override
-  String get cashHint => 'Bank, cash, digital wallets, money owed to you';
+  String get cashHint =>
+      'Bank, Bargeld, digitale Geldbörsen, Ihnen geschuldetes Geld';
 
   @override
-  String get goldHint => 'Investment gold + jewelry (check your madhhab)';
+  String get goldHint => 'Anlagegold + Schmuck (überprüfen Sie Ihr Madhhab)';
 
   @override
   String get investmentsHint =>
-      'Stocks, ETFs, crypto, funds — current market value';
+      'Aktien, ETFs, Krypto, Fonds – aktueller Marktwert';
 
   @override
-  String get businessHint => 'Inventory & trade goods at current value';
+  String get businessHint => 'Lagern und handeln Sie Waren zum aktuellen Wert';
 
   @override
-  String get agricultureHint => 'Crops & produce (5-10% rate applied)';
+  String get agricultureHint =>
+      'Pflanzen und Produkte (angewandter Steuersatz von 5–10 %)';
 
   @override
-  String get otherHint => 'Any other Zakatable assets';
+  String get otherHint => 'Alle anderen zakfähigen Vermögenswerte';
 
   @override
-  String get liabilitiesDeduct => 'Liabilities (Deduct)';
+  String get liabilitiesDeduct => 'Verbindlichkeiten (Abzug)';
 
   @override
   String get liabilitiesHint =>
-      'Loans, credit cards, due payments you must settle';
+      'Kredite, Kreditkarten, fällige Zahlungen, die Sie begleichen müssen';
 
   @override
-  String get netZakatableWealth => 'Net Zakatable Wealth';
+  String get netZakatableWealth => 'Zakierbares Nettovermögen';
 
   @override
-  String get eligible => 'ELIGIBLE';
+  String get eligible => 'BERECHTIGT';
 
   @override
-  String get belowNisab => 'BELOW NISAB';
+  String get belowNisab => 'UNTER NISAB';
 
   @override
-  String get zakatDueLabel => 'ZAKAT DUE (2.5%)';
+  String get zakatDueLabel => 'ZAKAT-FÄLLIGKEIT (2,5 %)';
 
   @override
-  String get resetCalculator => 'Reset Calculator';
+  String get resetCalculator => 'Rechner zurücksetzen';
 
   @override
-  String get goldPriceGram => 'Gold price per gram (USD)';
+  String get goldPriceGram => 'Goldpreis pro Gramm (USD)';
 
   @override
-  String get silverPriceGram => 'Silver price per gram (USD)';
+  String get silverPriceGram => 'Silberpreis pro Gramm (USD)';
 
   @override
   String get zakatSavedLedger =>
-      'Zakat calculation saved to your personal ledger';
+      'Die Zakat-Berechnung wird in Ihrem persönlichen Hauptbuch gespeichert';
 
   @override
-  String get zakatPaidDistributed => 'Zakat Paid/Distributed:';
+  String get zakatPaidDistributed => 'Bezahlte/verteilte Zakat:';
 
   @override
-  String get updateZakatPaidAmount => 'Update Zakat Paid Amount';
+  String get updateZakatPaidAmount =>
+      'Aktualisieren Sie den gezahlten Zakat-Betrag';
 
   @override
-  String get enterPaidAmountUsd => 'Enter paid amount in USD';
+  String get enterPaidAmountUsd => 'Geben Sie den gezahlten Betrag in USD ein';
 
   @override
-  String get calculatorTab => 'Calculator';
+  String get calculatorTab => 'Kalkulator';
 
   @override
-  String get historyTab => 'History';
+  String get historyTab => 'Geschichte';
 
   @override
-  String get fastingReminder => 'Fasting Reminder';
+  String get fastingReminder => 'Fasten-Erinnerung';
 
   @override
-  String get dateNotFound => 'Could not locate that date in the near future';
+  String get dateNotFound =>
+      'Dieses Datum konnte in naher Zukunft nicht gefunden werden';
 
   @override
-  String get customizeCalendar => 'Customize calendar';
+  String get customizeCalendar => 'Kalender anpassen';
 
   @override
-  String get shareDate => 'Share this date';
+  String get shareDate => 'Teilen Sie dieses Datum';
 
   @override
-  String get dateCopiedClipboard => 'Date details copied to clipboard';
+  String get dateCopiedClipboard =>
+      'Datumsdetails in die Zwischenablage kopiert';
 
   @override
-  String get moonSighting => 'Moon Sighting';
+  String get moonSighting => 'Mondsichtung';
 
   @override
-  String get fastingAlerts => 'Fasting Alerts';
+  String get fastingAlerts => 'Fastenwarnungen';
 
   @override
   String get standard => 'Standard';
 
   @override
   String daysPlural(int count) {
-    return '$count days';
+    return '$count Tage';
   }
 
   @override
   String daySingular(int count) {
-    return '$count day';
+    return '$count Tag';
   }
 
   @override
-  String get calendarSettings => 'Calendar Settings';
+  String get calendarSettings => 'Kalendereinstellungen';
 
   @override
   String get calendarSettingsSubtitle =>
-      'Adjust for local moon sighting and fasting reminders';
+      'Passen Sie die lokale Mondsichtung und Fastenerinnerungen an';
 
   @override
-  String get sightingOffsetLabel => 'Moon Sighting Offset';
+  String get sightingOffsetLabel => 'Mondsichtungsversatz';
 
   @override
   String get fastingRemindersSubtitle =>
-      'Get notified the evening before recommended fasts';
+      'Lassen Sie sich am Abend vor den empfohlenen Fastenzeiten benachrichtigen';
 
   @override
   String get hijriDateDisclaimer =>
-      'Note: Hijri dates are approximate and depend on local moon sighting. The offset lets you align the calendar with your community’s observation.';
+      'Hinweis: Hijri-Daten sind ungefähre Angaben und hängen von der Mondsichtung vor Ort ab. Durch den Versatz können Sie den Kalender an der Beobachtung Ihrer Community ausrichten.';
 
   @override
-  String get recommendedFast => 'Recommended Fast';
+  String get recommendedFast => 'Schnell empfohlen';
 
   @override
-  String get recommendedForThisDay => 'Recommended for this day';
+  String get recommendedForThisDay => 'Empfohlen für diesen Tag';
 
   @override
-  String get todayLegend => 'Today';
+  String get todayLegend => 'Heute';
 
   @override
   String get eidLegend => 'Eid';
@@ -4152,31 +4166,90 @@ class AppLocalizationsDe extends AppLocalizations {
   String get ramadanLegend => 'Ramadan';
 
   @override
-  String get blessedNightLegend => 'Blessed Night';
+  String get blessedNightLegend => 'Gesegnete Nacht';
 
   @override
-  String get fastLegend => 'Fast';
+  String get fastLegend => 'Schnell';
 
   @override
   String keyDatesInYear(int year) {
-    return 'Key Dates in $year';
+    return 'Schlüsseldaten in $year';
   }
 
   @override
-  String get fastingAlertsActive => 'Fasting Alerts Active';
+  String get fastingAlertsActive => 'Fastenwarnungen aktiv';
 
   @override
-  String get quranFonts => 'Quran Fonts';
+  String get quranFonts => 'Koran-Schriftarten';
 
   @override
-  String get allReciters => 'All Reciters';
+  String get allReciters => 'Alle Rezitatoren';
 
   @override
-  String get tapToAdjust => 'Tap to adjust';
+  String get tapToAdjust => 'Zum Anpassen tippen';
 
   @override
-  String get currency => 'Currency';
+  String get currency => 'Währung';
 
   @override
-  String get selectCurrency => 'Select Currency';
+  String get selectCurrency => 'Wählen Sie Währung aus';
+
+  @override
+  String get sleepTimerSettings => 'Sleep-Timer-Einstellungen';
+
+  @override
+  String get numericMinutesDuration => 'Numerische Minutendauer';
+
+  @override
+  String get endOfSurahSubtitle =>
+      'Beenden Sie den Stream automatisch genau dann, wenn der aktuelle Titel endet';
+
+  @override
+  String get turnOff => 'Ausschalten';
+
+  @override
+  String get setTimer => 'Timer einstellen';
+
+  @override
+  String decreaseLabel(String label) {
+    return 'Verringern Sie $label';
+  }
+
+  @override
+  String increaseLabel(String label) {
+    return 'Erhöhen Sie $label';
+  }
+
+  @override
+  String exampleCoordinate(String value) {
+    return 'Beispiel: $value';
+  }
+
+  @override
+  String get filterAndSort => 'Filtern und sortieren';
+
+  @override
+  String get deleteDownloadsQuestion => 'Downloads löschen?';
+
+  @override
+  String get searchRecitationsOrSurahs =>
+      'Suchen Sie nach Rezitationen oder Suren...';
+
+  @override
+  String get dailyGoal => 'Tagesziel';
+
+  @override
+  String get readingPlan => 'Leseplan';
+
+  @override
+  String get quickActions => 'Schnelle Aktionen';
+
+  @override
+  String get bookmarksAndNotes => 'Lesezeichen und Notizen';
+
+  @override
+  String get hideSettings => 'Einstellungen ausblenden';
+
+  @override
+  String get showSettings => 'Einstellungen anzeigen';
 }

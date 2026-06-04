@@ -724,8 +724,9 @@
   "turkish": "Türkçe",
   "bengali": "Bengalce",
   "german": "Almanca",
-  "quranScriptStyle": "Kur'an Yazı Stili",
+  "quranScriptStyle": "Kuran Yazı Stili",
   "uthmaniMadinah": "Osmanlı (Medine)",
+  "qpcV4Tajweed": "Osmanlı (Tecvid QPC V4)",
   "indoPak": "Hint-Pak",
   "vibration": "Titreşim",
   "vibrationSubtitle": "Gezinirken dokunsal geri bildirimi etkinleştirin.",
@@ -1992,6 +1993,142 @@
   "allReciters": "Tüm Hafızlar",
   "tapToAdjust": "Ayarlamak için dokunun",
   "currency": "Para Birimi",
-  "quranScriptStyle": "Kuran Yazı Stili",
-  "selectCurrency": "Para Birimi Seç"
+  "selectCurrency": "Para Birimi Seç",
+  "useSunset": "Gün batımını kullan",
+  "failedDownloadAyahAudio": "Ayet sesi indirilemedi.",
+  "failedDeleteDownloadedAyah": "İndirilen ayet silinemedi.",
+  "unablePlayAudioWeb": "Web üzerinde ses oynatılamıyor. Daha iyi bir deneyim için uygulamayı indirmeyi deneyin.",
+  "failedPlayAudioConnection": "Ses oynatılamadı. Lütfen internet bağlantınızı kontrol edin.",
+  "failedToPlayAudio": "Ses oynatılamadı: {error}",
+  "@failedToPlayAudio": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaModeAngle": "Açı",
+  "ishaModeAngleSubtitle": "Özel Yatsı açısını kullanın.",
+  "ishaModeInterval": "Akşamdan sonraki süre",
+  "ishaModeIntervalSubtitle": "Yatsıyı Akşamdan belirli bir dakika sonrasına ayarlayın.",
+  "ishaModeFixedTime": "Sabit zaman",
+  "ishaModeFixedTimeSubtitle": "Seçilen her namaz tarihinde aynı saat zamanını kullanın.",
+  "ishaModeLatestCap": "En geç zaman sınırı",
+  "ishaModeLatestCapSubtitle": "Sınırı aşmadığı sürece hesaplanan Yatsı vaktini kullanın.",
+  "bestMethodSubtitle": "Mevcut olduğunda kaydedilen ülkeden bir yöntem seçin.",
+  "highLatitudeRuleAutoSubtitle": "Sadece yüksek enlemli konumlar için bir kural uygulayın.",
+  "highLatitudeRuleNoneSubtitle": "Yüksek enlem kuralı uygulamayın.",
+  "highLatitudeRuleMiddleOfTheNightSubtitle": "Fecr ve Yatsıyı gecenin ortasını kullanarak sınırlandırın.",
+  "highLatitudeRuleOneSeventhSubtitle": "Gecenin yedide birini kullanın.",
+  "highLatitudeRuleAngleBasedSubtitle": "Gece oranı olarak Fecr ve Yatsı açılarını kullanın.",
+  "twelveHour": "12 saat",
+  "twentyFourHour": "24 saat",
+  "notificationPermissionOffRemindersNotEnabled": "Bildirim izni kapalı. Namaz hatırlatıcıları etkinleştirilmedi.",
+  "notificationPermissionTimeout": "Bildirim izni isteği zaman aşımına uğradı.",
+  "notificationPermissionTimeoutMessage": "Bildirim izni isteği zaman aşımına uğradı. Uygulamayı yeniden açmayı veya sistem ayarlarından bildirimleri etkinleştirmeyi deneyin.",
+  "notificationPermissionError": "Bildirim izni istenemedi.",
+  "notificationPermissionErrorMessage": "Bildirim izni istenemedi. Tekrar deneyin veya sistem ayarlarından bildirimleri etkinleştirin.",
+  "openNotificationSettingsTimeout": "Bildirim ayarlarını açma işlemi zaman aşımına uğradı. Android uygulama ayarlarını manuel olarak açın ve bildirimleri etkinleştirin.",
+  "openNotificationSettingsError": "Bildirim ayarları açılamadı. Android uygulama ayarlarını manuel olarak açın ve bildirimleri etkinleştirin.",
+  "openExactAlarmSettingsTimeout": "Alarm izni ayarlarını açma işlemi zaman aşımına uğradı. Android alarmlar ve hatırlatıcılar ayarlarını manuel olarak açın ve tam alarmları etkinleştirin.",
+  "openExactAlarmSettingsError": "Alarm izni ayarları açılamadı. Android alarmlar ve hatırlatıcılar ayarlarını manuel olarak açın ve tam alarmları etkinleştirin.",
+  "debugReminderScheduled": "{time} için hata ayıklama namaz hatırlatıcısı planlandı.",
+  "@debugReminderScheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReminderCouldNotBeScheduled": "Hata ayıklama namaz hatırlatıcısı planlanamadı.",
+  "degrees": "derece",
+  "minutes": "dakika",
+  "prayerOffsetTitle": "{prayerName} farkı",
+  "@prayerOffsetTitle": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntOffsetHelper": "Dakikaları yalnızca rakam olarak yazın. Hesaplanan zamandan önce veya sonra olduğunu belirtmek için işaret düğmesini kullanın.",
+  "enterValueBetweenMinMaxSuffix": "{min} ile {max} {suffix} arasında bir değer girin.",
+  "@enterValueBetweenMinMaxSuffix": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntSuffixHelper": "{suffix} ifadesini yalnızca rakam olarak yazın. Değeri ayarlamak için - ve + kullanın.",
+  "@steppedIntSuffixHelper": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalSteppedIntHelper": "{emptyLabel} Boş bırakılırsa 0 kaydedilir. Yalnızca rakam yazın ayarlamak için - veya + kullanın.",
+  "@optionalSteppedIntHelper": {
+    "placeholders": {
+      "emptyLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValueFromMinToMax": "{min} ile {max} arasında bir değer girin.",
+  "@enterValueFromMinToMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidValue": "Geçerli bir değer girin.",
+  "prayerRemindersCouldNotBeScheduled": "Namaz hatırlatıcıları planlanamadı.",
+  "sleepTimerSettings": "Uyku Zamanlayıcı Ayarları",
+  "numericMinutesDuration": "Sayısal Dakika Süresi",
+  "endOfSurahSubtitle": "Mevcut parça bittiğinde akışı otomatik olarak sonlandır",
+  "turnOff": "Kapat",
+  "setTimer": "Zamanlayıcıyı Ayarla",
+  "decreaseLabel": "{label} azalt",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "{label} artır",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "exampleCoordinate": "Örnek: {value}",
+  "@exampleCoordinate": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "filterAndSort": "Filtrele ve sırala",
+  "deleteDownloadsQuestion": "İndirilenler silinsin mi?",
+  "searchRecitationsOrSurahs": "Okuyuş veya sure ara...",
+  "dailyGoal": "Günlük hedef",
+  "readingPlan": "Okuma planı",
+  "quickActions": "Hızlı işlemler",
+  "bookmarksAndNotes": "Yer işaretleri ve notlar"
 }

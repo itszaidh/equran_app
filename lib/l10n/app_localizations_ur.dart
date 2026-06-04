@@ -78,6 +78,9 @@ class AppLocalizationsUr extends AppLocalizations {
   String get uthmaniMadinah => 'عثمانی (مدینہ)';
 
   @override
+  String get qpcV4Tajweed => 'عثمانی (تجوید QPC V4)';
+
+  @override
   String get indoPak => 'انڈو پاک';
 
   @override
@@ -3708,170 +3711,172 @@ class AppLocalizationsUr extends AppLocalizations {
   String get locationCleared => 'مقام صاف کر دیا گیا۔';
 
   @override
-  String get useSunset => 'Use sunset';
+  String get useSunset => 'غروبِ آفتاب کا استعمال کریں';
 
   @override
-  String get failedDownloadAyahAudio => 'Failed to download ayah audio.';
+  String get failedDownloadAyahAudio => 'آیت کا آڈیو ڈاؤن لوڈ کرنے میں ناکامی۔';
 
   @override
-  String get failedDeleteDownloadedAyah => 'Failed to delete downloaded ayah.';
+  String get failedDeleteDownloadedAyah =>
+      'ڈاؤن لوڈ کردہ آیت کو حذف کرنے میں ناکامی۔';
 
   @override
   String get unablePlayAudioWeb =>
-      'Unable to play audio on web. Try downloading the app for better experience.';
+      'ویب پر آڈیو چلانے میں ناکامی۔ بہتر تجربے کے لیے ایپ ڈاؤن لوڈ کریں۔';
 
   @override
   String get failedPlayAudioConnection =>
-      'Failed to play audio. Please check your internet connection.';
+      'آڈیو چلانے میں ناکامی۔ براہ کرم اپنا انٹرنیٹ کنکشن چیک کریں۔';
 
   @override
   String failedToPlayAudio(String error) {
-    return 'Failed to play audio: $error';
+    return 'آڈیو چلانے میں ناکامی: $error';
   }
 
   @override
-  String get ishaModeAngle => 'Angle';
+  String get ishaModeAngle => 'زاویہ';
 
   @override
-  String get ishaModeAngleSubtitle => 'Use the custom Isha angle.';
+  String get ishaModeAngleSubtitle =>
+      'عشاء کا اپنی مرضی کا زاویہ استعمال کریں۔';
 
   @override
-  String get ishaModeInterval => 'Interval after Maghrib';
+  String get ishaModeInterval => 'مغرب کے بعد کا وقفہ';
 
   @override
   String get ishaModeIntervalSubtitle =>
-      'Set Isha a fixed number of minutes after Maghrib.';
+      'مغرب کے بعد منٹس کا ایک خاص وقت عشاء کے لیے مقرر کریں۔';
 
   @override
-  String get ishaModeFixedTime => 'Fixed time';
+  String get ishaModeFixedTime => 'مقررہ وقت';
 
   @override
   String get ishaModeFixedTimeSubtitle =>
-      'Use the same clock time on each selected prayer date.';
+      'نماز کی ہر منتخب تاریخ پر ایک ہی وقت استعمال کریں۔';
 
   @override
-  String get ishaModeLatestCap => 'Latest time cap';
+  String get ishaModeLatestCap => 'آخری وقت کی حد';
 
   @override
   String get ishaModeLatestCapSubtitle =>
-      'Use calculated Isha unless it goes later than a cap.';
+      'حساب کردہ عشاء کا وقت استعمال کریں جب تک کہ وہ مقررہ حد سے زیادہ نہ ہو جائے۔';
 
   @override
   String get bestMethodSubtitle =>
-      'Choose a method from the saved country when available.';
+      'دستیاب ہونے پر محفوظ کردہ ملک کا طریقہ کار منتخب کریں۔';
 
   @override
   String get highLatitudeRuleAutoSubtitle =>
-      'Apply a rule only for high-latitude locations.';
+      'صرف اونچے عرض البلد والے مقامات کے لیے اصول لاگو کریں۔';
 
   @override
   String get highLatitudeRuleNoneSubtitle =>
-      'Do not apply a high-latitude rule.';
+      'اونچے عرض البلد کا اصول لاگو نہ کریں۔';
 
   @override
   String get highLatitudeRuleMiddleOfTheNightSubtitle =>
-      'Cap Fajr and Isha using the middle of the night.';
+      'آدھی رات کے وقت کے مطابق فجر اور عشاء کی حد مقرر کریں۔';
 
   @override
   String get highLatitudeRuleOneSeventhSubtitle =>
-      'Use one seventh of the night.';
+      'رات کا ساتواں حصہ استعمال کریں۔';
 
   @override
   String get highLatitudeRuleAngleBasedSubtitle =>
-      'Use the Fajr and Isha angles as the night fraction.';
+      'رات کے حصے کے طور پر فجر اور عشاء کے زاویوں کا استعمال کریں۔';
 
   @override
-  String get twelveHour => '12-hour';
+  String get twelveHour => '12 گھنٹے';
 
   @override
-  String get twentyFourHour => '24-hour';
+  String get twentyFourHour => '24 گھنٹے';
 
   @override
   String get notificationPermissionOffRemindersNotEnabled =>
-      'Notification permission is off. Prayer reminders were not enabled.';
+      'نوٹیفکیشن کی اجازت بند ہے۔ نماز کے ریمائنڈرز فعال نہیں کیے گئے تھے۔';
 
   @override
   String get notificationPermissionTimeout =>
-      'Notification permission request timed out.';
+      'نوٹیفکیشن کی اجازت کی درخواست کا وقت ختم ہو گیا۔';
 
   @override
   String get notificationPermissionTimeoutMessage =>
-      'Notification permission request timed out. Try reopening the app or enabling notifications in system settings.';
+      'نوٹیفکیشن کی اجازت کی درخواست کا وقت ختم ہو گیا۔ ایپ کو دوبارہ کھولنے کی کوشش کریں یا سسٹم سیٹنگز میں نوٹیفکیشنز کو فعال کریں۔';
 
   @override
   String get notificationPermissionError =>
-      'Could not request notification permission.';
+      'نوٹیفکیشن کی اجازت کی درخواست نہیں کی جا سکی۔';
 
   @override
   String get notificationPermissionErrorMessage =>
-      'Could not request notification permission. Try again or enable notifications in system settings.';
+      'نوٹیفکیشن کی اجازت کی درخواست نہیں کی جا سکی۔ دوبارہ کوشش کریں یا سسٹم سیٹنگز میں نوٹیفکیشنز کو فعال کریں۔';
 
   @override
   String get openNotificationSettingsTimeout =>
-      'Opening notification settings timed out. Open Android app settings manually and enable notifications.';
+      'نوٹیفکیشن کی ترتیبات کھولنے کا وقت ختم ہو گیا۔ اینڈرائیڈ ایپ کی ترتیبات دستی طور پر کھولیں اور نوٹیفکیشنز کو فعال کریں۔';
 
   @override
   String get openNotificationSettingsError =>
-      'Could not open notification settings. Open Android app settings manually and enable notifications.';
+      'نوٹیفکیشن کی ترتیبات نہیں کھولی جا سکیں۔ اینڈرائیڈ ایپ کی ترتیبات دستی طور پر کھولیں اور نوٹیفکیشنز کو فعال کریں۔';
 
   @override
   String get openExactAlarmSettingsTimeout =>
-      'Opening alarm permission settings timed out. Open Android alarms & reminders settings manually and enable exact alarms.';
+      'الارم کی اجازت کی ترتیبات کھولنے کا وقت ختم ہو گیا۔ اینڈرائیڈ الارم اور ریمائنڈر کی ترتیبات دستی طور پر کھولیں اور درست الارم کو فعال کریں۔';
 
   @override
   String get openExactAlarmSettingsError =>
-      'Could not open alarm permission settings. Open Android alarms & reminders settings manually and enable exact alarms.';
+      'الارم کی اجازت کی ترتیبات نہیں کھولی جا سکیں۔ اینڈرائیڈ الارم اور ریمائنڈر کی ترتیبات دستی طور پر کھولیں اور درست الارم کو فعال کریں۔';
 
   @override
   String debugReminderScheduled(String time) {
-    return 'Debug prayer reminder scheduled for $time.';
+    return 'ڈیبگ نماز کا ریمائنڈر $time کے لیے شیڈول کر دیا گیا ہے۔';
   }
 
   @override
   String get debugReminderCouldNotBeScheduled =>
-      'Debug prayer reminder could not be scheduled.';
+      'ڈیبگ نماز کا ریمائنڈر شیڈول نہیں کیا جا سکا۔';
 
   @override
-  String get degrees => 'degrees';
+  String get degrees => 'ڈگری';
 
   @override
-  String get minutes => 'minutes';
+  String get minutes => 'منٹ';
 
   @override
   String prayerOffsetTitle(String prayerName) {
-    return '$prayerName offset';
+    return '$prayerName کا فرق';
   }
 
   @override
   String get steppedIntOffsetHelper =>
-      'Type minutes as digits only. Use the sign button for before or after the calculated time.';
+      'منٹس کو صرف ہندسوں میں لکھیں۔ حساب کردہ وقت سے پہلے یا بعد کے لیے علامت کا بٹن استعمال کریں۔';
 
   @override
   String enterValueBetweenMinMaxSuffix(String min, String max, String suffix) {
-    return 'Enter a value between $min and $max $suffix.';
+    return '$min اور $max $suffix کے درمیان قیمت درج کریں۔';
   }
 
   @override
   String steppedIntSuffixHelper(String suffix) {
-    return 'Type $suffix as digits only. Use - and + to adjust the value.';
+    return '$suffix کو صرف ہندسوں میں لکھیں۔ قیمت کو ایڈجسٹ کرنے کے لیے - اور + استعمال کریں۔';
   }
 
   @override
   String optionalSteppedIntHelper(String emptyLabel) {
-    return '$emptyLabel Blank saves 0. Type digits only and use - or + to adjust.';
+    return '$emptyLabel خالی چھوڑنے سے 0 محفوظ ہوگا۔ صرف ہندسے لکھیں اور ایڈجسٹ کرنے کے لیے - یا + استعمال کریں۔';
   }
 
   @override
   String enterValueFromMinToMax(String min, String max) {
-    return 'Enter a value from $min to $max.';
+    return '$min سے $max تک قیمت درج کریں۔';
   }
 
   @override
-  String get enterValidValue => 'Enter a valid value.';
+  String get enterValidValue => 'درست قیمت درج کریں۔';
 
   @override
   String get prayerRemindersCouldNotBeScheduled =>
-      'Prayer reminders could not be scheduled.';
+      'نماز کے ریمائنڈرز شیڈول نہیں کیے جا سکے۔';
 
   @override
   String get qpcFontsDownloadError =>
@@ -4120,4 +4125,62 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get selectCurrency => 'کرنسی منتخب کریں';
+
+  @override
+  String get sleepTimerSettings => 'سلیپ ٹائمر کی ترتیبات';
+
+  @override
+  String get numericMinutesDuration => 'منٹس کا عددی دورانیہ';
+
+  @override
+  String get endOfSurahSubtitle =>
+      'موجودہ ٹریک ختم ہونے پر آڈیو اسٹریم خود بخود بند کریں';
+
+  @override
+  String get turnOff => 'بند کریں';
+
+  @override
+  String get setTimer => 'ٹائمر سیٹ کریں';
+
+  @override
+  String decreaseLabel(String label) {
+    return '$label کم کریں';
+  }
+
+  @override
+  String increaseLabel(String label) {
+    return '$label زیادہ کریں';
+  }
+
+  @override
+  String exampleCoordinate(String value) {
+    return 'مثال: $value';
+  }
+
+  @override
+  String get filterAndSort => 'فلٹر اور ترتیب دیں';
+
+  @override
+  String get deleteDownloadsQuestion => 'ڈاؤن لوڈز حذف کریں؟';
+
+  @override
+  String get searchRecitationsOrSurahs => 'تلاوت یا سورتیں تلاش کریں...';
+
+  @override
+  String get dailyGoal => 'روزانہ کا ہدف';
+
+  @override
+  String get readingPlan => 'پڑھنے کا منصوبہ';
+
+  @override
+  String get quickActions => 'فوری اقدامات';
+
+  @override
+  String get bookmarksAndNotes => 'بک مارکس اور نوٹس';
+
+  @override
+  String get hideSettings => 'Hide settings';
+
+  @override
+  String get showSettings => 'Show settings';
 }

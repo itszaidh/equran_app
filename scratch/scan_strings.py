@@ -3,7 +3,7 @@ import re
 import json
 
 # Target directories and files
-LIB_DIR = "/home/yousuf/Documents/Personal Projects/equran_app/lib"
+LIB_DIR = "/home/yousuf/Documents/Personal Projects/equran-app/lib"
 EN_ARB_PATH = os.path.join(LIB_DIR, "l10n", "app_en.arb")
 
 # Regex to find Text('...') or Text("...") or Text(r'...')

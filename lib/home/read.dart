@@ -4004,6 +4004,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     final String downloadKey = '$chapter-$verse';
     if (_downloadingAyahKeys.contains(downloadKey)) return;
 
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
+
     try {
       setState(() {
         _downloadingAyahKeys.add(downloadKey);
@@ -4012,7 +4014,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       final int notificationId = DownloadNotifications.notificationId(
         'ayah-$chapter-$verse',
       );
-      final String title = 'Downloading ayah $chapter:$verse';
+      final String title = localizations.downloadingName('ayah $chapter:$verse');
       await DownloadNotifications.progress(
         id: notificationId,
         title: title,
@@ -4031,20 +4033,20 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       );
       await DownloadNotifications.complete(
         id: notificationId,
-        title: 'Downloaded ayah $chapter:$verse',
+        title: localizations.downloadedName('ayah $chapter:$verse'),
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Downloaded ayah $chapter:$verse')),
+        SnackBar(content: Text(localizations.downloadedName('ayah $chapter:$verse'))),
       );
     } catch (_) {
       await DownloadNotifications.fail(
         id: DownloadNotifications.notificationId('ayah-$chapter-$verse'),
-        title: 'Failed to download ayah $chapter:$verse',
+        title: localizations.failedDownloadName('ayah $chapter:$verse'),
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to download ayah audio.')),
+        SnackBar(content: Text(localizations.failedDownloadAyahAudio)),
       );
     } finally {
       if (mounted) {
@@ -4057,23 +4059,24 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<void> _confirmDeleteCurrentAyahDownload() async {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     final bool? confirm = await _withLowFpsSuppressed(() {
       return showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           icon: const Icon(Icons.warning_amber_rounded),
-          title: const Text('Delete Downloaded Ayah?'),
+          title: Text(localizations.deleteDownloadedAyah),
           content: Text(
-            'This will remove ayah $_currentChapter:$_currentVerse from offline storage.',
+            localizations.removeSurahFromOffline('ayah $_currentChapter:$_currentVerse'),
           ),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(localizations.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
+              child: Text(localizations.delete),
             ),
           ],
         ),
@@ -4085,18 +4088,19 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   Future<void> _deleteCurrentAyahDownload() async {
+    final AppLocalizations localizations = AppLocalizations.of(context)!;
     try {
       await AudioDownloadService().deleteAyah(_currentChapter, _currentVerse);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Deleted ayah $_currentChapter:$_currentVerse audio'),
+          content: Text(localizations.deletedDownload('ayah $_currentChapter:$_currentVerse audio')),
         ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete downloaded ayah.')),
+        SnackBar(content: Text(localizations.failedDeleteDownloadedAyah)),
       );
     } finally {
       await _refreshCurrentAyahDownloadState();
@@ -4279,7 +4283,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Sleep Timer Settings',
+                          localizations.sleepTimerSettings,
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
@@ -4304,9 +4308,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          const Text(
-                            'Numeric Minutes Duration',
-                            style: TextStyle(fontWeight: FontWeight.w800),
+                          Text(
+                            localizations.numericMinutesDuration,
+                            style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                           const SizedBox(height: 12),
                           Row(
@@ -4341,8 +4345,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                                     .withAlpha(128)
                                               : colorScheme.onSurface,
                                         ),
-                                    decoration: const InputDecoration(
-                                      suffixText: 'min',
+                                    decoration: InputDecoration(
+                                      suffixText: localizations.minutesShort(0).replaceAll('0', '').trim(),
                                       border: InputBorder.none,
                                       enabledBorder: InputBorder.none,
                                       focusedBorder: InputBorder.none,
@@ -4393,12 +4397,12 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             ? colorScheme.primary
                             : colors.textSecondary,
                       ),
-                      title: const Text(
-                        'End of Surah',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                      title: Text(
+                        localizations.endOfSurah,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
-                      subtitle: const Text(
-                        'Auto-kill the stream exactly when the current track finishes',
+                      subtitle: Text(
+                        localizations.endOfSurahSubtitle,
                       ),
                       value: endOfSurah,
                       onChanged: (val) {
@@ -4421,7 +4425,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               _cancelSleepTimer();
                               Navigator.of(context).pop();
                             },
-                            child: const Text('Turn Off'),
+                            child: Text(localizations.turnOff),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -4446,7 +4450,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               Navigator.of(context).pop();
                             }
                           },
-                          child: const Text('Set Timer'),
+                          child: Text(localizations.setTimer),
                         ),
                       ),
                     ],
@@ -9037,9 +9041,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       await QuranTranslationService.instance
           .loadInstalledTranslationForResource(resource);
       if (!mounted) return true;
+      final localizations = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Installed ${resource.name}.')));
+      ).showSnackBar(SnackBar(content: Text(localizations.installedResource(resource.name))));
       setState(() {});
       return true;
     } on ResourceInstallException catch (error) {
@@ -9050,8 +9055,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       }
     } catch (_) {
       if (mounted) {
+        final localizations = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unable to install this resource.')),
+          SnackBar(content: Text(localizations.unableInstallResource)),
         );
       }
     }
@@ -9479,6 +9485,7 @@ class _NumberStepperTile extends StatelessWidget {
     final ColorScheme colorScheme = theme.colorScheme;
     final bool canDecrease = value > min;
     final bool canIncrease = value < max;
+    final localizations = AppLocalizations.of(context)!;
     return Material(
       color: colorScheme.surfaceContainer,
       borderRadius: BorderRadius.circular(AppRadii.small),
@@ -9500,7 +9507,7 @@ class _NumberStepperTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   IconButton(
-                    tooltip: 'Decrease $label',
+                    tooltip: localizations.decreaseLabel(label),
                     onPressed: canDecrease ? () => onChanged(value - 1) : null,
                     icon: const Icon(Icons.remove_rounded),
                     visualDensity: VisualDensity.compact,
@@ -9516,7 +9523,7 @@ class _NumberStepperTile extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Increase $label',
+                    tooltip: localizations.increaseLabel(label),
                     onPressed: canIncrease ? () => onChanged(value + 1) : null,
                     icon: const Icon(Icons.add_rounded),
                     visualDensity: VisualDensity.compact,

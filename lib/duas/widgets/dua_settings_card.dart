@@ -9,6 +9,7 @@ class DuaTypographySettingsCard extends StatelessWidget {
 
   static const Map<String, String> _supportedLanguages = <String, String>{
     'en': 'English',
+    'de': 'Deutsch',
     'bn': 'বাংলা',
     'id': 'Bahasa Indonesia',
     'tr': 'Türkçe',

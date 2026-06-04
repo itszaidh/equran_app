@@ -1016,6 +1016,12 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
   }) {
     final String title = labelOverride ?? (category?.label ?? 'Amount');
     final IconData icon = category?.icon ?? (isDeduction ? Icons.remove_circle_outline : Icons.attach_money_rounded);
+    final bool isWeight = category == ZakatCategory.gold || category == ZakatCategory.silver;
+    final String? weightUnit = category == ZakatCategory.gold
+        ? (_goldUnit == 'grams' ? 'g' : 'tola')
+        : (category == ZakatCategory.silver
+            ? (_silverUnit == 'grams' ? 'g' : 'tola')
+            : null);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -1048,8 +1054,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
               decoration: InputDecoration(
-                hintText: hint ?? 'Enter amount in $_baseCurrency',
-                prefixText: _currencySymbol,
+                hintText: hint ?? (isWeight ? 'Enter weight' : 'Enter amount in $_baseCurrency'),
+                prefixText: isWeight ? null : _currencySymbol,
+                suffixText: weightUnit,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(EquranRadii.medium),

@@ -31,7 +31,6 @@ import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/duas_category_page.dart';
 import 'package:equran/backend/daily_tools_config.dart';
-import 'package:equran/home_dashboard/daily_tools_edit_sheet.dart';
 import 'package:equran/home/hijri_calendar_page.dart' hide HijriCalendar;
 import 'package:equran/home/zakah_calculator_page.dart';
 import 'package:equran/hifz/hifz.dart';
@@ -1243,16 +1242,6 @@ class _DailyQuranCompanionSection extends StatelessWidget {
               title: localizations.dailyTools,
               subtitle: localizations.dailyToolsSubtitle,
               compact: true,
-              trailing: IconButton(
-                icon: Icon(Icons.tune_rounded, color: context.equranColors.primary, size: 20),
-                tooltip: localizations.localeName == 'ar' ? 'تخصيص' : 'Customize',
-                style: IconButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(32, 32),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                onPressed: () => DailyToolsEditSheet.show(context),
-              ),
             ),
             const SizedBox(height: 10),
             _MuslimDailyQuickActions(actions: actions),
@@ -1269,14 +1258,12 @@ class _CompanionSectionHeader extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.compact = false,
-    this.trailing,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final bool compact;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -1321,10 +1308,6 @@ class _CompanionSectionHeader extends StatelessWidget {
             ],
           ),
         ),
-        if (trailing != null) ...<Widget>[
-          const SizedBox(width: 10),
-          trailing!,
-        ],
       ],
     );
   }
@@ -1395,15 +1378,6 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
                   break;
                 case DailyToolType.qibla:
                   widget.actions.onOpenQibla();
-                  break;
-                case DailyToolType.player:
-                  unawaited(
-                    SettingsDB().put(
-                      'resumeListeningRequestAt',
-                      DateTime.now().microsecondsSinceEpoch,
-                    ),
-                  );
-                  widget.actions.onOpenQuran();
                   break;
                 case DailyToolType.tasbih:
                   widget.actions.onOpenTasbih();

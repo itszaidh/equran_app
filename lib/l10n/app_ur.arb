@@ -724,8 +724,9 @@
   "turkish": "ترکی",
   "bengali": "بنگالی",
   "german": "جرمن",
-  "quranScriptStyle": "قرآنی خط کا انداز",
+  "quranScriptStyle": "رسم الخط قرآن",
   "uthmaniMadinah": "عثمانی (مدینہ)",
+  "qpcV4Tajweed": "عثمانی (تجوید QPC V4)",
   "indoPak": "انڈو پاک",
   "vibration": "کمپن",
   "vibrationSubtitle": "نیویگیٹ کرتے وقت ہیپٹک فیڈ بیک کو فعال کریں۔",
@@ -1992,6 +1993,142 @@
   "allReciters": "تمام قراء",
   "tapToAdjust": "ترتیب دینے کے لیے دبائیں",
   "currency": "کرنسی",
-  "quranScriptStyle": "رسم الخط قرآن",
-  "selectCurrency": "کرنسی منتخب کریں"
+  "selectCurrency": "کرنسی منتخب کریں",
+  "useSunset": "غروبِ آفتاب کا استعمال کریں",
+  "failedDownloadAyahAudio": "آیت کا آڈیو ڈاؤن لوڈ کرنے میں ناکامی۔",
+  "failedDeleteDownloadedAyah": "ڈاؤن لوڈ کردہ آیت کو حذف کرنے میں ناکامی۔",
+  "unablePlayAudioWeb": "ویب پر آڈیو چلانے میں ناکامی۔ بہتر تجربے کے لیے ایپ ڈاؤن لوڈ کریں۔",
+  "failedPlayAudioConnection": "آڈیو چلانے میں ناکامی۔ براہ کرم اپنا انٹرنیٹ کنکشن چیک کریں۔",
+  "failedToPlayAudio": "آڈیو چلانے میں ناکامی: {error}",
+  "@failedToPlayAudio": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaModeAngle": "زاویہ",
+  "ishaModeAngleSubtitle": "عشاء کا اپنی مرضی کا زاویہ استعمال کریں۔",
+  "ishaModeInterval": "مغرب کے بعد کا وقفہ",
+  "ishaModeIntervalSubtitle": "مغرب کے بعد منٹس کا ایک خاص وقت عشاء کے لیے مقرر کریں۔",
+  "ishaModeFixedTime": "مقررہ وقت",
+  "ishaModeFixedTimeSubtitle": "نماز کی ہر منتخب تاریخ پر ایک ہی وقت استعمال کریں۔",
+  "ishaModeLatestCap": "آخری وقت کی حد",
+  "ishaModeLatestCapSubtitle": "حساب کردہ عشاء کا وقت استعمال کریں جب تک کہ وہ مقررہ حد سے زیادہ نہ ہو جائے۔",
+  "bestMethodSubtitle": "دستیاب ہونے پر محفوظ کردہ ملک کا طریقہ کار منتخب کریں۔",
+  "highLatitudeRuleAutoSubtitle": "صرف اونچے عرض البلد والے مقامات کے لیے اصول لاگو کریں۔",
+  "highLatitudeRuleNoneSubtitle": "اونچے عرض البلد کا اصول لاگو نہ کریں۔",
+  "highLatitudeRuleMiddleOfTheNightSubtitle": "آدھی رات کے وقت کے مطابق فجر اور عشاء کی حد مقرر کریں۔",
+  "highLatitudeRuleOneSeventhSubtitle": "رات کا ساتواں حصہ استعمال کریں۔",
+  "highLatitudeRuleAngleBasedSubtitle": "رات کے حصے کے طور پر فجر اور عشاء کے زاویوں کا استعمال کریں۔",
+  "twelveHour": "12 گھنٹے",
+  "twentyFourHour": "24 گھنٹے",
+  "notificationPermissionOffRemindersNotEnabled": "نوٹیفکیشن کی اجازت بند ہے۔ نماز کے ریمائنڈرز فعال نہیں کیے گئے تھے۔",
+  "notificationPermissionTimeout": "نوٹیفکیشن کی اجازت کی درخواست کا وقت ختم ہو گیا۔",
+  "notificationPermissionTimeoutMessage": "نوٹیفکیشن کی اجازت کی درخواست کا وقت ختم ہو گیا۔ ایپ کو دوبارہ کھولنے کی کوشش کریں یا سسٹم سیٹنگز میں نوٹیفکیشنز کو فعال کریں۔",
+  "notificationPermissionError": "نوٹیفکیشن کی اجازت کی درخواست نہیں کی جا سکی۔",
+  "notificationPermissionErrorMessage": "نوٹیفکیشن کی اجازت کی درخواست نہیں کی جا سکی۔ دوبارہ کوشش کریں یا سسٹم سیٹنگز میں نوٹیفکیشنز کو فعال کریں۔",
+  "openNotificationSettingsTimeout": "نوٹیفکیشن کی ترتیبات کھولنے کا وقت ختم ہو گیا۔ اینڈرائیڈ ایپ کی ترتیبات دستی طور پر کھولیں اور نوٹیفکیشنز کو فعال کریں۔",
+  "openNotificationSettingsError": "نوٹیفکیشن کی ترتیبات نہیں کھولی جا سکیں۔ اینڈرائیڈ ایپ کی ترتیبات دستی طور پر کھولیں اور نوٹیفکیشنز کو فعال کریں۔",
+  "openExactAlarmSettingsTimeout": "الارم کی اجازت کی ترتیبات کھولنے کا وقت ختم ہو گیا۔ اینڈرائیڈ الارم اور ریمائنڈر کی ترتیبات دستی طور پر کھولیں اور درست الارم کو فعال کریں۔",
+  "openExactAlarmSettingsError": "الارم کی اجازت کی ترتیبات نہیں کھولی جا سکیں۔ اینڈرائیڈ الارم اور ریمائنڈر کی ترتیبات دستی طور پر کھولیں اور درست الارم کو فعال کریں۔",
+  "debugReminderScheduled": "ڈیبگ نماز کا ریمائنڈر {time} کے لیے شیڈول کر دیا گیا ہے۔",
+  "@debugReminderScheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReminderCouldNotBeScheduled": "ڈیبگ نماز کا ریمائنڈر شیڈول نہیں کیا جا سکا۔",
+  "degrees": "ڈگری",
+  "minutes": "منٹ",
+  "prayerOffsetTitle": "{prayerName} کا فرق",
+  "@prayerOffsetTitle": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntOffsetHelper": "منٹس کو صرف ہندسوں میں لکھیں۔ حساب کردہ وقت سے پہلے یا بعد کے لیے علامت کا بٹن استعمال کریں۔",
+  "enterValueBetweenMinMaxSuffix": "{min} اور {max} {suffix} کے درمیان قیمت درج کریں۔",
+  "@enterValueBetweenMinMaxSuffix": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntSuffixHelper": "{suffix} کو صرف ہندسوں میں لکھیں۔ قیمت کو ایڈجسٹ کرنے کے لیے - اور + استعمال کریں۔",
+  "@steppedIntSuffixHelper": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalSteppedIntHelper": "{emptyLabel} خالی چھوڑنے سے 0 محفوظ ہوگا۔ صرف ہندسے لکھیں اور ایڈجسٹ کرنے کے لیے - یا + استعمال کریں۔",
+  "@optionalSteppedIntHelper": {
+    "placeholders": {
+      "emptyLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValueFromMinToMax": "{min} سے {max} تک قیمت درج کریں۔",
+  "@enterValueFromMinToMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidValue": "درست قیمت درج کریں۔",
+  "prayerRemindersCouldNotBeScheduled": "نماز کے ریمائنڈرز شیڈول نہیں کیے جا سکے۔",
+  "sleepTimerSettings": "سلیپ ٹائمر کی ترتیبات",
+  "numericMinutesDuration": "منٹس کا عددی دورانیہ",
+  "endOfSurahSubtitle": "موجودہ ٹریک ختم ہونے پر آڈیو اسٹریم خود بخود بند کریں",
+  "turnOff": "بند کریں",
+  "setTimer": "ٹائمر سیٹ کریں",
+  "decreaseLabel": "{label} کم کریں",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "{label} زیادہ کریں",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "exampleCoordinate": "مثال: {value}",
+  "@exampleCoordinate": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "filterAndSort": "فلٹر اور ترتیب دیں",
+  "deleteDownloadsQuestion": "ڈاؤن لوڈز حذف کریں؟",
+  "searchRecitationsOrSurahs": "تلاوت یا سورتیں تلاش کریں...",
+  "dailyGoal": "روزانہ کا ہدف",
+  "readingPlan": "پڑھنے کا منصوبہ",
+  "quickActions": "فوری اقدامات",
+  "bookmarksAndNotes": "بک مارکس اور نوٹس"
 }

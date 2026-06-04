@@ -42,6 +42,7 @@ import 'package:equran/widgets/library.dart'
         SettingsSwitch;
 import 'package:flutter/material.dart';
 import 'package:equran/l10n/app_localizations.dart';
+import 'package:equran/home_dashboard/daily_tools_edit_sheet.dart';
 import 'package:equran/main.dart' show MyApp;
 import 'package:quran/quran.dart' show Translation, isTranslationLoaded;
 
@@ -136,6 +137,17 @@ class _SettingsPageState extends State<SettingsPage> {
                     builder: (context) => const NavigationSettingsPage(),
                   ),
                 ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.grid_view_rounded),
+                title: Text(DailyToolsEditSheet.translateCustomizeTitle(
+                  localizations.localeName.toLowerCase(),
+                )),
+                subtitle: Text(DailyToolsEditSheet.translateCustomizeDesc(
+                  localizations.localeName.toLowerCase(),
+                )),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => DailyToolsEditSheet.show(context),
               ),
               SettingsSwitch(
                 leading: const Icon(Icons.history_rounded),
@@ -248,12 +260,14 @@ class _SettingsPageState extends State<SettingsPage> {
     final localizations = AppLocalizations.of(context)!;
     final String currentStyle = SettingsDB().quranScriptStyle;
     final String label = currentStyle == 'indopak'
-        ? 'IndoPak'
-        : 'Uthmani (Madinah)';
+        ? localizations.indoPak
+        : currentStyle == 'qpc-v4'
+            ? localizations.qpcV4Tajweed
+            : localizations.uthmaniMadinah;
 
     return ListTile(
       leading: const Icon(Icons.font_download_outlined),
-      title: const Text('Quran Script Style'),
+      title: Text(localizations.quranScriptStyle),
       subtitle: Text(label),
       onTap: () async {
         final String? value = await _showSelectionDialog<String>(
@@ -261,12 +275,19 @@ class _SettingsPageState extends State<SettingsPage> {
           title: localizations.quranScriptStyle,
           icon: Icons.font_download_outlined,
           selectedValue: currentStyle,
-          options: const <AppSelectionOption<String>>[
+          options: <AppSelectionOption<String>>[
             AppSelectionOption<String>(
-              value: 'uthmani',
-              title: 'Uthmani (Madinah)',
+              value: 'qpc-hafs',
+              title: localizations.uthmaniMadinah,
             ),
-            AppSelectionOption<String>(value: 'indopak', title: 'IndoPak'),
+            AppSelectionOption<String>(
+              value: 'indopak',
+              title: localizations.indoPak,
+            ),
+            AppSelectionOption<String>(
+              value: 'qpc-v4',
+              title: localizations.qpcV4Tajweed,
+            ),
           ],
         );
         if (value == null) return;

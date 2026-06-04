@@ -23,6 +23,7 @@
   "german": "German",
   "quranScriptStyle": "Quran Script Style",
   "uthmaniMadinah": "Uthmani (Madinah)",
+  "qpcV4Tajweed": "QPC V4 (Tajweed)",
   "indoPak": "IndoPak",
   "vibration": "Vibration",
   "vibrationSubtitle": "Enable haptic feedback when navigating.",
@@ -2129,5 +2130,43 @@
   "tapToAdjust": "Tap to adjust",
   "currency": "Currency",
   "quranScriptStyle": "Quran Script Style",
-  "selectCurrency": "Select Currency"
+  "selectCurrency": "Select Currency",
+  "sleepTimerSettings": "Sleep Timer Settings",
+  "numericMinutesDuration": "Numeric Minutes Duration",
+  "endOfSurahSubtitle": "Auto-kill the stream exactly when the current track finishes",
+  "turnOff": "Turn Off",
+  "setTimer": "Set Timer",
+  "decreaseLabel": "Decrease {label}",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "Increase {label}",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "exampleCoordinate": "Example: {value}",
+  "@exampleCoordinate": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "filterAndSort": "Filter & sort",
+  "deleteDownloadsQuestion": "Delete downloads?",
+  "searchRecitationsOrSurahs": "Search recitations or surahs...",
+  "dailyGoal": "Daily goal",
+  "readingPlan": "Reading plan",
+  "quickActions": "Quick actions",
+  "bookmarksAndNotes": "Bookmarks and notes",
+  "hideSettings": "Hide settings",
+  "showSettings": "Show settings"
 }

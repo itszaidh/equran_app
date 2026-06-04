@@ -164,7 +164,7 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                               textInputAction: TextInputAction.next,
                               decoration: InputDecoration(
                                 labelText: localizations.latitude,
-                                hintText: 'Example: 25.2048',
+                                hintText: localizations.exampleCoordinate('25.2048'),
                                 helperText: localizations.latitudeHelperText,
                                 prefixIcon: const Icon(Icons.explore_outlined),
                               ),
@@ -188,7 +188,7 @@ class _ManualPrayerLocationPageState extends State<ManualPrayerLocationPage> {
                               textInputAction: TextInputAction.done,
                               decoration: InputDecoration(
                                 labelText: localizations.longitude,
-                                hintText: 'Example: 55.2708',
+                                hintText: localizations.exampleCoordinate('55.2708'),
                                 helperText: localizations.longitudeHelperText,
                                 prefixIcon: const Icon(Icons.public_rounded),
                               ),

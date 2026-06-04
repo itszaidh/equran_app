@@ -136,8 +136,8 @@ class QuranTranslationService {
     final Map<int, String> mapped = <int, String>{};
     for (final Object? entry in decoded['ayahs'] as List) {
       if (entry is! Map) continue;
-      final int? entrySurah = _readInt(entry['surah']);
-      final int? ayah = _readInt(entry['ayah']);
+      final int? entrySurah = _readInt(entry['surah']) ?? _readInt(entry['surahNumber']);
+      final int? ayah = _readInt(entry['ayah']) ?? _readInt(entry['ayahNumber']);
       final Object? text = entry['text'];
       if (entrySurah == surah && ayah != null && text is String) {
         mapped[ayah] = text;

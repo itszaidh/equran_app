@@ -78,6 +78,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get uthmaniMadinah => 'Utsmani (Madinah)';
 
   @override
+  String get qpcV4Tajweed => 'Utsmani (Tajwid QPC V4)';
+
+  @override
   String get indoPak => 'IndoPak';
 
   @override
@@ -3729,170 +3732,169 @@ class AppLocalizationsId extends AppLocalizations {
   String get locationCleared => 'Lokasi dibersihkan.';
 
   @override
-  String get useSunset => 'Use sunset';
+  String get useSunset => 'Gunakan matahari terbenam';
 
   @override
-  String get failedDownloadAyahAudio => 'Failed to download ayah audio.';
+  String get failedDownloadAyahAudio => 'Gagal mengunduh audio ayat.';
 
   @override
-  String get failedDeleteDownloadedAyah => 'Failed to delete downloaded ayah.';
+  String get failedDeleteDownloadedAyah => 'Gagal menghapus ayat yang diunduh.';
 
   @override
   String get unablePlayAudioWeb =>
-      'Unable to play audio on web. Try downloading the app for better experience.';
+      'Tidak dapat memutar audio di web. Coba unduh aplikasi untuk pengalaman yang lebih baik.';
 
   @override
   String get failedPlayAudioConnection =>
-      'Failed to play audio. Please check your internet connection.';
+      'Gagal memutar audio. Silakan periksa koneksi internet Anda.';
 
   @override
   String failedToPlayAudio(String error) {
-    return 'Failed to play audio: $error';
+    return 'Gagal memutar audio: $error';
   }
 
   @override
-  String get ishaModeAngle => 'Angle';
+  String get ishaModeAngle => 'Sudut';
 
   @override
-  String get ishaModeAngleSubtitle => 'Use the custom Isha angle.';
+  String get ishaModeAngleSubtitle => 'Gunakan sudut Isya kustom.';
 
   @override
-  String get ishaModeInterval => 'Interval after Maghrib';
+  String get ishaModeInterval => 'Jeda setelah Magrib';
 
   @override
   String get ishaModeIntervalSubtitle =>
-      'Set Isha a fixed number of minutes after Maghrib.';
+      'Atur Isya beberapa menit setelah Magrib.';
 
   @override
-  String get ishaModeFixedTime => 'Fixed time';
+  String get ishaModeFixedTime => 'Waktu tetap';
 
   @override
   String get ishaModeFixedTimeSubtitle =>
-      'Use the same clock time on each selected prayer date.';
+      'Gunakan waktu jam yang sama pada setiap tanggal salat yang dipilih.';
 
   @override
-  String get ishaModeLatestCap => 'Latest time cap';
+  String get ishaModeLatestCap => 'Batas waktu paling lambat';
 
   @override
   String get ishaModeLatestCapSubtitle =>
-      'Use calculated Isha unless it goes later than a cap.';
+      'Gunakan waktu Isya yang dihitung kecuali melebihi batas waktu.';
 
   @override
   String get bestMethodSubtitle =>
-      'Choose a method from the saved country when available.';
+      'Pilih metode dari negara yang disimpan jika tersedia.';
 
   @override
   String get highLatitudeRuleAutoSubtitle =>
-      'Apply a rule only for high-latitude locations.';
+      'Terapkan aturan hanya untuk lokasi lintang tinggi.';
 
   @override
   String get highLatitudeRuleNoneSubtitle =>
-      'Do not apply a high-latitude rule.';
+      'Jangan terapkan aturan lintang tinggi.';
 
   @override
   String get highLatitudeRuleMiddleOfTheNightSubtitle =>
-      'Cap Fajr and Isha using the middle of the night.';
+      'Batasi Fajar dan Isya menggunakan tengah malam.';
 
   @override
-  String get highLatitudeRuleOneSeventhSubtitle =>
-      'Use one seventh of the night.';
+  String get highLatitudeRuleOneSeventhSubtitle => 'Gunakan sepertujuh malam.';
 
   @override
   String get highLatitudeRuleAngleBasedSubtitle =>
-      'Use the Fajr and Isha angles as the night fraction.';
+      'Gunakan sudut Fajar dan Isya sebagai pecahan malam.';
 
   @override
-  String get twelveHour => '12-hour';
+  String get twelveHour => '12 jam';
 
   @override
-  String get twentyFourHour => '24-hour';
+  String get twentyFourHour => '24 jam';
 
   @override
   String get notificationPermissionOffRemindersNotEnabled =>
-      'Notification permission is off. Prayer reminders were not enabled.';
+      'Izin notifikasi dinonaktifkan. Pengingat salat tidak diaktifkan.';
 
   @override
   String get notificationPermissionTimeout =>
-      'Notification permission request timed out.';
+      'Permintaan izin notifikasi kedaluwarsa.';
 
   @override
   String get notificationPermissionTimeoutMessage =>
-      'Notification permission request timed out. Try reopening the app or enabling notifications in system settings.';
+      'Permintaan izin notifikasi kedaluwarsa. Coba buka kembali aplikasi atau aktifkan notifikasi di pengaturan sistem.';
 
   @override
   String get notificationPermissionError =>
-      'Could not request notification permission.';
+      'Tidak dapat meminta izin notifikasi.';
 
   @override
   String get notificationPermissionErrorMessage =>
-      'Could not request notification permission. Try again or enable notifications in system settings.';
+      'Tidak dapat meminta izin notifikasi. Coba lagi atau aktifkan notifikasi di pengaturan sistem.';
 
   @override
   String get openNotificationSettingsTimeout =>
-      'Opening notification settings timed out. Open Android app settings manually and enable notifications.';
+      'Membuka pengaturan notifikasi kedaluwarsa. Buka pengaturan aplikasi Android secara manual dan aktifkan notifikasi.';
 
   @override
   String get openNotificationSettingsError =>
-      'Could not open notification settings. Open Android app settings manually and enable notifications.';
+      'Tidak dapat membuka pengaturan notifikasi. Buka pengaturan aplikasi Android secara manual dan aktifkan notifikasi.';
 
   @override
   String get openExactAlarmSettingsTimeout =>
-      'Opening alarm permission settings timed out. Open Android alarms & reminders settings manually and enable exact alarms.';
+      'Membuka pengaturan izin alarm kedaluwarsa. Buka pengaturan alarm & pengingat Android secara manual dan aktifkan alarm tepat.';
 
   @override
   String get openExactAlarmSettingsError =>
-      'Could not open alarm permission settings. Open Android alarms & reminders settings manually and enable exact alarms.';
+      'Tidak dapat membuka pengaturan izin alarm. Buka pengaturan alarm & pengingat Android secara manual dan aktifkan alarm tepat.';
 
   @override
   String debugReminderScheduled(String time) {
-    return 'Debug prayer reminder scheduled for $time.';
+    return 'Pengingat salat debug dijadwalkan untuk $time.';
   }
 
   @override
   String get debugReminderCouldNotBeScheduled =>
-      'Debug prayer reminder could not be scheduled.';
+      'Pengingat salat debug tidak dapat dijadwalkan.';
 
   @override
-  String get degrees => 'degrees';
+  String get degrees => 'derajat';
 
   @override
-  String get minutes => 'minutes';
+  String get minutes => 'menit';
 
   @override
   String prayerOffsetTitle(String prayerName) {
-    return '$prayerName offset';
+    return 'Offset $prayerName';
   }
 
   @override
   String get steppedIntOffsetHelper =>
-      'Type minutes as digits only. Use the sign button for before or after the calculated time.';
+      'Ketik menit hanya dengan angka. Gunakan tombol tanda untuk sebelum atau sesudah waktu yang dihitung.';
 
   @override
   String enterValueBetweenMinMaxSuffix(String min, String max, String suffix) {
-    return 'Enter a value between $min and $max $suffix.';
+    return 'Masukkan nilai antara $min dan $max $suffix.';
   }
 
   @override
   String steppedIntSuffixHelper(String suffix) {
-    return 'Type $suffix as digits only. Use - and + to adjust the value.';
+    return 'Ketik $suffix hanya dengan angka. Gunakan - dan + untuk menyesuaikan nilai.';
   }
 
   @override
   String optionalSteppedIntHelper(String emptyLabel) {
-    return '$emptyLabel Blank saves 0. Type digits only and use - or + to adjust.';
+    return '$emptyLabel Kosong menyimpan 0. Ketik angka saja dan gunakan - atau + untuk menyesuaikan.';
   }
 
   @override
   String enterValueFromMinToMax(String min, String max) {
-    return 'Enter a value from $min to $max.';
+    return 'Masukkan nilai dari $min hingga $max.';
   }
 
   @override
-  String get enterValidValue => 'Enter a valid value.';
+  String get enterValidValue => 'Masukkan nilai yang valid.';
 
   @override
   String get prayerRemindersCouldNotBeScheduled =>
-      'Prayer reminders could not be scheduled.';
+      'Pengingat salat tidak dapat dijadwalkan.';
 
   @override
   String get qpcFontsDownloadError =>
@@ -4140,4 +4142,62 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get selectCurrency => 'Pilih Mata Uang';
+
+  @override
+  String get sleepTimerSettings => 'Pengaturan Pengatur Waktu Tidur';
+
+  @override
+  String get numericMinutesDuration => 'Durasi Menit Numerik';
+
+  @override
+  String get endOfSurahSubtitle =>
+      'Hentikan streaming secara otomatis tepat saat trek saat ini selesai';
+
+  @override
+  String get turnOff => 'Matikan';
+
+  @override
+  String get setTimer => 'Atur Pengatur Waktu';
+
+  @override
+  String decreaseLabel(String label) {
+    return 'Kurangi $label';
+  }
+
+  @override
+  String increaseLabel(String label) {
+    return 'Tambah $label';
+  }
+
+  @override
+  String exampleCoordinate(String value) {
+    return 'Contoh: $value';
+  }
+
+  @override
+  String get filterAndSort => 'Filter & urutkan';
+
+  @override
+  String get deleteDownloadsQuestion => 'Hapus unduhan?';
+
+  @override
+  String get searchRecitationsOrSurahs => 'Cari lantunan atau surah...';
+
+  @override
+  String get dailyGoal => 'Target harian';
+
+  @override
+  String get readingPlan => 'Rencana membaca';
+
+  @override
+  String get quickActions => 'Tindakan cepat';
+
+  @override
+  String get bookmarksAndNotes => 'Bookmark & catatan';
+
+  @override
+  String get hideSettings => 'Hide settings';
+
+  @override
+  String get showSettings => 'Show settings';
 }

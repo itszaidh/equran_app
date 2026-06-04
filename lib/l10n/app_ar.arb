@@ -21,8 +21,9 @@
   "turkish": "التركية",
   "bengali": "البنغالية",
   "german": "الألمانية",
-  "quranScriptStyle": "خط المصحف",
+  "quranScriptStyle": "رسم المصحف",
   "uthmaniMadinah": "عثماني (المدينة المنورة)",
+  "qpcV4Tajweed": "عثماني (تجويد QPC V4)",
   "indoPak": "إندوباك",
   "vibration": "الاهتزاز",
   "vibrationSubtitle": "تمكين الاهتزاز التفاعلي عند التنقل.",
@@ -1458,6 +1459,142 @@
   "allReciters": "جميع القراء",
   "tapToAdjust": "اضغط للضبط",
   "currency": "العملة",
-  "quranScriptStyle": "رسم المصحف",
-  "selectCurrency": "اختر العملة"
+  "selectCurrency": "اختر العملة",
+  "useSunset": "استخدم وقت الغروب",
+  "failedDownloadAyahAudio": "فشل تنزيل صوت الآية.",
+  "failedDeleteDownloadedAyah": "فشل حذف الآية المنزلة.",
+  "unablePlayAudioWeb": "تعذر تشغيل الصوت على الويب. جرب تنزيل التطبيق للحصول على تجربة أفضل.",
+  "failedPlayAudioConnection": "فشل تشغيل الصوت. يرجى التحقق من اتصالك بالإنترنت.",
+  "failedToPlayAudio": "فشل تشغيل الصوت: {error}",
+  "@failedToPlayAudio": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaModeAngle": "الزاوية",
+  "ishaModeAngleSubtitle": "استخدم زاوية العشاء المخصصة.",
+  "ishaModeInterval": "الفترة الزمنية بعد المغرب",
+  "ishaModeIntervalSubtitle": "تحديد وقت العشاء بعد عدد ثابت من الدقائق من المغرب.",
+  "ishaModeFixedTime": "وقت ثابت",
+  "ishaModeFixedTimeSubtitle": "استخدم نفس الوقت على الساعة في كل تاريخ صلاة محدد.",
+  "ishaModeLatestCap": "الحد الأقصى لأحدث وقت",
+  "ishaModeLatestCapSubtitle": "استخدم وقت العشاء المحسوب ما لم يتجاوز الحد الأقصى.",
+  "bestMethodSubtitle": "اختر طريقة من البلد المحفوظ عندما تكون متاحة.",
+  "highLatitudeRuleAutoSubtitle": "تطبيق قاعدة فقط للمواقع ذات خطوط العرض المرتفعة.",
+  "highLatitudeRuleNoneSubtitle": "عدم تطبيق قاعدة خطوط العرض المرتفعة.",
+  "highLatitudeRuleMiddleOfTheNightSubtitle": "تحديد وقت الفجر والعشاء باستخدام منتصف الليل.",
+  "highLatitudeRuleOneSeventhSubtitle": "استخدم سبع الليل.",
+  "highLatitudeRuleAngleBasedSubtitle": "استخدم زاويتي الفجر والعشاء كجزء من الليل.",
+  "twelveHour": "12 ساعة",
+  "twentyFourHour": "24 ساعة",
+  "notificationPermissionOffRemindersNotEnabled": "إذن الإشعارات متوقف. لم يتم تفعيل تذكيرات الصلاة.",
+  "notificationPermissionTimeout": "انتهت مهلة طلب إذن الإشعارات.",
+  "notificationPermissionTimeoutMessage": "انتهت مهلة طلب إذن الإشعارات. حاول إعادة فتح التطبيق أو تفعيل الإشعارات في إعدادات النظام.",
+  "notificationPermissionError": "تعذر طلب إذن الإشعارات.",
+  "notificationPermissionErrorMessage": "تعذر طلب إذن الإشعارات. حاول مرة أخرى أو قم بتفعيل الإشعارات في إعدادات النظام.",
+  "openNotificationSettingsTimeout": "انتهت مهلة فتح إعدادات الإشعارات. افتح إعدادات التطبيق في أندرويد يدويًا وقم بتفعيل الإشعارات.",
+  "openNotificationSettingsError": "تعذر فتح إعدادات الإشعارات. افتح إعدادات التطبيق في أندرويد يدويًا وقم بتفعيل الإشعارات.",
+  "openExactAlarmSettingsTimeout": "انتهت مهلة فتح إعدادات إذن المنبه. افتح إعدادات المنبهات والتذكيرات في أندرويد يدويًا وقم بتفعيل المنبهات الدقيقة.",
+  "openExactAlarmSettingsError": "تعذر فتح إعدادات إذن المنبه. افتح إعدادات المنبهات والتذكيرات في أندرويد يدويًا وقم بتفعيل المنبهات الدقيقة.",
+  "debugReminderScheduled": "تمت جدولة تذكير الصلاة التجريبي في {time}.",
+  "@debugReminderScheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReminderCouldNotBeScheduled": "تعذر جدولة تذكير الصلاة التجريبي.",
+  "degrees": "درجة",
+  "minutes": "دقيقة",
+  "prayerOffsetTitle": "فارق {prayerName}",
+  "@prayerOffsetTitle": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntOffsetHelper": "اكتب الدقائق كأرقام فقط. استخدم زر الإشارة لتحديد ما قبل أو بعد الوقت المحسوب.",
+  "enterValueBetweenMinMaxSuffix": "أدخل قيمة بين {min} و{max} {suffix}.",
+  "@enterValueBetweenMinMaxSuffix": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntSuffixHelper": "اكتب {suffix} كأرقام فقط. استخدم - و + لضبط القيمة.",
+  "@steppedIntSuffixHelper": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalSteppedIntHelper": "{emptyLabel} تركه فارغًا يحفظ 0. اكتب أرقامًا فقط واستخدم - أو + للضبط.",
+  "@optionalSteppedIntHelper": {
+    "placeholders": {
+      "emptyLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValueFromMinToMax": "أدخل قيمة من {min} إلى {max}.",
+  "@enterValueFromMinToMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidValue": "أدخل قيمة صالحة.",
+  "prayerRemindersCouldNotBeScheduled": "تعذر جدولة تذكيرات الصلاة.",
+  "sleepTimerSettings": "إعدادات مؤقت النوم",
+  "numericMinutesDuration": "مدة الدقائق الرقمية",
+  "endOfSurahSubtitle": "إيقاف التشغيل تلقائيًا فور انتهاء السورة الحالية",
+  "turnOff": "إيقاف",
+  "setTimer": "ضبط المؤقت",
+  "decreaseLabel": "تقليل {label}",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "زيادة {label}",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "exampleCoordinate": "مثال: {value}",
+  "@exampleCoordinate": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "filterAndSort": "التصفية والفرز",
+  "deleteDownloadsQuestion": "حذف التنزيلات؟",
+  "searchRecitationsOrSurahs": "البحث عن التلاوات أو السور...",
+  "dailyGoal": "الهدف اليومي",
+  "readingPlan": "خطة القراءة",
+  "quickActions": "الإجراءات السريعة",
+  "bookmarksAndNotes": "الإشارات المرجعية والملاحظات"
 }

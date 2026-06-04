@@ -726,6 +726,7 @@
   "german": "Jerman",
   "quranScriptStyle": "Gaya Tulisan Al-Qur'an",
   "uthmaniMadinah": "Utsmani (Madinah)",
+  "qpcV4Tajweed": "Utsmani (Tajwid QPC V4)",
   "indoPak": "IndoPak",
   "vibration": "Getaran",
   "vibrationSubtitle": "Aktifkan umpan balik haptik saat bernavigasi.",
@@ -1992,6 +1993,142 @@
   "allReciters": "Semua Qari",
   "tapToAdjust": "Ketuk untuk menyesuaikan",
   "currency": "Mata Uang",
-  "quranScriptStyle": "Gaya Tulisan Al-Qur'an",
-  "selectCurrency": "Pilih Mata Uang"
+  "selectCurrency": "Pilih Mata Uang",
+  "useSunset": "Gunakan matahari terbenam",
+  "failedDownloadAyahAudio": "Gagal mengunduh audio ayat.",
+  "failedDeleteDownloadedAyah": "Gagal menghapus ayat yang diunduh.",
+  "unablePlayAudioWeb": "Tidak dapat memutar audio di web. Coba unduh aplikasi untuk pengalaman yang lebih baik.",
+  "failedPlayAudioConnection": "Gagal memutar audio. Silakan periksa koneksi internet Anda.",
+  "failedToPlayAudio": "Gagal memutar audio: {error}",
+  "@failedToPlayAudio": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaModeAngle": "Sudut",
+  "ishaModeAngleSubtitle": "Gunakan sudut Isya kustom.",
+  "ishaModeInterval": "Jeda setelah Magrib",
+  "ishaModeIntervalSubtitle": "Atur Isya beberapa menit setelah Magrib.",
+  "ishaModeFixedTime": "Waktu tetap",
+  "ishaModeFixedTimeSubtitle": "Gunakan waktu jam yang sama pada setiap tanggal salat yang dipilih.",
+  "ishaModeLatestCap": "Batas waktu paling lambat",
+  "ishaModeLatestCapSubtitle": "Gunakan waktu Isya yang dihitung kecuali melebihi batas waktu.",
+  "bestMethodSubtitle": "Pilih metode dari negara yang disimpan jika tersedia.",
+  "highLatitudeRuleAutoSubtitle": "Terapkan aturan hanya untuk lokasi lintang tinggi.",
+  "highLatitudeRuleNoneSubtitle": "Jangan terapkan aturan lintang tinggi.",
+  "highLatitudeRuleMiddleOfTheNightSubtitle": "Batasi Fajar dan Isya menggunakan tengah malam.",
+  "highLatitudeRuleOneSeventhSubtitle": "Gunakan sepertujuh malam.",
+  "highLatitudeRuleAngleBasedSubtitle": "Gunakan sudut Fajar dan Isya sebagai pecahan malam.",
+  "twelveHour": "12 jam",
+  "twentyFourHour": "24 jam",
+  "notificationPermissionOffRemindersNotEnabled": "Izin notifikasi dinonaktifkan. Pengingat salat tidak diaktifkan.",
+  "notificationPermissionTimeout": "Permintaan izin notifikasi kedaluwarsa.",
+  "notificationPermissionTimeoutMessage": "Permintaan izin notifikasi kedaluwarsa. Coba buka kembali aplikasi atau aktifkan notifikasi di pengaturan sistem.",
+  "notificationPermissionError": "Tidak dapat meminta izin notifikasi.",
+  "notificationPermissionErrorMessage": "Tidak dapat meminta izin notifikasi. Coba lagi atau aktifkan notifikasi di pengaturan sistem.",
+  "openNotificationSettingsTimeout": "Membuka pengaturan notifikasi kedaluwarsa. Buka pengaturan aplikasi Android secara manual dan aktifkan notifikasi.",
+  "openNotificationSettingsError": "Tidak dapat membuka pengaturan notifikasi. Buka pengaturan aplikasi Android secara manual dan aktifkan notifikasi.",
+  "openExactAlarmSettingsTimeout": "Membuka pengaturan izin alarm kedaluwarsa. Buka pengaturan alarm & pengingat Android secara manual dan aktifkan alarm tepat.",
+  "openExactAlarmSettingsError": "Tidak dapat membuka pengaturan izin alarm. Buka pengaturan alarm & pengingat Android secara manual dan aktifkan alarm tepat.",
+  "debugReminderScheduled": "Pengingat salat debug dijadwalkan untuk {time}.",
+  "@debugReminderScheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReminderCouldNotBeScheduled": "Pengingat salat debug tidak dapat dijadwalkan.",
+  "degrees": "derajat",
+  "minutes": "menit",
+  "prayerOffsetTitle": "Offset {prayerName}",
+  "@prayerOffsetTitle": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntOffsetHelper": "Ketik menit hanya dengan angka. Gunakan tombol tanda untuk sebelum atau sesudah waktu yang dihitung.",
+  "enterValueBetweenMinMaxSuffix": "Masukkan nilai antara {min} dan {max} {suffix}.",
+  "@enterValueBetweenMinMaxSuffix": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntSuffixHelper": "Ketik {suffix} hanya dengan angka. Gunakan - dan + untuk menyesuaikan nilai.",
+  "@steppedIntSuffixHelper": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalSteppedIntHelper": "{emptyLabel} Kosong menyimpan 0. Ketik angka saja dan gunakan - atau + untuk menyesuaikan.",
+  "@optionalSteppedIntHelper": {
+    "placeholders": {
+      "emptyLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValueFromMinToMax": "Masukkan nilai dari {min} hingga {max}.",
+  "@enterValueFromMinToMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidValue": "Masukkan nilai yang valid.",
+  "prayerRemindersCouldNotBeScheduled": "Pengingat salat tidak dapat dijadwalkan.",
+  "sleepTimerSettings": "Pengaturan Pengatur Waktu Tidur",
+  "numericMinutesDuration": "Durasi Menit Numerik",
+  "endOfSurahSubtitle": "Hentikan streaming secara otomatis tepat saat trek saat ini selesai",
+  "turnOff": "Matikan",
+  "setTimer": "Atur Pengatur Waktu",
+  "decreaseLabel": "Kurangi {label}",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "Tambah {label}",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "exampleCoordinate": "Contoh: {value}",
+  "@exampleCoordinate": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "filterAndSort": "Filter & urutkan",
+  "deleteDownloadsQuestion": "Hapus unduhan?",
+  "searchRecitationsOrSurahs": "Cari lantunan atau surah...",
+  "dailyGoal": "Target harian",
+  "readingPlan": "Rencana membaca",
+  "quickActions": "Tindakan cepat",
+  "bookmarksAndNotes": "Bookmark & catatan"
 }

@@ -724,8 +724,9 @@
   "turkish": "তুর্কি",
   "bengali": "বাংলা",
   "german": "জার্মান",
-  "quranScriptStyle": "কুরআনের লিপি শৈলী",
+  "quranScriptStyle": "কুরআন স্ক্রিপ্ট শৈলী",
   "uthmaniMadinah": "উসমানী (মদীনা)",
+  "qpcV4Tajweed": "উসমানী (তাজবীদ QPC V4)",
   "indoPak": "ইন্দোপাক",
   "vibration": "কম্পন",
   "vibrationSubtitle": "নেভিগেট করার সময় হ্যাপটিক প্রতিক্রিয়া সক্ষম করুন।",
@@ -1992,6 +1993,142 @@
   "allReciters": "সব ক্বারী",
   "tapToAdjust": "সমন্বয় করতে আলতো চাপুন",
   "currency": "মুদ্রা",
-  "quranScriptStyle": "কুরআন স্ক্রিপ্ট শৈলী",
-  "selectCurrency": "মুদ্রা নির্বাচন করুন"
+  "selectCurrency": "মুদ্রা নির্বাচন করুন",
+  "useSunset": "সূর্যাস্ত ব্যবহার করুন",
+  "failedDownloadAyahAudio": "আয়াহর অডিও ডাউনলোড করতে ব্যর্থ হয়েছে।",
+  "failedDeleteDownloadedAyah": "ডাউনলোড করা আয়াত মুছতে ব্যর্থ হয়েছে।",
+  "unablePlayAudioWeb": "ওয়েবে অডিও চালানো যাচ্ছে না। ভালো অভিজ্ঞতার জন্য অ্যাপটি ডাউনলোড করে দেখুন।",
+  "failedPlayAudioConnection": "অডিও চালাতে ব্যর্থ হয়েছে। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।",
+  "failedToPlayAudio": "অডিও চালাতে ব্যর্থ হয়েছে: {error}",
+  "@failedToPlayAudio": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaModeAngle": "কোণ",
+  "ishaModeAngleSubtitle": "কাস্টম ইশার কোণ ব্যবহার করুন।",
+  "ishaModeInterval": "মাগরিবের পরের সময়কাল",
+  "ishaModeIntervalSubtitle": "মাগরিবের একটি নির্দিষ্ট মিনিট পর ইশা নির্ধারণ করুন।",
+  "ishaModeFixedTime": "নির্দিষ্ট সময়",
+  "ishaModeFixedTimeSubtitle": "প্রতিটি নির্বাচিত নামাজের তারিখে একই সময় ব্যবহার করুন।",
+  "ishaModeLatestCap": "সর্বোচ্চ সময়সীমা",
+  "ishaModeLatestCapSubtitle": "হিসাবকৃত ইশার সময় ব্যবহার করুন যদি না এটি নির্দিষ্ট সীমা অতিক্রম করে।",
+  "bestMethodSubtitle": "উপলব্ধ থাকলে সংরক্ষিত দেশ থেকে একটি পদ্ধতি বেছে নিন।",
+  "highLatitudeRuleAutoSubtitle": "শুধুমাত্র উচ্চ-অক্ষাংশের অবস্থানের জন্য একটি নিয়ম প্রয়োগ করুন।",
+  "highLatitudeRuleNoneSubtitle": "উচ্চ-অক্ষাংশের নিয়ম প্রয়োগ করবেন না।",
+  "highLatitudeRuleMiddleOfTheNightSubtitle": "মধ্যরাত ব্যবহার করে ফজর এবং ইশার সময়সীমা নির্ধারণ করুন।",
+  "highLatitudeRuleOneSeventhSubtitle": "রাতের এক-সপ্তমাংশ ব্যবহার করুন।",
+  "highLatitudeRuleAngleBasedSubtitle": "রাতের অংশ হিসেবে ফজর ও ইশার কোণ ব্যবহার করুন।",
+  "twelveHour": "১২-ঘণ্টা",
+  "twentyFourHour": "২৪-ঘণ্টা",
+  "notificationPermissionOffRemindersNotEnabled": "নোটিফিকেশন পারমিশন বন্ধ আছে। নামাজের রিমাইন্ডার চালু করা হয়নি।",
+  "notificationPermissionTimeout": "নোটিফিকেশন পারমিশনের অনুরোধের সময় শেষ হয়েছে।",
+  "notificationPermissionTimeoutMessage": "নোটিফিকেশন পারমিশনের অনুরোধের সময় শেষ হয়েছে। অ্যাপটি আবার খোলার চেষ্টা করুন অথবা সিস্টেম সেটিংসে নোটিফিকেশন চালু করুন।",
+  "notificationPermissionError": "নোটিফিকেশন পারমিশনের অনুরোধ করা যায়নি।",
+  "notificationPermissionErrorMessage": "নোটিফিকেশন পারমিশনের অনুরোধ করা যায়নি। আবার চেষ্টা করুন অথবা সিস্টেম সেটিংসে নোটিফিকেশন চালু করুন।",
+  "openNotificationSettingsTimeout": "নোটিফিকেশন সেটিংস খোলার সময় শেষ হয়েছে। ম্যানুয়ালি অ্যান্ড্রয়েড অ্যাপ সেটিংসে যান এবং নোটিফিকেশন চালু করুন।",
+  "openNotificationSettingsError": "নোটিফিকেশন সেটিংস খোলা যায়নি। ম্যানুয়ালি অ্যান্ড্রয়েড অ্যাপ সেটিংসে যান এবং নোটিফিকেশন চালু করুন।",
+  "openExactAlarmSettingsTimeout": "অ্যালার্ম পারমিশন সেটিংস খোলার সময় শেষ হয়েছে। ম্যানুয়ালি অ্যান্ড্রয়েড অ্যালার্ম ও রিমাইন্ডার সেটিংসে যান এবং সঠিক অ্যালার্ম চালু করুন।",
+  "openExactAlarmSettingsError": "অ্যালার্ম পারমিশন সেটিংস খোলা যায়নি। ম্যানুয়ালি অ্যান্ড্রয়েড অ্যালার্ম ও রিমাইন্ডার সেটিংসে যান এবং সঠিক অ্যালার্ম চালু করুন।",
+  "debugReminderScheduled": "{time}-এ ডিবাগ নামাজের রিমাইন্ডার নির্ধারিত করা হয়েছে।",
+  "@debugReminderScheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReminderCouldNotBeScheduled": "ডিবাগ নামাজের রিমাইন্ডার নির্ধারণ করা যায়নি।",
+  "degrees": "ডিগ্রী",
+  "minutes": "মিনিট",
+  "prayerOffsetTitle": "{prayerName} অফসেট",
+  "@prayerOffsetTitle": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntOffsetHelper": "শুধুমাত্র সংখ্যা হিসেবে মিনিট লিখুন। হিসাবকৃত সময়ের আগে বা পরে তা বোঝাতে চিহ্ন বোতামটি ব্যবহার করুন।",
+  "enterValueBetweenMinMaxSuffix": "{min} এবং {max} {suffix}-এর মধ্যে একটি মান লিখুন।",
+  "@enterValueBetweenMinMaxSuffix": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntSuffixHelper": "শুধুমাত্র সংখ্যা হিসেবে {suffix} লিখুন। মানটি সামঞ্জস্য করতে - এবং + ব্যবহার করুন।",
+  "@steppedIntSuffixHelper": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalSteppedIntHelper": "{emptyLabel} খালি রাখলে ০ সংরক্ষিত হবে। শুধুমাত্র সংখ্যা লিখুন এবং সামঞ্জস্য করতে - অথবা + ব্যবহার করুন।",
+  "@optionalSteppedIntHelper": {
+    "placeholders": {
+      "emptyLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValueFromMinToMax": "{min} থেকে {max}-এর মধ্যে একটি মান লিখুন।",
+  "@enterValueFromMinToMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidValue": "একটি সঠিক মান লিখুন।",
+  "prayerRemindersCouldNotBeScheduled": "নামাজের রিমাইন্ডার শিডিউল করা যায়নি।",
+  "sleepTimerSettings": "স্লিপ টাইমার সেটিংস",
+  "numericMinutesDuration": "মিনিটের সংখ্যাগত সময়কাল",
+  "endOfSurahSubtitle": "বর্তমান ট্র্যাক শেষ হওয়ার সাথে সাথে স্ট্রীমটি স্বয়ংক্রিয়ভাবে বন্ধ করুন",
+  "turnOff": "বন্ধ করুন",
+  "setTimer": "টাইমার সেট করুন",
+  "decreaseLabel": "{label} কমান",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "{label} বাড়ান",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "exampleCoordinate": "উদাহরণ: {value}",
+  "@exampleCoordinate": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "filterAndSort": "ফিল্টার এবং সাজান",
+  "deleteDownloadsQuestion": "ডাউনলোড করা ফাইলগুলো মুছবেন?",
+  "searchRecitationsOrSurahs": "তেলাওয়াত বা সূরা খুঁজুন...",
+  "dailyGoal": "দৈনিক লক্ষ্য",
+  "readingPlan": "পড়ার পরিকল্পনা",
+  "quickActions": "দ্রুত অ্যাকশন",
+  "bookmarksAndNotes": "বুকমার্ক এবং নোট"
 }

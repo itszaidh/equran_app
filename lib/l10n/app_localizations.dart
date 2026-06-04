@@ -246,6 +246,12 @@ abstract class AppLocalizations {
   /// **'Uthmani (Madinah)'**
   String get uthmaniMadinah;
 
+  /// No description provided for @qpcV4Tajweed.
+  ///
+  /// In en, this message translates to:
+  /// **'QPC V4 (Tajweed)'**
+  String get qpcV4Tajweed;
+
   /// No description provided for @indoPak.
   ///
   /// In en, this message translates to:
@@ -7218,6 +7224,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select Currency'**
   String get selectCurrency;
+
+  /// No description provided for @sleepTimerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep Timer Settings'**
+  String get sleepTimerSettings;
+
+  /// No description provided for @numericMinutesDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Numeric Minutes Duration'**
+  String get numericMinutesDuration;
+
+  /// No description provided for @endOfSurahSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-kill the stream exactly when the current track finishes'**
+  String get endOfSurahSubtitle;
+
+  /// No description provided for @turnOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn Off'**
+  String get turnOff;
+
+  /// No description provided for @setTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Timer'**
+  String get setTimer;
+
+  /// No description provided for @decreaseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease {label}'**
+  String decreaseLabel(String label);
+
+  /// No description provided for @increaseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase {label}'**
+  String increaseLabel(String label);
+
+  /// No description provided for @exampleCoordinate.
+  ///
+  /// In en, this message translates to:
+  /// **'Example: {value}'**
+  String exampleCoordinate(String value);
+
+  /// No description provided for @filterAndSort.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter & sort'**
+  String get filterAndSort;
+
+  /// No description provided for @deleteDownloadsQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete downloads?'**
+  String get deleteDownloadsQuestion;
+
+  /// No description provided for @searchRecitationsOrSurahs.
+  ///
+  /// In en, this message translates to:
+  /// **'Search recitations or surahs...'**
+  String get searchRecitationsOrSurahs;
+
+  /// No description provided for @dailyGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get dailyGoal;
+
+  /// No description provided for @readingPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading plan'**
+  String get readingPlan;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick actions'**
+  String get quickActions;
+
+  /// No description provided for @bookmarksAndNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks and notes'**
+  String get bookmarksAndNotes;
+
+  /// No description provided for @hideSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide settings'**
+  String get hideSettings;
+
+  /// No description provided for @showSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Show settings'**
+  String get showSettings;
 }
 
 class _AppLocalizationsDelegate
