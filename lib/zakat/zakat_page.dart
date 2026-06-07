@@ -19,8 +19,16 @@ enum ZakatCategory {
   silver('Silver', Icons.diamond_outlined, 0.025),
   investments('Investments & Securities', Icons.show_chart_outlined, 0.025),
   business('Business Inventory', Icons.inventory_2_outlined, 0.025),
-  livestock('Livestock', Icons.pets_outlined, 0.025), // rates vary; engine handles
-  agriculture('Agricultural Produce', Icons.agriculture_outlined, 0.05), // simplified
+  livestock(
+    'Livestock',
+    Icons.pets_outlined,
+    0.025,
+  ), // rates vary; engine handles
+  agriculture(
+    'Agricultural Produce',
+    Icons.agriculture_outlined,
+    0.05,
+  ), // simplified
   other('Other Assets', Icons.category_outlined, 0.025);
 
   const ZakatCategory(this.label, this.icon, this.defaultRate);
@@ -51,12 +59,12 @@ class ZakatLineItem {
   double get zakatPortion => amount * effectiveRate;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'cat': category.name,
-        'amt': amount,
-        if (rate != null) 'rate': rate,
-        if (note != null) 'note': note,
-        if (meta != null) 'meta': meta,
-      };
+    'cat': category.name,
+    'amt': amount,
+    if (rate != null) 'rate': rate,
+    if (note != null) 'note': note,
+    if (meta != null) 'meta': meta,
+  };
 
   factory ZakatLineItem.fromJson(Map<String, dynamic> json) {
     final catName = json['cat'] as String?;
@@ -69,7 +77,9 @@ class ZakatLineItem {
       amount: (json['amt'] as num?)?.toDouble() ?? 0.0,
       rate: (json['rate'] as num?)?.toDouble(),
       note: json['note'] as String?,
-      meta: json['meta'] is Map ? Map<String, dynamic>.from(json['meta']) : null,
+      meta: json['meta'] is Map
+          ? Map<String, dynamic>.from(json['meta'])
+          : null,
     );
   }
 }
@@ -163,7 +173,8 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
   @override
   void initState() {
     super.initState();
-    _baseCurrency = SettingsDB().get('zakat_currency', defaultValue: 'USD') as String;
+    _baseCurrency =
+        SettingsDB().get('zakat_currency', defaultValue: 'USD') as String;
     _tabController = TabController(length: 2, vsync: this);
     // Localize default status and fetch live prices on start after build/initState is done
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -188,7 +199,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
     setState(() {
       _isLoadingPrice = true;
       if (mounted) {
-        _priceStatus = AppLocalizations.of(context)?.fetchingLiveRates ?? 'Fetching live market rates...';
+        _priceStatus =
+            AppLocalizations.of(context)?.fetchingLiveRates ??
+            'Fetching live market rates...';
       } else {
         _priceStatus = 'Fetching live market rates...';
       }
@@ -223,7 +236,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             _silverPrice = double.parse(silverGramPrice.toStringAsFixed(2));
             _isLoadingPrice = false;
             if (mounted) {
-              _priceStatus = AppLocalizations.of(context)?.ratesSyncSuccess ?? 'Live metal rates synchronized successfully';
+              _priceStatus =
+                  AppLocalizations.of(context)?.ratesSyncSuccess ??
+                  'Live metal rates synchronized successfully';
             } else {
               _priceStatus = 'Live metal rates synchronized successfully';
             }
@@ -238,7 +253,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
     setState(() {
       _isLoadingPrice = false;
       if (mounted) {
-        _priceStatus = AppLocalizations.of(context)?.ratesSyncOffline ?? 'Market offline. Using standard cached values.';
+        _priceStatus =
+            AppLocalizations.of(context)?.ratesSyncOffline ??
+            'Market offline. Using standard cached values.';
       } else {
         _priceStatus = 'Market offline. Using standard cached values.';
       }
@@ -278,13 +295,11 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
     final List<ZakatLineItem> items = <ZakatLineItem>[];
 
     // Cash & receivables (legacy cash + investments for now)
-    final double cash = (_categoryAmounts[ZakatCategory.cash] ?? 0.0) +
+    final double cash =
+        (_categoryAmounts[ZakatCategory.cash] ?? 0.0) +
         (double.tryParse(_cashController.text) ?? 0.0);
     if (cash > 0) {
-      items.add(ZakatLineItem(
-        category: ZakatCategory.cash,
-        amount: cash,
-      ));
+      items.add(ZakatLineItem(category: ZakatCategory.cash, amount: cash));
     }
 
     // Gold (modern + legacy)
@@ -306,53 +321,76 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
     );
     silverValue += legacySilverGrams * _effectiveSilverPrice;
     if (silverValue > 0) {
-      items.add(ZakatLineItem(category: ZakatCategory.silver, amount: silverValue));
+      items.add(
+        ZakatLineItem(category: ZakatCategory.silver, amount: silverValue),
+      );
     }
 
     // Investments
-    final double inv = (_categoryAmounts[ZakatCategory.investments] ?? 0) +
+    final double inv =
+        (_categoryAmounts[ZakatCategory.investments] ?? 0) +
         (double.tryParse(_investmentsController.text) ?? 0.0);
     if (inv > 0) {
-      items.add(ZakatLineItem(category: ZakatCategory.investments, amount: inv));
+      items.add(
+        ZakatLineItem(category: ZakatCategory.investments, amount: inv),
+      );
     }
 
     // Business
     final double biz = _categoryAmounts[ZakatCategory.business] ?? 0.0;
-    if (biz > 0) items.add(ZakatLineItem(category: ZakatCategory.business, amount: biz));
+    if (biz > 0) {
+      items.add(ZakatLineItem(category: ZakatCategory.business, amount: biz));
+    }
 
     // Livestock (special handling)
     final double livestockValue = _computeLivestockValue();
     if (livestockValue > 0) {
-      items.add(ZakatLineItem(
-        category: ZakatCategory.livestock,
-        amount: livestockValue,
-        // Livestock often has different rates; we use flat 2.5% on value for simplicity here
-      ));
+      items.add(
+        ZakatLineItem(
+          category: ZakatCategory.livestock,
+          amount: livestockValue,
+          // Livestock often has different rates; we use flat 2.5% on value for simplicity here
+        ),
+      );
     }
 
     // Agriculture + Other
     final double agri = _categoryAmounts[ZakatCategory.agriculture] ?? 0.0;
-    if (agri > 0) items.add(ZakatLineItem(category: ZakatCategory.agriculture, amount: agri));
+    if (agri > 0) {
+      items.add(
+        ZakatLineItem(category: ZakatCategory.agriculture, amount: agri),
+      );
+    }
 
     final double other = _categoryAmounts[ZakatCategory.other] ?? 0.0;
-    if (other > 0) items.add(ZakatLineItem(category: ZakatCategory.other, amount: other));
+    if (other > 0) {
+      items.add(ZakatLineItem(category: ZakatCategory.other, amount: other));
+    }
 
     // Liabilities (deduct)
-    final double liabilities = double.tryParse(_liabilitiesController.text) ?? 0.0;
+    final double liabilities =
+        double.tryParse(_liabilitiesController.text) ?? 0.0;
 
-    final double grossWealth = items.fold(0.0, (sum, item) => sum + item.amount);
+    final double grossWealth = items.fold(
+      0.0,
+      (sum, item) => sum + item.amount,
+    );
     final double netWealth = math.max(0.0, grossWealth - liabilities);
 
     // Nisab
     final double goldNisabValue = goldNisabGrams * _effectiveGoldPrice;
     final double silverNisabValue = silverNisabGrams * _effectiveSilverPrice;
-    final double nisabThreshold =
-        _nisabType == 'gold' ? goldNisabValue : silverNisabValue;
+    final double nisabThreshold = _nisabType == 'gold'
+        ? goldNisabValue
+        : silverNisabValue;
 
     final bool isEligible = netWealth >= nisabThreshold;
     final double zakatDue = isEligible
         ? items.fold(0.0, (sum, item) => sum + item.zakatPortion) -
-            (liabilities * 0.025).clamp(0, double.infinity) // simplistic netting
+              (liabilities * 0.025).clamp(
+                0,
+                double.infinity,
+              ) // simplistic netting
         : 0.0;
 
     final double finalDue = zakatDue < 0 ? 0.0 : zakatDue;
@@ -411,8 +449,14 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                 labelColor: colors.primary,
                 unselectedLabelColor: colors.textMuted,
                 tabs: <Tab>[
-                  Tab(icon: const Icon(Icons.calculate_outlined), text: localizations.calculatorTab),
-                  Tab(icon: const Icon(Icons.history_toggle_off_rounded), text: localizations.historyTab),
+                  Tab(
+                    icon: const Icon(Icons.calculate_outlined),
+                    text: localizations.calculatorTab,
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.history_toggle_off_rounded),
+                    text: localizations.historyTab,
+                  ),
                 ],
               ),
             )
@@ -436,8 +480,14 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                     labelColor: colors.primary,
                     unselectedLabelColor: colors.textMuted,
                     tabs: <Tab>[
-                      Tab(icon: const Icon(Icons.calculate_outlined), text: localizations.calculatorTab),
-                      Tab(icon: const Icon(Icons.history_toggle_off_rounded), text: localizations.historyTab),
+                      Tab(
+                        icon: const Icon(Icons.calculate_outlined),
+                        text: localizations.calculatorTab,
+                      ),
+                      Tab(
+                        icon: const Icon(Icons.history_toggle_off_rounded),
+                        text: localizations.historyTab,
+                      ),
                     ],
                   ),
                   Expanded(
@@ -548,10 +598,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  EquranIconBadge(
-                    icon: Icons.trending_up_rounded,
-                    size: 36,
-                  ),
+                  EquranIconBadge(icon: Icons.trending_up_rounded, size: 36),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -600,7 +647,11 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(Icons.arrow_drop_down, size: 18, color: colors.primary),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        size: 18,
+                        color: colors.primary,
+                      ),
                     ],
                   ),
                 ),
@@ -637,7 +688,8 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                     ),
                   ),
                   const SizedBox(width: 8),
-                  if (_goldPriceOverride != null || _silverPriceOverride != null)
+                  if (_goldPriceOverride != null ||
+                      _silverPriceOverride != null)
                     TextButton(
                       onPressed: () {
                         setState(() {
@@ -721,7 +773,10 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
           colors,
           category: ZakatCategory.gold,
           controller: _goldController,
-          suffix: _buildUnitDropdown(_goldUnit, (v) => setState(() => _goldUnit = v)),
+          suffix: _buildUnitDropdown(
+            _goldUnit,
+            (v) => setState(() => _goldUnit = v),
+          ),
           hint: localizations.goldHint,
         ),
 
@@ -731,7 +786,10 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
           colors,
           category: ZakatCategory.silver,
           controller: _silverController,
-          suffix: _buildUnitDropdown(_silverUnit, (v) => setState(() => _silverUnit = v)),
+          suffix: _buildUnitDropdown(
+            _silverUnit,
+            (v) => setState(() => _silverUnit = v),
+          ),
         ),
 
         // Investments (Stocks, Crypto, etc)
@@ -801,7 +859,10 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: isEligible
                           ? colors.onPrimary.withAlpha(30)
@@ -809,7 +870,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                       borderRadius: BorderRadius.circular(EquranRadii.pill),
                     ),
                     child: Text(
-                      isEligible ? localizations.eligible : localizations.belowNisab,
+                      isEligible
+                          ? localizations.eligible
+                          : localizations.belowNisab,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: colors.onPrimary,
                         fontWeight: FontWeight.w800,
@@ -829,10 +892,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                 ),
               ),
               const SizedBox(height: 12),
-              Container(
-                height: 1,
-                color: colors.onPrimary.withAlpha(40),
-              ),
+              Container(height: 1, color: colors.onPrimary.withAlpha(40)),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -897,7 +957,10 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             runSpacing: 6,
             children: comp.items.map((item) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: colors.surfaceAlt,
                   borderRadius: BorderRadius.circular(EquranRadii.pill),
@@ -976,7 +1039,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             Row(
               children: <Widget>[
                 Icon(
-                  isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                  isSelected
+                      ? Icons.check_circle_rounded
+                      : Icons.radio_button_unchecked_rounded,
                   color: isSelected ? colors.primary : colors.textMuted,
                   size: 18,
                 ),
@@ -1015,13 +1080,18 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
     bool isDeduction = false,
   }) {
     final String title = labelOverride ?? (category?.label ?? 'Amount');
-    final IconData icon = category?.icon ?? (isDeduction ? Icons.remove_circle_outline : Icons.attach_money_rounded);
-    final bool isWeight = category == ZakatCategory.gold || category == ZakatCategory.silver;
+    final IconData icon =
+        category?.icon ??
+        (isDeduction
+            ? Icons.remove_circle_outline
+            : Icons.attach_money_rounded);
+    final bool isWeight =
+        category == ZakatCategory.gold || category == ZakatCategory.silver;
     final String? weightUnit = category == ZakatCategory.gold
         ? (_goldUnit == 'grams' ? 'g' : 'tola')
         : (category == ZakatCategory.silver
-            ? (_silverUnit == 'grams' ? 'g' : 'tola')
-            : null);
+              ? (_silverUnit == 'grams' ? 'g' : 'tola')
+              : null);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -1048,16 +1118,25 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             const SizedBox(height: 8),
             TextField(
               controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               onChanged: (_) => setState(() {}),
               inputFormatters: <TextInputFormatter>[
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
               decoration: InputDecoration(
-                hintText: hint ?? (isWeight ? 'Enter weight' : 'Enter amount in $_baseCurrency'),
+                hintText:
+                    hint ??
+                    (isWeight
+                        ? 'Enter weight'
+                        : 'Enter amount in $_baseCurrency'),
                 prefixText: isWeight ? null : _currencySymbol,
                 suffixText: weightUnit,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(EquranRadii.medium),
                   borderSide: BorderSide(color: colors.border),
@@ -1102,7 +1181,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                 Expanded(
                   child: Text(
                     category.label,
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
                 if (current > 0)
@@ -1117,7 +1198,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             ),
             const SizedBox(height: 8),
             TextField(
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: <TextInputFormatter>[
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
@@ -1128,7 +1211,10 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
               decoration: InputDecoration(
                 hintText: hint ?? 'Amount in $_baseCurrency',
                 prefixText: _currencySymbol,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(EquranRadii.medium),
                   borderSide: BorderSide(color: colors.border),
@@ -1156,7 +1242,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
               Expanded(
                 child: Text(
                   'Livestock (Traditional)',
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               if (_computeLivestockValue() > 0)
@@ -1175,20 +1263,41 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
           ),
           const SizedBox(height: 12),
-          _buildLivestockRow('Sheep & Goats', _livestockSheep, (v) => setState(() => _livestockSheep = v)),
+          _buildLivestockRow(
+            'Sheep & Goats',
+            _livestockSheep,
+            (v) => setState(() => _livestockSheep = v),
+          ),
           const SizedBox(height: 8),
-          _buildLivestockRow('Cows / Buffalo', _livestockCows, (v) => setState(() => _livestockCows = v)),
+          _buildLivestockRow(
+            'Cows / Buffalo',
+            _livestockCows,
+            (v) => setState(() => _livestockCows = v),
+          ),
           const SizedBox(height: 8),
-          _buildLivestockRow('Camels', _livestockCamels, (v) => setState(() => _livestockCamels = v)),
+          _buildLivestockRow(
+            'Camels',
+            _livestockCamels,
+            (v) => setState(() => _livestockCamels = v),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildLivestockRow(String label, int count, ValueChanged<int> onChanged) {
+  Widget _buildLivestockRow(
+    String label,
+    int count,
+    ValueChanged<int> onChanged,
+  ) {
     return Row(
       children: <Widget>[
-        Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600))),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
         IconButton(
           icon: const Icon(Icons.remove_circle_outline),
           onPressed: count > 0 ? () => onChanged(count - 1) : null,
@@ -1262,7 +1371,10 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
           ],
         ),
         actions: <Widget>[
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(localizations.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(localizations.cancel),
+          ),
           FilledButton(
             onPressed: () {
               setState(() {
@@ -1286,9 +1398,15 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
       date: DateTime.now(),
       cash: double.tryParse(_cashController.text) ?? 0.0,
       investments: double.tryParse(_investmentsController.text) ?? 0.0,
-      goldGrams: _convertToGrams(double.tryParse(_goldController.text) ?? 0.0, _goldUnit),
+      goldGrams: _convertToGrams(
+        double.tryParse(_goldController.text) ?? 0.0,
+        _goldUnit,
+      ),
       goldPrice: comp.goldPrice,
-      silverGrams: _convertToGrams(double.tryParse(_silverController.text) ?? 0.0, _silverUnit),
+      silverGrams: _convertToGrams(
+        double.tryParse(_silverController.text) ?? 0.0,
+        _silverUnit,
+      ),
       silverPrice: comp.silverPrice,
       liabilities: double.tryParse(_liabilitiesController.text) ?? 0.0,
       nisabType: _nisabType,
@@ -1339,7 +1457,18 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
   // ==================== CURRENCY SUPPORT ====================
 
   static const List<String> supportedZakatCurrencies = <String>[
-    'USD', 'EUR', 'GBP', 'SAR', 'AED', 'MYR', 'IDR', 'PKR', 'BDT', 'TRY', 'CAD', 'AUD',
+    'USD',
+    'EUR',
+    'GBP',
+    'SAR',
+    'AED',
+    'MYR',
+    'IDR',
+    'PKR',
+    'BDT',
+    'TRY',
+    'CAD',
+    'AUD',
   ];
 
   Future<void> _changeBaseCurrency(String newCurrency) async {
@@ -1370,10 +1499,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             child: ListView(
               shrinkWrap: true,
               children: supportedZakatCurrencies.map((String c) {
-                return RadioListTile<String>(
-                  title: Text(c),
-                  value: c,
-                );
+                return RadioListTile<String>(title: Text(c), value: c);
               }).toList(),
             ),
           ),
@@ -1474,10 +1600,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                       ],
                     ),
                     const Divider(height: 14),
-                    _buildHistoryRow(
-                      'Liquid Cash:',
-                      _formatAmount(rec.cash),
-                    ),
+                    _buildHistoryRow('Liquid Cash:', _formatAmount(rec.cash)),
                     _buildHistoryRow(
                       'Investments:',
                       _formatAmount(rec.investments),

@@ -141,51 +141,53 @@ class _AsmaUlHusnaPageState extends State<AsmaUlHusnaPage> {
         slivers: <Widget>[
           if (showAppBar)
             SliverAppBar(
-            pinned: true,
-            toolbarHeight: 64,
-            title: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              child: _searchActive
-                  ? _NavSearchField(
-                      key: const ValueKey<String>('asma-search-field'),
-                      controller: _searchController,
-                      focusNode: _searchFocusNode,
-                    )
-                  : Text(
-                      localizations.asmaUlHusna,
-                      key: const ValueKey<String>('asma-title'),
-                    ),
-            ),
-            centerTitle: !_searchActive,
-            backgroundColor: colors.background,
-            foregroundColor: colors.textPrimary,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            surfaceTintColor: Colors.transparent,
-            titleTextStyle: theme.textTheme.titleLarge?.copyWith(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
-            iconTheme: IconThemeData(color: colors.textSecondary),
-            actionsIconTheme: IconThemeData(color: colors.textSecondary),
-            actions: <Widget>[
-              AnimatedSwitcher(
+              pinned: true,
+              toolbarHeight: 64,
+              title: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
-                child: IconButton(
-                  key: ValueKey<bool>(_searchActive),
-                  tooltip: _searchActive
-                      ? localizations.closeSearch
-                      : localizations.searchNames,
-                  onPressed: _searchActive ? _closeSearch : _focusSearch,
-                  icon: Icon(
-                    _searchActive ? Icons.close_rounded : Icons.search_rounded,
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                child: _searchActive
+                    ? _NavSearchField(
+                        key: const ValueKey<String>('asma-search-field'),
+                        controller: _searchController,
+                        focusNode: _searchFocusNode,
+                      )
+                    : Text(
+                        localizations.asmaUlHusna,
+                        key: const ValueKey<String>('asma-title'),
+                      ),
+              ),
+              centerTitle: !_searchActive,
+              backgroundColor: colors.background,
+              foregroundColor: colors.textPrimary,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              surfaceTintColor: Colors.transparent,
+              titleTextStyle: theme.textTheme.titleLarge?.copyWith(
+                color: colors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+              iconTheme: IconThemeData(color: colors.textSecondary),
+              actionsIconTheme: IconThemeData(color: colors.textSecondary),
+              actions: <Widget>[
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  child: IconButton(
+                    key: ValueKey<bool>(_searchActive),
+                    tooltip: _searchActive
+                        ? localizations.closeSearch
+                        : localizations.searchNames,
+                    onPressed: _searchActive ? _closeSearch : _focusSearch,
+                    icon: Icon(
+                      _searchActive
+                          ? Icons.close_rounded
+                          : Icons.search_rounded,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           if (!showAppBar)
             SliverToBoxAdapter(
               child: SafeArea(

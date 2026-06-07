@@ -42,7 +42,19 @@ class HijriCalendar {
 
   static bool isLeapYear(int hYear) {
     final int remainder = hYear % 30;
-    return const <int>[2, 5, 7, 10, 13, 16, 18, 21, 24, 26, 29].contains(remainder);
+    return const <int>[
+      2,
+      5,
+      7,
+      10,
+      13,
+      16,
+      18,
+      21,
+      24,
+      26,
+      29,
+    ].contains(remainder);
   }
 
   static int daysInMonth(int hYear, int hMonth) {
@@ -73,14 +85,22 @@ class HijriCalendar {
     final double l = jd - 1948440.0 + 10632.0;
     final double n = ((l - 1.0) / 10631.0).floorToDouble();
     double rem = l - 10631.0 * n;
-    
-    final double j = ((10985.0 - rem) / 5316.0).floorToDouble() * ((50.0 - rem) / 36.0).floorToDouble() +
-        ((rem - 2.0) / 30.0).floorToDouble() * ((rem - 2800.0) / 29.0).floorToDouble() * ((rem - 2828.0) / 30.0).floorToDouble();
-    rem = rem + j - ((10985.0 - j) / 5316.0).floorToDouble() * ((50.0 - j) / 36.0).floorToDouble();
-    
+
+    final double j =
+        ((10985.0 - rem) / 5316.0).floorToDouble() *
+            ((50.0 - rem) / 36.0).floorToDouble() +
+        ((rem - 2.0) / 30.0).floorToDouble() *
+            ((rem - 2800.0) / 29.0).floorToDouble() *
+            ((rem - 2828.0) / 30.0).floorToDouble();
+    rem =
+        rem +
+        j -
+        ((10985.0 - j) / 5316.0).floorToDouble() *
+            ((50.0 - j) / 36.0).floorToDouble();
+
     final double y = (30.0 * n + (rem - 15.0) / 10631.0).floorToDouble();
     rem = rem - (10631.0 * (y - 30.0 * n) / 30.0).floorToDouble() + 354.0;
-    
+
     double m = ((rem - 1.0) / 29.5).floorToDouble();
     if (m > 12) m = 12;
     if (m < 1) m = 1;
@@ -119,16 +139,22 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
   }
 
   DateTime _getFirstDayOfHijriMonth(int hYear, int hMonth) {
-    final double daysSinceEpoch = (hYear - 1) * 354.367 + (hMonth - 1) * 29.53 + 1;
-    DateTime approxDate = DateTime(622, 7, 16).add(Duration(days: daysSinceEpoch.round()));
-    
+    final double daysSinceEpoch =
+        (hYear - 1) * 354.367 + (hMonth - 1) * 29.53 + 1;
+    DateTime approxDate = DateTime(
+      622,
+      7,
+      16,
+    ).add(Duration(days: daysSinceEpoch.round()));
+
     HijriCalendar cal = HijriCalendar.fromGregorian(approxDate);
     int difference = cal.day - 1;
     DateTime firstDay = approxDate.subtract(Duration(days: difference));
-    
+
     cal = HijriCalendar.fromGregorian(firstDay);
     int iterations = 0;
-    while ((cal.month != hMonth || cal.year != hYear || cal.day != 1) && iterations < 30) {
+    while ((cal.month != hMonth || cal.year != hYear || cal.day != 1) &&
+        iterations < 30) {
       if (cal.year < hYear || (cal.year == hYear && cal.month < hMonth)) {
         firstDay = firstDay.add(const Duration(days: 1));
       } else {
@@ -199,17 +225,33 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
     final ThemeData theme = Theme.of(context);
 
     // Current Hijri Month Info
-    final String monthName = HijriCalendar(_viewingYear, _viewingMonth, 1).getMonthName(lang);
-    final int daysCount = HijriCalendar.daysInMonth(_viewingYear, _viewingMonth);
-    
+    final String monthName = HijriCalendar(
+      _viewingYear,
+      _viewingMonth,
+      1,
+    ).getMonthName(lang);
+    final int daysCount = HijriCalendar.daysInMonth(
+      _viewingYear,
+      _viewingMonth,
+    );
+
     // First Day Gregorian to find start weekday
-    final DateTime firstDayGregorian = _getFirstDayOfHijriMonth(_viewingYear, _viewingMonth);
+    final DateTime firstDayGregorian = _getFirstDayOfHijriMonth(
+      _viewingYear,
+      _viewingMonth,
+    );
     final int startWeekdayOffset = firstDayGregorian.weekday % 7; // Sunday is 0
 
     // Gregorian range of the Hijri month
-    final DateTime lastDayGregorian = firstDayGregorian.add(Duration(days: daysCount - 1));
-    final DateFormat rangeFormat = DateFormat('MMM d, yyyy', localizations.localeName);
-    final String gregRange = '${rangeFormat.format(firstDayGregorian)} - ${rangeFormat.format(lastDayGregorian)}';
+    final DateTime lastDayGregorian = firstDayGregorian.add(
+      Duration(days: daysCount - 1),
+    );
+    final DateFormat rangeFormat = DateFormat(
+      'MMM d, yyyy',
+      localizations.localeName,
+    );
+    final String gregRange =
+        '${rangeFormat.format(firstDayGregorian)} - ${rangeFormat.format(lastDayGregorian)}';
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -269,7 +311,8 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  Directionality.of(context) == TextDirection.rtl
+                                  Directionality.of(context) ==
+                                          TextDirection.rtl
                                       ? Icons.chevron_right_rounded
                                       : Icons.chevron_left_rounded,
                                   color: colors.primary,
@@ -282,26 +325,29 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
                                     Text(
                                       '$monthName $_viewingYear',
                                       textAlign: TextAlign.center,
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        color: colors.textPrimary,
-                                        fontWeight: FontWeight.w900,
-                                      ),
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            color: colors.textPrimary,
+                                            fontWeight: FontWeight.w900,
+                                          ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       gregRange,
                                       textAlign: TextAlign.center,
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        color: colors.textSecondary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: colors.textSecondary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
                                   ],
                                 ),
                               ),
                               IconButton(
                                 icon: Icon(
-                                  Directionality.of(context) == TextDirection.rtl
+                                  Directionality.of(context) ==
+                                          TextDirection.rtl
                                       ? Icons.chevron_left_rounded
                                       : Icons.chevron_right_rounded,
                                   color: colors.primary,
@@ -317,10 +363,11 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: 7,
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 7,
-                              mainAxisExtent: 32,
-                            ),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 7,
+                                  mainAxisExtent: 32,
+                                ),
                             itemBuilder: (context, index) {
                               return Center(
                                 child: Text(
@@ -340,24 +387,30 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: startWeekdayOffset + daysCount,
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 7,
-                              mainAxisSpacing: 8,
-                              crossAxisSpacing: 8,
-                            ),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 7,
+                                  mainAxisSpacing: 8,
+                                  crossAxisSpacing: 8,
+                                ),
                             itemBuilder: (context, index) {
                               if (index < startWeekdayOffset) {
                                 return const SizedBox.shrink();
                               }
 
-                              final int dayNumber = index - startWeekdayOffset + 1;
-                              final DateTime cellGregorian = firstDayGregorian.add(Duration(days: dayNumber - 1));
-                              final bool isCurrentToday = cellGregorian.year == _today.year &&
+                              final int dayNumber =
+                                  index - startWeekdayOffset + 1;
+                              final DateTime cellGregorian = firstDayGregorian
+                                  .add(Duration(days: dayNumber - 1));
+                              final bool isCurrentToday =
+                                  cellGregorian.year == _today.year &&
                                   cellGregorian.month == _today.month &&
                                   cellGregorian.day == _today.day;
 
                               return Material(
-                                color: isCurrentToday ? colors.primary : colors.surfaceSoft,
+                                color: isCurrentToday
+                                    ? colors.primary
+                                    : colors.surfaceSoft,
                                 borderRadius: BorderRadius.circular(12),
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(12),
@@ -375,25 +428,31 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
                                       ),
                                     ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           '$dayNumber',
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            color: isCurrentToday ? colors.onPrimary : colors.textPrimary,
-                                            fontWeight: FontWeight.w900,
-                                          ),
+                                          style: theme.textTheme.titleMedium
+                                              ?.copyWith(
+                                                color: isCurrentToday
+                                                    ? colors.onPrimary
+                                                    : colors.textPrimary,
+                                                fontWeight: FontWeight.w900,
+                                              ),
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
                                           '${cellGregorian.day}',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            color: isCurrentToday
-                                                ? colors.onPrimary.withAlpha(200)
-                                                : colors.textSecondary,
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                          style: theme.textTheme.bodySmall
+                                              ?.copyWith(
+                                                color: isCurrentToday
+                                                    ? colors.onPrimary
+                                                          .withAlpha(200)
+                                                    : colors.textSecondary,
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w700,
+                                              ),
                                         ),
                                       ],
                                     ),
@@ -416,7 +475,8 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
   }
 
   Widget _buildTodayCard(EquranColors colors, ThemeData theme, String lang) {
-    final String todayHijriStr = '${_todayHijri.day} ${_todayHijri.getMonthName(lang)} ${_todayHijri.year}';
+    final String todayHijriStr =
+        '${_todayHijri.day} ${_todayHijri.getMonthName(lang)} ${_todayHijri.year}';
     final DateFormat formatter = DateFormat('EEEE, MMMM d, yyyy', lang);
     final String todayGregorianStr = formatter.format(_today);
 
@@ -425,10 +485,7 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            colors.primary,
-            colors.primaryStrong,
-          ],
+          colors: [colors.primary, colors.primaryStrong],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -456,7 +513,10 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.onPrimary.withAlpha(35),
                     borderRadius: BorderRadius.circular(100),

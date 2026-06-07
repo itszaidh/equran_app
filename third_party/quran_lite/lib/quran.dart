@@ -525,7 +525,8 @@ Map<int, String> _parseSurahJson(String raw, int expectedSurah) {
   final Map<int, String> mapped = <int, String>{};
   for (final Object? entry in decoded['ayahs'] as List) {
     if (entry is! Map) continue;
-    final int? surah = _readInt(entry['surah']) ?? _readInt(entry['surahNumber']);
+    final int? surah =
+        _readInt(entry['surah']) ?? _readInt(entry['surahNumber']);
     final int? ayah = _readInt(entry['ayah']) ?? _readInt(entry['ayahNumber']);
     final Object? text = entry['text'];
     if (surah != expectedSurah || ayah == null || text is! String) continue;

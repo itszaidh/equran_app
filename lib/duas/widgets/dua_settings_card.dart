@@ -26,10 +26,15 @@ class DuaTypographySettingsCard extends StatelessWidget {
     return ValueListenableBuilder<Box<dynamic>>(
       valueListenable: SettingsDB().listener,
       builder: (BuildContext context, Box<dynamic> settingsBox, Widget? child) {
-        final bool showTranslation = settingsBox.get('duaShowTranslation', defaultValue: true) as bool;
-        final bool showTransliteration = settingsBox.get('duaShowTransliteration', defaultValue: true) as bool;
+        final bool showTranslation =
+            settingsBox.get('duaShowTranslation', defaultValue: true) as bool;
+        final bool showTransliteration =
+            settingsBox.get('duaShowTransliteration', defaultValue: true)
+                as bool;
         final String defaultLang = Localizations.localeOf(context).languageCode;
-        final String translationLang = settingsBox.get('duaTranslationLanguage', defaultValue: defaultLang) as String;
+        final String translationLang =
+            settingsBox.get('duaTranslationLanguage', defaultValue: defaultLang)
+                as String;
 
         return Card(
           elevation: isLight ? 1.5 : 0,
@@ -94,14 +99,20 @@ class DuaTypographySettingsCard extends StatelessWidget {
                                 label: localizations.transliterationOption,
                                 isSelected: showTransliteration,
                                 icon: Icons.spellcheck_rounded,
-                                onSelected: (bool val) =>
-                                    SettingsDB().put('duaShowTransliteration', val),
+                                onSelected: (bool val) => SettingsDB().put(
+                                  'duaShowTransliteration',
+                                  val,
+                                ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 10),
-                        _buildLanguageDropdown(context, translationLang, isFullWidth: true),
+                        _buildLanguageDropdown(
+                          context,
+                          translationLang,
+                          isFullWidth: true,
+                        ),
                       ],
                     );
                   }
@@ -131,7 +142,11 @@ class DuaTypographySettingsCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      _buildLanguageDropdown(context, translationLang, isFullWidth: false),
+                      _buildLanguageDropdown(
+                        context,
+                        translationLang,
+                        isFullWidth: false,
+                      ),
                     ],
                   );
                 },
@@ -181,7 +196,9 @@ class DuaTypographySettingsCard extends StatelessWidget {
               Icon(
                 icon,
                 size: 15,
-                color: isSelected ? colors.primary : colors.onSurfaceVariant.withAlpha(180),
+                color: isSelected
+                    ? colors.primary
+                    : colors.onSurfaceVariant.withAlpha(180),
               ),
               const SizedBox(width: 6),
               Flexible(
@@ -190,7 +207,9 @@ class DuaTypographySettingsCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelMedium?.copyWith(
-                    color: isSelected ? colors.primary : colors.onSurface.withAlpha(200),
+                    color: isSelected
+                        ? colors.primary
+                        : colors.onSurface.withAlpha(200),
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                     letterSpacing: 0,
                   ),
@@ -224,12 +243,10 @@ class DuaTypographySettingsCard extends StatelessWidget {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: _supportedLanguages.containsKey(currentLang) ? currentLang : 'en',
-          icon: Icon(
-            Icons.language_rounded,
-            size: 15,
-            color: colors.primary,
-          ),
+          value: _supportedLanguages.containsKey(currentLang)
+              ? currentLang
+              : 'en',
+          icon: Icon(Icons.language_rounded, size: 15, color: colors.primary),
           isDense: true,
           alignment: Alignment.centerLeft,
           borderRadius: BorderRadius.circular(AppRadii.medium),
@@ -239,7 +256,9 @@ class DuaTypographySettingsCard extends StatelessWidget {
               SettingsDB().put('duaTranslationLanguage', value);
             }
           },
-          items: _supportedLanguages.entries.map((MapEntry<String, String> entry) {
+          items: _supportedLanguages.entries.map((
+            MapEntry<String, String> entry,
+          ) {
             return DropdownMenuItem<String>(
               value: entry.key,
               child: Row(
@@ -263,10 +282,7 @@ class DuaTypographySettingsCard extends StatelessWidget {
     );
 
     if (isFullWidth) {
-      return SizedBox(
-        width: double.infinity,
-        child: dropdown,
-      );
+      return SizedBox(width: double.infinity, child: dropdown);
     }
 
     return dropdown;

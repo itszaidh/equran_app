@@ -29,7 +29,7 @@ class PrayerTimesService {
       settings: settings,
       highLatitudeRule: highLatitudeRule,
     );
-    
+
     // Fajr, Sunrise, Dhuhr, Asr are calculated for day D (localDate)
     final DateTime localDate = prayerTimezone == null
         ? DateTime(date.year, date.month, date.day)
@@ -132,7 +132,11 @@ class PrayerTimesService {
     final DateTime zonedInstant = prayerTimezone == null
         ? instant.toLocal()
         : timezone.TZDateTime.from(instant.toUtc(), prayerTimezone);
-    final DateTime baseDate = DateTime(zonedInstant.year, zonedInstant.month, zonedInstant.day);
+    final DateTime baseDate = DateTime(
+      zonedInstant.year,
+      zonedInstant.month,
+      zonedInstant.day,
+    );
 
     final PrayerCalculationMethod effectiveMethod = effectiveMethodFor(
       location: location,
@@ -151,7 +155,12 @@ class PrayerTimesService {
 
     final DateTime localDate = prayerTimezone == null
         ? baseDate
-        : timezone.TZDateTime(prayerTimezone, baseDate.year, baseDate.month, baseDate.day);
+        : timezone.TZDateTime(
+            prayerTimezone,
+            baseDate.year,
+            baseDate.month,
+            baseDate.day,
+          );
 
     final adhan.PrayerTimes baseTimes = adhan.PrayerTimes(
       coordinates: adhan.Coordinates(location.latitude, location.longitude),
@@ -166,10 +175,7 @@ class PrayerTimesService {
     );
 
     final DateTime maghribTime = _floorToMinute(
-      _withOffset(
-        baseMaghrib,
-        settings.offsets.maghrib,
-      ),
+      _withOffset(baseMaghrib, settings.offsets.maghrib),
     );
 
     if (!zonedInstant.isBefore(maghribTime)) {
@@ -347,7 +353,10 @@ class PrayerTimesService {
       ..._periodsForDay(
         today,
         today.entryFor(PrayerTimeKind.fajr).time.add(const Duration(days: 1)),
-        today.entryFor(PrayerTimeKind.maghrib).time.add(const Duration(days: 1)),
+        today
+            .entryFor(PrayerTimeKind.maghrib)
+            .time
+            .add(const Duration(days: 1)),
       ),
     ];
 
@@ -359,7 +368,10 @@ class PrayerTimesService {
 
     return _normalPrayerPeriod(
       entry: today.entryFor(PrayerTimeKind.isha),
-      endsAt: today.entryFor(PrayerTimeKind.fajr).time.add(const Duration(days: 1)),
+      endsAt: today
+          .entryFor(PrayerTimeKind.fajr)
+          .time
+          .add(const Duration(days: 1)),
     );
   }
 

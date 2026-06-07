@@ -223,9 +223,7 @@ class EquranResumeImageCard extends StatelessWidget {
                 height: 1.05,
               );
         final TextStyle? subtitleStyle =
-            (compact
-                    ? theme.textTheme.bodyMedium
-                    : theme.textTheme.titleSmall)
+            (compact ? theme.textTheme.bodyMedium : theme.textTheme.titleSmall)
                 ?.copyWith(
                   color: colors.onPrimaryMuted,
                   fontWeight: FontWeight.w800,
@@ -235,8 +233,7 @@ class EquranResumeImageCard extends StatelessWidget {
           fontWeight: FontWeight.w900,
         );
         final BorderRadius radius = BorderRadius.circular(AppRadii.large);
-        final bool isLight =
-            Theme.of(context).brightness == Brightness.light;
+        final bool isLight = Theme.of(context).brightness == Brightness.light;
         final Gradient cardGradient = secondary
             ? LinearGradient(
                 begin: Alignment.topLeft,

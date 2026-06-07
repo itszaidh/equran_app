@@ -409,7 +409,9 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                 ListTile(
                   leading: const Icon(Icons.bug_report_outlined),
                   title: Text(localizations.schedule1MinuteExactTest),
-                  subtitle: Text(localizations.schedule1MinuteExactTestSubtitle),
+                  subtitle: Text(
+                    localizations.schedule1MinuteExactTestSubtitle,
+                  ),
                   enabled: !_isUpdatingReminders,
                   onTap: _isUpdatingReminders
                       ? null
@@ -550,7 +552,9 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                     error ? Icons.refresh_rounded : Icons.settings_outlined,
                   ),
                   label: Text(
-                    error ? localizations.retry : localizations.openAlarmPermissionSettings,
+                    error
+                        ? localizations.retry
+                        : localizations.openAlarmPermissionSettings,
                   ),
                 ),
               ),
@@ -609,9 +613,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
-                child: Text(
-                  localizations.highLatitudeMosqueNotice,
-                ),
+                child: Text(localizations.highLatitudeMosqueNotice),
               ),
             ),
             ListTile(
@@ -728,7 +730,11 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   Widget _buildCustomIshaIntervalTile({required bool requiredValue}) {
     return ListTile(
-      title: Text(requiredValue ? localizations.ishaInterval : localizations.baseIshaInterval),
+      title: Text(
+        requiredValue
+            ? localizations.ishaInterval
+            : localizations.baseIshaInterval,
+      ),
       subtitle: Text(
         _settings.customIshaInterval == null
             ? localizations.useIshaAngle
@@ -798,15 +804,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           selectedValue: _settings.method,
           options: PrayerCalculationMethod.values
               .map(
-                (
-                  PrayerCalculationMethod method,
-                ) => AppSelectionOption<PrayerCalculationMethod>(
-                  value: method,
-                  title: method.label,
-                  subtitle: method == PrayerCalculationMethod.auto
-                      ? localizations.bestMethodSubtitle
-                      : null,
-                ),
+                (PrayerCalculationMethod method) =>
+                    AppSelectionOption<PrayerCalculationMethod>(
+                      value: method,
+                      title: method.label,
+                      subtitle: method == PrayerCalculationMethod.auto
+                          ? localizations.bestMethodSubtitle
+                          : null,
+                    ),
               )
               .toList(),
         );
@@ -841,23 +846,24 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           selectedValue: _settings.highLatitudeRule,
           options: PrayerHighLatitudeRule.values
               .map(
-                (PrayerHighLatitudeRule rule) =>
-                    AppSelectionOption<PrayerHighLatitudeRule>(
-                      value: rule,
-                      title: rule.label,
-                      subtitle: switch (rule) {
-                        PrayerHighLatitudeRule.auto =>
-                          localizations.highLatitudeRuleAutoSubtitle,
-                        PrayerHighLatitudeRule.none =>
-                          localizations.highLatitudeRuleNoneSubtitle,
-                        PrayerHighLatitudeRule.middleOfTheNight =>
-                          localizations.highLatitudeRuleMiddleOfTheNightSubtitle,
-                        PrayerHighLatitudeRule.oneSeventh =>
-                          localizations.highLatitudeRuleOneSeventhSubtitle,
-                        PrayerHighLatitudeRule.angleBased =>
-                          localizations.highLatitudeRuleAngleBasedSubtitle,
-                      },
-                    ),
+                (
+                  PrayerHighLatitudeRule rule,
+                ) => AppSelectionOption<PrayerHighLatitudeRule>(
+                  value: rule,
+                  title: rule.label,
+                  subtitle: switch (rule) {
+                    PrayerHighLatitudeRule.auto =>
+                      localizations.highLatitudeRuleAutoSubtitle,
+                    PrayerHighLatitudeRule.none =>
+                      localizations.highLatitudeRuleNoneSubtitle,
+                    PrayerHighLatitudeRule.middleOfTheNight =>
+                      localizations.highLatitudeRuleMiddleOfTheNightSubtitle,
+                    PrayerHighLatitudeRule.oneSeventh =>
+                      localizations.highLatitudeRuleOneSeventhSubtitle,
+                    PrayerHighLatitudeRule.angleBased =>
+                      localizations.highLatitudeRuleAngleBasedSubtitle,
+                  },
+                ),
               )
               .toList(),
         );
@@ -873,22 +879,21 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           selectedValue: _settings.customIshaMode,
           options: PrayerCustomIshaMode.values
               .map(
-                (
-                  PrayerCustomIshaMode mode,
-                ) => AppSelectionOption<PrayerCustomIshaMode>(
-                  value: mode,
-                  title: _localizedIshaModeLabel(mode),
-                  subtitle: switch (mode) {
-                    PrayerCustomIshaMode.angle =>
-                      localizations.ishaModeAngleSubtitle,
-                    PrayerCustomIshaMode.interval =>
-                      localizations.ishaModeIntervalSubtitle,
-                    PrayerCustomIshaMode.fixedTime =>
-                      localizations.ishaModeFixedTimeSubtitle,
-                    PrayerCustomIshaMode.latestCap =>
-                      localizations.ishaModeLatestCapSubtitle,
-                  },
-                ),
+                (PrayerCustomIshaMode mode) =>
+                    AppSelectionOption<PrayerCustomIshaMode>(
+                      value: mode,
+                      title: _localizedIshaModeLabel(mode),
+                      subtitle: switch (mode) {
+                        PrayerCustomIshaMode.angle =>
+                          localizations.ishaModeAngleSubtitle,
+                        PrayerCustomIshaMode.interval =>
+                          localizations.ishaModeIntervalSubtitle,
+                        PrayerCustomIshaMode.fixedTime =>
+                          localizations.ishaModeFixedTimeSubtitle,
+                        PrayerCustomIshaMode.latestCap =>
+                          localizations.ishaModeLatestCapSubtitle,
+                      },
+                    ),
               )
               .toList(),
         );
@@ -908,7 +913,10 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       selectedValue: _settings.use24HourFormat,
       options: <AppSelectionOption<bool>>[
         AppSelectionOption<bool>(value: false, title: localizations.twelveHour),
-        AppSelectionOption<bool>(value: true, title: localizations.twentyFourHour),
+        AppSelectionOption<bool>(
+          value: true,
+          title: localizations.twentyFourHour,
+        ),
       ],
     );
     if (use24HourFormat == null) return;
@@ -966,8 +974,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       if (!mounted) return;
       setState(() {
         _notificationPermissionHasError = true;
-        _notificationMessage =
-            localizations.notificationPermissionErrorMessage;
+        _notificationMessage = localizations.notificationPermissionErrorMessage;
       });
       _showMessage(localizations.notificationPermissionError);
     } finally {
@@ -1006,10 +1013,22 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       selectedValue: _settings.reminderSettings.reminderOffsetMinutes,
       options: <AppSelectionOption<int>>[
         AppSelectionOption<int>(value: 0, title: localizations.atPrayerTime),
-        AppSelectionOption<int>(value: 5, title: localizations.minutesBeforePrayer(5)),
-        AppSelectionOption<int>(value: 10, title: localizations.minutesBeforePrayer(10)),
-        AppSelectionOption<int>(value: 15, title: localizations.minutesBeforePrayer(15)),
-        AppSelectionOption<int>(value: 30, title: localizations.minutesBeforePrayer(30)),
+        AppSelectionOption<int>(
+          value: 5,
+          title: localizations.minutesBeforePrayer(5),
+        ),
+        AppSelectionOption<int>(
+          value: 10,
+          title: localizations.minutesBeforePrayer(10),
+        ),
+        AppSelectionOption<int>(
+          value: 15,
+          title: localizations.minutesBeforePrayer(15),
+        ),
+        AppSelectionOption<int>(
+          value: 30,
+          title: localizations.minutesBeforePrayer(30),
+        ),
       ],
     );
     if (selected == null) return;
@@ -1060,8 +1079,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       if (!mounted) return;
       setState(() {
         _notificationPermissionHasError = true;
-        _notificationMessage =
-            localizations.notificationPermissionErrorMessage;
+        _notificationMessage = localizations.notificationPermissionErrorMessage;
       });
     } finally {
       if (mounted) {
@@ -1083,15 +1101,13 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       if (!mounted) return;
       setState(() {
         _notificationPermissionHasError = true;
-        _notificationMessage =
-            localizations.openNotificationSettingsTimeout;
+        _notificationMessage = localizations.openNotificationSettingsTimeout;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _notificationPermissionHasError = true;
-        _notificationMessage =
-            localizations.openNotificationSettingsError;
+        _notificationMessage = localizations.openNotificationSettingsError;
       });
     }
   }
@@ -1107,15 +1123,13 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
       if (!mounted) return;
       setState(() {
         _exactAlarmPermissionHasError = true;
-        _exactAlarmMessage =
-            localizations.openExactAlarmSettingsTimeout;
+        _exactAlarmMessage = localizations.openExactAlarmSettingsTimeout;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _exactAlarmPermissionHasError = true;
-        _exactAlarmMessage =
-            localizations.openExactAlarmSettingsError;
+        _exactAlarmMessage = localizations.openExactAlarmSettingsError;
       });
     }
   }
@@ -1145,9 +1159,7 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
           _showMessage(localizations.notificationPermissionOff);
           break;
         case PrayerNotificationScheduleStatus.exactAlarmDenied:
-          _showMessage(
-            localizations.exactAlarmPermissionDisabled,
-          );
+          _showMessage(localizations.exactAlarmPermissionDisabled);
           break;
         case PrayerNotificationScheduleStatus.unsupported:
         case PrayerNotificationScheduleStatus.failed:
@@ -1195,7 +1207,9 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
 
   Future<void> _editOffset(PrayerTimeKind prayer) async {
     final int? value = await _showSteppedIntDialog(
-      title: localizations.prayerOffsetTitle(localizedPrayerName(localizations, prayer)),
+      title: localizations.prayerOffsetTitle(
+        localizedPrayerName(localizations, prayer),
+      ),
       currentValue: _settings.offsets.forPrayer(prayer),
       min: -120,
       max: 120,
@@ -1292,14 +1306,14 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
     required String emptyLabel,
     required ValueChanged<int?> onChanged,
   }) async {
-    final _OptionalNumberResult<int>?
-    result = await _showOptionalSteppedIntDialog(
-      title: title,
-      currentValue: currentValue,
-      min: min,
-      max: max,
-      helperText: localizations.optionalSteppedIntHelper(emptyLabel),
-    );
+    final _OptionalNumberResult<int>? result =
+        await _showOptionalSteppedIntDialog(
+          title: title,
+          currentValue: currentValue,
+          min: min,
+          max: max,
+          helperText: localizations.optionalSteppedIntHelper(emptyLabel),
+        );
     if (result == null) return;
     onChanged(result.value);
   }
@@ -1452,7 +1466,8 @@ class _PrayerTimesSettingsPageState extends State<PrayerTimesSettingsPage>
                           onPressed: toggleSign,
                           icon: Text(
                             isNegative ? '−' : '+',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
                                   fontWeight: FontWeight.w900,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),

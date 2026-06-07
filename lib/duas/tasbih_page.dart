@@ -155,8 +155,7 @@ class _TasbihPageState extends State<TasbihPage> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton.icon(
-                            onPressed:
-                                _completionInputLocked ? null : _reset,
+                            onPressed: _completionInputLocked ? null : _reset,
                             icon: const Icon(Icons.refresh_rounded, size: 18),
                             label: Text(
                               AppLocalizations.of(context)!.resetCounter,
@@ -450,7 +449,7 @@ class _PresetSelector extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                   IconButton(
+                  IconButton(
                     tooltip: localizations.previousDhikr,
                     onPressed: enabled ? onPrevious : null,
                     color: colors.textSecondary,

@@ -214,13 +214,19 @@ class _CategoryContentState extends State<_CategoryContent> {
                                   _showSettings = !_showSettings;
                                 });
                               },
-                              tooltip: _showSettings ? localizations.hideSettings : localizations.showSettings,
+                              tooltip: _showSettings
+                                  ? localizations.hideSettings
+                                  : localizations.showSettings,
                               icon: AnimatedRotation(
                                 duration: const Duration(milliseconds: 250),
                                 turns: _showSettings ? 0.25 : 0.0,
                                 child: Icon(
-                                  _showSettings ? Icons.tune_rounded : Icons.tune_outlined,
-                                  color: _showSettings ? colors.primary : colors.onSurfaceVariant,
+                                  _showSettings
+                                      ? Icons.tune_rounded
+                                      : Icons.tune_outlined,
+                                  color: _showSettings
+                                      ? colors.primary
+                                      : colors.onSurfaceVariant,
                                 ),
                               ),
                             ),
@@ -249,7 +255,9 @@ class _CategoryContentState extends State<_CategoryContent> {
                     child: DuaTypographySettingsCard(),
                   ),
                   secondChild: const SizedBox.shrink(),
-                  crossFadeState: _showSettings ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+                  crossFadeState: _showSettings
+                      ? CrossFadeState.showFirst
+                      : CrossFadeState.showSecond,
                   duration: const Duration(milliseconds: 250),
                   sizeCurve: Curves.easeInOutCubic,
                   firstCurve: Curves.easeIn,

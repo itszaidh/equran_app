@@ -43,10 +43,12 @@ class SettingsDB extends BaseDB {
       return List<DailyToolType>.from(DailyToolType.defaultTools);
     }
     return List<DailyToolType>.from(
-      saved.map((e) => DailyToolType.values.firstWhere(
-            (t) => t.name == e,
-            orElse: () => DailyToolType.quran,
-          )),
+      saved.map(
+        (e) => DailyToolType.values.firstWhere(
+          (t) => t.name == e,
+          orElse: () => DailyToolType.quran,
+        ),
+      ),
     );
   }
 

@@ -4,10 +4,7 @@ import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 
 class DailyDuaPayload {
-  const DailyDuaPayload({
-    required this.dua,
-    required this.categoryIndex,
-  });
+  const DailyDuaPayload({required this.dua, required this.categoryIndex});
 
   final DuaEntry dua;
   final DuaCategoryIndex categoryIndex;
@@ -15,13 +12,16 @@ class DailyDuaPayload {
 
 class DailyDuaRepository {
   DailyDuaRepository({HisnAlMuslimRepository? repository})
-      : _repository = repository ?? HisnAlMuslimRepository();
+    : _repository = repository ?? HisnAlMuslimRepository();
 
   final HisnAlMuslimRepository _repository;
 
   Future<DailyDuaPayload> getDailyDua(DateTime date) async {
     final List<DuaCategoryIndex> index = await _repository.loadCategoryIndex();
-    final int totalDuas = index.fold<int>(0, (int sum, DuaCategoryIndex cat) => sum + cat.duaCount);
+    final int totalDuas = index.fold<int>(
+      0,
+      (int sum, DuaCategoryIndex cat) => sum + cat.duaCount,
+    );
     if (totalDuas == 0) {
       throw StateError('No Duas available in the index');
     }
@@ -47,11 +47,10 @@ class DailyDuaRepository {
       targetDuaIndex = 0;
     }
 
-    final DuaCategory category = await _repository.loadCategoryById(targetCategory.id);
-    final DuaEntry dua = category.duas[targetDuaIndex];
-    return DailyDuaPayload(
-      dua: dua,
-      categoryIndex: targetCategory,
+    final DuaCategory category = await _repository.loadCategoryById(
+      targetCategory.id,
     );
+    final DuaEntry dua = category.duas[targetDuaIndex];
+    return DailyDuaPayload(dua: dua, categoryIndex: targetCategory);
   }
 }

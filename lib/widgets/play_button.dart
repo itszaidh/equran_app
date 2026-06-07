@@ -239,7 +239,9 @@ class _PlayButtonState extends State<PlayButton> {
       final int notificationId = DownloadNotifications.notificationId(
         'ayah-${widget.surah}-${widget.ayah}',
       );
-      final String title = localizations.downloadingName('ayah ${widget.surah}:${widget.ayah}');
+      final String title = localizations.downloadingName(
+        'ayah ${widget.surah}:${widget.ayah}',
+      );
       await DownloadNotifications.progress(
         id: notificationId,
         title: title,
@@ -258,13 +260,19 @@ class _PlayButtonState extends State<PlayButton> {
       );
       await DownloadNotifications.complete(
         id: notificationId,
-        title: localizations.downloadedName('ayah ${widget.surah}:${widget.ayah}'),
+        title: localizations.downloadedName(
+          'ayah ${widget.surah}:${widget.ayah}',
+        ),
       );
       await _refreshDownloadState();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(localizations.downloadedName('ayah ${widget.surah}:${widget.ayah}')),
+            content: Text(
+              localizations.downloadedName(
+                'ayah ${widget.surah}:${widget.ayah}',
+              ),
+            ),
           ),
         );
       }
@@ -273,7 +281,9 @@ class _PlayButtonState extends State<PlayButton> {
         id: DownloadNotifications.notificationId(
           'ayah-${widget.surah}-${widget.ayah}',
         ),
-        title: localizations.failedDownloadName('ayah ${widget.surah}:${widget.ayah}'),
+        title: localizations.failedDownloadName(
+          'ayah ${widget.surah}:${widget.ayah}',
+        ),
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -295,7 +305,9 @@ class _PlayButtonState extends State<PlayButton> {
           icon: const Icon(Icons.warning_amber_rounded),
           title: Text(localizations.deleteDownloadedAyah),
           content: Text(
-            localizations.removeSurahFromOffline('ayah ${widget.surah}:${widget.ayah}'),
+            localizations.removeSurahFromOffline(
+              'ayah ${widget.surah}:${widget.ayah}',
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -323,7 +335,11 @@ class _PlayButtonState extends State<PlayButton> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(localizations.deletedDownload('ayah ${widget.surah}:${widget.ayah} audio')),
+            content: Text(
+              localizations.deletedDownload(
+                'ayah ${widget.surah}:${widget.ayah} audio',
+              ),
+            ),
           ),
         );
       }

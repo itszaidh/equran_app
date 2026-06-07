@@ -115,9 +115,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ListTile(
                 leading: const Icon(Icons.palette_rounded),
                 title: Text(localizations.appearance),
-                subtitle: Text(
-                  localizations.appearanceTileSubtitle,
-                ),
+                subtitle: Text(localizations.appearanceTileSubtitle),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -128,9 +126,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ListTile(
                 leading: const Icon(Icons.linear_scale_rounded),
                 title: Text(localizations.customizeNavigation),
-                subtitle: Text(
-                  localizations.navigationSettingsSubtitle,
-                ),
+                subtitle: Text(localizations.navigationSettingsSubtitle),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -140,12 +136,16 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               ListTile(
                 leading: const Icon(Icons.grid_view_rounded),
-                title: Text(DailyToolsEditSheet.translateCustomizeTitle(
-                  localizations.localeName.toLowerCase(),
-                )),
-                subtitle: Text(DailyToolsEditSheet.translateCustomizeDesc(
-                  localizations.localeName.toLowerCase(),
-                )),
+                title: Text(
+                  DailyToolsEditSheet.translateCustomizeTitle(
+                    localizations.localeName.toLowerCase(),
+                  ),
+                ),
+                subtitle: Text(
+                  DailyToolsEditSheet.translateCustomizeDesc(
+                    localizations.localeName.toLowerCase(),
+                  ),
+                ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => DailyToolsEditSheet.show(context),
               ),
@@ -262,8 +262,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final String label = currentStyle == 'indopak'
         ? localizations.indoPak
         : currentStyle == 'qpc-v4'
-            ? localizations.qpcV4Tajweed
-            : localizations.uthmaniMadinah;
+        ? localizations.qpcV4Tajweed
+        : localizations.uthmaniMadinah;
 
     return ListTile(
       leading: const Icon(Icons.font_download_outlined),
@@ -673,17 +673,13 @@ class _SettingsPageState extends State<SettingsPage> {
     final DownloadableResource resource = await _qpcV4FontsResource();
     if (!mounted) return false;
     final int? size = getResourceSize(resource);
-    final String sizeLabel = size == null
-        ? ''
-        : ' (${prettyBytes(size)})';
+    final String sizeLabel = size == null ? '' : ' (${prettyBytes(size)})';
     final localizations = AppLocalizations.of(context)!;
     final bool? download = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(localizations.downloadQpcFontsTitle),
-        content: Text(
-          localizations.downloadQpcFontsBody(sizeLabel),
-        ),
+        content: Text(localizations.downloadQpcFontsBody(sizeLabel)),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -706,11 +702,7 @@ class _SettingsPageState extends State<SettingsPage> {
     final bool ready = await QpcV4FontService.instance.hasAllPageFonts();
     if (!ready && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            localizations.qpcFontsDownloadError,
-          ),
-        ),
+        SnackBar(content: Text(localizations.qpcFontsDownloadError)),
       );
     }
     return ready;

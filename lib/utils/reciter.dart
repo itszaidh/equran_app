@@ -877,4 +877,3 @@ enum AppReciter {
     );
   }
 }
-

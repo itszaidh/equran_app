@@ -110,15 +110,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                   location: location,
                   settings: settings,
                 );
-          final PrayerDay nextSelectedDay = _service.calculateDay(
-            date: DateTime(
-              selectedDate.year,
-              selectedDate.month,
-              selectedDate.day + 1,
-            ),
-            location: location,
-            settings: settings,
-          );
+
           final _PrayerHeroTiming heroTiming;
           final PrayerTimeKind? highlightedPrayer;
           PrayerTimeEntry? heroCurrentPrayer;
@@ -209,12 +201,7 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                         isViewingToday,
                       ),
                       const SizedBox(height: 12),
-                      _buildNightTimesCard(
-                        context,
-                        selectedDay,
-                        nextSelectedDay,
-                        settings,
-                      ),
+                      _buildNightTimesCard(context, selectedDay, settings),
                       const SizedBox(height: 14),
                       _buildPrayerGrid(
                         context,
@@ -442,8 +429,13 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
                       // Integrated current Hijri date (small elegant gold text)
                       Builder(
                         builder: (BuildContext context) {
-                          final int offset = SettingsDB().get('hijri_offset', defaultValue: 0) as int;
-                          final HijriCalendar hijri = HijriCalendar.fromDate(day.date, offset: offset);
+                          final int offset =
+                              SettingsDB().get('hijri_offset', defaultValue: 0)
+                                  as int;
+                          final HijriCalendar hijri = HijriCalendar.fromDate(
+                            day.date,
+                            offset: offset,
+                          );
                           return Text(
                             hijri.toString(),
                             style: theme.textTheme.labelSmall?.copyWith(
@@ -472,11 +464,10 @@ class _PrayerTimesPageState extends State<PrayerTimesPage> {
   Widget _buildNightTimesCard(
     BuildContext context,
     PrayerDay day,
-    PrayerDay nextDay,
     PrayerTimeSettings settings,
   ) {
     final EquranColors colors = context.equranColors;
-    final _NightTimes nightTimes = _nightTimesFor(day, nextDay);
+    final _NightTimes nightTimes = _nightTimesFor(day);
     final localizations = AppLocalizations.of(context)!;
 
     return EquranSurfaceCard(
@@ -933,13 +924,13 @@ class _NightTimes {
   final DateTime lastThirdStart;
 }
 
-_NightTimes _nightTimesFor(PrayerDay day, PrayerDay nextDay) {
+_NightTimes _nightTimesFor(PrayerDay day) {
   final DateTime maghrib = day.entryFor(PrayerTimeKind.maghrib).time;
-  DateTime nextFajr = nextDay.entryFor(PrayerTimeKind.fajr).time;
-  if (!nextFajr.isAfter(maghrib)) {
-    nextFajr = nextFajr.add(const Duration(days: 1));
+  DateTime fajr = day.entryFor(PrayerTimeKind.fajr).time;
+  if (!fajr.isAfter(maghrib)) {
+    fajr = fajr.add(const Duration(days: 1));
   }
-  final Duration night = nextFajr.difference(maghrib);
+  final Duration night = fajr.difference(maghrib);
   return _NightTimes(
     middle: maghrib.add(Duration(microseconds: night.inMicroseconds ~/ 2)),
     lastThirdStart: maghrib.add(

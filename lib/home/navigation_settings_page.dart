@@ -74,10 +74,7 @@ class NavigationSettingsPage extends StatelessWidget {
     final EquranColors colors = context.equranColors;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.customizeNavigation),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(l10n.customizeNavigation), centerTitle: true),
       body: ValueListenableBuilder<NavigationState>(
         valueListenable: NavigationBloc.instance,
         builder: (context, state, child) {

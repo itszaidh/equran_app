@@ -702,8 +702,18 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
       children: <Widget>[
         _legendChip(theme, colors, localizations.todayLegend, colors.primary),
         _legendChip(theme, colors, localizations.eidLegend, colors.accentGold),
-        _legendChip(theme, colors, localizations.ramadanLegend, colors.primary.withAlpha(140)),
-        _legendChip(theme, colors, localizations.blessedNightLegend, colors.goldSoft),
+        _legendChip(
+          theme,
+          colors,
+          localizations.ramadanLegend,
+          colors.primary.withAlpha(140),
+        ),
+        _legendChip(
+          theme,
+          colors,
+          localizations.blessedNightLegend,
+          colors.goldSoft,
+        ),
         _legendChip(theme, colors, localizations.fastLegend, colors.mint),
       ],
     );
@@ -924,11 +934,9 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
     }
 
     // Fallback: just go to current month
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(localizations.dateNotFound),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(localizations.dateNotFound)));
   }
 
   Future<void> _showCalendarSettingsSheet(
@@ -1120,10 +1128,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Container(
-                width: 3,
-                color: colors.primary,
-              ),
+              Container(width: 3, color: colors.primary),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(18),
@@ -1137,7 +1142,9 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  DateFormat('EEEE, d MMMM yyyy').format(selDate),
+                                  DateFormat(
+                                    'EEEE, d MMMM yyyy',
+                                  ).format(selDate),
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     color: colors.textSecondary,
                                     fontWeight: FontWeight.w600,
@@ -1146,10 +1153,11 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                                 const SizedBox(height: 4),
                                 Text(
                                   hijri.toString(),
-                                  style: theme.textTheme.headlineSmall?.copyWith(
-                                    color: colors.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: theme.textTheme.headlineSmall
+                                      ?.copyWith(
+                                        color: colors.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                 ),
                                 if (hijri.monthNameArabic.isNotEmpty)
                                   Text(
@@ -1165,7 +1173,8 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.share_rounded),
-                            onPressed: () => _shareDate(selDate, hijri, occasion),
+                            onPressed: () =>
+                                _shareDate(selDate, hijri, occasion),
                             color: colors.textSecondary,
                             tooltip: localizations.shareDate,
                           ),
@@ -1175,15 +1184,26 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                       if (occasion != null) ...<Widget>[
                         const SizedBox(height: 14),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.primary.withAlpha(12),
-                            borderRadius: BorderRadius.circular(AppRadii.medium),
-                            border: Border.all(color: colors.primary.withAlpha(60)),
+                            borderRadius: BorderRadius.circular(
+                              AppRadii.medium,
+                            ),
+                            border: Border.all(
+                              color: colors.primary.withAlpha(60),
+                            ),
                           ),
                           child: Row(
                             children: <Widget>[
-                              Icon(Icons.star_rounded, color: colors.accentGold, size: 20),
+                              Icon(
+                                Icons.star_rounded,
+                                color: colors.accentGold,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -1204,7 +1224,11 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                       // Moon row (fasting pill removed to prevent overflow)
                       Row(
                         children: <Widget>[
-                          Icon(Icons.nightlight_round, color: colors.textMuted, size: 18),
+                          Icon(
+                            Icons.nightlight_round,
+                            color: colors.textMuted,
+                            size: 18,
+                          ),
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
@@ -1235,7 +1259,10 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                const Text('• ', style: TextStyle(fontSize: 14)),
+                                const Text(
+                                  '• ',
+                                  style: TextStyle(fontSize: 14),
+                                ),
                                 Expanded(
                                   child: Text(
                                     action,

@@ -252,8 +252,13 @@ class _HomeDashboardPageState extends State<HomeDashboardPage> {
                     // Integrated Hijri date (beautiful small gold text)
                     Builder(
                       builder: (BuildContext context) {
-                        final int offset = SettingsDB().get('hijri_offset', defaultValue: 0) as int;
-                        final HijriCalendar hijri = HijriCalendar.fromDate(_now, offset: offset);
+                        final int offset =
+                            SettingsDB().get('hijri_offset', defaultValue: 0)
+                                as int;
+                        final HijriCalendar hijri = HijriCalendar.fromDate(
+                          _now,
+                          offset: offset,
+                        );
                         return Text(
                           hijri.toString(),
                           style: theme.textTheme.labelSmall?.copyWith(
@@ -1358,77 +1363,72 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
     final EquranColors colors = context.equranColors;
     final localizations = AppLocalizations.of(context)!;
 
-
     return ValueListenableBuilder<Box<dynamic>>(
       valueListenable: SettingsDB().listener,
       builder: (context, box, child) {
-        final List<DailyToolType> visibleTools = SettingsDB().getVisibleDailyTools();
+        final List<DailyToolType> visibleTools = SettingsDB()
+            .getVisibleDailyTools();
 
         final List<_QuickAction> items = visibleTools.map((tool) {
-          return _QuickAction(
-            tool.icon,
-            tool.getTitle(localizations),
-            () {
-              switch (tool) {
-                case DailyToolType.quran:
-                  widget.actions.onOpenQuran();
-                  break;
-                case DailyToolType.prayer:
-                  widget.actions.onOpenPrayerTimes();
-                  break;
-                case DailyToolType.qibla:
-                  widget.actions.onOpenQibla();
-                  break;
-                case DailyToolType.tasbih:
-                  widget.actions.onOpenTasbih();
-                  break;
-                case DailyToolType.dua:
-                  widget.actions.onOpenDuas();
-                  break;
-                case DailyToolType.downloads:
-                  widget.actions.onOpenDownloads();
-                  break;
-                case DailyToolType.search:
-                  widget.actions.onOpenSearch();
-                  break;
-                case DailyToolType.readingPlans:
-                  widget.actions.onOpenReadingPlans();
-                  break;
-                case DailyToolType.hifz:
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const HifzHomePage(),
-                    ),
-                  );
-                  break;
-                case DailyToolType.asmaUlHusna:
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const AsmaUlHusnaPage(),
-                    ),
-                  );
-                  break;
-                case DailyToolType.statistics:
-                  widget.actions.onOpenStats();
-                  break;
-                case DailyToolType.calendar:
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const HijriCalendarPage(),
-                    ),
-                  );
-                  break;
-                case DailyToolType.zakah:
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (context) => const ZakahCalculatorPage(),
-                    ),
-                  );
-                  break;
-              }
-            },
-            assetPath: tool.assetPath,
-          );
+          return _QuickAction(tool.icon, tool.getTitle(localizations), () {
+            switch (tool) {
+              case DailyToolType.quran:
+                widget.actions.onOpenQuran();
+                break;
+              case DailyToolType.prayer:
+                widget.actions.onOpenPrayerTimes();
+                break;
+              case DailyToolType.qibla:
+                widget.actions.onOpenQibla();
+                break;
+              case DailyToolType.tasbih:
+                widget.actions.onOpenTasbih();
+                break;
+              case DailyToolType.dua:
+                widget.actions.onOpenDuas();
+                break;
+              case DailyToolType.downloads:
+                widget.actions.onOpenDownloads();
+                break;
+              case DailyToolType.search:
+                widget.actions.onOpenSearch();
+                break;
+              case DailyToolType.readingPlans:
+                widget.actions.onOpenReadingPlans();
+                break;
+              case DailyToolType.hifz:
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const HifzHomePage(),
+                  ),
+                );
+                break;
+              case DailyToolType.asmaUlHusna:
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const AsmaUlHusnaPage(),
+                  ),
+                );
+                break;
+              case DailyToolType.statistics:
+                widget.actions.onOpenStats();
+                break;
+              case DailyToolType.calendar:
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const HijriCalendarPage(),
+                  ),
+                );
+                break;
+              case DailyToolType.zakah:
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const ZakahCalculatorPage(),
+                  ),
+                );
+                break;
+            }
+          }, assetPath: tool.assetPath);
         }).toList();
 
         final List<List<_QuickAction>> pages = <List<_QuickAction>>[];
@@ -1471,7 +1471,8 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
                               });
                             },
                             itemBuilder: (context, pageIndex) {
-                              final List<_QuickAction> pageItems = pages[pageIndex];
+                              final List<_QuickAction> pageItems =
+                                  pages[pageIndex];
                               return GridView.builder(
                                 itemCount: pageItems.length,
                                 shrinkWrap: true,
@@ -1499,7 +1500,10 @@ class _MuslimDailyQuickActionsState extends State<_MuslimDailyQuickActions> {
                   ),
                   if (pages.length > 1) ...<Widget>[
                     const SizedBox(height: 6),
-                    _QuickActionPageDots(itemCount: pages.length, activeIndex: _page),
+                    _QuickActionPageDots(
+                      itemCount: pages.length,
+                      activeIndex: _page,
+                    ),
                   ],
                   const SizedBox(height: 9),
                   _ExploreAllFeaturesRow(onTap: widget.actions.onOpenMore),
@@ -1718,7 +1722,6 @@ class _DailyAyahPreview extends StatefulWidget {
 }
 
 class _DailyAyahPreviewState extends State<_DailyAyahPreview> {
-
   @override
   void initState() {
     super.initState();
@@ -1848,10 +1851,7 @@ class _DailyAyahPreviewState extends State<_DailyAyahPreview> {
 }
 
 class _DailyDuaPreview extends StatefulWidget {
-  const _DailyDuaPreview({
-    required this.date,
-    required this.onOpenDuas,
-  });
+  const _DailyDuaPreview({required this.date, required this.onOpenDuas});
 
   final DateTime date;
   final VoidCallback onOpenDuas;
@@ -1968,7 +1968,8 @@ class _DailyDuaPreviewState extends State<_DailyDuaPreview> {
                       color: colors.textPrimary,
                     ).copyWith(height: 1.7),
                   ),
-                  if (dua.localizedTranslation(localizations.localeName) != null) ...<Widget>[
+                  if (dua.localizedTranslation(localizations.localeName) !=
+                      null) ...<Widget>[
                     const SizedBox(height: 12),
                     Text(
                       dua.localizedTranslation(localizations.localeName)!,
@@ -3553,7 +3554,6 @@ String _formatTime(
       : (time.hour >= 12 ? 'PM' : 'AM');
   return '$hour:${time.minute.toString().padLeft(2, '0')} $suffix';
 }
-
 
 String _formatCountdown(Duration duration) {
   final Duration normalized = duration.isNegative ? Duration.zero : duration;

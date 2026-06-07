@@ -490,9 +490,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   final ValueNotifier<Duration> _playerPositionValue = ValueNotifier<Duration>(
     Duration.zero,
   );
-  final ValueNotifier<double?> _surahDownloadProgressNotifier = ValueNotifier<double?>(
-    null,
-  );
+  final ValueNotifier<double?> _surahDownloadProgressNotifier =
+      ValueNotifier<double?>(null);
   final ValueNotifier<Duration> _playerDurationValue = ValueNotifier<Duration>(
     Duration.zero,
   );
@@ -3266,7 +3265,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     required int repeatOrdinal,
     required int cycleOrdinal,
   }) async {
-    final Duration duration = Duration(milliseconds: (_ayahDelaySeconds * 1000).round());
+    final Duration duration = Duration(
+      milliseconds: (_ayahDelaySeconds * 1000).round(),
+    );
     final File file = await _silenceAudioFile(duration);
     return _PreparedReadingAudioSource(
       item: _ReadingAudioSequenceItem(
@@ -3580,7 +3581,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   }
 
   void _loadPlaybackOptions() {
-    final dynamic delayVal = SettingsDB().get(_ayahDelaySettingsKey, defaultValue: 0.0);
+    final dynamic delayVal = SettingsDB().get(
+      _ayahDelaySettingsKey,
+      defaultValue: 0.0,
+    );
     double delaySeconds = 0.0;
     if (delayVal is num) {
       delaySeconds = delayVal.toDouble();
@@ -3713,7 +3717,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
   Future<void> _delayBeforeNextPlayback(int requestId) async {
     if (_ayahDelaySeconds <= 0) return;
-    await Future<void>.delayed(Duration(milliseconds: (_ayahDelaySeconds * 1000).round()));
+    await Future<void>.delayed(
+      Duration(milliseconds: (_ayahDelaySeconds * 1000).round()),
+    );
     _throwIfPlaybackRequestCancelled(requestId);
   }
 
@@ -4014,7 +4020,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       final int notificationId = DownloadNotifications.notificationId(
         'ayah-$chapter-$verse',
       );
-      final String title = localizations.downloadingName('ayah $chapter:$verse');
+      final String title = localizations.downloadingName(
+        'ayah $chapter:$verse',
+      );
       await DownloadNotifications.progress(
         id: notificationId,
         title: title,
@@ -4037,7 +4045,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(localizations.downloadedName('ayah $chapter:$verse'))),
+        SnackBar(
+          content: Text(localizations.downloadedName('ayah $chapter:$verse')),
+        ),
       );
     } catch (_) {
       await DownloadNotifications.fail(
@@ -4067,7 +4077,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           icon: const Icon(Icons.warning_amber_rounded),
           title: Text(localizations.deleteDownloadedAyah),
           content: Text(
-            localizations.removeSurahFromOffline('ayah $_currentChapter:$_currentVerse'),
+            localizations.removeSurahFromOffline(
+              'ayah $_currentChapter:$_currentVerse',
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -4094,7 +4106,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(localizations.deletedDownload('ayah $_currentChapter:$_currentVerse audio')),
+          content: Text(
+            localizations.deletedDownload(
+              'ayah $_currentChapter:$_currentVerse audio',
+            ),
+          ),
         ),
       );
     } catch (_) {
@@ -4346,7 +4362,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                               : colorScheme.onSurface,
                                         ),
                                     decoration: InputDecoration(
-                                      suffixText: localizations.minutesShort(0).replaceAll('0', '').trim(),
+                                      suffixText: localizations
+                                          .minutesShort(0)
+                                          .replaceAll('0', '')
+                                          .trim(),
                                       border: InputBorder.none,
                                       enabledBorder: InputBorder.none,
                                       focusedBorder: InputBorder.none,
@@ -4401,9 +4420,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         localizations.endOfSurah,
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
-                      subtitle: Text(
-                        localizations.endOfSurahSubtitle,
-                      ),
+                      subtitle: Text(localizations.endOfSurahSubtitle),
                       value: endOfSurah,
                       onChanged: (val) {
                         setSheetState(() {
@@ -4497,12 +4514,16 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
     return false;
   }
 
-  Future<bool> _isSurahDownloadedForReciter(int chapter, String reciterCode) async {
+  Future<bool> _isSurahDownloadedForReciter(
+    int chapter,
+    String reciterCode,
+  ) async {
     if (kIsWeb) return false;
     final int totalVerses = quran.getVerseCount(chapter);
     final Directory dir = await AudioDownloadService().ayahDirectory();
     for (int ayah = 1; ayah <= totalVerses; ayah++) {
-      final String fileName = '${reciterCode}_${chapter.toString().padLeft(3, '0')}_${ayah.toString().padLeft(3, '0')}.mp3';
+      final String fileName =
+          '${reciterCode}_${chapter.toString().padLeft(3, '0')}_${ayah.toString().padLeft(3, '0')}.mp3';
       final File file = File('${dir.path}/$fileName');
       if (!file.existsSync() || file.lengthSync() == 0) {
         return false;
@@ -5938,7 +5959,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         onPlayNext: () => unawaited(_playAdjacentPageViewAyah(1)),
         canPlayPrevious: _canPlayPreviousAyah,
         canPlayNext: _canPlayNextAyah,
-        isDownloaded: _isVerseDownloaded(_currentChapter, _playingVerse ?? _currentVerse),
+        isDownloaded: _isVerseDownloaded(
+          _currentChapter,
+          _playingVerse ?? _currentVerse,
+        ),
       ),
     );
   }
@@ -6055,14 +6079,18 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                     ),
                                   ),
                                 ),
-                                if (_isVerseDownloaded(_currentChapter, verse)) ...[
+                                if (_isVerseDownloaded(
+                                  _currentChapter,
+                                  verse,
+                                )) ...[
                                   const SizedBox(width: 6),
                                   Icon(
                                     Icons.offline_pin_rounded,
                                     size: 15,
                                     color: _isVersePlaying
                                         ? Colors.green
-                                        : colorScheme.onSurfaceVariant.withAlpha(140),
+                                        : colorScheme.onSurfaceVariant
+                                              .withAlpha(140),
                                   ),
                                 ],
                               ],
@@ -6268,15 +6296,22 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
               Future<void> downloadSurahAudio() async {
                 if (!sheetContext.mounted) return;
-                final AppLocalizations localizations = AppLocalizations.of(context)!;
-                final String surahName = localizedSurahName(localizations, _currentChapter);
+                final AppLocalizations localizations = AppLocalizations.of(
+                  context,
+                )!;
+                final String surahName = localizedSurahName(
+                  localizations,
+                  _currentChapter,
+                );
                 final bool? confirm = await _withLowFpsSuppressed(() {
                   return showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
                       icon: const Icon(Icons.download_for_offline_rounded),
                       title: Text(localizations.downloadAllAyahs),
-                      content: Text(localizations.downloadAllAyahsForSurah(surahName)),
+                      content: Text(
+                        localizations.downloadAllAyahsForSurah(surahName),
+                      ),
                       actions: <Widget>[
                         TextButton(
                           onPressed: () => Navigator.of(context).pop(false),
@@ -6297,11 +6332,13 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 setSheetState(() {});
 
                 // Trigger download in background without blocking the sheet
-                unawaited(_downloadCurrentSurahAyahs().then((_) {
-                  if (sheetContext.mounted) {
-                    setSheetState(() {});
-                  }
-                }));
+                unawaited(
+                  _downloadCurrentSurahAyahs().then((_) {
+                    if (sheetContext.mounted) {
+                      setSheetState(() {});
+                    }
+                  }),
+                );
               }
 
               Future<void> toggleCurrentAyahAudio() async {
@@ -6371,7 +6408,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         onDownloadSurah: () => unawaited(downloadSurahAudio()),
                         onToggleCurrentAyah: () =>
                             unawaited(toggleCurrentAyahAudio()),
-                        downloadProgressNotifier: _surahDownloadProgressNotifier,
+                        downloadProgressNotifier:
+                            _surahDownloadProgressNotifier,
                       ),
                       const SizedBox(height: 10),
                       _buildPlaybackOptionsSection(
@@ -6421,14 +6459,20 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             context: context,
                             title: localizations.ayahDelay,
                             subtitle: _delayLabel(_ayahDelaySeconds),
-                            value: _delaySteps.indexOf(_ayahDelaySeconds).clamp(0, 11).toDouble(),
+                            value: _delaySteps
+                                .indexOf(_ayahDelaySeconds)
+                                .clamp(0, 11)
+                                .toDouble(),
                             min: 0,
                             max: 11,
                             divisions: 11,
                             label: _delayLabel(_ayahDelaySeconds),
                             onChanged: (value) {
                               setState(() {
-                                final int idx = value.round().clamp(0, _delaySteps.length - 1);
+                                final int idx = value.round().clamp(
+                                  0,
+                                  _delaySteps.length - 1,
+                                );
                                 _ayahDelaySeconds = _delaySteps[idx];
                               });
                               setSheetState(() {});
@@ -8100,7 +8144,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
         ValueListenableBuilder<double?>(
           valueListenable: downloadProgressNotifier,
           builder: (context, progressFraction, _) {
-            final bool isCurrentlyDownloading = _isDownloadingSurahAyahs || progressFraction != null;
+            final bool isCurrentlyDownloading =
+                _isDownloadingSurahAyahs || progressFraction != null;
             return ListTile(
               leading: isCurrentlyDownloading
                   ? SizedBox.square(
@@ -8110,16 +8155,22 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         children: [
                           CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            value: (progressFraction == 0.0 || progressFraction == null)
+                            value:
+                                (progressFraction == 0.0 ||
+                                    progressFraction == null)
                                 ? null
                                 : progressFraction,
                             color: Theme.of(context).colorScheme.primary,
-                            backgroundColor: Theme.of(context).colorScheme.outlineVariant,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.outlineVariant,
                           ),
-                          if (progressFraction != null && progressFraction > 0.0)
+                          if (progressFraction != null &&
+                              progressFraction > 0.0)
                             Text(
                               '${(progressFraction * 100).round()}%',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
                                     fontSize: 8.5,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -8220,13 +8271,15 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
 
     // Pre-fetch download status for all reciters in parallel
     final Map<String, bool> reciterDownloadedMap = {};
-    await Future.wait(reciters.map((reciter) async {
-      final bool downloaded = await _isSurahDownloadedForReciter(
-        _currentChapter,
-        reciter.code,
-      );
-      reciterDownloadedMap[reciter.code] = downloaded;
-    }));
+    await Future.wait(
+      reciters.map((reciter) async {
+        final bool downloaded = await _isSurahDownloadedForReciter(
+          _currentChapter,
+          reciter.code,
+        );
+        reciterDownloadedMap[reciter.code] = downloaded;
+      }),
+    );
 
     final AppReciter currentReciter = QuranAudioService().selectedReciter;
 
@@ -8246,24 +8299,37 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                 final bool bDownloaded = reciterDownloadedMap[b.code] ?? false;
                 if (aDownloaded && !bDownloaded) return -1;
                 if (!aDownloaded && bDownloaded) return 1;
-                return a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase());
+                return a.englishName.toLowerCase().compareTo(
+                  b.englishName.toLowerCase(),
+                );
               });
             } else {
-              displayReciters.sort((a, b) =>
-                  a.englishName.toLowerCase().compareTo(b.englishName.toLowerCase()));
+              displayReciters.sort(
+                (a, b) => a.englishName.toLowerCase().compareTo(
+                  b.englishName.toLowerCase(),
+                ),
+              );
             }
 
             final ThemeData theme = Theme.of(context);
             final ColorScheme colorScheme = theme.colorScheme;
-            final BorderRadius borderRadius = BorderRadius.circular(AppRadii.large);
+            final BorderRadius borderRadius = BorderRadius.circular(
+              AppRadii.large,
+            );
 
             return Dialog(
-              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 32,
+              ),
               backgroundColor: colorScheme.surfaceContainer,
               shape: RoundedRectangleBorder(borderRadius: borderRadius),
               clipBehavior: Clip.antiAlias,
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 440, maxHeight: 560),
+                constraints: const BoxConstraints(
+                  maxWidth: 440,
+                  maxHeight: 560,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -8273,7 +8339,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                         padding: const EdgeInsets.fromLTRB(20, 18, 12, 10),
                         child: Row(
                           children: <Widget>[
-                            Icon(Icons.record_voice_over_rounded, color: colorScheme.primary),
+                            Icon(
+                              Icons.record_voice_over_rounded,
+                              color: colorScheme.primary,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
@@ -8284,7 +8353,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                               ),
                             ),
                             IconButton(
-                              tooltip: groupByDownloaded ? 'Show Alphabetical' : 'Group Downloaded',
+                              tooltip: groupByDownloaded
+                                  ? 'Show Alphabetical'
+                                  : 'Group Downloaded',
                               onPressed: () {
                                 setDialogState(() {
                                   groupByDownloaded = !groupByDownloaded;
@@ -8294,7 +8365,11 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                                 groupByDownloaded
                                     ? Icons.offline_pin_rounded
                                     : Icons.offline_pin_outlined,
-                                color: groupByDownloaded ? Colors.green : colorScheme.onSurfaceVariant.withAlpha(160),
+                                color: groupByDownloaded
+                                    ? Colors.green
+                                    : colorScheme.onSurfaceVariant.withAlpha(
+                                        160,
+                                      ),
                               ),
                             ),
                             IconButton(
@@ -8317,7 +8392,8 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                           itemBuilder: (context, index) {
                             final AppReciter reciter = displayReciters[index];
                             final bool isSelected = reciter == currentReciter;
-                            final bool isDownloaded = reciterDownloadedMap[reciter.code] ?? false;
+                            final bool isDownloaded =
+                                reciterDownloadedMap[reciter.code] ?? false;
 
                             Widget? leadingWidget;
                             if (isDownloaded) {
@@ -8329,31 +8405,43 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             } else {
                               leadingWidget = Icon(
                                 Icons.record_voice_over_rounded,
-                                color: colorScheme.onSurfaceVariant.withAlpha(60),
+                                color: colorScheme.onSurfaceVariant.withAlpha(
+                                  60,
+                                ),
                                 size: 20,
                               );
                             }
 
                             return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
                               child: Material(
                                 color: isSelected
                                     ? colorScheme.primaryContainer.withValues(
                                         alpha: 0.42,
                                       )
                                     : Colors.transparent,
-                                borderRadius: BorderRadius.circular(AppRadii.medium),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.medium,
+                                ),
                                 clipBehavior: Clip.antiAlias,
                                 child: ListTile(
                                   leading: leadingWidget,
-                                  title: Text(_localizedReciterName(reciter, localizations)),
+                                  title: Text(
+                                    _localizedReciterName(
+                                      reciter,
+                                      localizations,
+                                    ),
+                                  ),
                                   trailing: isSelected
                                       ? Icon(
                                           Icons.check_circle_rounded,
                                           color: colorScheme.primary,
                                         )
                                       : null,
-                                  onTap: () => Navigator.of(context).pop(reciter),
+                                  onTap: () =>
+                                      Navigator.of(context).pop(reciter),
                                 ),
                               ),
                             );
@@ -9042,9 +9130,9 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
           .loadInstalledTranslationForResource(resource);
       if (!mounted) return true;
       final localizations = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(localizations.installedResource(resource.name))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(localizations.installedResource(resource.name))),
+      );
       setState(() {});
       return true;
     } on ResourceInstallException catch (error) {
@@ -9688,7 +9776,7 @@ class _ShareImageAyahContent extends StatelessWidget {
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.center,
                       child: content,
-                      )
+                    )
                   : content,
             );
           },

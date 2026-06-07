@@ -338,7 +338,8 @@ class ResourceRepository {
         'name': 'German (Bubenheim)',
         'language': 'de',
         'version': '1.0.0',
-        'url': 'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_bubenheim.zip',
+        'url':
+            'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_bubenheim.zip',
         'sizeBytes': 428148,
       },
       <String, Object?>{
@@ -347,7 +348,8 @@ class ResourceRepository {
         'name': 'German (Nadeem)',
         'language': 'de',
         'version': '1.0.0',
-        'url': 'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_nadeem.zip',
+        'url':
+            'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_nadeem.zip',
         'sizeBytes': 427435,
       },
       <String, Object?>{
@@ -356,7 +358,8 @@ class ResourceRepository {
         'name': 'German (Abu Rida)',
         'language': 'de',
         'version': '1.0.0',
-        'url': 'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_aburida.zip',
+        'url':
+            'https://github.com/ya27hw/equran-assets/releases/download/1.0.0/de_aburida.zip',
         'sizeBytes': 430441,
       },
     ],
@@ -365,8 +368,8 @@ class ResourceRepository {
 
 int? getResourceSize(DownloadableResource resource) {
   // 1. Try to get size from installed metadata
-  final InstalledResource? installed =
-      ResourceInstallStore.instance.installedFor(resource);
+  final InstalledResource? installed = ResourceInstallStore.instance
+      .installedFor(resource);
   if (installed != null &&
       installed.sizeBytes != null &&
       installed.sizeBytes! > 0) {
@@ -429,10 +432,9 @@ String prettyBytes(int? bytes) {
     value /= 1024;
     unitIndex++;
   }
-  final String formatted =
-      unitIndex == 0 || value >= 10
-          ? value.toStringAsFixed(0)
-          : value.toStringAsFixed(1);
+  final String formatted = unitIndex == 0 || value >= 10
+      ? value.toStringAsFixed(0)
+      : value.toStringAsFixed(1);
   return '$formatted ${units[unitIndex]}';
 }
 

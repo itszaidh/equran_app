@@ -180,8 +180,6 @@ class AudioDownloadService {
     return _surahAyahDownloads.containsKey('${_reciterCode()}-$surah');
   }
 
-
-
   Future<File> downloadAyah(
     int surah,
     int ayah, {
@@ -536,8 +534,6 @@ class AudioDownloadService {
     }
   }
 
-
-
   Future<void> deleteAyah(int surah, int ayah) async {
     final File file = await ayahFile(surah, ayah);
     if (file.existsSync()) {
@@ -700,8 +696,6 @@ class AudioDownloadService {
   bool isCompleteDownload(File file) {
     return _isCompleteDownload(file);
   }
-
-
 
   bool _isCompleteDownload(File file) {
     return file.existsSync() && file.lengthSync() > 0;

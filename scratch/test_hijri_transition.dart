@@ -15,23 +15,21 @@ void main() {
     countryCode: 'AE',
     timezoneId: 'Asia/Dubai',
   );
-  
-  const settings = PrayerTimeSettings(
-    method: PrayerCalculationMethod.dubai,
-  );
-  
+
+  const settings = PrayerTimeSettings(method: PrayerCalculationMethod.dubai);
+
   // Let's calculate the prayer day for a specific date: June 3, 2026
   final testDate = DateTime(2026, 6, 3, 12, 0); // 12:00 PM
-  
+
   final dayTimes = service.calculateDay(
     date: testDate,
     location: location,
     settings: settings,
   );
-  
+
   final maghribTime = dayTimes.entryFor(PrayerTimeKind.maghrib).time;
   print('Calculated Maghrib for June 3: $maghribTime');
-  
+
   // Before Maghrib: say 5:00 PM (17:00)
   final beforeMaghrib = maghribTime.subtract(const Duration(hours: 2));
   final dateBefore = service.calendarDateForInstant(
@@ -40,7 +38,7 @@ void main() {
     settings: settings,
   );
   print('Date before Maghrib ($beforeMaghrib): $dateBefore');
-  
+
   // After Maghrib: say 8:00 PM (20:00)
   final afterMaghrib = maghribTime.add(const Duration(hours: 2));
   final dateAfter = service.calendarDateForInstant(
@@ -49,7 +47,7 @@ void main() {
     settings: settings,
   );
   print('Date after Maghrib ($afterMaghrib): $dateAfter');
-  
+
   // Check that date shifts exactly by 1 day
   final diff = dateAfter.difference(dateBefore).inDays;
   if (diff == 1) {

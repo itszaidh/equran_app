@@ -30,13 +30,20 @@ class DailyToolsEditSheet extends StatefulWidget {
 
   static String translateCustomizeDesc(String lang) {
     return switch (lang) {
-      'ar' => 'اسحب لإعادة الترتيب. قم بتفعيل المفاتيح لإظهار أو إخفاء الأدوات في لوحتك.',
-      'bn' => 'ক্রম পরিবর্তন করতে ড্র্যাগ করুন। আপনার ড্যাশবোর্ডে দেখাতে বা লুকাতে টগল করুন।',
-      'id' => 'Seret untuk mengatur ulang. Aktifkan sakelar untuk menampilkan/menyembunyikan alat.',
-      'tr' => 'Yeniden sıralamak için sürükleyin. Panonuzda araçları göstermek veya gizlemek için açın/kapatın.',
-      'ur' => 'ترتیب بدلنے کے لیے ڈریگ کریں۔ اپنے ڈیش بورڈ پر اوزار دکھانے یا چھپانے کے لیے ٹوگل کریں۔',
-      'de' => 'Ziehen, um neu anzuordnen. Schalter umlegen, um Werkzeuge auf dem Dashboard anzuzeigen oder auszublenden.',
-      _ => 'Drag to reorder. Toggle switches to show/hide tools on your dashboard.',
+      'ar' =>
+        'اسحب لإعادة الترتيب. قم بتفعيل المفاتيح لإظهار أو إخفاء الأدوات في لوحتك.',
+      'bn' =>
+        'ক্রম পরিবর্তন করতে ড্র্যাগ করুন। আপনার ড্যাশবোর্ডে দেখাতে বা লুকাতে টগল করুন।',
+      'id' =>
+        'Seret untuk mengatur ulang. Aktifkan sakelar untuk menampilkan/menyembunyikan alat.',
+      'tr' =>
+        'Yeniden sıralamak için sürükleyin. Panonuzda araçları göstermek veya gizlemek için açın/kapatın.',
+      'ur' =>
+        'ترتیب بدلنے کے لیے ڈریگ کریں۔ اپنے ڈیش بورڈ پر اوزار دکھانے یا چھپانے کے لیے ٹوگل کریں۔',
+      'de' =>
+        'Ziehen, um neu anzuordnen. Schalter umlegen, um Werkzeuge auf dem Dashboard anzuzeigen oder auszublenden.',
+      _ =>
+        'Drag to reorder. Toggle switches to show/hide tools on your dashboard.',
     };
   }
 
@@ -55,8 +62,10 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
   }
 
   void _loadTools() {
-    _visibleTools = List<DailyToolType>.from(SettingsDB().getVisibleDailyTools());
-    
+    _visibleTools = List<DailyToolType>.from(
+      SettingsDB().getVisibleDailyTools(),
+    );
+
     // Construct the ordered list of all tools: visible ones first in their order,
     // followed by hidden ones.
     _allToolsOrdered = List<DailyToolType>.from(_visibleTools);
@@ -69,19 +78,16 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
 
   void _toggleTool(DailyToolType tool) {
     final bool isCurrentlyVisible = _visibleTools.contains(tool);
-    
+
     if (isCurrentlyVisible && _visibleTools.length <= 1) {
       // Prevent disabling the last tool
       final AppLocalizations localizations = AppLocalizations.of(context)!;
       final String msg = localizations.localeName.toLowerCase() == 'ar'
           ? 'يجب أن تظل أداة واحدة على الأقل مثبتة.'
           : 'At least one tool must remain pinned.';
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(msg),
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
       );
       return;
     }
@@ -92,7 +98,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
       } else {
         _visibleTools.add(tool);
       }
-      
+
       // Keep visible list aligned with _allToolsOrdered sequence
       final List<DailyToolType> updatedVisible = <DailyToolType>[];
       for (final DailyToolType t in _allToolsOrdered) {
@@ -101,7 +107,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
         }
       }
       _visibleTools = updatedVisible;
-      
+
       SettingsDB().setVisibleDailyTools(_visibleTools);
     });
   }
@@ -113,7 +119,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
       }
       final DailyToolType item = _allToolsOrdered.removeAt(oldIndex);
       _allToolsOrdered.insert(newIndex, item);
-      
+
       // Update the visible list order to reflect the new reordering
       final List<DailyToolType> updatedVisible = <DailyToolType>[];
       for (final DailyToolType t in _allToolsOrdered) {
@@ -122,7 +128,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
         }
       }
       _visibleTools = updatedVisible;
-      
+
       SettingsDB().setVisibleDailyTools(_visibleTools);
     });
   }
@@ -199,9 +205,13 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
                 child: ReorderableListView.builder(
                   buildDefaultDragHandles: false,
                   scrollController: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   physics: const BouncingScrollPhysics(),
                   itemCount: _allToolsOrdered.length,
+                  // ignore: deprecated_member_use
                   onReorder: _onReorder,
                   itemBuilder: (context, index) {
                     final DailyToolType tool = _allToolsOrdered[index];
@@ -214,11 +224,16 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
                         color: colors.surface,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isPinned ? colors.primary.withAlpha(80) : colors.border.withAlpha(110),
+                          color: isPinned
+                              ? colors.primary.withAlpha(80)
+                              : colors.border.withAlpha(110),
                         ),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         leading: Container(
                           width: 42,
                           height: 42,
@@ -228,14 +243,24 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: tool.assetPath == null
-                              ? Icon(tool.icon, color: isPinned ? colors.primary : colors.textSecondary, size: 24)
+                              ? Icon(
+                                  tool.icon,
+                                  color: isPinned
+                                      ? colors.primary
+                                      : colors.textSecondary,
+                                  size: 24,
+                                )
                               : Opacity(
                                   opacity: isPinned ? 1.0 : 0.6,
                                   child: Image.asset(
                                     tool.assetPath!,
                                     fit: BoxFit.contain,
                                     errorBuilder: (context, error, stackTrace) {
-                                      return Icon(tool.icon, color: colors.primary, size: 24);
+                                      return Icon(
+                                        tool.icon,
+                                        color: colors.primary,
+                                        size: 24,
+                                      );
                                     },
                                   ),
                                 ),
@@ -243,7 +268,9 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
                         title: Text(
                           tool.getTitle(localizations),
                           style: theme.textTheme.titleSmall?.copyWith(
-                            color: isPinned ? colors.textPrimary : colors.textSecondary,
+                            color: isPinned
+                                ? colors.textPrimary
+                                : colors.textSecondary,
                             fontWeight: FontWeight.w800,
                           ),
                         ),

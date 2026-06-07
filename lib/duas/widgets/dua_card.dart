@@ -44,10 +44,15 @@ class DuaCard extends StatelessWidget {
     return ValueListenableBuilder<Box<dynamic>>(
       valueListenable: SettingsDB().listener,
       builder: (BuildContext context, Box<dynamic> settingsBox, Widget? child) {
-        final bool showTranslation = settingsBox.get('duaShowTranslation', defaultValue: true) as bool;
-        final bool showTransliteration = settingsBox.get('duaShowTransliteration', defaultValue: true) as bool;
+        final bool showTranslation =
+            settingsBox.get('duaShowTranslation', defaultValue: true) as bool;
+        final bool showTransliteration =
+            settingsBox.get('duaShowTransliteration', defaultValue: true)
+                as bool;
         final String defaultLang = Localizations.localeOf(context).languageCode;
-        final String translationLang = settingsBox.get('duaTranslationLanguage', defaultValue: defaultLang) as String;
+        final String translationLang =
+            settingsBox.get('duaTranslationLanguage', defaultValue: defaultLang)
+                as String;
 
         return ValueListenableBuilder<Box<dynamic>>(
           valueListenable: DuaFavouritesDB().listener,
@@ -117,12 +122,15 @@ class DuaCard extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: 'Hafs',
                             height: 1.95,
-                            fontSize: settingsBox.get("fontSize", defaultValue: 31.0) as double,
+                            fontSize:
+                                settingsBox.get("fontSize", defaultValue: 31.0)
+                                    as double,
                             letterSpacing: 0,
                             color: colors.onSurface,
                           ),
                         ),
-                        if (showTransliteration && dua.transliteration != null) ...<Widget>[
+                        if (showTransliteration &&
+                            dua.transliteration != null) ...<Widget>[
                           const SizedBox(height: 14),
                           Text(
                             dua.transliteration!,
@@ -134,7 +142,9 @@ class DuaCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                        if (showTranslation && dua.localizedTranslation(translationLang) != null) ...<Widget>[
+                        if (showTranslation &&
+                            dua.localizedTranslation(translationLang) !=
+                                null) ...<Widget>[
                           const SizedBox(height: 14),
                           Divider(
                             height: 1,
@@ -156,7 +166,9 @@ class DuaCard extends StatelessWidget {
                             spacing: 8,
                             runSpacing: 8,
                             children: metadata
-                                .map((String item) => _DuaMetadataPill(text: item))
+                                .map(
+                                  (String item) => _DuaMetadataPill(text: item),
+                                )
                                 .toList(growable: false),
                           ),
                         ],

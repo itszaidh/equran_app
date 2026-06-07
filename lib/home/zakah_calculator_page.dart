@@ -10,11 +10,21 @@ class ZakahCalculatorPage extends StatefulWidget {
 }
 
 class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
-  final TextEditingController _cashController = TextEditingController(text: '0');
-  final TextEditingController _goldController = TextEditingController(text: '0');
-  final TextEditingController _silverController = TextEditingController(text: '0');
-  final TextEditingController _assetsController = TextEditingController(text: '0');
-  final TextEditingController _debtsController = TextEditingController(text: '0');
+  final TextEditingController _cashController = TextEditingController(
+    text: '0',
+  );
+  final TextEditingController _goldController = TextEditingController(
+    text: '0',
+  );
+  final TextEditingController _silverController = TextEditingController(
+    text: '0',
+  );
+  final TextEditingController _assetsController = TextEditingController(
+    text: '0',
+  );
+  final TextEditingController _debtsController = TextEditingController(
+    text: '0',
+  );
 
   double _cash = 0;
   double _gold = 0;
@@ -22,7 +32,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
   double _assets = 0;
   double _debts = 0;
 
-  final double _nisab = 200.0; // The threshold mentioned in localization "totalZakahWealth"
+  final double _nisab =
+      200.0; // The threshold mentioned in localization "totalZakahWealth"
 
   @override
   void initState() {
@@ -56,130 +67,136 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   // Translations
   String _tTitle(String lang) => switch (lang) {
-        'ar' => 'حاسبة الزكاة',
-        'bn' => 'যাকাত ক্যালকুলেটর',
-        'id' => 'Kalkulator Zakat',
-        'tr' => 'Zekat Hesaplama',
-        'ur' => 'زکوٰۃ کیلکولیٹر',
-        _ => 'Zakah Calculator',
-      };
+    'ar' => 'حاسبة الزكاة',
+    'bn' => 'যাকাত ক্যালকুলেটর',
+    'id' => 'Kalkulator Zakat',
+    'tr' => 'Zekat Hesaplama',
+    'ur' => 'زکوٰۃ کیلکولیٹر',
+    _ => 'Zakah Calculator',
+  };
 
   String _tCash(String lang) => switch (lang) {
-        'ar' => 'النقود والحسابات البنكية',
-        'bn' => 'নগদ ও ব্যাংক হিসাব',
-        'id' => 'Uang Tunai & Tabungan',
-        'tr' => 'Nakit & Banka Hesapları',
-        'ur' => 'نقد اور بینک اکاؤنٹس',
-        _ => 'Cash & Bank Accounts',
-      };
+    'ar' => 'النقود والحسابات البنكية',
+    'bn' => 'নগদ ও ব্যাংক হিসাব',
+    'id' => 'Uang Tunai & Tabungan',
+    'tr' => 'Nakit & Banka Hesapları',
+    'ur' => 'نقد اور بینک اکاؤنٹس',
+    _ => 'Cash & Bank Accounts',
+  };
 
   String _tGold(String lang) => switch (lang) {
-        'ar' => 'قيمة الذهب المملوك',
-        'bn' => 'স্বর্ণের মূল্য',
-        'id' => 'Nilai Emas',
-        'tr' => 'Altın Değeri',
-        'ur' => 'سونے کی مالیت',
-        _ => 'Gold Value',
-      };
+    'ar' => 'قيمة الذهب المملوك',
+    'bn' => 'স্বর্ণের মূল্য',
+    'id' => 'Nilai Emas',
+    'tr' => 'Altın Değeri',
+    'ur' => 'سونے کی مالیت',
+    _ => 'Gold Value',
+  };
 
   String _tSilver(String lang) => switch (lang) {
-        'ar' => 'قيمة الفضة المملوكة',
-        'bn' => 'রুপার মূল্য',
-        'id' => 'Nilai Perak',
-        'tr' => 'Gümüş Değeri',
-        'ur' => 'چاندی کی مالیت',
-        _ => 'Silver Value',
-      };
+    'ar' => 'قيمة الفضة المملوكة',
+    'bn' => 'রুপার মূল্য',
+    'id' => 'Nilai Perak',
+    'tr' => 'Gümüş Değeri',
+    'ur' => 'چاندی کی مالیت',
+    _ => 'Silver Value',
+  };
 
   String _tAssets(String lang) => switch (lang) {
-        'ar' => 'أصول واستثمارات أخرى',
-        'bn' => 'অন্যান্য সম্পদ ও বিনিয়োগ',
-        'id' => 'Aset & Investasi Lainnya',
-        'tr' => 'Diğer Varlıklar & Yatırımlar',
-        'ur' => 'دیگر اثاثے اور سرمایہ کاری',
-        _ => 'Other Assets & Investments',
-      };
+    'ar' => 'أصول واستثمارات أخرى',
+    'bn' => 'অন্যান্য সম্পদ ও বিনিয়োগ',
+    'id' => 'Aset & Investasi Lainnya',
+    'tr' => 'Diğer Varlıklar & Yatırımlar',
+    'ur' => 'دیگر اثاثے اور سرمایہ کاری',
+    _ => 'Other Assets & Investments',
+  };
 
   String _tDebts(String lang) => switch (lang) {
-        'ar' => 'الديون والالتزامات المستحقة',
-        'bn' => 'ঋণ ও দায়বদ্ধতা',
-        'id' => 'Hutang & Kewajiban',
-        'tr' => 'Borçlar & Yükümlülükler',
-        'ur' => 'قرض اور واجبات',
-        _ => 'Liabilities & Debts',
-      };
+    'ar' => 'الديون والالتزامات المستحقة',
+    'bn' => 'ঋণ ও দায়বদ্ধতা',
+    'id' => 'Hutang & Kewajiban',
+    'tr' => 'Borçlar & Yükümlülükler',
+    'ur' => 'قرض اور واجبات',
+    _ => 'Liabilities & Debts',
+  };
 
   String _tTotalAssets(String lang) => switch (lang) {
-        'ar' => 'إجمالي الأصول',
-        'bn' => 'মোট সম্পদ',
-        'id' => 'Total Aset',
-        'tr' => 'Toplam Varlıklar',
-        'ur' => 'کل اثاثے',
-        _ => 'Total Assets',
-      };
+    'ar' => 'إجمالي الأصول',
+    'bn' => 'মোট সম্পদ',
+    'id' => 'Total Aset',
+    'tr' => 'Toplam Varlıklar',
+    'ur' => 'کل اثاثے',
+    _ => 'Total Assets',
+  };
 
   String _tNetWealth(String lang) => switch (lang) {
-        'ar' => 'صافي الثروة',
-        'bn' => 'নিট সম্পদ',
-        'id' => 'Kekayaan Bersih',
-        'tr' => 'Net Servet',
-        'ur' => 'صافی دولت',
-        _ => 'Net Wealth',
-      };
+    'ar' => 'صافي الثروة',
+    'bn' => 'নিট সম্পদ',
+    'id' => 'Kekayaan Bersih',
+    'tr' => 'Net Servet',
+    'ur' => 'صافی دولت',
+    _ => 'Net Wealth',
+  };
 
   String _tNisabThreshold(String lang) => switch (lang) {
-        'ar' => 'حد النصاب',
-        'bn' => 'নিসাব সীমা',
-        'id' => 'Ambang Nisab',
-        'tr' => 'Nisap Eşiği',
-        'ur' => 'نصاب کی حد',
-        _ => 'Nisab Threshold',
-      };
+    'ar' => 'حد النصاب',
+    'bn' => 'নিসাব সীমা',
+    'id' => 'Ambang Nisab',
+    'tr' => 'Nisap Eşiği',
+    'ur' => 'نصاب کی حد',
+    _ => 'Nisab Threshold',
+  };
 
   String _tZakahDue(String lang) => switch (lang) {
-        'ar' => 'الزكاة المستحقة',
-        'bn' => 'প্রদেয় যাকাত',
-        'id' => 'Zakat yang Wajib Dibayar',
-        'tr' => 'Ödenmesi Gereken Zekat',
-        'ur' => 'واجب الادا زکوٰۃ',
-        _ => 'Zakah Due',
-      };
+    'ar' => 'الزكاة المستحقة',
+    'bn' => 'প্রদেয় যাকাত',
+    'id' => 'Zakat yang Wajib Dibayar',
+    'tr' => 'Ödenmesi Gereken Zekat',
+    'ur' => 'واجب الادا زکوٰۃ',
+    _ => 'Zakah Due',
+  };
 
   String _tZakahRate(String lang) => switch (lang) {
-        'ar' => 'نسبة الزكاة (٢.٥٪)',
-        'bn' => 'যাকাতের হার (২.৫%)',
-        'id' => 'Tarif Zakat (2.5%)',
-        'tr' => 'Zekat Oranı (%2.5)',
-        'ur' => 'زکوٰۃ کی شرح (2.5%)',
-        _ => 'Zakah Rate (2.5%)',
-      };
+    'ar' => 'نسبة الزكاة (٢.٥٪)',
+    'bn' => 'যাকাতের হার (২.৫%)',
+    'id' => 'Tarif Zakat (2.5%)',
+    'tr' => 'Zekat Oranı (%2.5)',
+    'ur' => 'زکوٰۃ کی شرح (2.5%)',
+    _ => 'Zakah Rate (2.5%)',
+  };
 
   String _tNisabMet(String lang) => switch (lang) {
-        'ar' => 'بلغ النصاب',
-        'bn' => 'নিসাব পূর্ণ হয়েছে',
-        'id' => 'Memenuhi Nisab',
-        'tr' => 'Nisaba Ulaştı',
-        'ur' => 'نصاب پورا ہے',
-        _ => 'Nisab Met',
-      };
+    'ar' => 'بلغ النصاب',
+    'bn' => 'নিসাব পূর্ণ হয়েছে',
+    'id' => 'Memenuhi Nisab',
+    'tr' => 'Nisaba Ulaştı',
+    'ur' => 'نصاب پورا ہے',
+    _ => 'Nisab Met',
+  };
 
   String _tNisabNotMet(String lang) => switch (lang) {
-        'ar' => 'لم يبلغ النصاب',
-        'bn' => 'নিসাব পূর্ণ হয়নি',
-        'id' => 'Tidak Memenuhi Nisab',
-        'tr' => 'Nisaba Ulaşmadı',
-        'ur' => 'نصاب پورا نہیں ہے',
-        _ => 'Nisab Not Met',
-      };
+    'ar' => 'لم يبلغ النصاب',
+    'bn' => 'নিসাব পূর্ণ হয়নি',
+    'id' => 'Tidak Memenuhi Nisab',
+    'tr' => 'Nisaba Ulaşmadı',
+    'ur' => 'نصاب پورا نہیں ہے',
+    _ => 'Nisab Not Met',
+  };
 
   String _tNote(String lang) => switch (lang) {
-        'ar' => 'ملاحظة: تجب الزكاة بنسبة ٢.٥٪ إذا بلغت ثروتك الصافية النصاب وحال عليها الحول الهجري.',
-        'bn' => 'দ্রষ্টব্য: আপনার নিট সম্পদ নিসাব সীমা অতিক্রম করলে এবং এক বছর থাকলে ২.৫% যাকাত প্রদেয় হবে।',
-        'id' => 'Catatan: Zakat wajib (2.5%) jika kekayaan bersih Anda melebihi ambang Nisab dan telah dimiliki selama satu tahun Hijriah.',
-        'tr' => 'Not: Net servetiniz nisap eşiğini aşarsa ve üzerinden bir Hicri yıl geçerse %2.5 zekat ödemeniz gerekir.',
-        'ur' => 'نوٹ: اگر آپ کی صافی دولت نصاب کی حد سے زیادہ ہو اور اس پر ایک ہجری سال گزر چکا ہو تو 2.5% زکوٰۃ فرض ہے۔',
-        _ => 'Note: Zakah (2.5%) is obligatory if your net wealth exceeds the Nisab threshold and has been held for a full Hijri year.',
-      };
+    'ar' =>
+      'ملاحظة: تجب الزكاة بنسبة ٢.٥٪ إذا بلغت ثروتك الصافية النصاب وحال عليها الحول الهجري.',
+    'bn' =>
+      'দ্রষ্টব্য: আপনার নিট সম্পদ নিসাব সীমা অতিক্রম করলে এবং এক বছর থাকলে ২.৫% যাকাত প্রদেয় হবে।',
+    'id' =>
+      'Catatan: Zakat wajib (2.5%) jika kekayaan bersih Anda melebihi ambang Nisab dan telah dimiliki selama satu tahun Hijriah.',
+    'tr' =>
+      'Not: Net servetiniz nisap eşiğini aşarsa ve üzerinden bir Hicri yıl geçerse %2.5 zekat ödemeniz gerekir.',
+    'ur' =>
+      'نوٹ: اگر آپ کی صافی دولت نصاب کی حد سے زیادہ ہو اور اس پر ایک ہجری سال گزر چکا ہو تو 2.5% زکوٰۃ فرض ہے۔',
+    _ =>
+      'Note: Zakah (2.5%) is obligatory if your net wealth exceeds the Nisab threshold and has been held for a full Hijri year.',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +235,14 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Results Card
-                  _buildResultsCard(colors, theme, lang, netWealth, zakahDue, nisabMet),
+                  _buildResultsCard(
+                    colors,
+                    theme,
+                    lang,
+                    netWealth,
+                    zakahDue,
+                    nisabMet,
+                  ),
                   const SizedBox(height: 20),
 
                   // Inputs Card
@@ -234,15 +258,46 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildInputField(colors, theme, _cashController, _tCash(lang), Icons.account_balance_wallet_outlined),
+                          _buildInputField(
+                            colors,
+                            theme,
+                            _cashController,
+                            _tCash(lang),
+                            Icons.account_balance_wallet_outlined,
+                          ),
                           const SizedBox(height: 16),
-                          _buildInputField(colors, theme, _goldController, _tGold(lang), Icons.workspace_premium_outlined),
+                          _buildInputField(
+                            colors,
+                            theme,
+                            _goldController,
+                            _tGold(lang),
+                            Icons.workspace_premium_outlined,
+                          ),
                           const SizedBox(height: 16),
-                          _buildInputField(colors, theme, _silverController, _tSilver(lang), Icons.monetization_on_outlined),
+                          _buildInputField(
+                            colors,
+                            theme,
+                            _silverController,
+                            _tSilver(lang),
+                            Icons.monetization_on_outlined,
+                          ),
                           const SizedBox(height: 16),
-                          _buildInputField(colors, theme, _assetsController, _tAssets(lang), Icons.trending_up_rounded),
+                          _buildInputField(
+                            colors,
+                            theme,
+                            _assetsController,
+                            _tAssets(lang),
+                            Icons.trending_up_rounded,
+                          ),
                           const SizedBox(height: 16),
-                          _buildInputField(colors, theme, _debtsController, _tDebts(lang), Icons.payment_outlined, isDebt: true),
+                          _buildInputField(
+                            colors,
+                            theme,
+                            _debtsController,
+                            _tDebts(lang),
+                            Icons.payment_outlined,
+                            isDebt: true,
+                          ),
                         ],
                       ),
                     ),
@@ -260,13 +315,36 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          _buildBreakdownRow(colors, theme, _tTotalAssets(lang), totalAssets),
+                          _buildBreakdownRow(
+                            colors,
+                            theme,
+                            _tTotalAssets(lang),
+                            totalAssets,
+                          ),
                           const Divider(height: 16),
-                          _buildBreakdownRow(colors, theme, _tDebts(lang), _debts, isDebt: true),
+                          _buildBreakdownRow(
+                            colors,
+                            theme,
+                            _tDebts(lang),
+                            _debts,
+                            isDebt: true,
+                          ),
                           const Divider(height: 16),
-                          _buildBreakdownRow(colors, theme, _tNetWealth(lang), netWealth, isBold: true),
+                          _buildBreakdownRow(
+                            colors,
+                            theme,
+                            _tNetWealth(lang),
+                            netWealth,
+                            isBold: true,
+                          ),
                           const Divider(height: 16),
-                          _buildBreakdownRow(colors, theme, _tNisabThreshold(lang), _nisab, valueColor: colors.primary),
+                          _buildBreakdownRow(
+                            colors,
+                            theme,
+                            _tNisabThreshold(lang),
+                            _nisab,
+                            valueColor: colors.primary,
+                          ),
                         ],
                       ),
                     ),
@@ -284,7 +362,10 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.warning_amber_rounded, color: Colors.amber),
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.amber,
+                          ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
@@ -333,10 +414,7 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            colors.primary,
-            colors.primaryStrong,
-          ],
+          colors: [colors.primary, colors.primaryStrong],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -375,12 +453,19 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: nisabMet ? Colors.green.withAlpha(60) : colors.onPrimary.withAlpha(35),
+                        color: nisabMet
+                            ? Colors.green.withAlpha(60)
+                            : colors.onPrimary.withAlpha(35),
                         borderRadius: BorderRadius.circular(100),
                         border: Border.all(
-                          color: nisabMet ? Colors.greenAccent : colors.onPrimary.withAlpha(50),
+                          color: nisabMet
+                              ? Colors.greenAccent
+                              : colors.onPrimary.withAlpha(50),
                         ),
                       ),
                       child: Text(
@@ -445,8 +530,15 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
             fontWeight: FontWeight.w700,
           ),
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: isDebt ? Colors.redAccent : colors.primary, size: 20),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            prefixIcon: Icon(
+              icon,
+              color: isDebt ? Colors.redAccent : colors.primary,
+              size: 20,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
             filled: true,
             fillColor: colors.surfaceSoft,
             border: OutlineInputBorder(
@@ -487,7 +579,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
           );
 
     final String valuePrefix = isDebt && value > 0 ? '-' : '';
-    final Color effectiveValueColor = valueColor ??
+    final Color effectiveValueColor =
+        valueColor ??
         (isDebt && value > 0
             ? Colors.redAccent
             : (isBold ? colors.primary : colors.textPrimary));
