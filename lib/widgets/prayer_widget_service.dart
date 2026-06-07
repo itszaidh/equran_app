@@ -1,9 +1,11 @@
+import 'dart:io' show Platform;
 import 'dart:ui';
 import 'package:equran/backend/library.dart' show SettingsDB;
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/prayer_times_service.dart';
 import 'package:equran/theme/equran_colors.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 
@@ -37,7 +39,10 @@ const Map<String, Map<String, String>> widgetTranslations = {
 class PrayerWidgetService {
   static const String _appGroupId = 'com.app.equran';
 
+  static bool get _isSupported => !kIsWeb && Platform.isAndroid;
+
   static Future<void> init() async {
+    if (!_isSupported) return;
     await HomeWidget.setAppGroupId(_appGroupId);
     await HomeWidget.registerInteractivityCallback(_backgroundCallback);
   }
@@ -61,6 +66,7 @@ class PrayerWidgetService {
     required String madhab,
     required bool use24h,
   }) async {
+    if (!_isSupported) return;
     await Future.wait([
       HomeWidget.saveWidgetData<String>('widget_lat', latitude.toString()),
       HomeWidget.saveWidgetData<String>('widget_lng', longitude.toString()),
@@ -77,6 +83,7 @@ class PrayerWidgetService {
     BuildContext? context,
     EquranColors? colors,
   }) async {
+    if (!_isSupported) return;
     final store = PrayerSettingsStore();
     final location = store.getLocation();
     final settings = store.getSettings();
@@ -219,6 +226,7 @@ class PrayerWidgetService {
     String colorBorder = '',
     String colorOnPrimary = '',
   }) async {
+    if (!_isSupported) return;
     await Future.wait([
       HomeWidget.saveWidgetData<String>('fajr_time', fajr),
       HomeWidget.saveWidgetData<String>('sunrise_time', sunrise),
