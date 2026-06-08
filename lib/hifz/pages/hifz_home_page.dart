@@ -872,11 +872,14 @@ class _HifzHomePageState extends State<HifzHomePage> {
                                             .length ??
                                         0;
 
-                                    final isArabic =
+                                    final String languageCode =
                                         Localizations.localeOf(
                                           context,
-                                        ).languageCode ==
-                                        'ar';
+                                        ).languageCode;
+                                    final isArabic =
+                                        languageCode == 'ar' ||
+                                        languageCode == 'fa' ||
+                                        languageCode == 'ur';
                                     final surahName = isArabic
                                         ? quran.getSurahNameArabic(surah)
                                         : HifzSurahData.name(surah);

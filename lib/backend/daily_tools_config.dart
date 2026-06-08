@@ -64,7 +64,8 @@ enum DailyToolType {
   }
 
   String getTitle(AppLocalizations localizations) {
-    final String lang = localizations.localeName.toLowerCase();
+    final String lang =
+        localizations.localeName.split('_').first.toLowerCase();
     return switch (this) {
       quran => localizations.quran,
       prayer => localizations.prayer,
@@ -83,7 +84,8 @@ enum DailyToolType {
   }
 
   String getSubtitle(AppLocalizations localizations) {
-    final String lang = localizations.localeName.toLowerCase();
+    final String lang =
+        localizations.localeName.split('_').first.toLowerCase();
     return switch (this) {
       quran => localizations.dailyQuranCompanionSubtitle,
       prayer => localizations.prayerTimesSettings,
@@ -104,6 +106,8 @@ enum DailyToolType {
   String _translateCalendar(String lang) {
     return switch (lang) {
       'ar' => 'التقويم الهجري',
+      'fa' => 'تقویم هجری',
+      'de' => 'Hijri-Kalender',
       'bn' => 'হিজরি ক্যালেন্ডার',
       'id' => 'Kalender Hijriah',
       'tr' => 'Hicri Takvim',
@@ -115,6 +119,8 @@ enum DailyToolType {
   String _translateCalendarSubtitle(String lang) {
     return switch (lang) {
       'ar' => 'عرض التواريخ والمناسبات الهجرية',
+      'fa' => 'مشاهده تاریخ‌های هجری و مناسبت‌های اسلامی',
+      'de' => 'Hijri-Daten und islamische Ereignisse anzeigen',
       'bn' => 'হিজরি তারিখ ও ঘটনাবলী দেখুন',
       'id' => 'Lihat tanggal dan hari penting Hijriah',
       'tr' => 'Hicri tarihleri ve önemli günleri görün',
@@ -126,6 +132,8 @@ enum DailyToolType {
   String _translateZakah(String lang) {
     return switch (lang) {
       'ar' => 'حساب الزكاة',
+      'fa' => 'محاسبه زکات',
+      'de' => 'Zakat-Rechner',
       'bn' => 'যাকাত ক্যালকুলেটর',
       'id' => 'Kalkulator Zakat',
       'tr' => 'Zekat Hesaplama',
@@ -137,6 +145,8 @@ enum DailyToolType {
   String _translateZakahSubtitle(String lang) {
     return switch (lang) {
       'ar' => 'احسب زكاة مالك بسهولة',
+      'fa' => 'محاسبه آسان زکات مال خود',
+      'de' => 'Berechnen Sie Ihre fällige Zakat ganz einfach',
       'bn' => 'সহজেই যাকাত হিসাব করুন',
       'id' => 'Hitung zakat harta Anda dengan mudah',
       'tr' => 'Malınızın zekatını kolayca hesaplayın',

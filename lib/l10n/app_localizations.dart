@@ -9,6 +9,7 @@ import 'app_localizations_ar.dart';
 import 'app_localizations_bn.dart';
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_fa.dart';
 import 'app_localizations_id.dart';
 import 'app_localizations_tr.dart';
 import 'app_localizations_ur.dart';
@@ -103,6 +104,7 @@ abstract class AppLocalizations {
     Locale('bn'),
     Locale('de'),
     Locale('en'),
+    Locale('fa'),
     Locale('id'),
     Locale('tr'),
     Locale('ur'),
@@ -233,6 +235,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'German'**
   String get german;
+
+  /// No description provided for @farsi.
+  ///
+  /// In en, this message translates to:
+  /// **'Farsi'**
+  String get farsi;
 
   /// No description provided for @quranScriptStyle.
   ///
@@ -6811,6 +6819,12 @@ abstract class AppLocalizations {
   /// **'বাংলা / Bengali'**
   String get bnSubtitle;
 
+  /// No description provided for @faSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'فارسی / Farsi'**
+  String get faSubtitle;
+
   /// No description provided for @subhanAllah.
   ///
   /// In en, this message translates to:
@@ -7343,6 +7357,7 @@ class _AppLocalizationsDelegate
     'bn',
     'de',
     'en',
+    'fa',
     'id',
     'tr',
     'ur',
@@ -7363,6 +7378,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'fa':
+      return AppLocalizationsFa();
     case 'id':
       return AppLocalizationsId();
     case 'tr':

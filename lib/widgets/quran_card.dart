@@ -29,7 +29,9 @@ class QuranCard extends StatelessWidget {
     final bool compactText = compact && reduceTitleSize;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
     final bool rtlMode =
-        localizations.localeName == 'ar' || localizations.localeName == 'ur';
+        localizations.localeName == 'ar' ||
+        localizations.localeName == 'ur' ||
+        localizations.localeName == 'fa';
     final BorderRadius radius = BorderRadius.circular(AppRadii.medium);
     final double verticalPadding = compact
         ? (tabletLayout ? 14 : 12)

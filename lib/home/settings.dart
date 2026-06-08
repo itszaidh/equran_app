@@ -1264,6 +1264,7 @@ class _SettingsPageState extends State<SettingsPage> {
       "tr" => localizations.turkish,
       "bn" => localizations.bengali,
       "de" => localizations.german,
+      "fa" => localizations.farsi,
       _ => localizations.systemDefault,
     };
   }
@@ -1327,6 +1328,12 @@ class _SettingsPageState extends State<SettingsPage> {
           value: "de",
           title: localizations.german,
           subtitle: "Deutsch / German",
+          leading: const Icon(Icons.translate_rounded),
+        ),
+        AppSelectionOption<String>(
+          value: "fa",
+          title: localizations.farsi,
+          subtitle: localizations.faSubtitle,
           leading: const Icon(Icons.translate_rounded),
         ),
       ],

@@ -2,16 +2,21 @@ import 'package:equran/l10n/app_localizations.dart';
 import 'package:flutter/widgets.dart';
 import 'package:quran/quran.dart' as quran;
 
-bool isArabicLocale(BuildContext context) =>
-    Localizations.localeOf(context).languageCode == 'ar';
+bool isArabicLocale(BuildContext context) {
+  final String code = Localizations.localeOf(context).languageCode;
+  return code == 'ar' || code == 'fa';
+}
 
-bool isArabicLocalizations(AppLocalizations localizations) =>
-    localizations.localeName == 'ar';
+bool isArabicLocalizations(AppLocalizations localizations) {
+  final String code = localizations.localeName.split('_').first.toLowerCase();
+  return code == 'ar' || code == 'fa';
+}
 
 String localizedSurahName(AppLocalizations localizations, int surah) {
-  if (localizations.localeName == 'ar') {
+  final String code = localizations.localeName.split('_').first.toLowerCase();
+  if (code == 'ar' || code == 'fa') {
     return quran.getSurahNameArabic(surah);
-  } else if (localizations.localeName == 'tr') {
+  } else if (code == 'tr') {
     return quran.getSurahNameTurkish(surah);
   }
   return quran.getSurahName(surah);

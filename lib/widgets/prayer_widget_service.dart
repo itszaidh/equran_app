@@ -34,6 +34,28 @@ const Map<String, Map<String, String>> widgetTranslations = {
     'placeholder':
         '\u0627\u0641\u062a\u062d \u0627\u0644\u062a\u0637\u0628\u064a\u0642 \u0644\u062a\u062d\u0645\u064a\u0644 \u0645\u0648\u0627\u0642\u064a\u062a \u0627\u0644\u0635\u0644\u0627\u0629',
   },
+  'fa': {
+    'header': 'اوقات شرعی',
+    'fajr': 'فجر',
+    'sunrise': 'طلوع آفتاب',
+    'dhuhr': 'ظهر',
+    'asr': 'عصر',
+    'maghrib': 'مغرب',
+    'isha': 'عشاء',
+    'updated': 'به‌روزرسانی شده',
+    'placeholder': 'برای بارگذاری اوقات شرعی ضربه بزنید',
+  },
+  'de': {
+    'header': 'Gebetszeiten',
+    'fajr': 'Fajr',
+    'sunrise': 'Sonnenaufgang',
+    'dhuhr': 'Dhuhr',
+    'asr': 'Asr',
+    'maghrib': 'Maghrib',
+    'isha': 'Isha',
+    'updated': 'Aktualisiert',
+    'placeholder': 'Tippen, um Gebetszeiten zu laden',
+  },
 };
 
 class PrayerWidgetService {

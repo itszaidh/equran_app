@@ -1,0 +1,2173 @@
+{
+  "@@locale": "fa",
+  "appTitle": "eQuran",
+  "home": "خانه",
+  "quran": "قرآن",
+  "prayer": "نماز",
+  "duas": "دعاها",
+  "more": "بیشتر",
+  "settings": "تنظیمات",
+  "downloads": "دانلودها",
+  "statistics": "آمار",
+  "qibla": "قبله",
+  "tasbih": "تسبیح",
+  "asmaUlHusna": "اسماء الحسنی",
+  "language": "زبان",
+  "systemDefault": "پیش‌فرض سیستم",
+  "english": "انگلیسی",
+  "arabic": "عربی",
+  "indonesian": "اندونزیایی",
+  "urdu": "اردو",
+  "turkish": "ترکی",
+  "bengali": "بنگالی",
+  "german": "آلمانی",
+  "farsi": "فارسی",
+  "quranScriptStyle": "رسم‌الخط قرآن",
+  "uthmaniMadinah": "عثمانی (مدینه)",
+  "qpcV4Tajweed": "QPC V4 (تجوید)",
+  "indoPak": "هند و پاک",
+  "vibration": "لرزش",
+  "vibrationSubtitle": "فعال کردن بازخورد لمسی هنگام پیمایش.",
+  "showReadingHistory": "نمایش تاریخچه خواندن",
+  "showReadingHistorySubtitle": "نمایش تا ۷ سوره آخر خوانده شده.",
+  "general": "عمومی",
+  "generalSubtitle": "رفتار برنامه و تاریخچه",
+  "reading": "خواندن",
+  "readingSubtitle": "نمایش قرآن و ترجمه",
+  "cardView": "نمایش کارتی",
+  "cardViewSubtitle": "نمایش هر آیه به صورت جداگانه، یا همه در یک صفحه.",
+  "displayTranslation": "نمایش ترجمه",
+  "displayTranslationSubtitle": "نمایش ترجمه برای هر آیه در نمای کارتی.",
+  "displayTransliteration": "نمایش آوانویسی",
+  "displayTransliterationSubtitle": "نمایش آوانویسی برای هر آیه در نمای کارتی.",
+  "dailyQuranGoal": "هدف روزانه قرآن",
+  "dailyQuranGoalSubtitle": "{count} آیه در روز",
+  "@dailyQuranGoalSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "translation": "ترجمه",
+  "reciter": "قاری",
+  "audio": "صدا",
+  "audioSubtitle": "قاری و پخش",
+  "downloadableResources": "منابع قابل دانلود",
+  "downloadableResourcesSubtitle": "تفسیر و بسته‌های زمان‌بندی صوتی",
+  "prayerTimesSettings": "تنظیمات اوقات نماز",
+  "prayerTimesSettingsSubtitle": "مدیریت مکان، روش محاسبه، عصر، قالب زمان و اختلاف ساعت.",
+  "appearance": "ظاهر",
+  "appearanceSubtitle": "پوسته، رنگ و حالت نمایش",
+  "themeMode": "حالت پوسته",
+  "colorScheme": "طرح رنگی",
+  "data": "داده‌ها",
+  "dataSubtitle": "پشتیبان‌گیری، بازیابی، یا پاک کردن داده‌های ذخیره شده محلی",
+  "backupData": "پشتیبان‌گیری از داده‌ها",
+  "backupDataSubtitle": "خروجی گرفتن از علاقه‌مندی‌ها، تاریخچه خواندن، قاری، اندازه متن‌ها و تمام تنظیمات.",
+  "restoreData": "بازیابی داده‌ها",
+  "restoreDataSubtitle": "بازیابی علاقه‌مندی‌ها، تاریخچه خواندن، قاری، اندازه متن‌ها و تنظیمات ذخیره شده از یک فایل پشتیبان.",
+  "clearReadingHistory": "پاک کردن تاریخچه خواندن",
+  "clearReadingHistorySubtitle": "حذف آخرین خوانده‌شده، موقعیت‌های ازسرگیری و پیشرفت خواندن قرآن.",
+  "clearFavourites": "پاک کردن علاقه‌مندی‌ها",
+  "clearFavouritesSubtitle": "حذف آیه‌های ذخیره شده، پوشه‌ها، یادداشت‌ها، برچسب‌ها و علاقه‌مندی‌ها.",
+  "cancel": "لغو",
+  "save": "ذخیره",
+  "delete": "حذف",
+  "download": "دانلود",
+  "update": "بروزرسانی",
+  "retry": "تلاش مجدد",
+  "continueReading": "ادامه خواندن",
+  "lastRead": "آخرین خوانده شده",
+  "beginWithQuran": "خواندن قرآن",
+  "startReadingSubtitle": "خواندن را شروع کنید تا موقعیت شما در اینجا ظاهر شود.",
+  "startReading": "شروع خواندن",
+  "continueListening": "ادامه گوش دادن",
+  "beginListeningSubtitle": "به تلاوت گوش دهید تا موقعیت شما در اینجا ظاهر شود.",
+  "startReadingRoutine": "شروع برنامه خواندن",
+  "buildDailyQuranHabit": "ایجاد عادت روزانه خواندن قرآن",
+  "start": "شروع",
+  "readingRoutine": "برنامه خواندن",
+  "continueRoutine": "ادامه برنامه",
+  "dailyQuranCompanion": "همراه روزانه قرآن",
+  "dailyQuranCompanionSubtitle": "ادامه تلاوت و دسترسی به ابزارهای روزانه",
+  "dailyTools": "ابزارهای روزانه",
+  "dailyToolsSubtitle": "fast access to the essentials",
+  "exploreAllFeatures": "مشاهده همه ویژگی‌ها",
+  "dailyAyah": "آیه روزانه",
+  "dailyDua": "دعای روزانه",
+  "seeAll": "مشاهده همه",
+  "surahs": "سوره‌ها",
+  "juz": "جزءها",
+  "pages": "صفحات",
+  "saved": "ذخیره شده",
+  "quranJourney": "سفر قرآنی",
+  "nextPrayer": "نماز بعدی",
+  "prayerTimes": "اوقات شرعی",
+  "exploreQibla": "یافتن قبله",
+  "tasbihCounter": "ذکرشمار",
+  "duasAndAzkar": "دعاها و اذکار",
+  "readingPlans": "برنامه‌های خواندن",
+  "quranStatistics": "آمار قرآن",
+  "search": "جستجو",
+  "dua": "دعا",
+  "player": "پخش‌کننده",
+  "searchQuran": "جستجو در قرآن",
+  "searchHintSurah": "نام یا شماره سوره...",
+  "searchHintJuz": "شماره جزء یا نام سوره...",
+  "searchHintPage": "صفحه، سوره یا جزء...",
+  "searchHintSaved": "آیه ذخیره شده، سوره، یادداشت یا شماره...",
+  "searchHintText": "جستجو در متن عربی قرآن یا ترجمه...",
+  "savedAyahs": "آیه‌های ذخیره شده",
+  "ayahNumber": "آیه {number}",
+  "@ayahNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "play": "پخش",
+  "pause": "توقف",
+  "next": "بعدی",
+  "previous": "قبلی",
+  "repeat": "تکرار",
+  "audioOptions": "گزینه‌های صوتی",
+  "dismissPlayer": "بستن پخش‌کننده",
+  "playbackOptions": "گزینه‌های پخش",
+  "previousAyah": "آیه قبلی",
+  "nextAyah": "آیه بعدی",
+  "autoPlayback": "پخش خودکار",
+  "repeatInterval": "فاصله تکرار",
+  "downloadSurahAudio": "دانلود صدای سوره",
+  "deleteDownloadedAudio": "حذف صدای دانلود شده",
+  "deleteDownloadQuestion": "حذف دانلود؟",
+  "removeDownloadFromOffline": "حذف {title} از حافظه آفلاین؟",
+  "@removeDownloadFromOffline": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "deletedDownload": "{title} حذف شد",
+  "@deletedDownload": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAllDownloadsQuestion": "حذف تمام دانلودها؟",
+  "deleteAllDownloadsBody": "این کار باعث حذف {count} فایل صوتی دانلود شده ({size}) می‌شود.",
+  "@deleteAllDownloadsBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAll": "حذف همه",
+  "deletedAllDownloadedAudio": "تمام صداهای دانلود شده حذف شدند.",
+  "offlineAudio": "صدای آفلاین",
+  "surahAyahSummary": "{surahCount} سوره • {ayahCount} آیه",
+  "@surahAyahSummary": {
+    "placeholders": {
+      "surahCount": {
+        "type": "int"
+      },
+      "ayahCount": {
+        "type": "int"
+      }
+    }
+  },
+  "clearAll": "پاک کردن همه",
+  "cleanupPreview": "پیش‌نمایش پاکسازی",
+  "downloadedSurahs": "سوره‌های دانلود شده",
+  "downloadedAyahs": "آیه‌های دانلود شده",
+  "potentialSpaceToFree": "فضای قابل آزادسازی",
+  "cleanupDoesNotRemoveData": "پاکسازی هرگز علاقه‌مندی‌ها، یادداشت‌ها، برنامه‌های خواندن، متن قرآن یا تنظیمات را حذف نمی‌کند.",
+  "reviewDeletion": "بررسی حذف",
+  "noDownloadedAudioYet": "هنوز هیچ صدایی دانلود نشده است.",
+  "downloadedAudioEmpty": "سوره‌ها و آیه‌های دانلود شده در اینجا بر اساس قاری دسته‌بندی می‌شوند.",
+  "ayahs": "آیه‌ها",
+  "deleteDownload": "حذف دانلود",
+  "playbackSpeed": "سرعت پخش",
+  "locationPermissionRequired": "دسترسی به مکان لازم است",
+  "unableToReconnect": "امکان اتصال مجدد وجود ندارد",
+  "reciterOptions": "گزینه‌های قاری",
+  "close": "بستن",
+  "theme": "پوسته",
+  "themeModeDark": "تیره",
+  "themeModeLight": "روشن",
+  "themeModeSystem": "خودکار",
+  "themeModeDialogTitle": "حالت پوسته",
+  "themeModeDarkSubtitle": "همیشه از حالت شب استفاده شود.",
+  "themeModeLightSubtitle": "همیشه از حالت روز استفاده شود.",
+  "themeModeSystemSubtitle": "از پوسته سیستم پیروی شود.",
+  "colorSchemeDialogTitle": "طرح رنگی",
+  "translationLanguage": "زبان ترجمه",
+  "notDownloaded": "دانلود نشده",
+  "playbackRate": "سرعت پخش",
+  "arabicTextSize": "اندازه متن عربی",
+  "translationTextSize": "اندازه متن ترجمه",
+  "resourcesUnavailable": "منابع در دسترس نیستند",
+  "resourcesManifestUnavailable": "بارگذاری لیست منابع امکان‌پذیر نیست.",
+  "tafsir": "تفسیر",
+  "audioTimings": "زمان‌بندی‌های صوتی",
+  "translations": "ترجمه‌ها",
+  "refreshManifest": "بروزرسانی لیست",
+  "checkGithubReleases": "تغییرات را در نسخه‌های گیت‌هاب بررسی کنید",
+  "noResourcesListed": "هیچ منبعی در لیست ثبت نشده است.",
+  "selected": "انتخاب شده",
+  "translationUnsupported": "این ترجمه هنوز پشتیبانی نمی‌شود.",
+  "translationNotInManifest": "این ترجمه در لیست منابع وجود ندارد.",
+  "downloadTranslationQuestion": "دانلود {name}؟",
+  "@downloadTranslationQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "translationNotInstalled": "این ترجمه روی این دستگاه نصب نشده است. {size}",
+  "@translationNotInstalled": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "installedResource": "{name} نصب شد.",
+  "@installedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "unableInstallResource": "امکان نصب این منبع وجود ندارد.",
+  "deleteResourceQuestion": "حذف {name}؟",
+  "@deleteResourceQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteResourceBody": "این کار فایل‌های دانلود شده را از روی دستگاه حذف می‌کند.",
+  "deletedResource": "{name} حذف شد.",
+  "@deletedResource": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ayahsPerDay": "آیه در روز",
+  "enterGoalRange": "هدفی بین ۱ تا ۱۰۰۰ آیه وارد کنید",
+  "clearReadingHistoryWarning": "هشدار: این کار آخرین خوانده شده، موقعیت‌های ازسرگیری، آمار و پیشرفت روزانه برنامه را پاک می‌کند.",
+  "clearFavouritesWarning": "هشدار: این کار تمام آیه‌های ذخیره شده، پوشه‌ها، یادداشت‌ها، برچسب‌ها و علاقه‌مندی‌ها را پاک می‌کند.",
+  "no": "خیر",
+  "yes": "بله",
+  "restoreBackup": "بازیابی فایل پشتیبان",
+  "restoreBackupWarning": "این کار علاقه‌مندی‌ها، تاریخچه خواندن و تنظیمات فعلی شما را با محتوای فایل پشتیبان جایگزین می‌کند.",
+  "restore": "بازیابی",
+  "backupReadyToShare": "فایل پشتیبان آماده اشتراک‌گذاری است.",
+  "backupSavedTo": "پشتیبان در مسیر {path} ذخیره شد",
+  "@backupSavedTo": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "unableCreateBackup": "ایجاد فایل پشتیبان امکان‌پذیر نیست.",
+  "restoredBackupSummary": "تعداد {favouritesCount} علاقه‌مندی، {readingHistoryCount} تاریخچه خواندن و {settingsCount} تنظیم بازیابی شدند.",
+  "@restoredBackupSummary": {
+    "placeholders": {
+      "favouritesCount": {
+        "type": "int"
+      },
+      "readingHistoryCount": {
+        "type": "int"
+      },
+      "settingsCount": {
+        "type": "int"
+      }
+    }
+  },
+  "unableRestoreBackup": "بازیابی پشتیبان انتخاب شده امکان‌پذیر نیست.",
+  "locationAndCalculationSettings": "تنظیمات مکان و محاسبه اوقات",
+  "quranSearch": "جستجوی قرآن",
+  "searchArabicAndTranslation": "جستجوی عربی و ترجمه",
+  "recitationsAndAudioControls": "تلاوت‌ها و کنترل‌های صوتی",
+  "compassAndDirection": "قطب‌نما و جهت",
+  "offlineAudioAndCleanup": "صدای آفلاین و پاکسازی",
+  "plansGoalsProgress": "برنامه‌ها، اهداف و پیشرفت",
+  "calmDhikrCounter": "ذکرشمار آرام‌بخش",
+  "the99BeautifulNames": "اسماء الحسنی (۹۹ نام زیبای خدا)",
+  "worshipTrendsAndStreaks": "روندهای عبادت و استمرار روزانه",
+  "fontsReciterAppBehavior": "فونت‌ها، قاری و رفتار برنامه",
+  "switchLightOrNightMode": "تغییر حالت روشن یا شب",
+  "yourIslamicCompanion": "همراه اسلامی شما",
+  "moreHeroSubtitle": "قبله، دانلودها، تنظیمات، برنامه‌ها و ابزارها همه در یک محیط آرام جمع‌آوری شده‌اند.",
+  "openRoutine": "باز کردن برنامه",
+  "aboutAppBody": "ای‌قرآن یک همراه مدرن قرآنی است که برای خواندن متمرکز، گوش دادن و تدبر روزانه طراحی شده است.",
+  "versionLabel": "نسخه {version}",
+  "@versionLabel": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadEquran": "دانلود ای‌قرآن",
+  "downloadEquranShareText": "دانلود ای‌قرآن در اف‌دروید: {url}",
+  "@downloadEquranShareText": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "unableOpenShareSheet": "باز کردن صفحه اشتراک‌گذاری امکان‌پذیر نیست.",
+  "aboutThisApp": "درباره برنامه",
+  "appDetailsAndVersion": "جزئیات برنامه و نسخه",
+  "shareApp": "اشتراک‌گذاری برنامه",
+  "shareAppSubtitle": "ارسال ای‌قرآن برای دیگران",
+  "feedbackContact": "بازخورد / تماس با ما",
+  "feedbackContactSubtitle": "گزارش مشکلات یا ایمیل به پشتیبانی",
+  "reportIssues": "گزارش مشکلات",
+  "reportIssuesSubtitle": "باز کردن ثبت‌کننده مشکلات گیت‌هاب.",
+  "unableOpenIssueTracker": "باز کردن ثبت‌کننده مشکلات امکان‌پذیر نیست.",
+  "emailSupport": "پشتیبانی ایمیلی",
+  "unableOpenEmailClient": "باز کردن برنامه ایمیل امکان‌پذیر نیست.",
+  "feedbackThanks": "از بازخوردها و پیشنهادات شما سپاسگزاریم.",
+  "browseBySurah": "پیمایش بر اساس سوره",
+  "browseByJuz": "پیمایش بر اساس جزء",
+  "browseByPage": "پیمایش بر اساس صفحه",
+  "closeSearch": "بستن جستجو",
+  "noSurahsFound": "هیچ سوره‌ای پیدا نشد.",
+  "ayahRange": "آیه {start} تا {end}",
+  "@ayahRange": {
+    "placeholders": {
+      "start": {
+        "type": "int"
+      },
+      "end": {
+        "type": "int"
+      }
+    }
+  },
+  "juzNumber": "جزء {number}",
+  "@juzNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerNameFajr": "صبح",
+  "prayerNameSunrise": "طلوع آفتاب",
+  "prayerNameDhuhr": "ظهر",
+  "prayerNameAsr": "عصر",
+  "prayerNameMaghrib": "مغرب",
+  "prayerNameIsha": "عشاء",
+  "today": "امروز",
+  "previousDay": "روز قبل",
+  "nextDay": "روز بعد",
+  "middleOfNight": "نیمه‌شب شرعی",
+  "lastThirdStarts": "شروع یک‌سوم پایانی شب",
+  "useCurrentLocation": "استفاده از مکان فعلی",
+  "chooseOnMap": "انتخاب روی نقشه",
+  "enterCoordinatesManually": "ورود دستی مختصات",
+  "locationUseNotice": "مکان شما فقط برای محاسبه اوقات شرعی استفاده می‌شود.",
+  "timesCalculatedLocally": "اوقات شرعی به صورت محلی روی دستگاه شما محاسبه می‌شوند.",
+  "prayerTimesNeedLocation": "اوقات شرعی به مکان نیاز دارد",
+  "prayerTimesLocationSubtitle": "محاسبه صبح، ظهر، عصر، مغرب و عشاء برای مکان دقیق شما.",
+  "setUpLocation": "تنظیم مکان",
+  "chooseLocationForNextPrayer": "یک مکان انتخاب کنید تا زمان نماز بعدی در اینجا نمایش داده شود.",
+  "prayerTimeTitle": "زمان نماز {prayer}",
+  "prayerBeginsIn": "نماز {prayer} شروع می‌شود در {countdown}",
+  "@prayerTimeTitle": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      }
+    }
+  },
+  "@prayerBeginsIn": {
+    "placeholders": {
+      "prayer": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesShort": "{minutes} دقیقه",
+  "hoursMinutesShort": "{hours} ساعت {minutes} دقیقه",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@hoursMinutesShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "exactAlarmPermissionOff": "دسترسی هشدار دقیق غیرفعال است. یادآورهای نماز ممکن است با تأخیر مواجه شوند.",
+  "zawal": "زوال",
+  "sunset": "غروب آفتاب",
+  "morning": "صبح",
+  "prohibitedTimeEndsIn": "زمان ممنوعه به پایان می‌رسد در {countdown}",
+  "@prohibitedTimeEndsIn": {
+    "placeholders": {
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "selectPrayerDate": "انتخاب تاریخ نماز",
+  "appSettings": "تنظیمات برنامه",
+  "unableGetLocation": "امکان دریافت مکان وجود ندارد.",
+  "qiblaBearingUnavailable": "مختصات مکان فعلی در دسترس نیست.",
+  "currentLocationTimedOut": "زمان درخواست مکان فعلی به پایان رسید. خدمات مکان را بررسی کرده و مجدداً تلاش کنید.",
+  "compassUnavailable": "قطب‌نما در دسترس نیست. از جهت نشان داده شده استفاده کنید.",
+  "qiblaCalibrationHint": "برای بهترین دقت، گوشی خود را صاف نگه داشته و آن را به شکل عدد ۸ حرکت دهید تا کالیبره شود.",
+  "compassAccuracyLow": "دقت قطب‌نما ممکن است پایین باشد.",
+  "compassAccuracyLowWithDegrees": "دقت قطب‌نما ممکن است پایین باشد ({degrees} درجه).",
+  "@compassAccuracyLowWithDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "qiblaLocationServicesDisabled": "خدمات مکان را روشن کنید تا بتوانید از قبله استفاده کنید.",
+  "qiblaLocationPermissionNeeded": "برای محاسبه جهت قبله بر اساس مکان فعلی دستگاه به دسترسی مکان نیاز است.",
+  "qiblaLocationPermissionBlocked": "دسترسی مکان مسدود شده است. آن را از تنظیمات برنامه فعال کنید تا بتوانید از قبله استفاده کنید.",
+  "qiblaLocationUnavailableMessage": "امکان خواندن مکان فعلی شما وجود نداشت. خدمات مکان را بررسی کرده و مجدداً تلاش کنید.",
+  "bearingDegrees": "جهت {degrees} درجه",
+  "targetDegrees": "هدف {degrees} درجه",
+  "headingDegrees": "جهت حرکت {degrees} درجه",
+  "@bearingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@targetDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "@headingDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "String"
+      }
+    }
+  },
+  "heading": "جهت حرکت",
+  "facingQibla": "روبه‌روی قبله",
+  "turnRightDegrees": "{degrees} درجه به راست بچرخید",
+  "turnLeftDegrees": "{degrees} درجه به چپ بچرخید",
+  "@turnRightDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "@turnLeftDegrees": {
+    "placeholders": {
+      "degrees": {
+        "type": "int"
+      }
+    }
+  },
+  "refreshCurrentLocation": "بروزرسانی مکان فعلی",
+  "findingYourLocation": "در حال یافتن مکان شما",
+  "currentLocationRequired": "مکان فعلی الزامی است",
+  "qiblaRequiresLocation": "قبله نیاز به دسترسی فعال مکان در این دستگاه دارد. برای ادامه، خدمات مکان و دسترسی‌ها را فعال کنید.",
+  "findingLocation": "در حال یافتن مکان",
+  "currentLocationUnavailable": "مکان فعلی در دسترس نیست",
+  "currentLocation": "مکان فعلی",
+  "distanceUnavailable": "فاصله در دسترس نیست",
+  "kilometersToKaaba": "{distance} کیلومتر تا کعبه",
+  "@kilometersToKaaba": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "resetCounter": "بازنشانی شمارنده",
+  "recentSessions": "جلسات اخیر",
+  "haptics": "لرزش دکمه‌ها",
+  "countSomeDhikrFirst": "ابتدا مقداری ذکر بگویید",
+  "dhikrSessionSaved": "جلسه ذکر ذخیره شد",
+  "postPrayerDhikr": "تعقیبات نماز",
+  "postPrayerDhikrComplete": "تعقیبات نماز به پایان رسید",
+  "dhikrComplete": "{label} به پایان رسید",
+  "@dhikrComplete": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "todayMetric": "امروز",
+  "rounds": "دورها",
+  "streak": "استمرار",
+  "savedDhikrSessionsEmpty": "جلسات ذکر ذخیره شده در اینجا نمایش داده می‌شوند.",
+  "dhikrSessionCounted": "{count} از {target} شمرده شد • {time}",
+  "@dhikrSessionCounted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "location": "مکان",
+  "locationSubtitle": "فقط برای محاسبه اوقات شرعی استفاده می‌شود",
+  "useCurrentLocationDescription": "ذخیره مکان این دستگاه برای محاسبه اوقات شرعی.",
+  "moveMapUnderPin": "نقشه را حرکت دهید تا پین در مرکز قرار گیرد.",
+  "enterLatitudeAndLongitude": "عرض و طول جغرافیایی را وارد کنید.",
+  "clearSavedLocation": "پاک کردن مکان ذخیره شده",
+  "clearSavedLocationSubtitle": "اوقات شرعی تا زمانی که دوباره مکانی را انتخاب نکنید، متوقف خواهد شد.",
+  "calculation": "محاسبه",
+  "calculationSubtitle": "روش محاسبه، عصر، تنظیمات عرض‌های جغرافیایی بالا و قالب زمان",
+  "calculationMethod": "روش محاسبه اوقات",
+  "asrMethod": "روش محاسبه عصر",
+  "highLatitudeAdjustment": "تنظیمات عرض‌های جغرافیایی بالا",
+  "highLatitudeAdjustmentSubtitle": "در مناطقی با عرض‌های جغرافیایی بسیار شمالی یا جنوبی که محاسبه صبح یا عشاء دشوار است استفاده می‌شود.",
+  "timeFormat": "قالب زمان",
+  "useLocationTimezone": "استفاده از منطقه زمانی مکان",
+  "locationTimezoneSubtitle": "استفاده از منطقه زمانی مکان ذخیره شده به جای منطقه زمانی این دستگاه.",
+  "customMethod": "روش سفارشی",
+  "fajrAngle": "زاویه صبح",
+  "ishaMode": "حالت عشاء",
+  "maghribAngle": "زاویه مغرب",
+  "leaveBlankToUseSunset": "برای استفاده از غروب آفتاب، خالی بگذارید.",
+  "fixedIshaTime": "زمان ثابت عشاء",
+  "latestIshaTime": "آخرین زمان مجاز عشاء",
+  "baseIshaAngle": "base isha angle",
+  "baseIshaInterval": "base isha interval",
+  "ishaAngle": "زاویه عشاء",
+  "ishaInterval": "فاصله عشاء",
+  "leaveBlankToUseBaseIshaAngle": "برای استفاده از زاویه پایه عشاء، خالی بگذارید.",
+  "useIshaAngle": "استفاده از زاویه عشاء",
+  "minutesAfterMaghrib": "{minutes} دقیقه بعد از مغرب",
+  "@minutesAfterMaghrib": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "prohibitedTimes": "زمان‌های ممنوعه",
+  "prohibitedTimesSubtitle": "زمان‌های طلوع، زوال و غروب آفتاب",
+  "sunriseProhibitedTime": "زمان ممنوعه طلوع آفتاب",
+  "sunriseProhibitedTimeMinutes": "{minutes} دقیقه پس از طلوع آفتاب",
+  "@sunriseProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "zawalProhibitedTime": "زمان ممنوعه زوال",
+  "zawalProhibitedTimeMinutes": "{minutes} دقیقه قبل از ظهر",
+  "@zawalProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sunsetProhibitedTime": "زمان ممنوعه غروب آفتاب",
+  "sunsetProhibitedTimeMinutes": "{minutes} دقیقه قبل از مغرب",
+  "@sunsetProhibitedTimeMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerReminders": "یادآورهای نماز",
+  "prayerRemindersSubtitle": "اعلان‌ها قبل از هر نماز",
+  "prayerRemindersEnabled": "یادآورهای نماز",
+  "prayerRemindersEnabledSubtitle": "دریافت اعلان قبل از هر وقت نماز.",
+  "notificationsPermission": "دسترسی به اعلان‌ها",
+  "exactAlarmPermission": "دسترسی به هشدارهای دقیق / هشدارها و یادآورها",
+  "enable": "فعال کردن",
+  "open": "باز کردن",
+  "notificationPermissionOff": "دسترسی به اعلان‌ها غیرفعال است.",
+  "exactAlarmPermissionDisabled": "دسترسی هشدارهای دقیق غیرفعال است. یادآورهای اوقات شرعی ممکن است با تأخیر مواجه شوند.",
+  "openAppSettings": "باز کردن تنظیمات برنامه",
+  "requestPermission": "درخواست دسترسی",
+  "openAlarmPermissionSettings": "باز کردن تنظیمات دسترسی هشدار",
+  "chooseLocationBeforeReminders": "قبل از زمان‌بندی یادآورها باید مکانی را انتخاب کنید.",
+  "notifyAtSavedPrayerTime": "اعلان در زمان دقیق نماز.",
+  "reminderTime": "زمان یادآوری",
+  "atPrayerTime": "در زمان نماز",
+  "minutesBefore": "{minutes} دقیقه قبل",
+  "@minutesBefore": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "schedule1MinuteExactTest": "برنامه‌ریزی تست دقیق ۱ دقیقه‌ای",
+  "schedule1MinuteExactTestSubtitle": "از برنامه‌ریز یادآور نماز استفاده می‌کند.",
+  "offsetsAreAppliedAfterBaseCalculation": "تغییرات دستی پس از محاسبه اولیه اعمال می‌شوند. فقط زمانی از مقادیر مثبت یا منفی استفاده کنید که نیاز به هماهنگی با یک جدول زمان‌بندی معتبر محلی دارید.",
+  "manualOffsets": "تغییرات دستی",
+  "manualOffsetsSubtitle": "تنظیم دقیق اوقات محاسبه شده",
+  "noManualAdjustment": "بدون تنظیم دستی",
+  "positiveOrNegativeMinutes": "{value} دقیقه",
+  "@positiveOrNegativeMinutes": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "prayerTimesExperimental": "محاسبه اوقات شرعی در حال حاضر آزمایشی است و ممکن است با مساجد محلی یا جدول زمان‌بندی رسمی تفاوت داشته باشد. لطفاً قبل از اطمینان به آن‌ها، صحت آن را بررسی کنید.",
+  "bestMethodAfterLocationSaved": "بهترین روش پس از ذخیره مکان",
+  "minutesBeforePrayer": "{minutes} دقیقه قبل از نماز",
+  "@minutesBeforePrayer": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "clear": "پاک کردن",
+  "enablePrayerTracking": "فعال کردن ثبت نمازها",
+  "trackYourDailyPrayers": "ثبت نمازهای روزانه",
+  "trackYourDailyPrayersDescription": "نمازهای خود را به صورت خصوصی روی دستگاه خود ثبت کنید. داده‌های شما هرگز از گوشی شما خارج نمی‌شوند.",
+  "maybeLater": "شاید بعداً",
+  "logEachPrayerPrivately": "نمازهای خود را به صورت خصوصی روی دستگاه خود ثبت کنید. داده‌های شما هرگز از گوشی شما خارج نمی‌شوند.",
+  "enablePrayerTrackingLabel": "فعال کردن ثبت نمازها ←",
+  "somePrayersNotYetAvailable": "برخی نمازها هنوز در دسترس نبودند و ذخیره نشدند.",
+  "prayerLogSaved": "ثبت نماز ذخیره شد",
+  "addNewFolder": "پوشه جدید",
+  "editNote": "ویرایش یادداشت",
+  "moveToFolder": "انتقال به پوشه",
+  "editTags": "ویرایش برچسب‌ها",
+  "savedAyah": "آیه ذخیره شده",
+  "removeSavedAyah": "حذف آیه ذخیره شده؟",
+  "removeSavedAyahBody": "این کار آیه را از کتابخانه ذخیره شده شما حذف می‌کند.",
+  "remove": "حذف",
+  "personalLibrary": "کتابخانه شخصی",
+  "savedCount": "{count} مورد ذخیره شده",
+  "@savedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "all": "همه",
+  "favourites": "علاقه‌مندی‌ها",
+  "notes": "یادداشت‌ها",
+  "folders": "پوشه‌ها",
+  "tags": "برچسب‌ها",
+  "manageFolders": "مدیریت پوشه‌ها",
+  "surahLabel": "{surahName} • آیه {ayah}",
+  "@surahLabel": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    },
+    "ayah": {
+      "type": "int"
+    }
+  },
+  "showTafsir": "نمایش تفسیر",
+  "saveToLibrary": "ذخیره در کتابخانه",
+  "folderTagsAndNote": "پوشه، برچسب‌ها و یادداشت خصوصی",
+  "ayahDetails": "جزئیات آیه",
+  "newFolder": "پوشه جدید",
+  "create": "ایجاد",
+  "translationOption": "ترجمه",
+  "showAyahTranslation": "نمایش ترجمه آیه",
+  "transliterationOption": "آوانویسی",
+  "showAyahTransliteration": "نمایش آوانویسی آیه",
+  "cardViewOption": "نمای کارتی",
+  "readOneAyahPerCard": "خواندن هر آیه در یک کارت",
+  "chooseAnAction": "انتخاب یک اقدام",
+  "playThisAyah": "پخش این آیه",
+  "shareImage": "اشتراک‌گذاری تصویر",
+  "searchCategories": "جستجوی دسته‌بندی‌ها",
+  "clearSearch": "پاک کردن جستجو",
+  "categories": "دسته‌بندی‌ها",
+  "noMatchingCategories": "هیچ دسته‌بندی منطبقی یافت نشد",
+  "trySearchingArabicWord": "جستجو با یک کلمه یا عبارت عربی دیگر را امتحان کنید.",
+  "duasUnavailable": "دعاها در دسترس نیستند",
+  "hisnAlMuslimNotLoaded": "کتاب حصن المسلم از فایل منابع آفلاین بارگذاری نشد.",
+  "retryAction": "تلاش مجدد",
+  "noDuasFound": "هیچ دعایی پیدا نشد",
+  "offlineHisnAlMuslimEmpty": "فایل آفلاین حصن المسلم حاوی هیچ دعایی نبود.",
+  "hisnAlMuslim": "حصن المسلم",
+  "arabicCategoriesDuasOffline": "{categoryCount} دسته‌بندی عربی - {duaCount} دعای آفلاین",
+  "@arabicCategoriesDuasOffline": {
+    "placeholders": {
+      "categoryCount": {
+        "type": "int"
+      },
+      "duaCount": {
+        "type": "int"
+      }
+    }
+  },
+  "favouriteDuas": "دعاهای علاقه‌مندی",
+  "favourite": "علاقه‌مندی",
+  "removeFavourite": "حذف از علاقه‌مندی‌ها",
+  "saveDuasHere": "برای دسترسی سریع، دعاها را در اینجا ذخیره کنید",
+  "savedDuasCount": "{count} {label} ذخیره شده",
+  "@savedDuasCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "tasbihAndDhikr": "تسبیح و ذکر",
+  "calmCounterDailyPresets": "ذکرشمار آرام با تنظیمات پیش‌فرض روزانه",
+  "duaCount": "{count} {label}",
+  "@duaCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    },
+    "label": {
+      "type": "String"
+    }
+  },
+  "favouriteDuasPage": "دعاهای علاقه‌مندی",
+  "favouritesUnavailable": "علاقه‌مندی‌ها در دسترس نیستند",
+  "savedDuasNotLoaded": "در حال حاضر امکان بارگذاری دعاهای ذخیره شده وجود ندارد.",
+  "noFavouriteDuasYet": "هنوز هیچ دعای علاقه‌مندی ثبت نشده است.",
+  "tapHeartToSave": "روی علامت قلب روی هر کارت دعا ضربه بزنید تا در اینجا ذخیره شود.",
+  "categoryUnavailable": "دسته‌بندی در دسترس نیست",
+  "categoryNotLoaded": "امکان بارگذاری این دسته‌بندی حصن المسلم وجود نداشت.",
+  "categoryNoDuas": "هیچ دعایی پیدا نشد",
+  "categoryDoesNotContainDuas": "این دسته‌بندی حاوی هیچ دعایی نیست.",
+  "downloadTimings": "دانلود زمان‌بندی‌ها؟",
+  "reciterNeedsTimings": "این قاری برای نمایش هماهنگ متن آیه با صدا نیاز به دانلود زمان‌بندی‌های صوتی دارد. {size}",
+  "@reciterNeedsTimings": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "timingsUnavailable": "زمان‌بندی برای این قاری در دسترس نیست.",
+  "timingsUnavailableSurah": "زمان‌بندی برای این سوره در دسترس نیست.",
+  "unableToInstallTimings": "نصب زمان‌بندی‌ها امکان‌پذیر نیست.",
+  "installedLabel": "{name} نصب شد.",
+  "@installedLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "installed": "نصب شده",
+  "noTafsirSourcesSelected": "هیچ منبع تفسیری انتخاب نشده است",
+  "chooseTafsirSourcesFirst": "ابتدا یک یا چند منبع تفسیری انتخاب کنید.",
+  "choose": "انتخاب کنید",
+  "go": "برو",
+  "deleteDownloadedMp3": "حذف فایل صوتی دانلود شده",
+  "deleteDownloadedAyah": "حذف آیه دانلود شده؟",
+  "downloadAllAyahs": "دانلود تمام آیه‌ها؟",
+  "downloadAllAyahsConfirm": "این کار باعث دانلود فایل صوتی تمام {count} آیه این سوره ({size}) می‌شود.",
+  "@downloadAllAyahsConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "surahOption": "سوره",
+  "reciterOption": "قاری",
+  "sleepTimerOption": "تایمر خواب",
+  "shuffleOption": "پخش تصادفی",
+  "shuffleSubtitle": "تصادفی پس از پایان سوره",
+  "loopCurrentSurah": "تکرار سوره فعلی",
+  "loopSubtitle": "تکرار سوره فعلی",
+  "downloadTimingsResource": "دانلود زمان‌بندی‌ها",
+  "timingsNeedToBeDownloaded": "این قاری برای نمایش هماهنگ متن آیه با صدا نیاز به دانلود زمان‌بندی‌های صوتی دارد. {size}",
+  "@timingsNeedToBeDownloaded": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "intervalOption": "بازه پخش",
+  "intervalRepeatOption": "تکرار بازه",
+  "repeatEachAyahOption": "تکرار هر آیه",
+  "resetPlaybackOptions": "بازنشانی گزینه‌های پخش",
+  "surahOptionLabel": "سوره",
+  "searchCategoriesDua": "جستجوی دسته‌بندی‌ها",
+  "savedAyahLibrary": "آیه ذخیره شده",
+  "autoAdvancesToNextPreset": "پیشرفت خودکار به {nextPreset}",
+  "@autoAdvancesToNextPreset": {
+    "placeholders": {
+      "nextPreset": {
+        "type": "String"
+      }
+    }
+  },
+  "counts33To33To34": "تعداد کل {target} بار • ۳۳ ← ۳۳ ← ۳۴",
+  "@counts33To33To34": {
+    "placeholders": {
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "assalamuAlaikum": "السلام علیکم",
+  "continueYourJourneyToday": "امروز مسیر قرآنی خود را ادامه دهید",
+  "onStreakDay": "شما {streak} روز متوالی استمرار داشته‌اید — ادامه دهید",
+  "@onStreakDay": {
+    "placeholders": {
+      "streak": {
+        "type": "int"
+      }
+    }
+  },
+  "todaysWorship": "عبادت امروز",
+  "ayahsLabel": "آیه‌ها",
+  "dhikrLabel": "اذکار",
+  "duasLabel": "دعاها",
+  "salahLabel": "نمازها",
+  "dayStreakLabel": "روزهای متوالی",
+  "dailyQuranGoalLabel": "هدف روزانه قرآن",
+  "salah": "نماز",
+  "quranLabel": "قرآن",
+  "tasbihLabel": "تسبیح",
+  "activityHistory": "تاریخچه فعالیت‌ها",
+  "streaksLabel": "استمرار روزها",
+  "weekRange": "هفته",
+  "monthRange": "ماه",
+  "yearRange": "سال",
+  "allTimeRange": "کل دوره",
+  "noPrayerYet": "هنوز نمازی ثبت نشده",
+  "noDayYet": "هنوز روزی ثبت نشده",
+  "noSurahYet": "هنوز سوره‌ای خوانده نشده",
+  "noDhikrYet": "هنوز ذکری گفته نشده",
+  "noCategoryYet": "هنوز دسته‌بندی باز نشده",
+  "dhikrLabelSimple": "ذکر",
+  "readingOptions": "گزینه‌های خواندن",
+  "navigation": "پیمایش",
+  "goToAyah": "رفتن به آیه",
+  "jumpToAyahIn": "رفتن سریع به آیه در {surahName}",
+  "@jumpToAyahIn": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      }
+    }
+  },
+  "displayAndSharing": "نمایش و اشتراک‌گذاری",
+  "showLatinTransliteration": "نمایش آوانویسی لاتین",
+  "chooseTranslationShownOnCards": "انتخاب ترجمه نمایش‌داده شده روی کارت‌ها",
+  "chooseDownloadedExplanations": "انتخاب تفاسیر دانلود شده",
+  "shareCurrentAyah": "اشتراک‌گذاری آیه فعلی",
+  "createImageForThisAyah": "ایجاد تصویر برای این آیه",
+  "tafsirSources": "منابع تفسیر",
+  "setPrayerLocation": "تنظیم مکان اوقات شرعی",
+  "ayahLabel": "آیه {number}",
+  "@ayahLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "versesCount": "{count} آیه",
+  "@versesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "surahVerseCount": "{surahName} • {count} آیه",
+  "@surahVerseCount": {
+    "placeholders": {
+      "surahName": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noJuzResultsFound": "هیچ نتیجه‌ای برای جزء یافت نشد.",
+  "surahCount": "{count, plural, =1{۱ سوره} other{{count} سوره}}",
+  "surahRange": "{startSurah} {startVerse} - {endSurah} {endVerse}",
+  "recentQuranTextSearches": "جستجوهای اخیر متن قرآن",
+  "searchResultCount": "{count, plural, =1{۱ نتیجه} other{{count} نتیجه}}",
+  "searchQuranText": "جستجو در متن قرآن",
+  "searchQuranTextEmptyMessage": "از این زبانه برای جستجوی کلمات عربی یا متن ترجمه استفاده کنید. جستجوی نام سوره‌ها در زبانه سوره‌ها باقی می‌ماند.",
+  "noQuranTextResults": "هیچ نتیجه‌ای در متن قرآن یافت نشد",
+  "noAyahSearchResults": "هیچ آیه‌ای با \"{query}\" مطابقت نداشت. جستجو با یک کلمه یا عبارت عربی دیگر را امتحان کنید.",
+  "optionalNote": "یادداشت اختیاری...",
+  "ayahOfTotal": "آیه {current} از {total}",
+  "noMatchingSavedAyahs": "هیچ آیه ذخیره شده‌ای مطابقت ندارد.",
+  "saveAyahsNotesHere": "آیه‌ها، یادداشت‌ها و تأملات خود را در اینجا ذخیره کنید.",
+  "savedAyahLibraryHint": "با استفاده از گزینه‌های خواندن، می‌توانید آیه‌ها را به سرعت مورد علاقه قرار دهید یا پوشه، برچسب و یادداشت‌های خصوصی اضافه کنید.",
+  "privateNote": "یادداشت خصوصی",
+  "writeReflectionHint": "تأملات خود را بنویسید...",
+  "createFolder": "ایجاد پوشه",
+  "tagsHint": "سپاسگزاری، دعاها",
+  "unsorted": "دسته‌بندی نشده",
+  "removeSavedAyahDetailsBody": "این کار یادداشت، برچسب‌ها، پوشه و وضعیت علاقه‌مندی این آیه را حذف می‌کند.",
+  "folderName": "نام پوشه",
+  "folderNameHint": "تأملات",
+  "libraryFolders": "پوشه‌های کتابخانه",
+  "defaultSavedAyahDestination": "مقصد پیش‌فرض برای آیه‌های ذخیره شده",
+  "savedAyahCollection": "مجموعه آیه‌های ذخیره شده",
+  "renameFolder": "تغییر نام پوشه",
+  "rename": "تغییر نام",
+  "deleteFolderQuestion": "حذف {folder}؟",
+  "deleteFolderBody": "آیه‌های ذخیره شده در این پوشه به بخش دسته‌بندی نشده منتقل خواهند شد.",
+  "quranRecitation": "پخش‌کننده قرآن",
+  "openPlayer": "باز کردن پخش‌کننده",
+  "resumeRecitation": "ادامه تلاوت{progress}",
+  "ayahsToday": "آیه امروز",
+  "lettersCount": "{count} حرف",
+  "dayStreakCount": "{count, plural, =1{۱ روز استمرار} other{{count} روز استمرار}}",
+  "ayahsCount": "{count, plural, =1{۱ آیه} other{{count} آیه}}",
+  "daysCount": "{count, plural, =1{۱ روز} other{{count} روز}}",
+  "todaysPortionComplete": "بخش امروز کامل شد",
+  "catchUpAyahsIncluded": "شامل {count} آیه جبرانی",
+  "ayahsRemainingToday": "{count} آیه باقی‌مانده برای امروز",
+  "todaysPortion": "بخش امروز: {count} آیه",
+  "surahIntroMeta": "{revelation} · {verseCount} آیه · جزء {juz}",
+  "makkah": "مکی",
+  "madinah": "مدنی",
+  "currentAyahOnly": "فقط آیه فعلی",
+  "surahAyahRange": "{surahName} {startAyah} ← {endAyah}",
+  "intervalEndBeforeStartError": "یک آیه پایانی انتخاب کنید که برابر یا بعد از آیه شروع باشد.",
+  "intervalRange": "بازه پخش",
+  "intervalRangeHint": "یک آیه شروع و پایان انتخاب کنید. بازه‌ها می‌توانند از سوره‌ها عبور کنند.",
+  "end": "پایان",
+  "apply": "اعمال",
+  "customizeRecitationBehavior": "سفارشی‌سازی رفتار تلاوت",
+  "recitation": "تلاوت",
+  "timing": "زمان‌بندی",
+  "ayahDelay": "تأخیر آیه",
+  "audioDownloads": "دانلودهای صوتی",
+  "surahAudioDownloaded": "فایل صوتی سوره دانلود شد",
+  "allAyahsAvailableOffline": "همه آیه‌ها به صورت آفلاین در دسترس هستند",
+  "downloadEveryAyahInSurah": "دانلود تمام آیه‌های این سوره",
+  "downloadingCurrentAyah": "در حال دانلود آیه فعلی",
+  "deleteCurrentAyahAudio": "حذف فایل صوتی آیه فعلی",
+  "downloadCurrentAyah": "دانلود آیه فعلی",
+  "intervalPickerTitle": "{position} {kind}",
+  "noDelay": "بدون تأخیر",
+  "secondsCount": "{count, plural, =1{۱ ثانیه} other{{count} ثانیه}}",
+  "tafsirNeedsDownload": "این تفسیر ابتدا باید دانلود شود. {size}",
+  "downloading": "در حال دانلود",
+  "noTafsirTextForAyah": "هیچ متن تفسیری برای این آیه در دسترس نیست.",
+  "noTafsirResourcesAvailable": "هیچ منبع تفسیری در دسترس نیست",
+  "enterAyahRange": "یک شماره آیه از ۱ تا {total} وارد کنید",
+  "ayahNumberHint": "شماره آیه",
+  "downloadingSurahAyahs": "در حال دانلود آیه‌های سوره {surahName}",
+  "downloadedSurahAyahs": "آیه‌های سوره {surahName} دانلود شد",
+  "downloadedAllAyahsFor": "دانلود تمام آیه‌های سوره {surahName} با موفقیت انجام شد",
+  "failedDownloadSurahAyahs": "دانلود آیه‌های سوره {surahName} ناموفق بود.",
+  "downloadAllAyahsForSurah": "دانلود فایل صوتی تمام آیه‌های سوره {surahName} برای گوش دادن آفلاین؟",
+  "removedFromFavourites": "از علاقه‌مندی‌ها حذف شد.",
+  "savedAyahsOrganizedHint": "آیه‌های ذخیره شده را می‌توان در پوشه‌ها و برچسب‌ها سازماندهی کرد.",
+  "playerOptions": "گزینه‌های پخش‌کننده",
+  "chooseSurah": "انتخاب سوره",
+  "offline": "آفلاین",
+  "downloadMp3": "دانلود MP3",
+  "availableOffline": "در دسترس آفلاین",
+  "notSaved": "ذخیره نشده",
+  "playback": "پخش",
+  "sleepTimerOptions": "گزینه‌های تایمر خواب",
+  "endOfSurah": "پایان سوره",
+  "enabled": "فعال",
+  "disabled": "غیرفعال",
+  "off": "خاموش",
+  "sleepingSoon": "به‌زودی متوقف می‌شود",
+  "sleepingInMinutes": "توقف پخش تا {minutes, plural, =1{۱ دقیقه} other{{minutes} دقیقه}} دیگر",
+  "pendingLabel": "در انتظار {label}",
+  "loadingSyncedAyah": "در حال بارگذاری آیه هماهنگ‌شده",
+  "syncedAyahUnavailableReciter": "نمایش آیه هماهنگ‌شده برای این قاری در دسترس نیست",
+  "syncedAyahUnavailableSurah": "نمایش آیه هماهنگ‌شده برای این سوره در دسترس نیست",
+  "downloadTimingsToSyncAyahs": "برای هماهنگ‌سازی متن با صدای این قاری، زمان‌بندی‌ها را دانلود کنید",
+  "unableToPlaySurahAudio": "پخش صدای سوره امکان‌پذیر نیست.",
+  "downloadingName": "در حال دانلود {name}",
+  "downloadedName": "{name} دانلود شد",
+  "failedDownloadName": "دانلود {name} ناموفق بود",
+  "failedDownloadSurahAudio": "دانلود صدای سوره ناموفق بود.",
+  "deletedMp3Name": "فایل MP3 سوره {name} حذف شد",
+  "failedDeleteDownloadedSurah": "حذف سوره دانلود شده ناموفق بود.",
+  "deleteDownloadedMp3Question": "حذف فایل صوتی دانلود شده؟",
+  "removeSurahFromOffline": "این کار {name} را از حافظه آفلاین حذف می‌کند.",
+  "offlineReady": "آماده برای آفلاین",
+  "streaming": "پخش آنلاین",
+  "showAyahText": "نمایش متن آیه",
+  "hideAyahText": "پنهان کردن متن آیه",
+  "themeSchemeEmeraldGreen": "سبز زمردی",
+  "themeSchemeEmeraldGreenSubtitle": "پالت اصلی و آرام‌بخش ای‌قرآن.",
+  "themeSchemeSapphireBlue": "آبی یاقوتی",
+  "themeSchemeSapphireBlueSubtitle": "سرمه‌ای تیره با جزئیات یاقوتی و فیروزه‌ای ملایم.",
+  "themeSchemeRoyalPurple": "بنفش سلطنتی",
+  "themeSchemeRoyalPurpleSubtitle": "بنفش تیره با جزئیات بنفش سلطنتی درخشان.",
+  "themeSchemeSepia": "سپیا",
+  "themeSchemeSepiaSubtitle": "کاغذ پوستی گرم، قهوه‌ای و رنگ‌های طلایی ملایم.",
+  "themeSchemeBlack": "مشکی",
+  "themeSchemeBlackSubtitle": "مشکی آمولد با جزئیات فیروزه‌ای ملایم.",
+  "themeSchemeRubyRed": "قرمز یاقوتی",
+  "themeSchemeRubyRedSubtitle": "سطوح خرمایی تیره با جزئیات قرمز یاقوتی زیبا.",
+  "enterLatitudeLongitude": "عرض و طول جغرافیایی را وارد کنید.",
+  "chooseLocationBeforeCalculating": "پیش از محاسبه، یک مکان انتخاب کنید",
+  "usingDeviceTimezone": "استفاده از منطقه زمانی دستگاه.",
+  "usingDeviceTimezoneUntilLocationAvailable": "استفاده از منطقه زمانی دستگاه تا زمانی که منطقه زمانی مکان در دسترس قرار گیرد.",
+  "displayPrayerTimesUsingTimezone": "نمایش اوقات شرعی با استفاده از منطقه زمانی {timezone}.",
+  "remindersOff": "یادآورها خاموش",
+  "remindersOnWaitingLocation": "روشن، در انتظار مکان",
+  "allPrayerRemindersOn": "همه یادآورهای نماز روشن",
+  "remindersEnabledCount": "{count} یادآور فعال شد",
+  "checkingNotificationPermission": "در حال بررسی دسترسی اعلان...",
+  "permissionStatusNeedsRetry": "بررسی وضعیت دسترسی نیاز به تلاش مجدد دارد.",
+  "localNotificationsScheduled": "اعلان‌های محلی روی این دستگاه برنامه‌ریزی شده‌اند.",
+  "notificationPermissionGranted": "دسترسی به اعلان داده شد.",
+  "notificationPermissionOffEnable": "دسترسی به اعلان‌ها غیرفعال است. برای دریافت یادآورهای نماز آن را فعال کنید.",
+  "prayerRemindersUnsupported": "یادآورهای نماز در این سیستم‌عامل پشتیبانی نمی‌شوند.",
+  "checkingExactAlarmPermission": "در حال بررسی دسترسی به هشدار دقیق...",
+  "exactAlarmStatusNeedsRetry": "بررسی وضعیت هشدار دقیق نیاز به تلاش مجدد دارد.",
+  "alarmPermissionGranted": "دسترسی به هشدارها و یادآورها داده شد.",
+  "exactAlarmPermissionNotRequired": "در این سیستم‌عامل نیازی به دسترسی هشدار دقیق نیست.",
+  "hisnCategoryCouldNotLoad": "امکان بارگذاری این دسته‌بندی حصن المسلم وجود نداشت.",
+  "categoryContainsNoDuas": "این دسته‌بندی حاوی هیچ دعایی نیست.",
+  "couldNotUpdateDua": "بروزرسانی وضعیت علاقه‌مندی دعا ناموفق بود.",
+  "moreActions": "اقدامات بیشتر",
+  "duaCopied": "دعا کپی شد.",
+  "hisnAlMuslimDua": "دعای حصن المسلم",
+  "copyText": "کپی متن",
+  "shareText": "اشتراک‌گذاری متن",
+  "prayerStats": "آمار نماز",
+  "quranStats": "آمار قرآن",
+  "tasbihStats": "آمار تسبیح",
+  "duaStats": "آمار دعا",
+  "thisWeek": "این هفته",
+  "thisMonth": "این ماه",
+  "thisYear": "امسال",
+  "allTime": "کل دوره",
+  "onTime": "اول وقت",
+  "late": "با تأخیر",
+  "missed": "قضا شده",
+  "log": "ثبت روزانه",
+  "fajr": "صبح",
+  "dhuhr": "ظهر",
+  "asr": "عصر",
+  "maghrib": "مغرب",
+  "isha": "عشاء",
+  "notYet": "هنوز نه",
+  "onTimeThisWeek": "اول وقت در این هفته",
+  "lateThisWeek": "با تأخیر در این هفته",
+  "bestPrayer": "بهترین نماز",
+  "currentFajrStreak": "استمرار فعلی نماز صبح",
+  "startLoggingFajr": "برای پیگیری پیشرفت خود، ثبت نماز صبح را شروع کنید.",
+  "fajrVeryConsistent": "ماشاءالله، در خواندن نماز صبح بسیار مستمر هستید.",
+  "fajrGettingStronger": "تلاش خوبی است، استمرار در نماز صبح در حال بهبود است.",
+  "fajrEveryAttemptCounts": "نماز صبح یک چالش است، هر تلاشی ارزشمند است.",
+  "fajrConsistency": "استمرار در نماز صبح",
+  "todaysPrayers": "نمازهای امروز",
+  "saving": "در حال ذخیره",
+  "availableAfter": "در دسترس پس از {time}",
+  "quranActivity": "فعالیت قرآنی",
+  "ayahsRead": "آیه‌های خوانده شده",
+  "lettersRead": "حروف خوانده شده",
+  "activeDays": "روزهای فعال",
+  "mostActiveDay": "فعال‌ترین روز",
+  "ayahsReadCount": "{count} آیه خوانده شده",
+  "recitationsCount": "{count} تلاوت",
+  "surahProgress": "پیشرفت سوره‌ها",
+  "surahsComplete": "{completed} از {total} سوره کامل شد",
+  "showLess": "نمایش کمتر",
+  "showAllSurahs": "نمایش همه {count} سوره",
+  "quranCompletions": "ختم‌های قرآن",
+  "fullCompletions": "ختم‌های کامل",
+  "completeAllSurahsForFirstKhatm": "برای ثبت اولین ختم خود، تمام {count} سوره را کامل کنید",
+  "khatmDateLabel": "ختم {number} · {date}",
+  "startFirstTasbihSession": "اولین جلسه تسبیح خود را شروع کنید",
+  "totalDhikr": "کل ذکرها",
+  "dailyAverage": "میانگین روزانه",
+  "openDuaToBeginHistory": "یک دعا را باز کنید تا تاریخچه دعاهای شما شروع شود",
+  "duasViewed": "دعاهای مشاهده شده",
+  "viewsCount": "{count} بازدید",
+  "previousMonth": "ماه قبل",
+  "nextMonth": "ماه بعد",
+  "activeDaysCount": "{count, plural, =1{۱ روز فعال} other{{count} روز فعال}}",
+  "monthlyActivitySummary": "{activeDays} · بهترین روز: {bestDay} · در مجموع {totalActions} فعالیت",
+  "dhikrCount": "{count} ذکر",
+  "duasCount": "{count} دعا",
+  "quranStreak": "استمرار قرآن",
+  "tasbihStreak": "استمرار تسبیح",
+  "overallStreak": "استمرار کلی",
+  "dayWorshipStreak": "{count} روز عبادت متوالی",
+  "weekShortLabel": "هفته {week}",
+  "youReadMostOn": "بیشترین میزان خواندن شما در روز {day} بوده است",
+  "startReadingToUnlockInsights": "برای باز کردن تحلیل‌ها و آمارها، خواندن را شروع کنید",
+  "readingUpFromLastWeek": "میزان خواندن {percent}% نسبت به هفته گذشته افزایش یافته است",
+  "readingDownFromLastWeek": "میزان خواندن {percent}% نسبت به هفته گذشته کاهش یافته است",
+  "youVisitSurahMostOften": "شما بیشتر از همه به سوره {surahName} مراجعه می‌کنید",
+  "monday": "دوشنبه",
+  "tuesday": "سه‌شنبه",
+  "wednesday": "چهارشنبه",
+  "thursday": "پنج‌شنبه",
+  "friday": "جمعه",
+  "saturday": "شنبه",
+  "sunday": "یکشنبه",
+  "mondayShort": "دوشنبه",
+  "tuesdayShort": "سه‌شنبه",
+  "wednesdayShort": "چهارشنبه",
+  "thursdayShort": "پنج‌شنبه",
+  "fridayShort": "جمعه",
+  "saturdayShort": "شنبه",
+  "sundayShort": "یکشنبه",
+  "mondayInitial": "د",
+  "tuesdayInitial": "س",
+  "wednesdayInitial": "چ",
+  "thursdayInitial": "پ",
+  "fridayInitial": "ج",
+  "saturdayInitial": "ش",
+  "sundayInitial": "ی",
+  "mondays": "دوشنبه‌ها",
+  "tuesdays": "سه‌شنبه‌ها",
+  "wednesdays": "چهارشنبه‌ها",
+  "thursdays": "پنج‌شنبه‌ها",
+  "fridays": "جمعه‌ها",
+  "saturdays": "شنبه‌ها",
+  "sundays": "یکشنبه‌ها",
+  "january": "ژانویه",
+  "february": "فوریه",
+  "march": "مارس",
+  "april": "آوریل",
+  "may": "مه",
+  "june": "ژوئن",
+  "july": "ژوئیه",
+  "august": "اوت",
+  "september": "سپتامبر",
+  "october": "اکتبر",
+  "november": "نوامبر",
+  "december": "دسامبر",
+  "januaryShort": "ژانویه",
+  "februaryShort": "فوریه",
+  "marchShort": "مارس",
+  "aprilShort": "آوریل",
+  "mayShort": "مه",
+  "juneShort": "ژوئن",
+  "julyShort": "ژوئیه",
+  "augustShort": "اوت",
+  "septemberShort": "سپتامبر",
+  "octoberShort": "اکتبر",
+  "novemberShort": "نوامبر",
+  "decemberShort": "دسامبر",
+  "dailyQuoteSmallDeeds": "کارهای کوچک، اگر صمیمانه انجام شوند، به زیبایی رشد می‌کنند.",
+  "dailyQuoteBeginAgain": "دوباره با ذکر و سپاسگزاری شروع کنید.",
+  "dailyQuoteSteadyHeart": "یک قلب استوار هر روز به سوی الله بازمی‌گردد.",
+  "dailyQuoteGentleConsistent": "بگذارید عبادت امروز ملایم و مستمر باشد.",
+  "dailyQuoteEveryAyah": "هر آیه خوانده شده، نوری برای این مسیر است.",
+  "dailyWorshipComplete": "ماشاءالله! عبادت امروز کامل شد",
+  "greatProgressKeepGoing": "پیشرفت عالی است، ادامه دهید",
+  "everyDeedCountsKeepGoing": "هر کاری ارزشمند است، ادامه دهید",
+  "startYourWorshipForToday": "عبادت امروز خود را آغاز کنید",
+  "totalRead": "کل خوانده شده",
+  "estimatedLettersRead": "حروف خوانده شده تخمینی",
+  "rewardIsWithAllah": "پاداش نزد الله است.",
+  "totalZakahWealth": "برای محاسبه زکات، کل دارایی باید حداقل ۲۰۰ باشد.",
+  "hifzTitle": "حفظ",
+  "hifzJourneyTitle": "مسیر حفظ شما",
+  "hifzNewTodayLabel": "{count} از {max} مورد جدید امروز",
+  "@hifzNewTodayLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzMemorized": "حفظ شده",
+  "hifzDueToday": "موعد امروز",
+  "hifzInReview": "در حال مرور",
+  "hifzAyahsMemorized": "{count} از ۶,۲۳۶ آیه حفظ شده",
+  "@hifzAyahsMemorized": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueForReview": "موعد مرور",
+  "hifzAllCaughtUp": "همه موارد مرور شده‌اند — موردی برای مرور نیست",
+  "hifzAyahsReady": "{count} آیه آماده است",
+  "@hifzAyahsReady": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzStartYourSession": "شروع جلسه مرور شما",
+  "hifzStart": "شروع",
+  "hifzDueNow": "موعد اکنون",
+  "hifzOverdueDays": "به تعویق افتاده {days} روز",
+  "@hifzOverdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzShowAll": "نمایش همه {count} مورد ←",
+  "@hifzShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzAddToMemorize": "افزودن به حفظ",
+  "hifzQuickAdd": "افزودن سریع",
+  "hifzQuickAlFatiha": "حمد",
+  "hifzQuickAlKahf": "کهف",
+  "hifzQuickJuzAmma": "جزء عمّ",
+  "hifzQuickLast10": "۱۰ سوره آخر",
+  "hifzOrChooseSurah": "یا انتخاب سوره",
+  "hifzFromAyah": "از آیه",
+  "hifzToAyah": "تا آیه",
+  "hifzAddAyahsButton": "افزودن {count} آیه به حفظ",
+  "@hifzAddAyahsButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzAyahsAdded": "{count} آیه اضافه شد",
+  "@hifzAyahsAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzSurahProgress": "پیشرفت سوره‌ها",
+  "hifzShowAllSurahs": "نمایش همه ۱۱۴ سوره",
+  "hifzShowLess": "نمایش کمتر",
+  "hifzSurahsMastered": "{count} از ۱۱۴ سوره کاملاً حفظ شده",
+  "@hifzSurahsMastered": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzSettingsTitle": "تنظیمات حفظ",
+  "hifzTrackNew": "جدید",
+  "hifzTrackRevision": "مرور",
+  "hifzTrackMaintenance": "تثبیت",
+  "hifzSessionProgress": "{current} / {total}",
+  "@hifzSessionProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzExitSession": "خروج از جلسه؟",
+  "hifzExitSessionBody": "شما {count} از {total} آیه را مرور کرده‌اید.\nپیشرفت شما تا این لحظه ذخیره خواهد شد.",
+  "@hifzExitSessionBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzExitCancel": "لغو",
+  "hifzExitConfirm": "خروج",
+  "hifzImReady": "آماده‌ام",
+  "hifzRevealAll": "نمایش همه",
+  "hifzToggleTransliteration": "آوانویسی",
+  "hifzToggleTranslation": "ترجمه",
+  "hifzToggleListen": "شنیدن",
+  "hifzRatingAgain": "تکرار مجدد",
+  "hifzRatingHard": "سخت",
+  "hifzRatingGood": "خوب",
+  "hifzRatingEasy": "آسان",
+  "hifzSessionComplete": "جلسه کامل شد",
+  "hifzCompletedUnderMinute": "کامل شده در کمتر از یک دقیقه",
+  "hifzCompletedInMinutes": "کامل شده در {minutes} دقیقه",
+  "@hifzCompletedInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzSummaryTitle": "خلاصه",
+  "hifzTotalReviewed": "کل مرور شده",
+  "hifzTotalReviewedValue": "{count} آیه",
+  "@hifzTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzRetentionRate": "میزان حفظ",
+  "hifzNextReviewDue": "موعد مرور بعدی",
+  "hifzNextReviewToday": "امروز",
+  "hifzNextReviewTomorrow": "فردا",
+  "hifzNextReviewInDays": "در {days} روز دیگر",
+  "@hifzNextReviewInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzAllCaughtUpDue": "همه موارد مرور شده‌اند",
+  "hifzHadithQuote": "\"بهترین شما کسی است که قرآن را یاد بگیرد و آن را یاد دهد.\" — البخاری",
+  "hifzBackToHifz": "بازگشت به بخش حفظ",
+  "hifzKeepReviewing": "ادامه مرور ({count} مورد باقی‌مانده)",
+  "@hifzKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueReminderTitle": "{count} آیه در موعد مرور حفظ",
+  "@hifzDueReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzSettingsComingSoon": "تنظیمات حفظ — به‌زودی",
+  "hifzStatsSection": "حفظ",
+  "hifzStatsTotalMemorized": "کل حفظ شده",
+  "hifzStatsDailyStreak": "استمرار روزانه",
+  "hifzStatsRetentionRate": "میزان حفظ",
+  "hifzStatsTotalReviews": "کل مرورها",
+  "hifzStatsNextDue": "مرور بعدی",
+  "hifzStatsNextDueValue": "{surah} · آیه {ayah}",
+  "@hifzStatsNextDueValue": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzStatsNextDueDate": "موعد {date}",
+  "@hifzStatsNextDueDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzStatsNoEntries": "برای مشاهده آمار حفظ، حفظ کردن را شروع کنید",
+  "hifzStatsSurahProgress": "پیشرفت سوره‌ها",
+  "hifzStatsRetentionSuffix": "{value}%",
+  "@hifzStatsRetentionSuffix": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzStatsPill": "{count} آیه حفظ شده",
+  "@hifzStatsPill": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzReminderDueCount": "{count} آیه در موعد مرور حفظ",
+  "@hifzReminderDueCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzReminderReview": "مرور",
+  "hifzSettingsNewPerDay": "آیه‌های جدید در روز",
+  "hifzSettingsReviewsPerDay": "تعداد مرورها در روز",
+  "hifzSettingsShowTranslit": "نمایش پیش‌فرض آوانویسی",
+  "hifzSettingsShowTranslation": "نمایش پیش‌فرض ترجمه",
+  "hifzSettingsAutoPlayAudio": "پخش خودکار صدا در مرحله یادگیری",
+  "hifzSettingsBlankingLevel": "سطح پنهان‌سازی متن",
+  "hifzSettingsBlankingAuto": "خودکار",
+  "hifzSettingsBlankingEasy": "آسان",
+  "hifzSettingsBlankingMedium": "متوسط",
+  "hifzSettingsBlankingHard": "سخت",
+  "hifzSettingsDone": "انجام شد",
+  "hifzActiveUnits": "واحدهای فعال",
+  "hifzInProgress": "در حال انجام",
+  "hifzActiveUnitsSection": "واحدهای فعال",
+  "hifzNoActiveUnits": "هیچ واحد فعالی وجود ندارد — یکی از گزینه‌های زیر را اضافه کنید",
+  "hifzUnitTypeSurah": "سوره",
+  "hifzUnitTypeJuz": "جزء",
+  "hifzUnitNextAyah": "بعدی: {surah} · آیه {ayah}",
+  "@hifzUnitNextAyah": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzUnitProgress": "{introduced}/{total}",
+  "@hifzUnitProgress": {
+    "placeholders": {
+      "introduced": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzUnitReview": "مرور",
+  "hifzUnitUpToDate": "بروز",
+  "hifzDueNew": "{count} جدید",
+  "@hifzDueNew": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueRevision": "{count} مرور",
+  "@hifzDueRevision": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueMaintenance": "{count} تثبیت",
+  "@hifzDueMaintenance": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzDueAllCaughtUp": "همه موارد مرور شده‌اند",
+  "hifzAddUnitSection": "افزودن واحد",
+  "hifzSearchSurahs": "جستجوی سوره‌ها...",
+  "hifzSearchJuz": "جستجوی جزءها...",
+  "hifzSelectAbove": "یک واحد را از بالا انتخاب کنید",
+  "hifzStartMemorizingSurah": "شروع حفظ {name}",
+  "@hifzStartMemorizingSurah": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzStartMemorizingJuz": "شروع حفظ جزء {number}",
+  "@hifzStartMemorizingJuz": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzUnitAlreadyActive": "در حال انجام است",
+  "hifzUnitAyahCount": "{count} آیه",
+  "@hifzUnitAyahCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzSurahsMasteredCount": "{count} از ۱۱۴ سوره کاملاً حفظ شده",
+  "@hifzSurahsMasteredCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzTrackNewLabel": "جدید",
+  "hifzTrackRevisionLabel": "مرور",
+  "hifzTrackMaintenanceLabel": "تثبیت",
+  "hifzListenPhaseButton": "آماده‌ام",
+  "hifzRevealAllButton": "نمایش همه",
+  "hifzAudioDisabledTooltip": "صدا در حین پاسخ‌گویی غیرفعال است",
+  "hifzPrevAyahCueLabel": "...آیه قبلی...",
+  "hifzRatingTryAgain": "تلاش مجدد",
+  "hifzRatingGotIt": "متوجه شدم",
+  "hifzEmptySessionTitle": "برای امروز تمام شد!",
+  "hifzEmptySessionBody": "امروز هیچ آیه جدید یا موعد مروری برای {unit} وجود ندارد.",
+  "@hifzEmptySessionBody": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzEmptySessionButton": "بازگشت به بخش حفظ",
+  "hifzExitSessionTitle": "خروج از جلسه؟",
+  "hifzCompleteTitle": "جلسه کامل شد",
+  "hifzCompleteSubtitleUnderMinute": "کامل شده در کمتر از یک دقیقه",
+  "hifzCompleteSubtitleMinutes": "کامل شده در {minutes} دقیقه",
+  "@hifzCompleteSubtitleMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzCompleteSummaryTitle": "خلاصه",
+  "hifzCompleteTotalReviewed": "کل مرور شده",
+  "hifzCompleteTotalReviewedValue": "{count} آیه",
+  "@hifzCompleteTotalReviewedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzCompleteRetentionRate": "میزان حفظ",
+  "hifzCompleteNextDue": "موعد مرور بعدی",
+  "hifzCompleteNextDueToday": "امروز",
+  "hifzCompleteNextDueTomorrow": "فردا",
+  "hifzCompleteNextDueInDays": "در {days} روز دیگر",
+  "@hifzCompleteNextDueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzCompleteAllCaughtUp": "همه موارد مرور شده‌اند",
+  "hifzCompleteGraduated": "انتقال‌یافته به مرور",
+  "hifzCompleteGraduatedValue": "{count} آیه",
+  "@hifzCompleteGraduatedValue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzCompleteHadith": "\"بهترین شما کسی است که قرآن را یاد بگیرد و آن را یاد دهد.\" — البخاری",
+  "hifzCompleteBackButton": "بازگشت به بخش حفظ",
+  "hifzCompleteKeepReviewing": "ادامه مرور ({count} مورد باقی‌مانده)",
+  "@hifzCompleteKeepReviewing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzUnitCompleteTitle": "شما تمام آیه‌های {unit} را شروع کرده‌اید!",
+  "@hifzUnitCompleteTitle": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "hifzUnitCompleteSubtitle": "برای تسلط کامل، به مرور ادامه دهید.",
+  "hifzSettingsSheetTitle": "تنظیمات حفظ",
+  "hifzMorePageTitle": "حفظ",
+  "hifzMorePageSubtitle": "حفظ قرآن با مرور هوشمند",
+  "hifzReminderTitle": "{count} آیه در موعد مرور حفظ",
+  "@hifzReminderTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hifzReminderButton": "مرور",
+  "hifz": "حفظ",
+  "hifzSubtitle": "حفظ قرآن با مرور هوشمند",
+  "licenses": "مجوزها",
+  "buildQuranRoutine": "برنامه‌ریزی برای خواندن قرآن",
+  "chooseGentlePlan": "یک برنامه ملایم انتخاب کنید تا امروز بخش مشخصی را تلاوت کنید.",
+  "routineCompletedAyahs": "{completed} از {total} آیه کامل شد",
+  "plansReadyNotice": "برنامه‌های ۷ روزه، ۳۰ روزه و ۶۰ روزه آماده هستند.",
+  "finishTargetDate": "تاریخ پایان هدف: {date}",
+  "allLabel": "همه",
+  "doneLabel": "انجام شد",
+  "ongoingLabel": "در حال انجام",
+  "skippedLabel": "رد شده",
+  "noActiveRoutine": "بدون برنامه فعال",
+  "startBalancedPlanDescription": "با یک برنامه متوازن ۳۰ روزه شروع کنید، یا یک برنامه سریع‌تر یا ملایم‌تر را در زیر انتخاب کنید.",
+  "start30DayPlan": "شروع برنامه ۳۰ روزه",
+  "todayReading": "خواندن امروز",
+  "todayCompleted": "امروز کامل شد",
+  "todaysPortionAyahs": "بخش امروز: {count} آیه",
+  "includesCatchUpAyahs": "شامل {count} آیه جبرانی",
+  "ayahRangeConnector": "از {start} تا {end}",
+  "dailyPercentCompleteRemaining": "{percent}% کامل شد • {remaining} آیه باقی‌مانده برای امروز",
+  "routineHistory": "تاریخچه برنامه‌ها",
+  "currentRoutine": "برنامه فعلی",
+  "noCurrentRoutine": "هیچ برنامه فعالی وجود ندارد.",
+  "pastRoutines": "برنامه‌های گذشته",
+  "pastRoutine": "برنامه گذشته",
+  "deleteRoutineTooltip": "حذف برنامه",
+  "deleteCurrentRoutineQuestion": "برنامه فعلی حذف شود؟",
+  "deleteRoutineQuestion": "برنامه حذف شود؟",
+  "deleteRoutineWarning": "این کار برنامه \"{title}\" را از تاریخچه برنامه‌های شما حذف می‌کند.",
+  "choosePlan": "انتخاب برنامه",
+  "preset7DaysTitle": "ختم قرآن در ۷ روز",
+  "preset7DaysSubtitle": "یک برنامه هفتگی متمرکز",
+  "preset30DaysTitle": "ختم قرآن در ۳۰ روز",
+  "preset30DaysSubtitle": "بخش‌های روزانه متوازن",
+  "preset60DaysTitle": "ختم قرآن در ۶۰ روز",
+  "preset60DaysSubtitle": "خواندن روزانه ملایم و طولانی‌مدت",
+  "routineStartedMessage": "برنامه {title} شروع شد",
+  "prayerTimesDisclaimer": "اوقات شرعی به صورت محلی محاسبه می‌شوند. در صورت نیاز با مسجد محل خود بررسی کنید.",
+  "locationSaved": "مکان ذخیره شد.",
+  "notificationPermissionOffWarning": "دسترسی به اعلان غیرفعال است. یادآورها غیرفعال شدند.",
+  "exactAlarmPermissionOffWarning": "دسترسی به هشدار دقیق غیرفعال است. یادآورهای اوقات شرعی ممکن است با تأخیر مواجه شوند.",
+  "locationDetails": "جزئیات مکان",
+  "updateCurrentLocation": "بروزرسانی مکان فعلی",
+  "useThisDeviceLocation": "استفاده از مکان این دستگاه",
+  "moveMapPinDescription": "حرکت دادن پین نقشه به یک مکان",
+  "saveChanges": "ذخیره تغییرات",
+  "advancedCoordinates": "مختصات پیشرفته",
+  "advancedCoordinatesEditSubtitle": "فقط در صورت نیاز به مختصات بسیار دقیق ویرایش کنید",
+  "locationLabel": "برچسب مکان",
+  "locationLabelHint": "خانه، محل کار یا نام شهر",
+  "latitude": "عرض جغرافیایی",
+  "latitudeHelperText": "مقداری بین -۹۰ و ۹۰ وارد کنید.",
+  "longitude": "طول جغرافیایی",
+  "longitudeHelperText": "مقداری بین -۱۸۰ و ۱۸۰ وارد کنید.",
+  "savedLocationFallback": "مکان ذخیره شده",
+  "coordinatesPrivacyDescription": "به صورت محلی برای محاسبه اوقات شرعی استفاده می‌شود. مختصات روی این دستگاه ذخیره می‌شوند.{timezoneText}",
+  "countdownNow": "اکنون",
+  "countdownVerySoon": "به‌زودی",
+  "countdownInHours": "در {hours} ساعت دیگر",
+  "countdownInHoursMinutes": "در {hours} ساعت و {minutes} دقیقه دیگر",
+  "countdownInMinutes": "در {minutes} دقیقه دیگر",
+  "@routineCompletedAyahs": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@finishTargetDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@todaysPortionAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@includesCatchUpAyahs": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@ayahRangeConnector": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "@dailyPercentCompleteRemaining": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+  "@deleteRoutineWarning": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@routineStartedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "@coordinatesPrivacyDescription": {
+    "placeholders": {
+      "timezoneText": {
+        "type": "String"
+      }
+    }
+  },
+  "@countdownInHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInHoursMinutes": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@countdownInMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "resume": "ادامه",
+  "routineComplete": "برنامه کامل شد",
+  "routineDeleted": "برنامه حذف شد",
+  "chooseLocationManually": "انتخاب دستی مکان",
+  "saveLocation": "ذخیره مکان",
+  "coordinatesForPrayerTimes": "مختصات برای اوقات شرعی",
+  "manualLocationDescription": "عرض و طول جغرافیایی را برای شهر، منطقه یا آدرسی که می‌خواهید استفاده کنید وارد کنید.",
+  "manualLocationPrivacyNotice": "روی این دستگاه ذخیره می‌شود و فقط برای محاسبه اوقات شرعی محلی استفاده می‌شود.",
+  "manualLocation": "مکان دستی",
+  "savedLocation": "مکان ذخیره شده",
+  "useThisLocation": "استفاده از این مکان",
+  "selectedLocation": "مکان انتخاب شده",
+  "openStreetMapContributors": "مشارکت‌کنندگان OpenStreetMap",
+  "validationEnterField": "{field} را وارد کنید.",
+  "validationShouldBeNumber": "{field} باید یک عدد باشد.",
+  "validationMustBeBetween": "{field} باید بین {min} و {max} باشد.",
+  "@validationEnterField": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationShouldBeNumber": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "@validationMustBeBetween": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "completedTodayQuota": "امروز {completed} از {total} آیه",
+  "completedAyahsRatio": "{completed}/{total} آیه",
+  "the99BeautifulNamesOfAllah": "نام‌های زیبای الله (اسماء الحسنی)",
+  "allNamesCount": "همه نام‌ها · {count}",
+  "reciteThisNameInDua": "این نام را در دعای خود تلاوت کنید",
+  "searchNames": "جستجوی نام‌ها",
+  "searchNamesHint": "جستجوی نام‌ها...",
+  "namesUnavailable": "نام‌ها در دسترس نیستند",
+  "unableLoadAsmaUlHusna": "در حال حاضر بارگذاری اسماء الحسنی امکان‌پذیر نیست.",
+  "noNamesFound": "هیچ نامی یافت نشد",
+  "tryAnotherAsmaSearch": "جستجو با نام عربی، آوانویسی یا معنای دیگری را امتحان کنید.",
+  "@completedTodayQuota": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@completedAyahsRatio": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "duaGroupDailyAthkar": "اذکار روزانه",
+  "duaGroupPrayer": "نماز",
+  "duaGroupHajjUmrah": "حج و عمره",
+  "duaGroupTravel": "سفر",
+  "duaGroupProtectionHardship": "حفاظت و سختی‌ها",
+  "duaGroupHealthIllness": "سلامت و بیماری",
+  "duaGroupDeathFunerals": "مرگ و تشییع جنازه",
+  "duaGroupRepentance": "توبه",
+  "duaGroupNatureWeather": "طبیعت و آب‌وهوا",
+  "duaGroupMarriageFamily": "ازدواج و خانواده",
+  "duaGroupRemembrancePraise": "ذکر و ستایش",
+  "duaGroupSocialEtiquette": "آداب معاشرت",
+  "duaGroupMisc": "عمومی",
+  "@allNamesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "highLatitudeMosqueNotice": "برخی از جداول اوقات شرعی مساجد در عرض‌های جغرافیایی بالا از زمان‌های ثابت یا محدود عشاء در طول تابستان استفاده می‌کنند.",
+  "latestIshaTimeHelp": "از زمان محاسبه شده عشاء استفاده کنید، اما اجازه ندهید دیرتر از {time} شود.",
+  "@latestIshaTimeHelp": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "zakatCalculator": "محاسبه‌گر زکات",
+  "zakatCalculatorSubtitle": "ارزیابی اموال و حد نصاب",
+  "islamicCalendar": "تقویم اسلامی",
+  "islamicCalendarSubtitle": "گاه‌شمار هجری هماهنگ شده",
+  "customizeNavigation": "سفارشی‌سازی منو",
+  "allCategories": "همه دسته‌بندی‌ها",
+  "meccan": "مکی",
+  "medinan": "مدنی",
+  "appearanceTileSubtitle": "تنظیمات پوسته، حالت روشن/تیره و رنگ اصلی",
+  "navigationSettingsSubtitle": "مرتب‌سازی و تغییر زبانه‌های منوی پایینی",
+  "downloadQpcFontsTitle": "دانلود فونت‌های تجوید QPC V4؟",
+  "downloadQpcFontsBody": "تجوید به یک فایل فونت TTF برای هر یک از ۶۰۴ صفحه قرآن نیاز دارد. پیش از فعال کردن، بسته فونت ({size}) را دانلود کنید.",
+  "@downloadQpcFontsBody": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "locationCleared": "مکان پاک شد.",
+  "useSunset": "استفاده از غروب آفتاب",
+  "failedDownloadAyahAudio": "دانلود صدای آیه ناموفق بود.",
+  "failedDeleteDownloadedAyah": "حذف آیه دانلود شده ناموفق بود.",
+  "unablePlayAudioWeb": "پخش صدا روی وب امکان‌پذیر نیست. برای تجربه بهتر، برنامه را دانلود کنید.",
+  "failedPlayAudioConnection": "پخش صدا ناموفق بود. لطفاً اتصال اینترنت خود را بررسی کنید.",
+  "failedToPlayAudio": "پخش صدا ناموفق بود: {error}",
+  "@failedToPlayAudio": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "ishaModeAngle": "زاویه",
+  "ishaModeAngleSubtitle": "از زاویه سفارشی عشاء استفاده شود.",
+  "ishaModeInterval": "فاصله پس از مغرب",
+  "ishaModeIntervalSubtitle": "زمان عشاء را بر اساس تعداد دقایق مشخصی پس از مغرب تنظیم کنید.",
+  "ishaModeFixedTime": "زمان ثابت",
+  "ishaModeFixedTimeSubtitle": "از زمان ساعت یکسانی برای تمام تاریخ‌های نماز انتخاب شده استفاده شود.",
+  "ishaModeLatestCap": "محدودیت آخرین زمان",
+  "ishaModeLatestCapSubtitle": "از زمان محاسبه شده عشاء استفاده شود، مگر اینکه از حد مجاز دیرتر شود.",
+  "bestMethodSubtitle": "در صورت وجود، روشی از کشور ذخیره شده انتخاب کنید.",
+  "highLatitudeRuleAutoSubtitle": "یک قانون را فقط برای مکان‌های دارای عرض جغرافیایی بالا اعمال کنید.",
+  "highLatitudeRuleNoneSubtitle": "قانون عرض جغرافیایی بالا اعمال نشود.",
+  "highLatitudeRuleMiddleOfTheNightSubtitle": "محاسبه صبح و عشاء را بر اساس نیمه‌شب محدود کنید.",
+  "highLatitudeRuleOneSeventhSubtitle": "از یک‌هفتم شب استفاده کنید.",
+  "highLatitudeRuleAngleBasedSubtitle": "از زوایای صبح و عشاء به عنوان کسر شب استفاده کنید.",
+  "twelveHour": "۱۲ ساعته",
+  "twentyFourHour": "۲۴ ساعته",
+  "notificationPermissionOffRemindersNotEnabled": "دسترسی به اعلان‌ها غیرفعال است. یادآورهای نماز فعال نشدند.",
+  "notificationPermissionTimeout": "مدت درخواست دسترسی به اعلان به پایان رسید.",
+  "notificationPermissionTimeoutMessage": "درخواست دسترسی به اعلان با تأخیر مواجه شد. لطفاً دوباره برنامه را باز کنید یا اعلان‌ها را از تنظیمات سیستم فعال کنید.",
+  "notificationPermissionError": "امکان درخواست دسترسی به اعلان وجود نداشت.",
+  "notificationPermissionErrorMessage": "امکان درخواست دسترسی به اعلان وجود نداشت. دوباره تلاش کنید یا اعلان‌ها را در تنظیمات سیستم فعال کنید.",
+  "openNotificationSettingsTimeout": "زمان باز کردن تنظیمات اعلان به پایان رسید. لطفاً تنظیمات برنامه اندروید را به صورت دستی باز کرده و اعلان‌ها را فعال کنید.",
+  "openNotificationSettingsError": "امکان باز کردن تنظیمات اعلان وجود نداشت. تنظیمات برنامه اندروید را به صورت دستی باز کرده و اعلان‌ها را فعال کنید.",
+  "openExactAlarmSettingsTimeout": "زمان باز کردن تنظیمات دسترسی هشدار به پایان رسید. تنظیمات هشدارهای اندروید را دستی باز کرده و هشدارهای دقیق را فعال کنید.",
+  "openExactAlarmSettingsError": "امکان باز کردن تنظیمات دسترسی هشدار وجود نداشت. تنظیمات هشدارهای اندروید را دستی باز کرده و هشدارهای دقیق را فعال کنید.",
+  "debugReminderScheduled": "یادآور آزمایشی نماز برای زمان {time} برنامه‌ریزی شد.",
+  "@debugReminderScheduled": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugReminderCouldNotBeScheduled": "امکان برنامه‌ریزی یادآور آزمایشی نماز وجود نداشت.",
+  "degrees": "درجه",
+  "minutes": "دقیقه",
+  "prayerOffsetTitle": "اختلاف زمان {prayerName}",
+  "@prayerOffsetTitle": {
+    "placeholders": {
+      "prayerName": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntOffsetHelper": "دقایق را فقط به صورت عدد وارد کنید. از دکمه علامت برای قبل یا بعد از زمان محاسبه شده استفاده کنید.",
+  "enterValueBetweenMinMaxSuffix": "مقداری بین {min} و {max} {suffix} وارد کنید.",
+  "@enterValueBetweenMinMaxSuffix": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "steppedIntSuffixHelper": "{suffix} را فقط به صورت عدد وارد کنید. از دکمه‌های - و + برای تنظیم مقدار استفاده کنید.",
+  "@steppedIntSuffixHelper": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalSteppedIntHelper": "{emptyLabel} خالی ذخیره عدد ۰ است. عدد وارد کنید و از - یا + برای تنظیم استفاده کنید.",
+  "@optionalSteppedIntHelper": {
+    "placeholders": {
+      "emptyLabel": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValueFromMinToMax": "مقداری از {min} تا {max} وارد کنید.",
+  "@enterValueFromMinToMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidValue": "یک مقدار معتبر وارد کنید.",
+  "prayerRemindersCouldNotBeScheduled": "امکان برنامه‌ریزی یادآورهای نماز وجود نداشت.",
+  "qpcFontsDownloadError": "دانلود فونت تجوید شامل تمام ۶۰۴ صفحه نبود.",
+  "sysDefaultSubtitle": "پیش‌فرض سیستم / System default",
+  "enSubtitle": "English / انگلیسی",
+  "arSubtitle": "العربية / Arabic",
+  "idSubtitle": "Bahasa Indonesia / Indonesian",
+  "urSubtitle": "اردو / Urdu",
+  "trSubtitle": "Türkçe / Turkish",
+  "bnSubtitle": "বাংলা / Bengali",
+  "faSubtitle": "فارسی / Farsi",
+  "subhanAllah": "سبحان‌الله",
+  "alhamdulillah": "الحمدلله",
+  "allahuAkbar": "الله‌اکبر",
+  "astaghfirullah": "استغفرالله",
+  "custom": "سفارشی",
+  "previousDhikr": "ذکر قبلی",
+  "nextDhikr": "ذکر بعدی",
+  "zakatAlMal": "زکات مال",
+  "purifyWealthSubtitle": "پاک کردن مال و افزایش برکت آن.",
+  "liveMarketRates": "نرخ‌های زنده بازار",
+  "fetchingLiveRates": "در حال دریافت نرخ‌های زنده بازار...",
+  "ratesSyncSuccess": "نرخ‌های زنده فلزات با موفقیت همگام‌سازی شد",
+  "ratesSyncOffline": "بازار آفلاین است. استفاده از مقادیر ذخیره شده استاندارد.",
+  "overridePrices": "تغییر دستی قیمت‌ها",
+  "reset": "بازنشانی",
+  "silverDefault": "نقره",
+  "gold": "طلا",
+  "nisabThresholdLabel": "حد نصاب زکات",
+  "yourWealth": "اموال شما",
+  "cashHint": "بانک، نقدی، کیف‌پول‌های دیجیتال، پول‌های طلب‌کرده",
+  "goldHint": "طلای سرمایه‌گذاری + زیورآلات (بر اساس مذهب خود بررسی کنید)",
+  "investmentsHint": "سهام، صندوق‌ها، رمزارزها — به ارزش بازار فعلی",
+  "businessHint": "کالای تجاری و انبار به ارزش فعلی بازار",
+  "agricultureHint": "محصولات کشاورزی و زراعی",
+  "otherHint": "سایر دارایی‌های مشمول زکات",
+  "liabilitiesDeduct": "بدهی‌ها (کسر می‌شود)",
+  "liabilitiesHint": "وام‌ها، کارت‌های اعتباری و پرداخت‌های معوقه‌ای که باید تسویه کنید",
+  "netZakatableWealth": "خالص اموال مشمول زکات",
+  "eligible": "مشمول زکات",
+  "belowNisab": "کمتر از حد نصاب",
+  "zakatDueLabel": "زکات تعلق‌گرفته (۲.۵٪)",
+  "resetCalculator": "بازنشانی محاسبه‌گر",
+  "goldPriceGram": "قیمت هر گرم طلا (USD)",
+  "silverPriceGram": "قیمت هر گرم نقره (USD)",
+  "zakatSavedLedger": "محاسبه زکات در دفتر ثبت شخصی شما ذخیره شد",
+  "zakatPaidDistributed": "زکات پرداخت شده/توزیع شده:",
+  "updateZakatPaidAmount": "بروزرسانی مبلغ زکات پرداخت شده",
+  "enterPaidAmountUsd": "مبلغ پرداخت شده را به دلار (USD) وارد کنید",
+  "calculatorTab": "محاسبه‌گر",
+  "historyTab": "تاریخچه",
+  "fastingReminder": "یادآور روزه",
+  "dateNotFound": "امکان یافتن این تاریخ در آینده نزدیک وجود نداشت",
+  "customizeCalendar": "سفارشی‌سازی تقویم",
+  "shareDate": "اشتراک‌گذاری این تاریخ",
+  "dateCopiedClipboard": "جزئیات تاریخ در حافظه کپی شد",
+  "moonSighting": "رؤیت هلال ماه",
+  "fastingAlerts": "هشدارهای روزه‌داری",
+  "standard": "استاندارد",
+  "daysPlural": "{count} روز",
+  "@daysPlural": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "daySingular": "{count} روز",
+  "@daySingular": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSettings": "تنظیمات تقویم",
+  "calendarSettingsSubtitle": "تنظیم برای رؤیت هلال ماه محلی و یادآور روزه‌ها",
+  "sightingOffsetLabel": "اختلاف رؤیت هلال ماه",
+  "fastingRemindersSubtitle": "دریافت اعلان در عصر روز قبل از روزه‌های مستحب",
+  "hijriDateDisclaimer": "توجه: تواریخ هجری تقریبی بوده و وابسته به رؤیت هلال ماه محلی هستند. با تنظیم اختلاف می‌توانید تقویم را با مشاهده جامعه خود هماهنگ کنید.",
+  "recommendedFast": "روزه مستحب",
+  "recommendedForThisDay": "توصیه شده برای این روز",
+  "todayLegend": "امروز",
+  "eidLegend": "عید",
+  "ramadanLegend": "رمضان",
+  "blessedNightLegend": "شب پربرکت",
+  "fastLegend": "روزه",
+  "keyDatesInYear": "تواریخ کلیدی در سال {year}",
+  "@keyDatesInYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "fastingAlertsActive": "هشدارهای روزه‌داری فعال",
+  "quranFonts": "فونت‌های قرآن",
+  "allReciters": "همه قاریان",
+  "tapToAdjust": "ضربه برای تنظیم",
+  "currency": "ارز",
+  "selectCurrency": "انتخاب ارز",
+  "sleepTimerSettings": "تنظیمات تایمر خواب",
+  "numericMinutesDuration": "مدت زمان به دقیقه",
+  "endOfSurahSubtitle": "خاموش کردن خودکار پخش دقیقاً پس از پایان قطعه فعلی",
+  "turnOff": "خاموش کردن",
+  "setTimer": "تنظیم تایمر",
+  "decreaseLabel": "کاهش {label}",
+  "@decreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "increaseLabel": "افزایش {label}",
+  "@increaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "exampleCoordinate": "مثال: {value}",
+  "@exampleCoordinate": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "filterAndSort": "فیلتر و مرتب‌سازی",
+  "deleteDownloadsQuestion": "حذف دانلودها؟",
+  "searchRecitationsOrSurahs": "جستجوی تلاوت‌ها یا سوره‌ها...",
+  "dailyGoal": "هدف روزانه",
+  "readingPlan": "برنامه خواندن",
+  "quickActions": "دسترسی سریع",
+  "bookmarksAndNotes": "نشان‌ها و یادداشت‌ها",
+  "hideSettings": "پنهان کردن تنظیمات",
+  "showSettings": "نمایش تنظیمات"
+}

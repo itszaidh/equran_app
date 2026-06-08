@@ -94,7 +94,9 @@ class EquranTextStyles {
   }
 
   static ThemeData localizeTheme(ThemeData theme, Locale locale) {
-    if (locale.languageCode == 'ar' || locale.languageCode == 'ur') {
+    if (locale.languageCode == 'ar' ||
+        locale.languageCode == 'ur' ||
+        locale.languageCode == 'fa') {
       return theme.copyWith(
         textTheme: GoogleFonts.notoNaskhArabicTextTheme(theme.textTheme),
         primaryTextTheme: GoogleFonts.notoNaskhArabicTextTheme(
@@ -109,7 +111,9 @@ class EquranTextStyles {
     TextTheme textTheme,
     Locale? locale,
   ) {
-    if (locale?.languageCode == 'ar' || locale?.languageCode == 'ur') {
+    if (locale?.languageCode == 'ar' ||
+        locale?.languageCode == 'ur' ||
+        locale?.languageCode == 'fa') {
       return GoogleFonts.notoNaskhArabicTextTheme(textTheme);
     }
     return GoogleFonts.interTextTheme(textTheme);

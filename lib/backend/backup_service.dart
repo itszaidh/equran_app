@@ -409,7 +409,17 @@ class BackupService {
 
   static String _requireLocale(dynamic value) {
     if (value is! String ||
-        (value != 'system' && value != 'en' && value != 'ar')) {
+        !const <String>{
+          'system',
+          'en',
+          'ar',
+          'fa',
+          'ur',
+          'bn',
+          'tr',
+          'id',
+          'de',
+        }.contains(value)) {
       throw AppBackupException('Invalid value for "locale".');
     }
     return value;

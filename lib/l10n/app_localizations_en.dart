@@ -72,6 +72,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get german => 'German';
 
   @override
+  String get farsi => 'Farsi';
+
+  @override
   String get quranScriptStyle => 'Quran Script Style';
 
   @override
@@ -3890,6 +3893,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bnSubtitle => 'বাংলা / Bengali';
+
+  @override
+  String get faSubtitle => 'فارسی / Farsi';
 
   @override
   String get subhanAllah => 'SubhanAllah';

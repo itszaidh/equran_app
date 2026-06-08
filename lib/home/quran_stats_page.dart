@@ -2044,11 +2044,14 @@ String _formatSalahLogTime(DateTime time, bool use24HourFormat) {
     return '${_twoDigits(hour)}:${_twoDigits(minute)}';
   }
 
-  final bool arabicLocale =
-      WidgetsBinding.instance.platformDispatcher.locale.languageCode == 'ar';
-  final String period = arabicLocale
-      ? (hour >= 12 ? 'م' : 'ص')
-      : (hour >= 12 ? 'PM' : 'AM');
+  final String lang =
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+  final String period = switch (lang) {
+    'ar' => hour >= 12 ? 'م' : 'ص',
+    'fa' => hour >= 12 ? 'ب.ظ' : 'ق.ظ',
+    'ur' => hour >= 12 ? 'ش' : 'ص',
+    _ => hour >= 12 ? 'PM' : 'AM',
+  };
   final int displayHour = hour % 12 == 0 ? 12 : hour % 12;
   return '$displayHour:${_twoDigits(minute)} $period';
 }

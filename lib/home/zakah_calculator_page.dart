@@ -68,6 +68,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
   // Translations
   String _tTitle(String lang) => switch (lang) {
     'ar' => 'حاسبة الزكاة',
+    'fa' => 'محاسبه زکات',
+    'de' => 'Zakat-Rechner',
     'bn' => 'যাকাত ক্যালকুলেটর',
     'id' => 'Kalkulator Zakat',
     'tr' => 'Zekat Hesaplama',
@@ -77,6 +79,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tCash(String lang) => switch (lang) {
     'ar' => 'النقود والحسابات البنكية',
+    'fa' => 'پول نقد و حساب‌های بانکی',
+    'de' => 'Bargeld & Bankguthaben',
     'bn' => 'নগদ ও ব্যাংক হিসাব',
     'id' => 'Uang Tunai & Tabungan',
     'tr' => 'Nakit & Banka Hesapları',
@@ -86,6 +90,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tGold(String lang) => switch (lang) {
     'ar' => 'قيمة الذهب المملوك',
+    'fa' => 'ارزش طلای تحت مالکیت',
+    'de' => 'Wert des Goldbesitzes',
     'bn' => 'স্বর্ণের মূল্য',
     'id' => 'Nilai Emas',
     'tr' => 'Altın Değeri',
@@ -95,7 +101,9 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tSilver(String lang) => switch (lang) {
     'ar' => 'قيمة الفضة المملوكة',
-    'bn' => 'রুপার মূল্য',
+    'fa' => 'ارزش نقره تحت مالکیت',
+    'de' => 'Wert des Silberbesitzes',
+    'bn' => 'رুপার মূল্য',
     'id' => 'Nilai Perak',
     'tr' => 'Gümüş Değeri',
     'ur' => 'چاندی کی مالیت',
@@ -104,6 +112,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tAssets(String lang) => switch (lang) {
     'ar' => 'أصول واستثمارات أخرى',
+    'fa' => 'سایر دارایی‌ها و سرمایه‌گذاری‌ها',
+    'de' => 'Sonstige Vermögenswerte & Investitionen',
     'bn' => 'অন্যান্য সম্পদ ও বিনিয়োগ',
     'id' => 'Aset & Investasi Lainnya',
     'tr' => 'Diğer Varlıklar & Yatırımlar',
@@ -113,6 +123,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tDebts(String lang) => switch (lang) {
     'ar' => 'الديون والالتزامات المستحقة',
+    'fa' => 'بدهی‌ها و تعهدات مالی',
+    'de' => 'Schulden & Verbindlichkeiten',
     'bn' => 'ঋণ ও দায়বদ্ধতা',
     'id' => 'Hutang & Kewajiban',
     'tr' => 'Borçlar & Yükümlülükler',
@@ -122,6 +134,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tTotalAssets(String lang) => switch (lang) {
     'ar' => 'إجمالي الأصول',
+    'fa' => 'کل دارایی‌ها',
+    'de' => 'Gesamtvermögen',
     'bn' => 'মোট সম্পদ',
     'id' => 'Total Aset',
     'tr' => 'Toplam Varlıklar',
@@ -131,6 +145,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tNetWealth(String lang) => switch (lang) {
     'ar' => 'صافي الثروة',
+    'fa' => 'ثروت خالص',
+    'de' => 'Nettovermögen',
     'bn' => 'নিট সম্পদ',
     'id' => 'Kekayaan Bersih',
     'tr' => 'Net Servet',
@@ -140,6 +156,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tNisabThreshold(String lang) => switch (lang) {
     'ar' => 'حد النصاب',
+    'fa' => 'حد نصاب',
+    'de' => 'Nisab-Grenze',
     'bn' => 'নিসাব সীমা',
     'id' => 'Ambang Nisab',
     'tr' => 'Nisap Eşiği',
@@ -149,6 +167,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tZakahDue(String lang) => switch (lang) {
     'ar' => 'الزكاة المستحقة',
+    'fa' => 'زکات مستحق پرداخت',
+    'de' => 'Fällige Zakat',
     'bn' => 'প্রদেয় যাকাত',
     'id' => 'Zakat yang Wajib Dibayar',
     'tr' => 'Ödenmesi Gereken Zekat',
@@ -158,6 +178,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tZakahRate(String lang) => switch (lang) {
     'ar' => 'نسبة الزكاة (٢.٥٪)',
+    'fa' => 'نرخ زکات (۲.۵٪)',
+    'de' => 'Zakat-Satz (2,5%)',
     'bn' => 'যাকাতের হার (২.৫%)',
     'id' => 'Tarif Zakat (2.5%)',
     'tr' => 'Zekat Oranı (%2.5)',
@@ -167,6 +189,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tNisabMet(String lang) => switch (lang) {
     'ar' => 'بلغ النصاب',
+    'fa' => 'به حد نصاب رسیده',
+    'de' => 'Nisab erreicht',
     'bn' => 'নিসাব পূর্ণ হয়েছে',
     'id' => 'Memenuhi Nisab',
     'tr' => 'Nisaba Ulaştı',
@@ -176,6 +200,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
 
   String _tNisabNotMet(String lang) => switch (lang) {
     'ar' => 'لم يبلغ النصاب',
+    'fa' => 'به حد نصاب نرسیده',
+    'de' => 'Nisab nicht erreicht',
     'bn' => 'নিসাব পূর্ণ হয়নি',
     'id' => 'Tidak Memenuhi Nisab',
     'tr' => 'Nisaba Ulaşmadı',
@@ -186,6 +212,10 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
   String _tNote(String lang) => switch (lang) {
     'ar' =>
       'ملاحظة: تجب الزكاة بنسبة ٢.٥٪ إذا بلغت ثروتك الصافية النصاب وحال عليها الحول الهجري.',
+    'fa' =>
+      'توجه: اگر ثروت خالص شما از حد نصاب بیشتر باشد و یک سال قمری کامل از آن گذشته باشد، پرداخت زکات (۲.۵٪) واجب است.',
+    'de' =>
+      'Hinweis: Die Zakat (2,5%) ist verpflichtend, wenn Ihr Nettovermögen die Nisab-Grenze überschreitet und sich ein ganzes Hijri-Jahr in Ihrem Besitz befindet.',
     'bn' =>
       'দ্রষ্টব্য: আপনার নিট সম্পদ নিসাব সীমা অতিক্রম করলে এবং এক বছর থাকলে ২.৫% যাকাত প্রদেয় হবে।',
     'id' =>
@@ -201,7 +231,8 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String lang = localizations.localeName.toLowerCase();
+    final String lang =
+        localizations.localeName.split('_').first.toLowerCase();
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
 

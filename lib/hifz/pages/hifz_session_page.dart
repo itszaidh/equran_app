@@ -681,15 +681,19 @@ class _HifzSessionPageState extends State<HifzSessionPage>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            Localizations.localeOf(context).languageCode == 'ar'
-                ? l10n.hifzStatsNextDueValue(
-                    quran.getSurahNameArabic(entry.surah),
-                    entry.ayah,
-                  )
-                : l10n.hifzStatsNextDueValue(
-                    HifzSurahData.name(entry.surah),
-                    entry.ayah,
-                  ),
+            (() {
+              final String langCode = Localizations.localeOf(
+                context,
+              ).languageCode;
+              final bool useArabicScript =
+                  langCode == 'ar' || langCode == 'fa' || langCode == 'ur';
+              return l10n.hifzStatsNextDueValue(
+                useArabicScript
+                    ? quran.getSurahNameArabic(entry.surah)
+                    : HifzSurahData.name(entry.surah),
+                entry.ayah,
+              );
+            })(),
             style: theme.textTheme.labelMedium?.copyWith(
               color: colors.textSecondary,
             ),

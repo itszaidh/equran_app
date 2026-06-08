@@ -1192,7 +1192,9 @@ class _RoutinePlanCta extends StatelessWidget {
                 ),
               ),
               Text(
-                localizations.localeName == 'ar'
+                localizations.localeName == 'ar' ||
+                        localizations.localeName == 'fa' ||
+                        localizations.localeName == 'ur'
                     ? '<- ${localizations.continueRoutine}'
                     : '${localizations.continueRoutine} ->',
                 style: theme.textTheme.labelLarge?.copyWith(
@@ -1665,7 +1667,9 @@ class _ExploreAllFeaturesRow extends StatelessWidget {
                   ),
                 ),
                 Icon(
-                  localizations.localeName == 'ar'
+                  localizations.localeName == 'ar' ||
+                          localizations.localeName == 'fa' ||
+                          localizations.localeName == 'ur'
                       ? Icons.arrow_back_rounded
                       : Icons.arrow_forward_rounded,
                   color: colors.primary,
@@ -1803,7 +1807,9 @@ class _DailyAyahPreviewState extends State<_DailyAyahPreview> {
                     ),
                   ),
                   Icon(
-                    localizations.localeName == 'ar'
+                    localizations.localeName == 'ar' ||
+                            localizations.localeName == 'fa' ||
+                            localizations.localeName == 'ur'
                         ? Icons.arrow_back_rounded
                         : Icons.arrow_forward_rounded,
                     color: colors.primary,
@@ -1948,7 +1954,9 @@ class _DailyDuaPreviewState extends State<_DailyDuaPreview> {
                         ),
                       ),
                       Icon(
-                        localizations.localeName == 'ar'
+                        localizations.localeName == 'ar' ||
+                                localizations.localeName == 'fa' ||
+                                localizations.localeName == 'ur'
                             ? Icons.arrow_back_rounded
                             : Icons.arrow_forward_rounded,
                         color: colors.accentGold,
@@ -2727,7 +2735,10 @@ class _HomeQuranLastReadCard extends StatelessWidget {
       card = EquranResumeImageCard(
         primary: localizations.beginWithQuran,
         subtitle: localizations.startReadingSubtitle,
-        actionText: localizations.localeName == 'ar'
+        actionText:
+            localizations.localeName == 'ar' ||
+                localizations.localeName == 'fa' ||
+                localizations.localeName == 'ur'
             ? '<- ${localizations.startReading}'
             : '${localizations.startReading} ->',
         trailingAssetPath: _quranAsset,
@@ -2738,7 +2749,10 @@ class _HomeQuranLastReadCard extends StatelessWidget {
       card = EquranResumeImageCard(
         primary: localizedSurahName(localizations, surah),
         subtitle: localizations.ayahNumber(ayah),
-        actionText: localizations.localeName == 'ar'
+        actionText:
+            localizations.localeName == 'ar' ||
+                localizations.localeName == 'fa' ||
+                localizations.localeName == 'ur'
             ? '<- ${localizations.continueReading}'
             : '${localizations.continueReading} ->',
         trailingAssetPath: _quranAsset,

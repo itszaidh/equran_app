@@ -196,7 +196,7 @@ class DuaEntry {
   /// Returns the best translation for the given locale tag (e.g. 'en', 'bn').
   /// Falls back to the legacy singular [translation] field if no map entry is found.
   String? localizedTranslation(String localeTag) {
-    final String normalized = localeTag.trim().toLowerCase();
+    final String normalized = localeTag.trim().toLowerCase().split(RegExp(r'[-_]')).first;
     return translations[normalized] ?? translation;
   }
 

@@ -40,6 +40,66 @@ class HijriCalendar {
     'ذو الحجة',
   ];
 
+  static const List<String> monthNamesTr = <String>[
+    'Muharrem',
+    'Safer',
+    'Rebiülevvel',
+    'Rebiülahir',
+    'Cemaziyelevvel',
+    'Cemaziyelahir',
+    'Recep',
+    'Şaban',
+    'Ramazan',
+    'Şevval',
+    'Zilkade',
+    'Zilhicce',
+  ];
+
+  static const List<String> monthNamesId = <String>[
+    'Muharram',
+    'Safar',
+    'Rabiul Awal',
+    'Rabiul Akhir',
+    'Jumadil Awal',
+    'Jumadil Akhir',
+    'Rajab',
+    'Sya\'ban',
+    'Ramadhan',
+    'Syawal',
+    'Zulkaidah',
+    'Zulhijah',
+  ];
+
+  static const List<String> monthNamesBn = <String>[
+    'মহররম',
+    'সফর',
+    'রবিউল আউয়াল',
+    'রবিউস সানি',
+    'জমাদিউল আউয়াল',
+    'জমাদিউস সানি',
+    'রজব',
+    'শাবান',
+    'রমজান',
+    'শাওয়াল',
+    'জিলকদ',
+    'জিলহজ',
+  ];
+
+  static const List<String> monthNamesDe = <String>[
+    'Muharram',
+    'Safar',
+    'Rabi\' al-Awwal',
+    'Rabi\' ath-Thani',
+    'Dschumada al-Ula',
+    'Dschumada ath-Thaniya',
+    'Radschab',
+    'Scha\'ban',
+    'Ramadan',
+    'Schawwal',
+    'Dhu l-qa\'da',
+    'Dhu l-hidschdscha',
+  ];
+
   static bool isLeapYear(int hYear) {
     final int remainder = hYear % 30;
     return const <int>[
@@ -110,7 +170,14 @@ class HijriCalendar {
   }
 
   String getMonthName(String locale) {
-    final List<String> list = locale == 'ar' ? monthNamesAr : monthNamesEn;
+    final List<String> list = switch (locale) {
+      'ar' || 'fa' || 'ur' => monthNamesAr,
+      'tr' => monthNamesTr,
+      'id' => monthNamesId,
+      'bn' => monthNamesBn,
+      'de' => monthNamesDe,
+      _ => monthNamesEn,
+    };
     if (month < 1 || month > 12) return '';
     return list[month - 1];
   }
@@ -191,6 +258,8 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
   String _translateTitle(String lang) {
     return switch (lang) {
       'ar' => 'التقويم الهجري',
+      'fa' => 'تقویم هجری',
+      'de' => 'Hijri-Kalender',
       'bn' => 'হিজরি ক্যালেন্ডার',
       'id' => 'Kalender Hijriah',
       'tr' => 'Hicri Takvim',
@@ -202,6 +271,8 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
   String _translateToday(String lang) {
     return switch (lang) {
       'ar' => 'اليوم',
+      'fa' => 'امروز',
+      'de' => 'Heute',
       'bn' => 'আজ',
       'id' => 'Hari Ini',
       'tr' => 'Bugün',
@@ -214,13 +285,32 @@ class _HijriCalendarPageState extends State<HijriCalendarPage> {
     if (lang == 'ar') {
       return <String>['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'];
     }
+    if (lang == 'fa') {
+      return <String>['ی', 'د', 'س', 'چ', 'پ', 'ج', 'ش'];
+    }
+    if (lang == 'ur') {
+      return <String>['ا', 'پ', 'م', 'ب', 'ج', 'ج', 'ہ'];
+    }
+    if (lang == 'de') {
+      return <String>['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    }
+    if (lang == 'tr') {
+      return <String>['Pz', 'Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct'];
+    }
+    if (lang == 'bn') {
+      return <String>['র', 'সো', 'ম', 'বু', 'বৃ', 'শু', 'শ'];
+    }
+    if (lang == 'id') {
+      return <String>['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    }
     return <String>['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
   }
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String lang = localizations.localeName.toLowerCase();
+    final String lang =
+        localizations.localeName.split('_').first.toLowerCase();
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
 

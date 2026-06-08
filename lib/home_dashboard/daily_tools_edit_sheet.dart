@@ -19,7 +19,8 @@ class DailyToolsEditSheet extends StatefulWidget {
   static String translateCustomizeTitle(String lang) {
     return switch (lang) {
       'ar' => 'تخصيص الأدوات اليومية',
-      'bn' => 'দৈনিক সরঞ্জাম কাস্টمাইজ করুন',
+      'fa' => 'شخصی‌سازی ابزارهای روزانه',
+      'bn' => 'দৈনিক সরঞ্জাম কাস্টমাইজ করুন',
       'id' => 'Kustomisasi Alat Sehari-hari',
       'tr' => 'Günlük Araçları Özelleştir',
       'ur' => 'روزانہ کے اوزار ترتیب دیں',
@@ -32,6 +33,8 @@ class DailyToolsEditSheet extends StatefulWidget {
     return switch (lang) {
       'ar' =>
         'اسحب لإعادة الترتيب. قم بتفعيل المفاتيح لإظهار أو إخفاء الأدوات في لوحتك.',
+      'fa' =>
+        'برای تغییر ترتیب بکشید. ابزارها را برای نمایش یا عدم نمایش در داشبورد خود تغییر دهید.',
       'bn' =>
         'ক্রম পরিবর্তন করতে ড্র্যাগ করুন। আপনার ড্যাশবোর্ডে দেখাতে বা লুকাতে টগল করুন।',
       'id' =>
@@ -82,8 +85,12 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
     if (isCurrentlyVisible && _visibleTools.length <= 1) {
       // Prevent disabling the last tool
       final AppLocalizations localizations = AppLocalizations.of(context)!;
-      final String msg = localizations.localeName.toLowerCase() == 'ar'
+      final String locale =
+          localizations.localeName.split('_').first.toLowerCase();
+      final String msg = locale == 'ar'
           ? 'يجب أن تظل أداة واحدة على الأقل مثبتة.'
+          : locale == 'fa'
+          ? 'حداقل یک ابزار باید سنجاق شده باقی بماند.'
           : 'At least one tool must remain pinned.';
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -137,7 +144,8 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String lang = localizations.localeName.toLowerCase();
+    final String lang =
+        localizations.localeName.split('_').first.toLowerCase();
     final ThemeData theme = Theme.of(context);
 
     return DraggableScrollableSheet(
