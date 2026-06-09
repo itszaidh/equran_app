@@ -16,6 +16,7 @@ import 'hifz_complete_screen.dart';
 import '../hifz_frontier_service.dart';
 
 import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/backend/settings_db.dart';
 import 'package:equran/backend/hifz_db.dart';
@@ -827,7 +828,8 @@ class _HifzSessionPageState extends State<HifzSessionPage>
       child: Text(
         _arabicText,
         style: TextStyle(
-          fontFamily: 'UthmanicHafs',
+          fontFamily: EquranTextStyles.activeFontFamily,
+          fontFamilyFallback: const <String>['UthmanicHafs'],
           fontSize: 28,
           color: colors.textPrimary,
           height: 2.2,
@@ -857,7 +859,8 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                 Text(
                   l10n.hifzPrevAyahCueLabel,
                   style: TextStyle(
-                    fontFamily: 'UthmanicHafs',
+                    fontFamily: EquranTextStyles.activeFontFamily,
+                    fontFamilyFallback: const <String>['UthmanicHafs'],
                     fontSize: 18,
                     color: colors.textMuted,
                     height: 2.0,
@@ -868,7 +871,8 @@ class _HifzSessionPageState extends State<HifzSessionPage>
                 Text(
                   _prevAyahEnd,
                   style: TextStyle(
-                    fontFamily: 'UthmanicHafs',
+                    fontFamily: EquranTextStyles.activeFontFamily,
+                    fontFamilyFallback: const <String>['UthmanicHafs'],
                     fontSize: 22,
                     color: colors.textSecondary,
                     height: 2.0,
@@ -1177,7 +1181,8 @@ class _RevealedWordState extends State<_RevealedWord> {
         return Text(
           widget.word,
           style: TextStyle(
-            fontFamily: 'UthmanicHafs',
+            fontFamily: EquranTextStyles.activeFontFamily,
+            fontFamilyFallback: const <String>['UthmanicHafs'],
             fontSize: 26,
             color: color ?? colors.textPrimary,
             height: 2.0,

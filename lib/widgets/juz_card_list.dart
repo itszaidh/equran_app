@@ -1,4 +1,5 @@
 import 'package:equran/theme/equran_colors.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/juz_search.dart';
 import 'package:equran/utils/quran_display.dart';
@@ -181,7 +182,8 @@ class _JuzSectionHeader extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.right,
                 style: theme.textTheme.titleLarge?.copyWith(
-                  fontFamily: 'UthmanicHafs',
+                  fontFamily: EquranTextStyles.activeFontFamily,
+                  fontFamilyFallback: const <String>['UthmanicHafs'],
                   height: 1.18,
                   fontWeight: FontWeight.w700,
                   color: colors.textPrimary,

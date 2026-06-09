@@ -2,6 +2,7 @@ import 'package:equran/backend/dua_favourites_db.dart';
 import 'package:equran/backend/settings_db.dart';
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/l10n/app_localizations.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -120,7 +121,8 @@ class DuaCard extends StatelessWidget {
                           textDirection: TextDirection.rtl,
                           textAlign: TextAlign.justify,
                           style: TextStyle(
-                            fontFamily: 'Hafs',
+                            fontFamily: EquranTextStyles.activeFontFamily,
+                            fontFamilyFallback: const <String>['Hafs'],
                             height: 1.95,
                             fontSize:
                                 settingsBox.get("fontSize", defaultValue: 31.0)

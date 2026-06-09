@@ -2970,8 +2970,9 @@ class _DailyAyahCard extends StatelessWidget {
             textAlign: TextAlign.right,
             maxLines: 4,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontFamily: 'UthmanicHafs',
+            style: TextStyle(
+              fontFamily: EquranTextStyles.activeFontFamily,
+              fontFamilyFallback: const <String>['UthmanicHafs'],
               fontSize: 28,
               height: 1.65,
             ),

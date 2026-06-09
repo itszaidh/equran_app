@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:equran/backend/library.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -623,7 +624,8 @@ class _CircularCounterState extends State<_CircularCounter>
                                   overflow: TextOverflow.ellipsis,
                                   style:
                                       TextStyle(
-                                        fontFamily: 'UthmanicHafs',
+                                        fontFamily: EquranTextStyles.activeFontFamily,
+                                        fontFamilyFallback: const <String>['UthmanicHafs'],
                                         fontSize: circleSize * 0.2,
                                         height: 1.15,
                                         fontWeight: FontWeight.w400,

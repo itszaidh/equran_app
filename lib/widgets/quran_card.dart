@@ -2,6 +2,7 @@ import 'package:equran/backend/surah_model.dart';
 import 'package:equran/home/read.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/theme/equran_spacing.dart';
+import 'package:equran/theme/equran_text_styles.dart';
 import 'package:equran/utils/app_radii.dart';
 import 'package:equran/utils/quran_display.dart';
 import 'package:equran/utils/responsive_nav.dart';
@@ -51,7 +52,8 @@ class QuranCard extends StatelessWidget {
                 : theme.textTheme.titleMedium)
             ?.copyWith(
               color: colors.textPrimary,
-              fontFamily: 'UthmanicHafs',
+              fontFamily: EquranTextStyles.activeFontFamily,
+              fontFamilyFallback: const <String>['UthmanicHafs'],
               fontSize: compactText
                   ? 19
                   : compact
