@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+import 'package:adhan_dart/adhan_dart.dart' as adhan;
 import 'package:equran/l10n/app_localizations.dart';
 import 'package:equran/prayer/manual_prayer_location_page.dart';
+import 'package:equran/prayer/prayer_location_service.dart';
 import 'package:equran/prayer/prayer_models.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -48,15 +51,143 @@ class PrayerMapLocationPage extends StatefulWidget {
 }
 
 class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
+  late final MapController _mapController;
   late LatLng _selectedCenter;
+  LatLng? _userLocation;
+  bool _isLoadingLocation = false;
 
   @override
   void initState() {
     super.initState();
+    _mapController = MapController();
     final PrayerLocation? initialLocation = widget.initialLocation;
     _selectedCenter = initialLocation == null
         ? const LatLng(0, 0)
         : LatLng(initialLocation.latitude, initialLocation.longitude);
+
+    // Automatically detect user location and recenter map if initialLocation is not provided
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _detectUserLocation(shouldCenterMap: widget.initialLocation == null);
+    });
+  }
+
+  Future<void> _detectUserLocation({required bool shouldCenterMap}) async {
+    if (_isLoadingLocation) return;
+    setState(() {
+      _isLoadingLocation = true;
+    });
+    try {
+      final PrayerLocationResult result = await const PrayerLocationService()
+          .currentDeviceLocation();
+      if (!mounted) return;
+      if (result.isSuccess && result.location != null) {
+        final LatLng userCoords = LatLng(
+          result.location!.latitude,
+          result.location!.longitude,
+        );
+        setState(() {
+          _userLocation = userCoords;
+        });
+        if (shouldCenterMap) {
+          _mapController.move(userCoords, 13.0);
+        }
+      } else {
+        if (shouldCenterMap && result.message != null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(result.message!)));
+        }
+      }
+    } catch (e) {
+      debugPrint('Error detecting current location: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+      }
+    }
+  }
+
+  List<LatLng> _calculateGreatCirclePath(
+    LatLng start,
+    LatLng end, {
+    int segments = 100,
+  }) {
+    final double lat1 = start.latitude * math.pi / 180;
+    final double lon1 = start.longitude * math.pi / 180;
+    final double lat2 = end.latitude * math.pi / 180;
+    final double lon2 = end.longitude * math.pi / 180;
+
+    final double d =
+        2 *
+        math.asin(
+          math.sqrt(
+            math.pow(math.sin((lat2 - lat1) / 2), 2) +
+                math.cos(lat1) *
+                    math.cos(lat2) *
+                    math.pow(math.sin((lon2 - lon1) / 2), 2),
+          ),
+        );
+
+    if (d.abs() < 1e-7) {
+      return <LatLng>[start, end];
+    }
+
+    final List<LatLng> path = <LatLng>[];
+    for (int i = 0; i <= segments; i++) {
+      final double f = i / segments;
+      final double a = math.sin((1 - f) * d) / math.sin(d);
+      final double b = math.sin(f * d) / math.sin(d);
+
+      final double x =
+          a * math.cos(lat1) * math.cos(lon1) +
+          b * math.cos(lat2) * math.cos(lon2);
+      final double y =
+          a * math.cos(lat1) * math.sin(lon1) +
+          b * math.cos(lat2) * math.sin(lon2);
+      final double z = a * math.sin(lat1) + b * math.sin(lat2);
+
+      final double lat = math.atan2(z, math.sqrt(x * x + y * y));
+      final double lon = math.atan2(y, x);
+
+      path.add(LatLng(lat * 180 / math.pi, lon * 180 / math.pi));
+    }
+    return path;
+  }
+
+  double? _calculateQiblaBearing() {
+    if (_userLocation == null) return null;
+    final double bearing = adhan.Qibla.qibla(
+      adhan.Coordinates(_userLocation!.latitude, _userLocation!.longitude),
+    );
+    if (!bearing.isFinite) return null;
+    final double normalized = bearing % 360;
+    return normalized < 0 ? normalized + 360 : normalized;
+  }
+
+  String _distanceToKaabaLabel(LatLng userLoc, AppLocalizations localizations) {
+    const double kaabaLatitude = 21.4225;
+    const double kaabaLongitude = 39.8262;
+    const double earthRadiusKm = 6371;
+    final double userLat = userLoc.latitude * math.pi / 180;
+    final double kaabaLat = kaabaLatitude * math.pi / 180;
+    final double deltaLat = (kaabaLatitude - userLoc.latitude) * math.pi / 180;
+    final double deltaLng =
+        (kaabaLongitude - userLoc.longitude) * math.pi / 180;
+    final double a =
+        math.sin(deltaLat / 2) * math.sin(deltaLat / 2) +
+        math.cos(userLat) *
+            math.cos(kaabaLat) *
+            math.sin(deltaLng / 2) *
+            math.sin(deltaLng / 2);
+    final double distanceKm =
+        earthRadiusKm * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    if (!distanceKm.isFinite) return localizations.distanceUnavailable;
+    if (distanceKm >= 1000) {
+      return localizations.kilometersToKaaba(distanceKm.round().toString());
+    }
+    return localizations.kilometersToKaaba(distanceKm.toStringAsFixed(1));
   }
 
   @override
@@ -83,6 +214,7 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
       body: Stack(
         children: <Widget>[
           FlutterMap(
+            mapController: _mapController,
             options: MapOptions(
               initialCenter: _selectedCenter,
               initialZoom: widget.initialLocation == null ? 2 : 13,
@@ -104,6 +236,41 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                 userAgentPackageName: 'com.app.equran',
                 errorTileCallback: (_, _, _) {},
               ),
+              if (_userLocation != null) ...<Widget>[
+                PolylineLayer(
+                  polylines: <Polyline>[
+                    Polyline(
+                      points: _calculateGreatCirclePath(
+                        _userLocation!,
+                        const LatLng(21.4225, 39.8262),
+                      ),
+                      strokeWidth: 3.5,
+                      color: const Color(0xFFFFB300),
+                      pattern: StrokePattern.dashed(
+                        segments: <double>[10, 8],
+                      ),
+                    ),
+                  ],
+                ),
+                MarkerLayer(
+                  markers: <Marker>[
+                    Marker(
+                      point: _userLocation!,
+                      width: 40,
+                      height: 40,
+                      child: _UserLocationMarker(
+                        qiblaBearing: _calculateQiblaBearing(),
+                      ),
+                    ),
+                    Marker(
+                      point: const LatLng(21.4225, 39.8262),
+                      width: 40,
+                      height: 40,
+                      child: const _KaabaMarker(),
+                    ),
+                  ],
+                ),
+              ],
               RichAttributionWidget(
                 attributions: <SourceAttribution>[
                   TextSourceAttribution(
@@ -149,6 +316,25 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
             ),
           ),
           Positioned(
+            top: 14,
+            right: 14,
+            child: SafeArea(
+              bottom: false,
+              child: FloatingActionButton(
+                onPressed: () => _detectUserLocation(shouldCenterMap: true),
+                backgroundColor: colors.surfaceContainerLow,
+                foregroundColor: colors.primary,
+                mini: true,
+                child: _isLoadingLocation
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.my_location_rounded),
+              ),
+            ),
+          ),
+          Positioned(
             left: 14,
             right: 14,
             bottom: 14,
@@ -189,6 +375,28 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                           color: colors.onSurfaceVariant,
                         ),
                       ),
+                      if (_userLocation != null) ...<Widget>[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: <Widget>[
+                            const Icon(
+                              Icons.explore_outlined,
+                              size: 16,
+                              color: Color(0xFFFFB300),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                '${localizations.qibla}: ${_calculateQiblaBearing()?.toStringAsFixed(1)}° • ${_distanceToKaabaLabel(_userLocation!, localizations)}',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: colors.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       FilledButton.icon(
                         onPressed: _useSelectedLocation,
@@ -243,4 +451,131 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
 
 String prayerMapCoordinatePreview(double latitude, double longitude) {
   return '${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}';
+}
+
+class _UserLocationMarker extends StatefulWidget {
+  const _UserLocationMarker({required this.qiblaBearing});
+
+  final double? qiblaBearing;
+
+  @override
+  State<_UserLocationMarker> createState() => _UserLocationMarkerState();
+}
+
+class _UserLocationMarkerState extends State<_UserLocationMarker>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color = Theme.of(context).colorScheme.primary;
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (BuildContext context, Widget? child) {
+        return Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            Container(
+              width: 24 * (1 + _controller.value * 0.8),
+              height: 24 * (1 + _controller.value * 0.8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withValues(alpha: (1 - _controller.value) * 0.5),
+              ),
+            ),
+            Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+            ),
+            if (widget.qiblaBearing != null)
+              Transform.rotate(
+                angle: widget.qiblaBearing! * math.pi / 180,
+                child: Transform.translate(
+                  offset: const Offset(0, -18),
+                  child: const Icon(
+                    Icons.navigation_rounded,
+                    size: 14,
+                    color: Color(0xFFFFB300),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _KaabaMarker extends StatelessWidget {
+  const _KaabaMarker();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 30,
+      height: 30,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: <Widget>[
+          Positioned(
+            top: 5,
+            left: 0,
+            right: 0,
+            child: Container(height: 1.5, color: const Color(0xFFFFD700)),
+          ),
+          Positioned(
+            bottom: 3,
+            right: 5,
+            child: Container(
+              width: 3,
+              height: 6,
+              color: const Color(0xFFFFD700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
