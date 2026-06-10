@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:equran/prayer/prayer_location_service.dart';
+import 'package:equran/prayer/prayer_map_location_page.dart';
 import 'package:equran/prayer/prayer_models.dart';
+import 'package:equran/prayer/prayer_settings_store.dart';
 import 'package:equran/prayer/qibla_service.dart';
 import 'package:equran/theme/equran_colors.dart';
 import 'package:equran/utils/app_radii.dart';
@@ -48,7 +50,20 @@ class _QiblaPageState extends State<QiblaPage> {
   void initState() {
     super.initState();
     _locationService = widget.locationService ?? const PrayerLocationService();
+    _loadSavedLocation();
     _loadCurrentLocation();
+  }
+
+  void _loadSavedLocation() {
+    try {
+      final PrayerSettingsStore store = PrayerSettingsStore();
+      final PrayerLocation? saved = store.getLocation();
+      if (saved != null) {
+        setState(() {
+          _currentLocation = saved;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -80,6 +95,14 @@ class _QiblaPageState extends State<QiblaPage> {
         ),
         iconTheme: IconThemeData(color: colors.textSecondary),
         actionsIconTheme: IconThemeData(color: colors.textSecondary),
+        actions: <Widget>[
+          if (_currentLocation != null)
+            IconButton(
+              tooltip: AppLocalizations.of(context)!.chooseOnMap,
+              icon: const Icon(Icons.map_outlined),
+              onPressed: () => showQiblaMap(context, _currentLocation!),
+            ),
+        ],
       ),
       body: _buildBody(),
     );
@@ -92,12 +115,14 @@ class _QiblaPageState extends State<QiblaPage> {
         return _QiblaErrorState(
           message: _locationMessage!,
           onRetry: _loadCurrentLocation,
+          onChooseOnMap: _pickLocationOnMap,
         );
       }
       return _QiblaEmptyState(
         isLocating: _isLocating,
         message: _locationMessage,
         onRetry: _loadCurrentLocation,
+        onChooseOnMap: _pickLocationOnMap,
       );
     }
 
@@ -106,6 +131,7 @@ class _QiblaPageState extends State<QiblaPage> {
       return _QiblaErrorState(
         message: AppLocalizations.of(context)!.qiblaBearingUnavailable,
         onRetry: _loadCurrentLocation,
+        onChooseOnMap: _pickLocationOnMap,
       );
     }
 
@@ -126,12 +152,37 @@ class _QiblaPageState extends State<QiblaPage> {
     );
   }
 
+  Future<void> _pickLocationOnMap() async {
+    final PrayerLocation? picked = await showPrayerMapLocationPicker(
+      context,
+      _currentLocation,
+    );
+    if (picked == null || !mounted) return;
+
+    final PrayerSettingsStore store = PrayerSettingsStore();
+    await store.saveLocation(picked);
+
+    setState(() {
+      _currentLocation = picked;
+      _locationMessage = null;
+    });
+  }
+
   Future<void> _loadCurrentLocation() async {
     if (!mounted) return;
     setState(() {
       _isLocating = true;
       _locationMessage = null;
     });
+
+    final PrayerSettingsStore store = PrayerSettingsStore();
+    final PrayerLocation? saved = store.getLocation();
+    if (saved != null) {
+      setState(() {
+        _currentLocation = saved;
+      });
+    }
+
     try {
       final PrayerLocationResult result = await _locationService
           .currentDeviceLocation()
@@ -141,13 +192,16 @@ class _QiblaPageState extends State<QiblaPage> {
       setState(() {
         _isLocating = false;
         if (location == null) {
-          _currentLocation = null;
-          _locationMessage = _messageForLocationResult(
-            result,
-            AppLocalizations.of(context)!,
-          );
+          if (_currentLocation == null) {
+            _locationMessage = _messageForLocationResult(
+              result,
+              AppLocalizations.of(context)!,
+            );
+          }
         } else {
-          _currentLocation = location;
+          if (saved == null || saved.mode == PrayerLocationMode.currentDevice) {
+            _currentLocation = location;
+          }
           _locationMessage = null;
         }
       });
@@ -155,10 +209,11 @@ class _QiblaPageState extends State<QiblaPage> {
       if (!mounted) return;
       setState(() {
         _isLocating = false;
-        _currentLocation = null;
-        _locationMessage = AppLocalizations.of(
-          context,
-        )!.currentLocationTimedOut;
+        if (_currentLocation == null) {
+          _locationMessage = AppLocalizations.of(
+            context,
+          )!.currentLocationTimedOut;
+        }
       });
     }
   }
@@ -786,6 +841,16 @@ class _QiblaDetailsCard extends StatelessWidget {
                 ),
               ),
               IconButton(
+                tooltip: localizations.chooseOnMap,
+                onPressed: () => showQiblaMap(context, location),
+                constraints: const BoxConstraints.tightFor(
+                  width: 40,
+                  height: 40,
+                ),
+                padding: EdgeInsets.zero,
+                icon: const Icon(Icons.map_outlined),
+              ),
+              IconButton(
                 tooltip: localizations.refreshCurrentLocation,
                 onPressed: onRefreshLocation,
                 constraints: const BoxConstraints.tightFor(
@@ -823,6 +888,29 @@ class _QiblaDetailsCard extends StatelessWidget {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurfaceVariant,
               ),
+            ),
+          ],
+          if (heading == null ||
+              location.mode == PrayerLocationMode.manual) ...<Widget>[
+            const SizedBox(height: 10),
+            Row(
+              children: <Widget>[
+                Icon(
+                  Icons.info_outline_rounded,
+                  size: 14,
+                  color: colors.onSurfaceVariant.withValues(alpha: 0.8),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Using fixed coordinates for calculation, not live GPS.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant.withValues(alpha: 0.8),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ],
@@ -864,11 +952,13 @@ class _QiblaEmptyState extends StatelessWidget {
     required this.isLocating,
     required this.onRetry,
     this.message,
+    this.onChooseOnMap,
   });
 
   final bool isLocating;
   final String? message;
   final VoidCallback onRetry;
+  final VoidCallback? onChooseOnMap;
 
   @override
   Widget build(BuildContext context) {
@@ -944,6 +1034,12 @@ class _QiblaEmptyState extends StatelessWidget {
                                 : localizations.retry,
                           ),
                         ),
+                        if (!isLocating && onChooseOnMap != null)
+                          OutlinedButton.icon(
+                            onPressed: onChooseOnMap,
+                            icon: const Icon(Icons.map_outlined),
+                            label: Text(localizations.chooseOnMap),
+                          ),
                       ],
                     ),
                   ],
@@ -958,10 +1054,15 @@ class _QiblaEmptyState extends StatelessWidget {
 }
 
 class _QiblaErrorState extends StatelessWidget {
-  const _QiblaErrorState({required this.message, required this.onRetry});
+  const _QiblaErrorState({
+    required this.message,
+    required this.onRetry,
+    this.onChooseOnMap,
+  });
 
   final String message;
   final VoidCallback onRetry;
+  final VoidCallback? onChooseOnMap;
 
   @override
   Widget build(BuildContext context) {
@@ -1002,10 +1103,22 @@ class _QiblaErrorState extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: onRetry,
-                    icon: const Icon(Icons.my_location_rounded),
-                    label: Text(localizations.retry),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: <Widget>[
+                      FilledButton.icon(
+                        onPressed: onRetry,
+                        icon: const Icon(Icons.my_location_rounded),
+                        label: Text(localizations.retry),
+                      ),
+                      if (onChooseOnMap != null)
+                        OutlinedButton.icon(
+                          onPressed: onChooseOnMap,
+                          icon: const Icon(Icons.map_outlined),
+                          label: Text(localizations.chooseOnMap),
+                        ),
+                    ],
                   ),
                 ],
               ),

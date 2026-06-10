@@ -28,6 +28,15 @@ Future<PrayerLocation?> showPrayerMapLocationPicker(
   );
 }
 
+Future<void> showQiblaMap(BuildContext context, PrayerLocation location) {
+  return Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (BuildContext context) =>
+          PrayerMapLocationPage(initialLocation: location, isPicker: false),
+    ),
+  );
+}
+
 PrayerLocation prayerLocationFromMapSelection({
   required double latitude,
   required double longitude,
@@ -42,9 +51,14 @@ PrayerLocation prayerLocationFromMapSelection({
 }
 
 class PrayerMapLocationPage extends StatefulWidget {
-  const PrayerMapLocationPage({super.key, this.initialLocation});
+  const PrayerMapLocationPage({
+    super.key,
+    this.initialLocation,
+    this.isPicker = true,
+  });
 
   final PrayerLocation? initialLocation;
+  final bool isPicker;
 
   @override
   State<PrayerMapLocationPage> createState() => _PrayerMapLocationPageState();
@@ -61,14 +75,46 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
     super.initState();
     _mapController = MapController();
     final PrayerLocation? initialLocation = widget.initialLocation;
-    _selectedCenter = initialLocation == null
-        ? const LatLng(0, 0)
-        : LatLng(initialLocation.latitude, initialLocation.longitude);
+    if (initialLocation != null) {
+      _userLocation = LatLng(
+        initialLocation.latitude,
+        initialLocation.longitude,
+      );
+      _selectedCenter = _userLocation!;
+    } else {
+      _selectedCenter = const LatLng(0, 0);
+    }
 
     // Automatically detect user location and recenter map if initialLocation is not provided
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _detectUserLocation(shouldCenterMap: widget.initialLocation == null);
+      if (widget.initialLocation == null) {
+        _detectUserLocation(shouldCenterMap: true);
+      } else {
+        if (!widget.isPicker) {
+          Future<void>.delayed(const Duration(milliseconds: 150), () {
+            if (mounted) {
+              _fitUserAndKaabaBounds();
+            }
+          });
+        }
+      }
     });
+  }
+
+  void _fitUserAndKaabaBounds() {
+    final LatLng? userLoc = _userLocation;
+    if (userLoc == null) return;
+    final LatLng kaaba = const LatLng(21.4225, 39.8262);
+    final LatLngBounds bounds = LatLngBounds.fromPoints(<LatLng>[
+      userLoc,
+      kaaba,
+    ]);
+    _mapController.fitCamera(
+      CameraFit.bounds(
+        bounds: bounds,
+        padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 80),
+      ),
+    );
   }
 
   Future<void> _detectUserLocation({required bool shouldCenterMap}) async {
@@ -89,7 +135,11 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
           _userLocation = userCoords;
         });
         if (shouldCenterMap) {
-          _mapController.move(userCoords, 13.0);
+          if (widget.isPicker) {
+            _mapController.move(userCoords, 13.0);
+          } else {
+            _fitUserAndKaabaBounds();
+          }
         }
       } else {
         if (shouldCenterMap && result.message != null) {
@@ -157,9 +207,17 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
   }
 
   double? _calculateQiblaBearing() {
-    if (_userLocation == null) return null;
+    final LatLng? loc =
+        _userLocation ??
+        (widget.initialLocation != null
+            ? LatLng(
+                widget.initialLocation!.latitude,
+                widget.initialLocation!.longitude,
+              )
+            : null);
+    if (loc == null) return null;
     final double bearing = adhan.Qibla.qibla(
-      adhan.Coordinates(_userLocation!.latitude, _userLocation!.longitude),
+      adhan.Coordinates(loc.latitude, loc.longitude),
     );
     if (!bearing.isFinite) return null;
     final double normalized = bearing % 360;
@@ -197,9 +255,24 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
     final EquranColors equranColors = context.equranColors;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
 
+    final String locationLabel = widget.isPicker
+        ? localizations.selectedLocation
+        : (widget.initialLocation?.label ?? localizations.currentLocation);
+
+    final double displayLat = widget.isPicker
+        ? _selectedCenter.latitude
+        : (_userLocation?.latitude ?? widget.initialLocation?.latitude ?? 0.0);
+    final double displayLng = widget.isPicker
+        ? _selectedCenter.longitude
+        : (_userLocation?.longitude ??
+              widget.initialLocation?.longitude ??
+              0.0);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(localizations.chooseOnMap),
+        title: Text(
+          widget.isPicker ? localizations.chooseOnMap : localizations.qibla,
+        ),
         backgroundColor: equranColors.background,
         foregroundColor: equranColors.textPrimary,
         elevation: 0,
@@ -222,9 +295,11 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
               maxZoom: 18,
               backgroundColor: colors.surfaceContainerHighest,
               onPositionChanged: (MapCamera camera, bool hasGesture) {
-                setState(() {
-                  _selectedCenter = camera.center;
-                });
+                if (widget.isPicker) {
+                  setState(() {
+                    _selectedCenter = camera.center;
+                  });
+                }
               },
             ),
             children: <Widget>[
@@ -246,9 +321,7 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                       ),
                       strokeWidth: 3.5,
                       color: const Color(0xFFFFB300),
-                      pattern: StrokePattern.dashed(
-                        segments: <double>[10, 8],
-                      ),
+                      pattern: StrokePattern.dashed(segments: <double>[10, 8]),
                     ),
                   ],
                 ),
@@ -264,8 +337,8 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                     ),
                     Marker(
                       point: const LatLng(21.4225, 39.8262),
-                      width: 40,
-                      height: 40,
+                      width: 58,
+                      height: 58,
                       child: const _KaabaMarker(),
                     ),
                   ],
@@ -283,38 +356,40 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
               ),
             ],
           ),
-          IgnorePointer(
-            child: Center(
-              child: Transform.translate(
-                offset: const Offset(0, -18),
-                child: Icon(
-                  Icons.location_pin,
-                  size: 48,
-                  color: colors.primary,
-                  shadows: <Shadow>[
-                    Shadow(
-                      color: colors.shadow.withValues(alpha: 0.32),
-                      blurRadius: 12,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+          if (widget.isPicker) ...<Widget>[
+            IgnorePointer(
+              child: Center(
+                child: Transform.translate(
+                  offset: const Offset(0, -18),
+                  child: Icon(
+                    Icons.location_pin,
+                    size: 48,
+                    color: colors.primary,
+                    shadows: <Shadow>[
+                      Shadow(
+                        color: colors.shadow.withValues(alpha: 0.32),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          IgnorePointer(
-            child: Center(
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colors.primary,
-                  border: Border.all(color: colors.surface, width: 2),
+            IgnorePointer(
+              child: Center(
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors.primary,
+                    border: Border.all(color: colors.surface, width: 2),
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
           Positioned(
             top: 14,
             right: 14,
@@ -360,22 +435,20 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       Text(
-                        localizations.selectedLocation,
+                        locationLabel,
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        prayerMapCoordinatePreview(
-                          _selectedCenter.latitude,
-                          _selectedCenter.longitude,
-                        ),
+                        prayerMapCoordinatePreview(displayLat, displayLng),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.onSurfaceVariant,
                         ),
                       ),
-                      if (_userLocation != null) ...<Widget>[
+                      if (_userLocation != null ||
+                          widget.initialLocation != null) ...<Widget>[
                         const SizedBox(height: 6),
                         Row(
                           children: <Widget>[
@@ -387,7 +460,7 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                '${localizations.qibla}: ${_calculateQiblaBearing()?.toStringAsFixed(1)}° • ${_distanceToKaabaLabel(_userLocation!, localizations)}',
+                                '${localizations.qibla}: ${_calculateQiblaBearing()?.toStringAsFixed(1)}° • ${_distanceToKaabaLabel(_userLocation ?? LatLng(widget.initialLocation!.latitude, widget.initialLocation!.longitude), localizations)}',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: colors.onSurfaceVariant,
                                   fontWeight: FontWeight.w600,
@@ -397,18 +470,20 @@ class _PrayerMapLocationPageState extends State<PrayerMapLocationPage> {
                           ],
                         ),
                       ],
-                      const SizedBox(height: 12),
-                      FilledButton.icon(
-                        onPressed: _useSelectedLocation,
-                        icon: const Icon(Icons.check_rounded),
-                        label: Text(localizations.useThisLocation),
-                      ),
-                      const SizedBox(height: 6),
-                      TextButton.icon(
-                        onPressed: _enterCoordinatesManually,
-                        icon: const Icon(Icons.edit_location_alt_outlined),
-                        label: Text(localizations.enterCoordinatesManually),
-                      ),
+                      if (widget.isPicker) ...<Widget>[
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          onPressed: _useSelectedLocation,
+                          icon: const Icon(Icons.check_rounded),
+                          label: Text(localizations.useThisLocation),
+                        ),
+                        const SizedBox(height: 6),
+                        TextButton.icon(
+                          onPressed: _enterCoordinatesManually,
+                          icon: const Icon(Icons.edit_location_alt_outlined),
+                          label: Text(localizations.enterCoordinatesManually),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -543,38 +618,22 @@ class _KaabaMarker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 30,
-      height: 30,
       decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFFFFB300), width: 1.8),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 6,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            top: 5,
-            left: 0,
-            right: 0,
-            child: Container(height: 1.5, color: const Color(0xFFFFD700)),
-          ),
-          Positioned(
-            bottom: 3,
-            right: 5,
-            child: Container(
-              width: 3,
-              height: 6,
-              color: const Color(0xFFFFD700),
-            ),
-          ),
-        ],
+      child: ClipOval(
+        child: Image.asset(
+          'assets/media/images/app/kaabah.webp',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
