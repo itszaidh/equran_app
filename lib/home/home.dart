@@ -89,6 +89,7 @@ class _HomePageState extends State<HomePage> {
         label = localizations.asmaUlHusna;
       } else if (T == QiblaPage) {
         label = localizations.qibla;
+        showAppBar = false;
       } else if (T == ZakatCalculatorPage) {
         label = 'Zakat';
       } else if (T == IslamicCalendarPage) {

@@ -841,16 +841,6 @@ class _QiblaDetailsCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: localizations.chooseOnMap,
-                onPressed: () => showQiblaMap(context, location),
-                constraints: const BoxConstraints.tightFor(
-                  width: 40,
-                  height: 40,
-                ),
-                padding: EdgeInsets.zero,
-                icon: const Icon(Icons.map_outlined),
-              ),
-              IconButton(
                 tooltip: localizations.refreshCurrentLocation,
                 onPressed: onRefreshLocation,
                 constraints: const BoxConstraints.tightFor(
