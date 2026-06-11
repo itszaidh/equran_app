@@ -624,8 +624,11 @@ class _CircularCounterState extends State<_CircularCounter>
                                   overflow: TextOverflow.ellipsis,
                                   style:
                                       TextStyle(
-                                        fontFamily: EquranTextStyles.activeFontFamily,
-                                        fontFamilyFallback: const <String>['UthmanicHafs'],
+                                        fontFamily:
+                                            EquranTextStyles.activeFontFamily,
+                                        fontFamilyFallback: const <String>[
+                                          'UthmanicHafs',
+                                        ],
                                         fontSize: circleSize * 0.2,
                                         height: 1.15,
                                         fontWeight: FontWeight.w400,

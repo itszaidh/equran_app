@@ -2169,5 +2169,160 @@
   "quickActions": "دسترسی سریع",
   "bookmarksAndNotes": "نشان‌ها و یادداشت‌ها",
   "hideSettings": "پنهان کردن تنظیمات",
-  "showSettings": "نمایش تنظیمات"
+  "showSettings": "نمایش تنظیمات",
+  "zakatCategoryCash": "پول نقد و مطالبات",
+  "zakatCategoryGold": "طلا",
+  "zakatCategorySilver": "نقره",
+  "zakatCategoryInvestments": "سرمایه‌گذاری و اوراق بهادار",
+  "zakatCategoryBusiness": "موجودی کالا",
+  "zakatCategoryLivestock": "دام (سنتی)",
+  "zakatCategoryAgriculture": "محصولات کشاورزی",
+  "zakatCategoryOther": "سایر دارایی‌ها",
+  "zakatBelowNisabExplanation": "ثروت شما کمتر از حد نصاب ({nisab}) است. زکاتی تعلق نمی‌گیرد.",
+  "@zakatBelowNisabExplanation": {
+    "placeholders": {
+      "nisab": {
+        "type": "String"
+      }
+    }
+  },
+  "saveToHistory": "ذخیره در تاریخچه",
+  "enterWeight": "وزن را وارد کنید",
+  "enterAmountInCurrency": "مبلغ را به {currency} وارد کنید",
+  "@enterAmountInCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "amountInCurrency": "مبلغ به {currency}",
+  "@amountInCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "livestockSubtitle": "گوسفند/بز، گاو، شتر — ارزش‌های ساده‌شده مدرن",
+  "livestockSheepGoats": "گوسفند و بز",
+  "livestockCowsBuffalo": "گاو / گاومیش",
+  "livestockCamels": "شتر",
+  "noHistoricalCalculations": "هیچ محاسبات قبلی یافت نشد",
+  "savedRecordsAppearHere": "سوابق ذخیره شده در اینجا ظاهر می‌شوند.",
+  "calculationOnDate": "محاسبه در تاریخ {date}",
+  "@calculationOnDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "historyLiquidCash": "پول نقد:",
+  "historyInvestments": "سرمایه‌گذاری:",
+  "historyGoldGrams": "طلا ({grams} گرم):",
+  "@historyGoldGrams": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "historySilverGrams": "نقره ({grams} گرم):",
+  "@historySilverGrams": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "historyLiabilities": "بدهی‌ها:",
+  "historyZakatDue": "زکات تعلق‌گرفته:",
+  "moonPhaseNew": "ماه نو",
+  "moonPhaseWaxingCrescent": "هلال فزاینده",
+  "moonPhaseFull": "ماه کامل (بدر)",
+  "moonPhaseWaningCrescent": "هلال کاهنده",
+  "moonPhaseCrescent": "هلال ماه",
+  "moonPhaseContextNew": "زمانی برای آغازهای جدید",
+  "moonPhaseContextWaxing": "نور در حال افزایش",
+  "moonPhaseContextFull": "حداکثر روشنایی",
+  "moonPhaseContextWaning": "کاهش تدریجی نور",
+  "occasionRamadan": "رمضان",
+  "occasionEidAlFitr": "عید فطر",
+  "occasionDayOfArafah": "روز عرفه",
+  "occasionDayOfArafahFasting": "روز عرفه (روزه)",
+  "occasionEidAlAdha": "عید قربان",
+  "occasionDayOfAshura": "روز عاشورا",
+  "occasionDayOfAshuraFasting": "روز عاشورا (روزه)",
+  "occasionIsraAndMiraj": "اسراء و معراج",
+  "occasionRamadanBegins": "آغاز رمضان",
+  "occasionRamadanFastingDay": "روزه روز رمضان",
+  "occasionLaylatAlQadr": "شب قدر",
+  "occasionLaylatAlQadrBlessed": "شب قدر (شب مبارک)",
+  "occasionIslamicNewYear": "سال نو اسلامی",
+  "occasionShabEBarat": "شب برات",
+  "occasionShabEBaratBlessed": "شب برات (شب مبارک)",
+  "occasionTasuaFast": "روزه تاسوعا",
+  "occasionAyyamAlBid": "ایام البیض (روزهای سفید)",
+  "occasionAyyamAlBidFasting": "ایام البیض (روزه)",
+  "occasionRecommendedFastingDay": "روزه مستحب",
+  "occasionFast": "روزه",
+  "fastingNotificationBody": "فردا {date} ({reason}) است. نیت و سحری خود را آماده کنید.",
+  "@fastingNotificationBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "shareIslamicDate": "تاریخ اسلامی: {date}",
+  "@shareIslamicDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "shareGregorianDate": "میلادی: {date}",
+  "@shareGregorianDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "shareOccasion": "مناسبت: {occasion}",
+  "@shareOccasion": {
+    "placeholders": {
+      "occasion": {
+        "type": "String"
+      }
+    }
+  },
+  "shareMoonPhase": "وضعیت ماه: {phase}",
+  "@shareMoonPhase": {
+    "placeholders": {
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "shareRecommendedFasting": "توصیه شده: روزه",
+  "moonPhase": "وضعیت ماه",
+  "recActionQuran": "تلاوت قرآن کریم را افزایش دهید",
+  "recActionCharity": "صدقه بدهید و به نیازمندان کمک کنید",
+  "recActionLaylatAlQadr": "شب قدر را در شب‌های فرد جستجو کنید",
+  "recActionEidFitr": "نماز عید را اقامه کنید + زکات فطره بدهید",
+  "recActionEidFitrSocial": "به دیدار خانواده بروید و غذا تقسیم کنید",
+  "recActionFastArafah": "روز عرفه را روزه بگیرید",
+  "recActionDua": "بسیار دعا کنید",
+  "recActionEidAdha": "نماز عید قربان را اقامه کنید",
+  "recActionQurbani": "در صورت توانایی قربانی کنید",
+  "recActionFastAshura": "روزه عاشورا را بگیرید (قبل/بعد از آن)",
+  "recActionVoluntaryFast": "در صورت توانایی روزه مستحبی بگیرید",
+  "recActionFastAyyamAlBid": "ایام البیض را روزه بگیرید",
+  "recActionGeneralWorship": "به ذکر، دعا و کارهای نیک مشغول شوید"
 }

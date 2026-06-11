@@ -3,6 +3,7 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:equran/backend/settings_db.dart';
+import 'package:equran/theme/equran_colors.dart';
 import 'package:quran/quran.dart' as quran;
 
 class EquranTextStyles {
@@ -97,10 +98,87 @@ class EquranTextStyles {
     if (locale.languageCode == 'ar' ||
         locale.languageCode == 'ur' ||
         locale.languageCode == 'fa') {
+      final TextTheme arabicTextTheme = GoogleFonts.notoNaskhArabicTextTheme(
+        theme.textTheme,
+      );
+      final EquranColors? tokens = theme.extension<EquranColors>();
+
       return theme.copyWith(
-        textTheme: GoogleFonts.notoNaskhArabicTextTheme(theme.textTheme),
+        textTheme: arabicTextTheme,
         primaryTextTheme: GoogleFonts.notoNaskhArabicTextTheme(
           theme.primaryTextTheme,
+        ),
+        appBarTheme: theme.appBarTheme.copyWith(
+          titleTextStyle: arabicTextTheme.titleLarge?.copyWith(
+            color: tokens?.textPrimary ?? theme.colorScheme.onSurface,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: tokens?.primary ?? theme.colorScheme.primary,
+            foregroundColor: tokens?.onPrimary ?? theme.colorScheme.onPrimary,
+            disabledBackgroundColor:
+                tokens?.border ?? theme.colorScheme.outline,
+            disabledForegroundColor:
+                tokens?.textMuted ??
+                theme.colorScheme.onSurface.withValues(alpha: 0.38),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(100),
+            ),
+            textStyle: arabicTextTheme.labelLarge,
+            minimumSize: const Size(48, 46),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: tokens?.primary ?? theme.colorScheme.primary,
+            side: BorderSide(
+              color: tokens?.primary ?? theme.colorScheme.primary,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(100),
+            ),
+            textStyle: arabicTextTheme.labelLarge,
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: tokens?.primary ?? theme.colorScheme.primary,
+            textStyle: arabicTextTheme.labelLarge,
+          ),
+        ),
+        chipTheme: theme.chipTheme.copyWith(
+          labelStyle: arabicTextTheme.labelMedium?.copyWith(
+            color:
+                tokens?.primaryStrong ?? theme.colorScheme.onPrimaryContainer,
+          ),
+          secondaryLabelStyle: arabicTextTheme.labelMedium?.copyWith(
+            color: tokens?.onPrimary ?? theme.colorScheme.onPrimary,
+          ),
+        ),
+        tabBarTheme: theme.tabBarTheme.copyWith(
+          labelStyle: arabicTextTheme.labelLarge,
+          unselectedLabelStyle: arabicTextTheme.labelLarge,
+        ),
+        navigationBarTheme: theme.navigationBarTheme.copyWith(
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final bool selected = states.contains(WidgetState.selected);
+            return arabicTextTheme.labelMedium?.copyWith(
+              color: selected
+                  ? (tokens?.onPrimary ?? theme.colorScheme.onPrimary)
+                  : (tokens?.onPrimaryMuted ??
+                        theme.colorScheme.onPrimary.withValues(alpha: 0.7)),
+              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+            );
+          }),
+        ),
+        inputDecorationTheme: theme.inputDecorationTheme.copyWith(
+          hintStyle: arabicTextTheme.bodyMedium?.copyWith(
+            color:
+                tokens?.textMuted ??
+                theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
         ),
       );
     }

@@ -64,8 +64,7 @@ enum DailyToolType {
   }
 
   String getTitle(AppLocalizations localizations) {
-    final String lang =
-        localizations.localeName.split('_').first.toLowerCase();
+    final String lang = localizations.localeName.split('_').first.toLowerCase();
     return switch (this) {
       quran => localizations.quran,
       prayer => localizations.prayer,
@@ -84,8 +83,7 @@ enum DailyToolType {
   }
 
   String getSubtitle(AppLocalizations localizations) {
-    final String lang =
-        localizations.localeName.split('_').first.toLowerCase();
+    final String lang = localizations.localeName.split('_').first.toLowerCase();
     return switch (this) {
       quran => localizations.dailyQuranCompanionSubtitle,
       prayer => localizations.prayerTimesSettings,

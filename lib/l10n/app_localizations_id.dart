@@ -4206,4 +4206,254 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get showSettings => 'Show settings';
+
+  @override
+  String get zakatCategoryCash => 'Tunai & Piutang';
+
+  @override
+  String get zakatCategoryGold => 'Emas';
+
+  @override
+  String get zakatCategorySilver => 'Perak';
+
+  @override
+  String get zakatCategoryInvestments => 'Investasi & Efek';
+
+  @override
+  String get zakatCategoryBusiness => 'Persediaan Bisnis';
+
+  @override
+  String get zakatCategoryLivestock => 'Hewan Ternak (Tradisional)';
+
+  @override
+  String get zakatCategoryAgriculture => 'Hasil Pertanian';
+
+  @override
+  String get zakatCategoryOther => 'Aset Lainnya';
+
+  @override
+  String zakatBelowNisabExplanation(String nisab) {
+    return 'Kekayaan Anda di bawah Nisab $nisab. Zakat belum wajib.';
+  }
+
+  @override
+  String get saveToHistory => 'Simpan ke Riwayat';
+
+  @override
+  String get enterWeight => 'Masukkan berat';
+
+  @override
+  String enterAmountInCurrency(String currency) {
+    return 'Masukkan jumlah dalam $currency';
+  }
+
+  @override
+  String amountInCurrency(String currency) {
+    return 'Jumlah dalam $currency';
+  }
+
+  @override
+  String get livestockSubtitle =>
+      'Domba/Kambing, Sapi, Unta — nilai modern disederhanakan';
+
+  @override
+  String get livestockSheepGoats => 'Domba & Kambing';
+
+  @override
+  String get livestockCowsBuffalo => 'Sapi / Kerbau';
+
+  @override
+  String get livestockCamels => 'Unta';
+
+  @override
+  String get noHistoricalCalculations => 'Tidak ada riwayat perhitungan';
+
+  @override
+  String get savedRecordsAppearHere =>
+      'Catatan yang disimpan akan muncul di sini.';
+
+  @override
+  String calculationOnDate(String date) {
+    return 'Perhitungan pada $date';
+  }
+
+  @override
+  String get historyLiquidCash => 'Uang Tunai:';
+
+  @override
+  String get historyInvestments => 'Investasi:';
+
+  @override
+  String historyGoldGrams(String grams) {
+    return 'Emas (${grams}g):';
+  }
+
+  @override
+  String historySilverGrams(String grams) {
+    return 'Perak (${grams}g):';
+  }
+
+  @override
+  String get historyLiabilities => 'Kewajiban:';
+
+  @override
+  String get historyZakatDue => 'Zakat Wajib:';
+
+  @override
+  String get moonPhaseNew => 'Bulan Baru';
+
+  @override
+  String get moonPhaseWaxingCrescent => 'Bulan Sabit Awal';
+
+  @override
+  String get moonPhaseFull => 'Bulan Purnama';
+
+  @override
+  String get moonPhaseWaningCrescent => 'Bulan Sabit Akhir';
+
+  @override
+  String get moonPhaseCrescent => 'Bulan Sabit';
+
+  @override
+  String get moonPhaseContextNew => 'Waktunya untuk awal yang baru';
+
+  @override
+  String get moonPhaseContextWaxing => 'Cahaya bertambah';
+
+  @override
+  String get moonPhaseContextFull => 'Pencahayaan puncak';
+
+  @override
+  String get moonPhaseContextWaning => 'Pelepasan lembut';
+
+  @override
+  String get occasionRamadan => 'Ramadhan';
+
+  @override
+  String get occasionEidAlFitr => 'Idul Fitri';
+
+  @override
+  String get occasionDayOfArafah => 'Hari Arafah';
+
+  @override
+  String get occasionDayOfArafahFasting => 'Hari Arafah (Puasa)';
+
+  @override
+  String get occasionEidAlAdha => 'Idul Adha';
+
+  @override
+  String get occasionDayOfAshura => 'Hari Asyura';
+
+  @override
+  String get occasionDayOfAshuraFasting => 'Hari Asyura (Puasa)';
+
+  @override
+  String get occasionIsraAndMiraj => 'Isra\' & Mi\'raj';
+
+  @override
+  String get occasionRamadanBegins => 'Ramadhan dimulai';
+
+  @override
+  String get occasionRamadanFastingDay => 'Hari Puasa Ramadhan';
+
+  @override
+  String get occasionLaylatAlQadr => 'Lailatul Qadar';
+
+  @override
+  String get occasionLaylatAlQadrBlessed => 'Lailatul Qadar (Malam Diberkahi)';
+
+  @override
+  String get occasionIslamicNewYear => 'Tahun Baru Islam';
+
+  @override
+  String get occasionShabEBarat => 'Nisfu Syakban';
+
+  @override
+  String get occasionShabEBaratBlessed => 'Nisfu Syakban (Malam Diberkahi)';
+
+  @override
+  String get occasionTasuaFast => 'Puasa Tasu\'a';
+
+  @override
+  String get occasionAyyamAlBid => 'Ayyamul Bidh (Hari Putih)';
+
+  @override
+  String get occasionAyyamAlBidFasting => 'Ayyamul Bidh (Hari Putih - Puasa)';
+
+  @override
+  String get occasionRecommendedFastingDay => 'Hari Puasa Sunnah';
+
+  @override
+  String get occasionFast => 'Puasa';
+
+  @override
+  String fastingNotificationBody(String date, String reason) {
+    return 'Besok adalah tanggal $date ($reason). Siapkan niat dan sahur Anda.';
+  }
+
+  @override
+  String shareIslamicDate(String date) {
+    return 'Tanggal Hijriah: $date';
+  }
+
+  @override
+  String shareGregorianDate(String date) {
+    return 'Tanggal Masehi: $date';
+  }
+
+  @override
+  String shareOccasion(String occasion) {
+    return 'Peristiwa: $occasion';
+  }
+
+  @override
+  String shareMoonPhase(String phase) {
+    return 'Fase Bulan: $phase';
+  }
+
+  @override
+  String get shareRecommendedFasting => 'Rekomendasi: Puasa';
+
+  @override
+  String get moonPhase => 'Fase Bulan';
+
+  @override
+  String get recActionQuran => 'Tingkatkan membaca Al-Qur\'an';
+
+  @override
+  String get recActionCharity => 'Bersedekah dan membantu yang membutuhkan';
+
+  @override
+  String get recActionLaylatAlQadr => 'Cari Lailatul Qadar di malam ganjil';
+
+  @override
+  String get recActionEidFitr => 'Melaksanakan shalat Id + Zakat Fitrah';
+
+  @override
+  String get recActionEidFitrSocial =>
+      'Mengunjungi keluarga dan berbagi makanan';
+
+  @override
+  String get recActionFastArafah => 'Berpuasa pada hari Arafah';
+
+  @override
+  String get recActionDua => 'Perbanyak doa';
+
+  @override
+  String get recActionEidAdha => 'Melaksanakan shalat Idul Adha';
+
+  @override
+  String get recActionQurbani => 'Berkurban bagi yang mampu';
+
+  @override
+  String get recActionFastAshura => 'Berpuasa Asyura (sebelum/sesudah)';
+
+  @override
+  String get recActionVoluntaryFast => 'Jalankan puasa sunnah jika mampu';
+
+  @override
+  String get recActionFastAyyamAlBid => 'Berpuasa pada hari-hari Ayyamul Bidh';
+
+  @override
+  String get recActionGeneralWorship => 'Perbanyak zikir, doa, dan amal saleh';
 }

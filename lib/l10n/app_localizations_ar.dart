@@ -4109,4 +4109,253 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get showSettings => 'Show settings';
+
+  @override
+  String get zakatCategoryCash => 'النقد والذمم الدائنة';
+
+  @override
+  String get zakatCategoryGold => 'الذهب';
+
+  @override
+  String get zakatCategorySilver => 'الفضة';
+
+  @override
+  String get zakatCategoryInvestments => 'الاستثمارات والأوراق المالية';
+
+  @override
+  String get zakatCategoryBusiness => 'المخزون التجاري';
+
+  @override
+  String get zakatCategoryLivestock => 'الماشية (تقليدي)';
+
+  @override
+  String get zakatCategoryAgriculture => 'المحاصيل الزراعية';
+
+  @override
+  String get zakatCategoryOther => 'أصول أخرى';
+
+  @override
+  String zakatBelowNisabExplanation(String nisab) {
+    return 'ثروتك أقل من النصاب ($nisab). لا تجب الزكاة بعد.';
+  }
+
+  @override
+  String get saveToHistory => 'حفظ في السجل';
+
+  @override
+  String get enterWeight => 'أدخل الوزن';
+
+  @override
+  String enterAmountInCurrency(String currency) {
+    return 'أدخل المبلغ بالـ $currency';
+  }
+
+  @override
+  String amountInCurrency(String currency) {
+    return 'المبلغ بالـ $currency';
+  }
+
+  @override
+  String get livestockSubtitle =>
+      'الأغنام/الماعز، الأبقار، الإبل — قيم حديثة مبسطة';
+
+  @override
+  String get livestockSheepGoats => 'الأغنام والماعز';
+
+  @override
+  String get livestockCowsBuffalo => 'الأبقار / الجواميس';
+
+  @override
+  String get livestockCamels => 'الإبل';
+
+  @override
+  String get noHistoricalCalculations => 'لا توجد عمليات حسابية سابقة';
+
+  @override
+  String get savedRecordsAppearHere => 'ستظهر السجلات المحفوظة هنا.';
+
+  @override
+  String calculationOnDate(String date) {
+    return 'حساب في $date';
+  }
+
+  @override
+  String get historyLiquidCash => 'النقد السيال:';
+
+  @override
+  String get historyInvestments => 'الاستثمارات:';
+
+  @override
+  String historyGoldGrams(String grams) {
+    return 'الذهب ($grams غرام):';
+  }
+
+  @override
+  String historySilverGrams(String grams) {
+    return 'الفضة ($grams غرام):';
+  }
+
+  @override
+  String get historyLiabilities => 'الالتزامات:';
+
+  @override
+  String get historyZakatDue => 'الزكاة المستحقة:';
+
+  @override
+  String get moonPhaseNew => 'محاق';
+
+  @override
+  String get moonPhaseWaxingCrescent => 'هلال متزايد';
+
+  @override
+  String get moonPhaseFull => 'بدر';
+
+  @override
+  String get moonPhaseWaningCrescent => 'هلال متناقص';
+
+  @override
+  String get moonPhaseCrescent => 'هلال';
+
+  @override
+  String get moonPhaseContextNew => 'وقت للبدايات الجديدة';
+
+  @override
+  String get moonPhaseContextWaxing => 'الضوء المتزايد';
+
+  @override
+  String get moonPhaseContextFull => 'ذروة الإضاءة';
+
+  @override
+  String get moonPhaseContextWaning => 'تراجع تدريجي';
+
+  @override
+  String get occasionRamadan => 'رمضان';
+
+  @override
+  String get occasionEidAlFitr => 'عيد الفطر';
+
+  @override
+  String get occasionDayOfArafah => 'يوم عرفة';
+
+  @override
+  String get occasionDayOfArafahFasting => 'يوم عرفة (صيام)';
+
+  @override
+  String get occasionEidAlAdha => 'عيد الأضحى';
+
+  @override
+  String get occasionDayOfAshura => 'يوم عاشوراء';
+
+  @override
+  String get occasionDayOfAshuraFasting => 'يوم عاشوراء (صيام)';
+
+  @override
+  String get occasionIsraAndMiraj => 'الإسراء والمعراج';
+
+  @override
+  String get occasionRamadanBegins => 'بداية رمضان';
+
+  @override
+  String get occasionRamadanFastingDay => 'يوم صيام رمضان';
+
+  @override
+  String get occasionLaylatAlQadr => 'ليلة القدر';
+
+  @override
+  String get occasionLaylatAlQadrBlessed => 'ليلة القدر (ليلة مباركة)';
+
+  @override
+  String get occasionIslamicNewYear => 'رأس السنة الهجرية';
+
+  @override
+  String get occasionShabEBarat => 'ليلة البراءة';
+
+  @override
+  String get occasionShabEBaratBlessed => 'ليلة البراءة (ليلة مباركة)';
+
+  @override
+  String get occasionTasuaFast => 'صيام تاسوعاء';
+
+  @override
+  String get occasionAyyamAlBid => 'الأيام البيض';
+
+  @override
+  String get occasionAyyamAlBidFasting => 'الأيام البيض (صيام)';
+
+  @override
+  String get occasionRecommendedFastingDay => 'يوم صيام مستحب';
+
+  @override
+  String get occasionFast => 'صيام';
+
+  @override
+  String fastingNotificationBody(String date, String reason) {
+    return 'غدًا هو $date ($reason). يرجى إعداد النية والسحور.';
+  }
+
+  @override
+  String shareIslamicDate(String date) {
+    return 'التاريخ الهجري: $date';
+  }
+
+  @override
+  String shareGregorianDate(String date) {
+    return 'التاريخ الميلادي: $date';
+  }
+
+  @override
+  String shareOccasion(String occasion) {
+    return 'المناسبة: $occasion';
+  }
+
+  @override
+  String shareMoonPhase(String phase) {
+    return 'طور القمر: $phase';
+  }
+
+  @override
+  String get shareRecommendedFasting => 'المستحب: الصيام';
+
+  @override
+  String get moonPhase => 'طور القمر';
+
+  @override
+  String get recActionQuran => 'الإكثار من تلاوة القرآن الكريم';
+
+  @override
+  String get recActionCharity => 'التصدق ومساعدة المحتاجين';
+
+  @override
+  String get recActionLaylatAlQadr => 'التماس ليلة القدر في الليالي الوترية';
+
+  @override
+  String get recActionEidFitr => 'أداء صلاة العيد + زكاة الفطر';
+
+  @override
+  String get recActionEidFitrSocial => 'زيارة الأهل وصلة الأرحام';
+
+  @override
+  String get recActionFastArafah => 'صيام يوم عرفة';
+
+  @override
+  String get recActionDua => 'الإكثار من الدعاء';
+
+  @override
+  String get recActionEidAdha => 'أداء صلاة عيد الأضحى';
+
+  @override
+  String get recActionQurbani => 'الأضحية للقادر عليها';
+
+  @override
+  String get recActionFastAshura => 'صيام عاشوراء (يوم قبله أو بعده)';
+
+  @override
+  String get recActionVoluntaryFast => 'صيام التطوع لمن استطاع';
+
+  @override
+  String get recActionFastAyyamAlBid => 'صيام الأيام البيض';
+
+  @override
+  String get recActionGeneralWorship =>
+      'الاشتغال بالذكر والصلاة والأعمال الصالحة';
 }

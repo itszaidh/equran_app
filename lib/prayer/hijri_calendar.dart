@@ -80,8 +80,121 @@ class HijriCalendar {
     'ذُو الحِجَّة',
   ];
 
+  static const List<String> _monthNamesTurkish = <String>[
+    'Muharrem',
+    'Safer',
+    'Rebiülevvel',
+    'Rebiülahir',
+    'Cemaziyelevvel',
+    'Cemaziyelahir',
+    'Recep',
+    'Şaban',
+    'Ramazan',
+    'Şevval',
+    'Zilkade',
+    'Zilhicce',
+  ];
+
+  static const List<String> _monthNamesIndonesian = <String>[
+    'Muharram',
+    'Safar',
+    'Rabi\'ul Awwal',
+    'Rabi\'ul Akhir',
+    'Jumadil Awwal',
+    'Jumadil Akhir',
+    'Rajab',
+    'Sya\'ban',
+    'Ramadan',
+    'Syawwal',
+    'Dzulqa\'dah',
+    'Dzulhijjah',
+  ];
+
+  static const List<String> _monthNamesBengali = <String>[
+    'মুহাররম',
+    'সফর',
+    'রবিউল আউয়াল',
+    'রবিউস সানি',
+    'জমাদিউল আউয়াল',
+    'জমাদিউস সানি',
+    'রজব',
+    'শাবান',
+    'রমজান',
+    'শাওয়াল',
+    'জিলকদ',
+    'জিলহজ',
+  ];
+
+  static const List<String> _monthNamesGerman = <String>[
+    'Muharram',
+    'Safar',
+    'Rabi\' al-Awwal',
+    'Rabi\' ath-Thani',
+    'Jumada al-Ula',
+    'Jumada al-Akhirah',
+    'Rajab',
+    'Sha\'ban',
+    'Ramadan',
+    'Shawwal',
+    'Dhu al-Qa\'dah',
+    'Dhu al-Hijjah',
+  ];
+
+  static const List<String> _monthNamesUrdu = <String>[
+    'محرم',
+    'صفر',
+    'ربیع الاول',
+    'ربیع الثانی',
+    'جمادی الاول',
+    'جمادی الثانی',
+    'رجب',
+    'شعبان',
+    'رمضان',
+    'شوال',
+    'ذوالقعدہ',
+    'ذوالحجہ',
+  ];
+
+  static const List<String> _monthNamesFarsi = <String>[
+    'محرم',
+    'صفر',
+    'ربیع‌الاول',
+    'ربیع‌الثانی',
+    'جمادی‌الاول',
+    'جمادی‌الثانی',
+    'رجب',
+    'شعبان',
+    'رمضان',
+    'شوال',
+    'ذی‌القعده',
+    'ذی‌الحجه',
+  ];
+
   String get monthName => monthNames[hMonth - 1];
   String get monthNameArabic => monthNamesArabic[hMonth - 1];
+
+  /// Get the localized month name according to the provided language code.
+  String getLocalizedMonthName(String lang) {
+    final String langCode = lang.split('_').first.toLowerCase();
+    switch (langCode) {
+      case 'tr':
+        return _monthNamesTurkish[hMonth - 1];
+      case 'id':
+        return _monthNamesIndonesian[hMonth - 1];
+      case 'bn':
+        return _monthNamesBengali[hMonth - 1];
+      case 'de':
+        return _monthNamesGerman[hMonth - 1];
+      case 'ur':
+        return _monthNamesUrdu[hMonth - 1];
+      case 'fa':
+        return _monthNamesFarsi[hMonth - 1];
+      case 'ar':
+        return monthNamesArabic[hMonth - 1];
+      default:
+        return monthName;
+    }
+  }
 
   /// Short "D Month Y" representation (English)
   @override
@@ -89,6 +202,11 @@ class HijriCalendar {
 
   /// Beautiful Arabic representation
   String toArabicString() => '$hDay $monthNameArabic $hYear';
+
+  /// Format as localized date string
+  String toLocalizedDateString(String lang) {
+    return '$hDay ${getLocalizedMonthName(lang)} $hYear';
+  }
 
   // ==================== Islamic Event Helpers (for UI) ====================
 

@@ -4193,4 +4193,256 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get showSettings => 'Show settings';
+
+  @override
+  String get zakatCategoryCash => 'Nakit & Alacaklar';
+
+  @override
+  String get zakatCategoryGold => 'Altın';
+
+  @override
+  String get zakatCategorySilver => 'Gümüş';
+
+  @override
+  String get zakatCategoryInvestments => 'Yatırımlar & Menkul Kıymetler';
+
+  @override
+  String get zakatCategoryBusiness => 'Ticari Mallar';
+
+  @override
+  String get zakatCategoryLivestock => 'Hayvanlar (Geleneksel)';
+
+  @override
+  String get zakatCategoryAgriculture => 'Tarımsal Ürünler';
+
+  @override
+  String get zakatCategoryOther => 'Diğer Varlıklar';
+
+  @override
+  String zakatBelowNisabExplanation(String nisab) {
+    return 'Servetiniz Nisap eşiğinin ($nisab) altındadır. Henüz zekat gerekmiyor.';
+  }
+
+  @override
+  String get saveToHistory => 'Geçmişe Kaydet';
+
+  @override
+  String get enterWeight => 'Ağırlık girin';
+
+  @override
+  String enterAmountInCurrency(String currency) {
+    return '$currency cinsinden miktar girin';
+  }
+
+  @override
+  String amountInCurrency(String currency) {
+    return '$currency cinsinden miktar';
+  }
+
+  @override
+  String get livestockSubtitle =>
+      'Koyun/Keçi, Sığır, Deve — basitleştirilmiş modern değerler';
+
+  @override
+  String get livestockSheepGoats => 'Koyun & Keçi';
+
+  @override
+  String get livestockCowsBuffalo => 'Sığır / Manda';
+
+  @override
+  String get livestockCamels => 'Deve';
+
+  @override
+  String get noHistoricalCalculations => 'Geçmiş hesaplama bulunmuyor';
+
+  @override
+  String get savedRecordsAppearHere =>
+      'Kaydedilen hesaplamalar burada görünecektir.';
+
+  @override
+  String calculationOnDate(String date) {
+    return '$date Tarihli Hesaplama';
+  }
+
+  @override
+  String get historyLiquidCash => 'Nakit Para:';
+
+  @override
+  String get historyInvestments => 'Yatırımlar:';
+
+  @override
+  String historyGoldGrams(String grams) {
+    return 'Altın (${grams}g):';
+  }
+
+  @override
+  String historySilverGrams(String grams) {
+    return 'Gümüş (${grams}g):';
+  }
+
+  @override
+  String get historyLiabilities => 'Borçlar:';
+
+  @override
+  String get historyZakatDue => 'Zekat Miktarı:';
+
+  @override
+  String get moonPhaseNew => 'Yeni Ay';
+
+  @override
+  String get moonPhaseWaxingCrescent => 'İlk Dördün / Hilal';
+
+  @override
+  String get moonPhaseFull => 'Dolunay';
+
+  @override
+  String get moonPhaseWaningCrescent => 'Son Dördün / Hilal';
+
+  @override
+  String get moonPhaseCrescent => 'Hilal';
+
+  @override
+  String get moonPhaseContextNew => 'Yeni başlangıçlar zamanı';
+
+  @override
+  String get moonPhaseContextWaxing => 'Işık büyüyor';
+
+  @override
+  String get moonPhaseContextFull => 'Maksimum aydınlanma';
+
+  @override
+  String get moonPhaseContextWaning => 'Yavaş yavaş azalma';
+
+  @override
+  String get occasionRamadan => 'Ramazan';
+
+  @override
+  String get occasionEidAlFitr => 'Ramazan Bayramı';
+
+  @override
+  String get occasionDayOfArafah => 'Arefe Günü';
+
+  @override
+  String get occasionDayOfArafahFasting => 'Arefe Günü (Oruç)';
+
+  @override
+  String get occasionEidAlAdha => 'Kurban Bayramı';
+
+  @override
+  String get occasionDayOfAshura => 'Aşure Günü';
+
+  @override
+  String get occasionDayOfAshuraFasting => 'Aşure Günü (Oruç)';
+
+  @override
+  String get occasionIsraAndMiraj => 'Miraç Kandili';
+
+  @override
+  String get occasionRamadanBegins => 'Ramazan Başlangıcı';
+
+  @override
+  String get occasionRamadanFastingDay => 'Ramazan Oruç Günü';
+
+  @override
+  String get occasionLaylatAlQadr => 'Kadir Gecesi';
+
+  @override
+  String get occasionLaylatAlQadrBlessed => 'Kadir Gecesi (Mübarek Gece)';
+
+  @override
+  String get occasionIslamicNewYear => 'Hicri Yılbaşı';
+
+  @override
+  String get occasionShabEBarat => 'Berat Kandili';
+
+  @override
+  String get occasionShabEBaratBlessed => 'Berat Kandili (Mübarek Gece)';
+
+  @override
+  String get occasionTasuaFast => 'Tevhid / Tasua Orucu';
+
+  @override
+  String get occasionAyyamAlBid => 'Eyyam-ı Biyz (Aydınlık Günler)';
+
+  @override
+  String get occasionAyyamAlBidFasting => 'Eyyam-ı Biyz (Oruç)';
+
+  @override
+  String get occasionRecommendedFastingDay => 'Önerilen Oruç Günü';
+
+  @override
+  String get occasionFast => 'Oruç';
+
+  @override
+  String fastingNotificationBody(String date, String reason) {
+    return 'Yarın $date ($reason). Niyetinizi ve sahurunuzu hazırlayın.';
+  }
+
+  @override
+  String shareIslamicDate(String date) {
+    return 'Hicri Tarih: $date';
+  }
+
+  @override
+  String shareGregorianDate(String date) {
+    return 'Miladi Tarih: $date';
+  }
+
+  @override
+  String shareOccasion(String occasion) {
+    return 'Önemli Gün: $occasion';
+  }
+
+  @override
+  String shareMoonPhase(String phase) {
+    return 'Ay\'ın Evresi: $phase';
+  }
+
+  @override
+  String get shareRecommendedFasting => 'Tavsiye Edilen: Oruç';
+
+  @override
+  String get moonPhase => 'Ay\'ın Evresi';
+
+  @override
+  String get recActionQuran => 'Kur\'an-ı Kerim tilavetini artırın';
+
+  @override
+  String get recActionCharity =>
+      'Sadaka verin ve ihtiyaç sahiplerine yardım edin';
+
+  @override
+  String get recActionLaylatAlQadr => 'Tek gecelerde Kadir Gecesi\'ni arayın';
+
+  @override
+  String get recActionEidFitr => 'Bayram namazı kılın + Fıtır sadakası verin';
+
+  @override
+  String get recActionEidFitrSocial => 'Aileyi ziyaret edin ve yemek paylaşın';
+
+  @override
+  String get recActionFastArafah => 'Arefe günü oruç tutun';
+
+  @override
+  String get recActionDua => 'Bol bol dua edin';
+
+  @override
+  String get recActionEidAdha => 'Kurban Bayramı namazı kılın';
+
+  @override
+  String get recActionQurbani => 'Gücü yetenler için kurban kesin';
+
+  @override
+  String get recActionFastAshura => 'Aşure orucu tutun (öncesi/sonrası)';
+
+  @override
+  String get recActionVoluntaryFast => 'Gücünüz yetiyorsa nafile oruç tutun';
+
+  @override
+  String get recActionFastAyyamAlBid =>
+      'Eyyam-ı Biyz (aydınlık günler) orucu tutun';
+
+  @override
+  String get recActionGeneralWorship =>
+      'Zikir, dua ve salih amellerle meşgul olun';
 }

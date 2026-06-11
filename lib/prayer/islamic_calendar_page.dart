@@ -67,6 +67,8 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
 
   Future<void> _scheduleFastingReminders() async {
     await _cancelFastingReminders();
+    if (!mounted) return;
+    final localizations = AppLocalizations.of(context)!;
     final DateTime now = DateTime.now();
     final int offset = _sightingOffset;
 
@@ -91,9 +93,11 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
           final int notificationId = 82000 + dayOffset;
           await FlutterPrayerLocalNotificationPlatform.instance.schedule(
             id: notificationId,
-            title: 'Fasting Reminder',
-            body:
-                'Tomorrow is ${hijri.toString()} ($fastingReason). Prepare your intention and Suhoor.',
+            title: localizations.fastingReminder,
+            body: localizations.fastingNotificationBody(
+              hijri.toLocalizedDateString(localizations.localeName),
+              _localizeOccasion(fastingReason),
+            ),
             scheduledAt: reminderTime,
             payload: 'fasting:reminder:${hijri.toString()}',
           );
@@ -105,9 +109,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
     if (mounted && scheduledCount > 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Scheduled $scheduledCount fasting reminders successfully',
-          ),
+          content: Text(localizations.fastingAlertsActive),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -155,6 +157,109 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
     }
     if (hijri.isRecommendedFastingDay) return 'Recommended Fasting Day';
     return null;
+  }
+
+  String _localizeOccasion(String label) {
+    switch (label) {
+      case 'Ramadan':
+        return localizations.occasionRamadan;
+      case 'Eid al-Fitr':
+      case 'Eid al-Fiṭr':
+        return localizations.occasionEidAlFitr;
+      case 'Day of Arafah':
+      case 'Day of ʿArafah':
+        return localizations.occasionDayOfArafah;
+      case 'Day of Arafah (Fasting)':
+        return localizations.occasionDayOfArafahFasting;
+      case 'Eid al-Adha':
+      case 'Eid al-Aḍḥā':
+        return localizations.occasionEidAlAdha;
+      case 'Day of Ashura':
+      case 'ʿĀshūrā':
+      case 'Ashura':
+        return localizations.occasionDayOfAshura;
+      case 'Day of Ashura (Fasting)':
+        return localizations.occasionDayOfAshuraFasting;
+      case 'Isra\' and Mi\'raj':
+      case 'Isra\' & Mi\'raj':
+      case 'Isra\' and Mi\'raj (Blessed Night)':
+      case 'Isrāʾ & Miʿrāj':
+        return localizations.occasionIsraAndMiraj;
+      case 'Ramadan begins':
+      case 'First Day of Ramadan':
+      case '1 Ramaḍān':
+        return localizations.occasionRamadanBegins;
+      case 'Ramadan Fasting Day':
+        return localizations.occasionRamadanFastingDay;
+      case 'Laylat al-Qadr':
+      case 'Laylat al-Qadr (Blessed Night)':
+        return localizations.occasionLaylatAlQadrBlessed;
+      case 'Islamic New Year':
+        return localizations.occasionIslamicNewYear;
+      case 'Shab-e-Barat':
+      case 'Shab-e-Barat (Blessed Night)':
+        return localizations.occasionShabEBaratBlessed;
+      case 'Tasua Fast':
+        return localizations.occasionTasuaFast;
+      case 'Ayyam al-Bid (White Day)':
+        return localizations.occasionAyyamAlBid;
+      case 'Ayyam al-Bid (White Day - Fasting)':
+        return localizations.occasionAyyamAlBidFasting;
+      case 'Recommended Fasting Day':
+        return localizations.occasionRecommendedFastingDay;
+      case 'Fast':
+        return localizations.occasionFast;
+      default:
+        return label;
+    }
+  }
+
+  String _localizeMoonPhase(int phase) {
+    switch (phase) {
+      case 0:
+        return localizations.moonPhaseNew;
+      case 1:
+        return localizations.moonPhaseWaxingCrescent;
+      case 2:
+        return localizations.moonPhaseFull;
+      case 3:
+        return localizations.moonPhaseWaningCrescent;
+      default:
+        return localizations.moonPhaseCrescent;
+    }
+  }
+
+  String _localizeAction(String action) {
+    switch (action) {
+      case 'Increase recitation of the Qur\'an':
+        return localizations.recActionQuran;
+      case 'Give charity and help those in need':
+        return localizations.recActionCharity;
+      case 'Seek Laylat al-Qadr in the odd nights':
+        return localizations.recActionLaylatAlQadr;
+      case 'Perform Eid prayer + Zakat al-Fitr':
+        return localizations.recActionEidFitr;
+      case 'Visit family and share food':
+        return localizations.recActionEidFitrSocial;
+      case 'Fast the Day of Arafah':
+        return localizations.recActionFastArafah;
+      case 'Make abundant du\'a':
+        return localizations.recActionDua;
+      case 'Perform Eid al-Adha prayer':
+        return localizations.recActionEidAdha;
+      case 'Sacrifice an animal if able (Qurbani)':
+        return localizations.recActionQurbani;
+      case 'Fast Ashura (before/after)':
+        return localizations.recActionFastAshura;
+      case 'Observe voluntary fast if able':
+        return localizations.recActionVoluntaryFast;
+      case 'Fast one of the Ayyam al-Bid (White Days)':
+        return localizations.recActionFastAyyamAlBid;
+      case 'Engage in dhikr, prayer, and good deeds':
+        return localizations.recActionGeneralWorship;
+      default:
+        return action;
+    }
   }
 
   Color? _getDayHighlightColor(HijriCalendar hijri, EquranColors colors) {
@@ -207,15 +312,12 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
     );
     final int daysInMonthCount = lastOfMonth.day;
 
-    final List<String> weekdays = <String>[
-      'Mon',
-      'Tue',
-      'Wed',
-      'Thu',
-      'Fri',
-      'Sat',
-      'Sun',
-    ];
+    final List<String> weekdays = List<String>.generate(7, (index) {
+      // 2026-06-08 is a Monday
+      return DateFormat.E(
+        localizations.localeName,
+      ).format(DateTime(2026, 6, 8 + index));
+    });
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -367,14 +469,14 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
     );
     final int phase = hijri.estimatedMoonPhase;
     final IconData moonIcon = _moonIconForPhase(phase);
-    final String phaseName = hijri.moonPhaseName;
+    final String phaseName = _localizeMoonPhase(phase);
 
     // Short contextual line — avoid repeating the phase name
     final String contextLine = switch (phase) {
-      0 => 'Time for new beginnings',
-      1 => 'Growing light',
-      2 => 'Peak illumination',
-      _ => 'Gentle release',
+      0 => localizations.moonPhaseContextNew,
+      1 => localizations.moonPhaseContextWaxing,
+      2 => localizations.moonPhaseContextFull,
+      _ => localizations.moonPhaseContextWaning,
     };
 
     return EquranSurfaceCard(
@@ -388,7 +490,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
           Icon(moonIcon, size: 32, color: colors.primary),
           const SizedBox(height: 6),
           Text(
-            'Moon Phase',
+            localizations.moonPhase,
             style: theme.textTheme.labelMedium?.copyWith(
               color: colors.primary,
               fontWeight: FontWeight.w600,
@@ -463,7 +565,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  '${midHijri.monthName} ${midHijri.hYear}',
+                  '${midHijri.getLocalizedMonthName(localizations.localeName)} ${midHijri.hYear}',
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: colors.accentGold,
                     fontWeight: FontWeight.w600,
@@ -791,7 +893,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                   ),
                   child: Center(
                     child: Text(
-                      jump.label,
+                      _localizeOccasion(jump.label),
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: colors.textPrimary,
@@ -875,7 +977,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
           runSpacing: 6,
           children: keyDates.map((entry) {
             final String label =
-                '${entry.key} • ${DateFormat('d MMM').format(entry.value)}';
+                '${_localizeOccasion(entry.key)} • ${DateFormat('d MMM', localizations.localeName).format(entry.value)}';
             return InkWell(
               onTap: () {
                 setState(() {
@@ -1144,6 +1246,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                                 Text(
                                   DateFormat(
                                     'EEEE, d MMMM yyyy',
+                                    localizations.localeName,
                                   ).format(selDate),
                                   style: theme.textTheme.labelMedium?.copyWith(
                                     color: colors.textSecondary,
@@ -1152,7 +1255,9 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  hijri.toString(),
+                                  hijri.toLocalizedDateString(
+                                    localizations.localeName,
+                                  ),
                                   style: theme.textTheme.headlineSmall
                                       ?.copyWith(
                                         color: colors.primary,
@@ -1207,7 +1312,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  occasion,
+                                  _localizeOccasion(occasion),
                                   style: theme.textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w600,
                                     color: colors.primary,
@@ -1232,7 +1337,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
-                              hijri.moonPhaseName,
+                              _localizeMoonPhase(hijri.estimatedMoonPhase),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: colors.textSecondary,
                               ),
@@ -1245,7 +1350,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                       if (recommended.isNotEmpty) ...<Widget>[
                         const SizedBox(height: 16),
                         Text(
-                          'Recommended for this day'.toUpperCase(),
+                          localizations.recommendedForThisDay.toUpperCase(),
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: colors.textMuted,
                             fontWeight: FontWeight.w700,
@@ -1265,7 +1370,7 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
                                 ),
                                 Expanded(
                                   child: Text(
-                                    action,
+                                    _localizeAction(action),
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: colors.textPrimary,
                                     ),
@@ -1332,14 +1437,26 @@ class _IslamicCalendarPageState extends State<IslamicCalendarPage> {
     String? occasion,
   ) async {
     final StringBuffer buffer = StringBuffer();
-    buffer.writeln('Islamic Date: ${hijri.toString()}');
     buffer.writeln(
-      'Gregorian: ${DateFormat('EEEE, d MMMM yyyy').format(date)}',
+      localizations.shareIslamicDate(
+        hijri.toLocalizedDateString(localizations.localeName),
+      ),
     );
-    if (occasion != null) buffer.writeln('Occasion: $occasion');
-    buffer.writeln('Moon Phase: ${hijri.moonPhaseName}');
+    buffer.writeln(
+      localizations.shareGregorianDate(
+        DateFormat('EEEE, d MMMM yyyy', localizations.localeName).format(date),
+      ),
+    );
+    if (occasion != null) {
+      buffer.writeln(localizations.shareOccasion(_localizeOccasion(occasion)));
+    }
+    buffer.writeln(
+      localizations.shareMoonPhase(
+        _localizeMoonPhase(hijri.estimatedMoonPhase),
+      ),
+    );
     if (hijri.isRecommendedFastingDay) {
-      buffer.writeln('Recommended: Fasting');
+      buffer.writeln(localizations.shareRecommendedFasting);
     }
 
     await Clipboard.setData(ClipboardData(text: buffer.toString()));

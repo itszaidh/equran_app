@@ -4189,4 +4189,252 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get showSettings => 'Show settings';
+
+  @override
+  String get zakatCategoryCash => 'نقد رقم اور واجب الوصول مابقیہ';
+
+  @override
+  String get zakatCategoryGold => 'سونا';
+
+  @override
+  String get zakatCategorySilver => 'چاندی';
+
+  @override
+  String get zakatCategoryInvestments => 'سرمایہ کاری اور سیکیورٹیز';
+
+  @override
+  String get zakatCategoryBusiness => 'تجارت کا سامان';
+
+  @override
+  String get zakatCategoryLivestock => 'مویشی (روایتی)';
+
+  @override
+  String get zakatCategoryAgriculture => 'زرعی پیداوار';
+
+  @override
+  String get zakatCategoryOther => 'دیگر اثاثے';
+
+  @override
+  String zakatBelowNisabExplanation(String nisab) {
+    return 'آپ کی دولت نصاب ($nisab) سے کم ہے۔ زکوٰۃ ابھی واجب نہیں ہے۔';
+  }
+
+  @override
+  String get saveToHistory => 'ہسٹری میں محفوظ کریں';
+
+  @override
+  String get enterWeight => 'وزن درج کریں';
+
+  @override
+  String enterAmountInCurrency(String currency) {
+    return '$currency میں رقم درج کریں';
+  }
+
+  @override
+  String amountInCurrency(String currency) {
+    return '$currency میں رقم';
+  }
+
+  @override
+  String get livestockSubtitle => 'بھیڑ/بکریاں، گائے، اونٹ — آسان جدید قیمتیں';
+
+  @override
+  String get livestockSheepGoats => 'بھیڑ اور بکریاں';
+
+  @override
+  String get livestockCowsBuffalo => 'گائے / بھینس';
+
+  @override
+  String get livestockCamels => 'اونٹ';
+
+  @override
+  String get noHistoricalCalculations => 'کوئی ماضی کا حساب نہیں ہے';
+
+  @override
+  String get savedRecordsAppearHere => 'محفوظ کردہ ریکارڈز یہاں ظاہر ہوں گے۔';
+
+  @override
+  String calculationOnDate(String date) {
+    return '$date پر حساب';
+  }
+
+  @override
+  String get historyLiquidCash => 'نقد رقم:';
+
+  @override
+  String get historyInvestments => 'سرمایہ کاری:';
+
+  @override
+  String historyGoldGrams(String grams) {
+    return 'سونا ($grams گرام):';
+  }
+
+  @override
+  String historySilverGrams(String grams) {
+    return 'چاندی ($grams گرام):';
+  }
+
+  @override
+  String get historyLiabilities => 'واجبات:';
+
+  @override
+  String get historyZakatDue => 'واجب الادا زکوٰۃ:';
+
+  @override
+  String get moonPhaseNew => 'نیا چاند';
+
+  @override
+  String get moonPhaseWaxingCrescent => 'ہلالِ اول (بڑھتا ہوا)';
+
+  @override
+  String get moonPhaseFull => 'چودھویں کا چاند (بدر)';
+
+  @override
+  String get moonPhaseWaningCrescent => 'ہلالِ آخر (گھٹتا ہوا)';
+
+  @override
+  String get moonPhaseCrescent => 'ہلال';
+
+  @override
+  String get moonPhaseContextNew => 'نئی شروعات کا وقت';
+
+  @override
+  String get moonPhaseContextWaxing => 'روشنی بڑھ رہی ہے';
+
+  @override
+  String get moonPhaseContextFull => 'مکمل چمک';
+
+  @override
+  String get moonPhaseContextWaning => 'روشنی گھٹ رہی ہے';
+
+  @override
+  String get occasionRamadan => 'رمضان';
+
+  @override
+  String get occasionEidAlFitr => 'عيد الفطر';
+
+  @override
+  String get occasionDayOfArafah => 'يوم عرفہ';
+
+  @override
+  String get occasionDayOfArafahFasting => 'یومِ عرفہ (روزہ)';
+
+  @override
+  String get occasionEidAlAdha => 'عيد الاضحى';
+
+  @override
+  String get occasionDayOfAshura => 'يوم عاشوراء';
+
+  @override
+  String get occasionDayOfAshuraFasting => 'یومِ عاشوراء (روزہ)';
+
+  @override
+  String get occasionIsraAndMiraj => 'اسراء اور معراج';
+
+  @override
+  String get occasionRamadanBegins => 'رمضان کا آغاز';
+
+  @override
+  String get occasionRamadanFastingDay => 'رمضان کا روزہ';
+
+  @override
+  String get occasionLaylatAlQadr => 'شبِ قدر';
+
+  @override
+  String get occasionLaylatAlQadrBlessed => 'شبِ قدر (مبارک رات)';
+
+  @override
+  String get occasionIslamicNewYear => 'اسلامی نیا سال';
+
+  @override
+  String get occasionShabEBarat => 'شبِ برات';
+
+  @override
+  String get occasionShabEBaratBlessed => 'شبِ برات (مبارک رات)';
+
+  @override
+  String get occasionTasuaFast => 'تاسوعاء کا روزہ';
+
+  @override
+  String get occasionAyyamAlBid => 'ایامِ بیض';
+
+  @override
+  String get occasionAyyamAlBidFasting => 'ایامِ بیض (روزہ)';
+
+  @override
+  String get occasionRecommendedFastingDay => 'مستحب روزہ';
+
+  @override
+  String get occasionFast => 'روزہ';
+
+  @override
+  String fastingNotificationBody(String date, String reason) {
+    return 'کل $date ($reason) ہے۔ اپنی نیت اور سحور کی تیاری کریں۔';
+  }
+
+  @override
+  String shareIslamicDate(String date) {
+    return 'ہجری تاریخ: $date';
+  }
+
+  @override
+  String shareGregorianDate(String date) {
+    return 'عیسوی تاریخ: $date';
+  }
+
+  @override
+  String shareOccasion(String occasion) {
+    return 'مناسبت: $occasion';
+  }
+
+  @override
+  String shareMoonPhase(String phase) {
+    return 'چاند کی حالت: $phase';
+  }
+
+  @override
+  String get shareRecommendedFasting => 'سفارش کردہ: روزہ';
+
+  @override
+  String get moonPhase => 'چاند کی حالت';
+
+  @override
+  String get recActionQuran => 'تلاوتِ قرآن مجید میں اضافہ کریں';
+
+  @override
+  String get recActionCharity => 'صدقہ دیں اور ضرورت مندوں کی مدد کریں';
+
+  @override
+  String get recActionLaylatAlQadr => 'طاق راتوں میں لیلۃ القدر تلاش کریں';
+
+  @override
+  String get recActionEidFitr => 'نمازِ عید ادا کریں + صدقہ فطر دیں';
+
+  @override
+  String get recActionEidFitrSocial => 'رشتہ داروں سے ملیں اور کھانا کھلائیں';
+
+  @override
+  String get recActionFastArafah => 'یومِ عرفہ کا روزہ رکھیں';
+
+  @override
+  String get recActionDua => 'کثرت سے دعا کریں';
+
+  @override
+  String get recActionEidAdha => 'نمازِ عید الاضحی ادا کریں';
+
+  @override
+  String get recActionQurbani => 'طاقت ہونے پر قربانی کریں';
+
+  @override
+  String get recActionFastAshura =>
+      'یومِ عاشورہ کا روزہ رکھیں (ایک دن پہلے یا بعد میں)';
+
+  @override
+  String get recActionVoluntaryFast => 'ہمت ہونے پر نفلی روزہ رکھیں';
+
+  @override
+  String get recActionFastAyyamAlBid => 'ایامِ بیض کے روزے رکھیں';
+
+  @override
+  String get recActionGeneralWorship => 'ذکر، دعا اور نیک اعمال میں مشغول رہیں';
 }

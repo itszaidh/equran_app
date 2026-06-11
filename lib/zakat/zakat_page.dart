@@ -36,6 +36,27 @@ enum ZakatCategory {
   final String label;
   final IconData icon;
   final double defaultRate;
+
+  String getLocalizedLabel(AppLocalizations localizations) {
+    switch (this) {
+      case ZakatCategory.cash:
+        return localizations.zakatCategoryCash;
+      case ZakatCategory.gold:
+        return localizations.zakatCategoryGold;
+      case ZakatCategory.silver:
+        return localizations.zakatCategorySilver;
+      case ZakatCategory.investments:
+        return localizations.zakatCategoryInvestments;
+      case ZakatCategory.business:
+        return localizations.zakatCategoryBusiness;
+      case ZakatCategory.livestock:
+        return localizations.zakatCategoryLivestock;
+      case ZakatCategory.agriculture:
+        return localizations.zakatCategoryAgriculture;
+      case ZakatCategory.other:
+        return localizations.zakatCategoryOther;
+    }
+  }
 }
 
 /// Lightweight line item for rich calculations and persistence.
@@ -136,7 +157,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
   double _goldPrice = 75.80; // default/fallback gold price per gram in USD
   double _silverPrice = 0.95; // default/fallback silver price per gram in USD
   bool _isLoadingPrice = false;
-  String _priceStatus = 'Using default prices (offline)'; // localized on init
+  String _priceStatus = '';
 
   // Calculation Selection States
   String _nisabType = 'silver'; // 'silver' or 'gold'
@@ -179,6 +200,11 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
     // Localize default status and fetch live prices on start after build/initState is done
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        setState(() {
+          _priceStatus =
+              AppLocalizations.of(context)?.ratesSyncOffline ??
+              'Market offline. Using standard cached values.';
+        });
         _fetchLiveMetalPrices();
       }
     });
@@ -659,7 +685,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
 
               const SizedBox(height: 8),
               Text(
-                'Gold: $_currencySymbol${_effectiveGoldPrice.toStringAsFixed(2)}/g   •   Silver: $_currencySymbol${_effectiveSilverPrice.toStringAsFixed(2)}/g',
+                '${localizations.zakatCategoryGold}: $_currencySymbol${_effectiveGoldPrice.toStringAsFixed(2)}/g   •   ${localizations.zakatCategorySilver}: $_currencySymbol${_effectiveSilverPrice.toStringAsFixed(2)}/g',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: colors.primary,
@@ -937,7 +963,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
               if (!isEligible && comp.netWealth > 0) ...<Widget>[
                 const SizedBox(height: 10),
                 Text(
-                  'Your wealth is below the Nisab of ${_formatAmount(comp.nisabThreshold)}. No Zakat is due yet.',
+                  localizations.zakatBelowNisabExplanation(
+                    _formatAmount(comp.nisabThreshold),
+                  ),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onPrimaryMuted,
                     fontStyle: FontStyle.italic,
@@ -967,7 +995,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                   border: Border.all(color: colors.border),
                 ),
                 child: Text(
-                  '${item.category.label}: ${_formatAmount(item.amount)}',
+                  '${item.category.getLocalizedLabel(localizations)}: ${_formatAmount(item.amount)}',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colors.textSecondary,
                     fontWeight: FontWeight.w600,
@@ -992,9 +1020,9 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
             ),
           ),
           icon: const Icon(Icons.bookmark_added_rounded),
-          label: const Text(
-            'Save to History',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          label: Text(
+            localizations.saveToHistory,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
           ),
         ),
         const SizedBox(height: 8),
@@ -1002,7 +1030,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
           child: TextButton.icon(
             onPressed: _resetAll,
             icon: const Icon(Icons.refresh_rounded, size: 18),
-            label: const Text('Reset Calculator'),
+            label: Text(localizations.resetCalculator),
           ),
         ),
       ],
@@ -1129,8 +1157,8 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                 hintText:
                     hint ??
                     (isWeight
-                        ? 'Enter weight'
-                        : 'Enter amount in $_baseCurrency'),
+                        ? localizations.enterWeight
+                        : localizations.enterAmountInCurrency(_baseCurrency)),
                 prefixText: isWeight ? null : _currencySymbol,
                 suffixText: weightUnit,
                 contentPadding: const EdgeInsets.symmetric(
@@ -1209,7 +1237,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                 setState(() => _categoryAmounts[category] = v);
               },
               decoration: InputDecoration(
-                hintText: hint ?? 'Amount in $_baseCurrency',
+                hintText: hint ?? localizations.amountInCurrency(_baseCurrency),
                 prefixText: _currencySymbol,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -1241,7 +1269,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Livestock (Traditional)',
+                  ZakatCategory.livestock.getLocalizedLabel(localizations),
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -1259,24 +1287,24 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
           ),
           const SizedBox(height: 4),
           Text(
-            'Sheep/Goats, Cows, Camels — simplified modern values',
+            localizations.livestockSubtitle,
             style: theme.textTheme.bodySmall?.copyWith(color: colors.textMuted),
           ),
           const SizedBox(height: 12),
           _buildLivestockRow(
-            'Sheep & Goats',
+            localizations.livestockSheepGoats,
             _livestockSheep,
             (v) => setState(() => _livestockSheep = v),
           ),
           const SizedBox(height: 8),
           _buildLivestockRow(
-            'Cows / Buffalo',
+            localizations.livestockCowsBuffalo,
             _livestockCows,
             (v) => setState(() => _livestockCows = v),
           ),
           const SizedBox(height: 8),
           _buildLivestockRow(
-            'Camels',
+            localizations.livestockCamels,
             _livestockCamels,
             (v) => setState(() => _livestockCamels = v),
           ),
@@ -1536,14 +1564,14 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'No historical calculations',
+                    localizations.noHistoricalCalculations,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Saved records will appear here.',
+                    localizations.savedRecordsAppearHere,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colors.textSecondary,
                     ),
@@ -1579,7 +1607,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
-                          'Calculation on $dateStr',
+                          localizations.calculationOnDate(dateStr),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: colors.textSecondary,
@@ -1600,21 +1628,28 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                       ],
                     ),
                     const Divider(height: 14),
-                    _buildHistoryRow('Liquid Cash:', _formatAmount(rec.cash)),
                     _buildHistoryRow(
-                      'Investments:',
+                      localizations.historyLiquidCash,
+                      _formatAmount(rec.cash),
+                    ),
+                    _buildHistoryRow(
+                      localizations.historyInvestments,
                       _formatAmount(rec.investments),
                     ),
                     _buildHistoryRow(
-                      'Gold (${rec.goldGrams.toStringAsFixed(1)}g):',
+                      localizations.historyGoldGrams(
+                        rec.goldGrams.toStringAsFixed(1),
+                      ),
                       _formatAmount(rec.goldGrams * rec.goldPrice),
                     ),
                     _buildHistoryRow(
-                      'Silver (${rec.silverGrams.toStringAsFixed(1)}g):',
+                      localizations.historySilverGrams(
+                        rec.silverGrams.toStringAsFixed(1),
+                      ),
                       _formatAmount(rec.silverGrams * rec.silverPrice),
                     ),
                     _buildHistoryRow(
-                      'Liabilities:',
+                      localizations.historyLiabilities,
                       '-${_formatAmount(rec.liabilities)}',
                     ),
                     const SizedBox(height: 6),
@@ -1622,7 +1657,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         Text(
-                          'Zakat Due:',
+                          localizations.historyZakatDue,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: colors.primary,
@@ -1696,7 +1731,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(localizations.cancel),
             ),
             TextButton(
               onPressed: () async {
@@ -1709,7 +1744,7 @@ class _ZakatCalculatorPageState extends State<ZakatCalculatorPage>
                 }
                 if (context.mounted) Navigator.pop(context);
               },
-              child: const Text('Save'),
+              child: Text(localizations.save),
             ),
           ],
         );

@@ -4258,4 +4258,259 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get showSettings => 'Einstellungen anzeigen';
+
+  @override
+  String get zakatCategoryCash => 'Barmittel & Forderungen';
+
+  @override
+  String get zakatCategoryGold => 'Gold';
+
+  @override
+  String get zakatCategorySilver => 'Silber';
+
+  @override
+  String get zakatCategoryInvestments => 'Wertpapiere & Anlagen';
+
+  @override
+  String get zakatCategoryBusiness => 'Warenbestand';
+
+  @override
+  String get zakatCategoryLivestock => 'Nutztierbestand (Traditionell)';
+
+  @override
+  String get zakatCategoryAgriculture => 'Landwirtschaftliche Erzeugnisse';
+
+  @override
+  String get zakatCategoryOther => 'Sonstige Vermögenswerte';
+
+  @override
+  String zakatBelowNisabExplanation(String nisab) {
+    return 'Ihr Vermögen liegt unter dem Nisab von $nisab. Es ist noch keine Zakat fällig.';
+  }
+
+  @override
+  String get saveToHistory => 'In Historie speichern';
+
+  @override
+  String get enterWeight => 'Gewicht eingeben';
+
+  @override
+  String enterAmountInCurrency(String currency) {
+    return 'Betrag in $currency eingeben';
+  }
+
+  @override
+  String amountInCurrency(String currency) {
+    return 'Betrag in $currency';
+  }
+
+  @override
+  String get livestockSubtitle =>
+      'Schafe/Ziegen, Rinder, Kamele — vereinfachte moderne Werte';
+
+  @override
+  String get livestockSheepGoats => 'Schafe & Ziegen';
+
+  @override
+  String get livestockCowsBuffalo => 'Rinder / Büffel';
+
+  @override
+  String get livestockCamels => 'Kamele';
+
+  @override
+  String get noHistoricalCalculations => 'Keine historischen Berechnungen';
+
+  @override
+  String get savedRecordsAppearHere =>
+      'Gespeicherte Daten werden hier angezeigt.';
+
+  @override
+  String calculationOnDate(String date) {
+    return 'Berechnung vom $date';
+  }
+
+  @override
+  String get historyLiquidCash => 'Flüssige Mittel:';
+
+  @override
+  String get historyInvestments => 'Wertpapiere/Anlagen:';
+
+  @override
+  String historyGoldGrams(String grams) {
+    return 'Gold (${grams}g):';
+  }
+
+  @override
+  String historySilverGrams(String grams) {
+    return 'Silber (${grams}g):';
+  }
+
+  @override
+  String get historyLiabilities => 'Verbindlichkeiten:';
+
+  @override
+  String get historyZakatDue => 'Fällige Zakat:';
+
+  @override
+  String get moonPhaseNew => 'Neumond';
+
+  @override
+  String get moonPhaseWaxingCrescent => 'Zunehmender Sichelmond';
+
+  @override
+  String get moonPhaseFull => 'Vollmond';
+
+  @override
+  String get moonPhaseWaningCrescent => 'Abnehmender Sichelmond';
+
+  @override
+  String get moonPhaseCrescent => 'Sichelmond';
+
+  @override
+  String get moonPhaseContextNew => 'Zeit für Neuanfänge';
+
+  @override
+  String get moonPhaseContextWaxing => 'Zunehmendes Licht';
+
+  @override
+  String get moonPhaseContextFull => 'Maximale Beleuchtung';
+
+  @override
+  String get moonPhaseContextWaning => 'Sanfter Rückgang';
+
+  @override
+  String get occasionRamadan => 'Ramadan';
+
+  @override
+  String get occasionEidAlFitr => 'Eid al-Fitr';
+
+  @override
+  String get occasionDayOfArafah => 'Tag von Arafah';
+
+  @override
+  String get occasionDayOfArafahFasting => 'Tag von Arafah (Fasten)';
+
+  @override
+  String get occasionEidAlAdha => 'Eid al-Adha';
+
+  @override
+  String get occasionDayOfAshura => 'Tag von Ashura';
+
+  @override
+  String get occasionDayOfAshuraFasting => 'Tag von Ashura (Fasten)';
+
+  @override
+  String get occasionIsraAndMiraj => 'Isra\' & Mi\'raj';
+
+  @override
+  String get occasionRamadanBegins => 'Ramadan beginnt';
+
+  @override
+  String get occasionRamadanFastingDay => 'Ramadan Fastentag';
+
+  @override
+  String get occasionLaylatAlQadr => 'Laylat al-Qadr';
+
+  @override
+  String get occasionLaylatAlQadrBlessed => 'Laylat al-Qadr (Gesegnete Nacht)';
+
+  @override
+  String get occasionIslamicNewYear => 'Islamisches Neujahr';
+
+  @override
+  String get occasionShabEBarat => 'Shab-e-Barat';
+
+  @override
+  String get occasionShabEBaratBlessed => 'Shab-e-Barat (Gesegnete Nacht)';
+
+  @override
+  String get occasionTasuaFast => 'Tasua-Fasten';
+
+  @override
+  String get occasionAyyamAlBid => 'Ayyam al-Bid (Weisse Tage)';
+
+  @override
+  String get occasionAyyamAlBidFasting => 'Ayyam al-Bid (Weisse Tage - Fasten)';
+
+  @override
+  String get occasionRecommendedFastingDay => 'Empfohlener Fastentag';
+
+  @override
+  String get occasionFast => 'Fasten';
+
+  @override
+  String fastingNotificationBody(String date, String reason) {
+    return 'Morgen ist der $date ($reason). Bereiten Sie Ihre Absicht und Ihr Suhur vor.';
+  }
+
+  @override
+  String shareIslamicDate(String date) {
+    return 'Islamisches Datum: $date';
+  }
+
+  @override
+  String shareGregorianDate(String date) {
+    return 'Gregorianisch: $date';
+  }
+
+  @override
+  String shareOccasion(String occasion) {
+    return 'Anlass: $occasion';
+  }
+
+  @override
+  String shareMoonPhase(String phase) {
+    return 'Mondphase: $phase';
+  }
+
+  @override
+  String get shareRecommendedFasting => 'Empfohlen: Fasten';
+
+  @override
+  String get moonPhase => 'Mondphase';
+
+  @override
+  String get recActionQuran => 'Vermehren Sie die Rezitation des Korans';
+
+  @override
+  String get recActionCharity => 'Spenden Sie und helfen Sie Bedürftigen';
+
+  @override
+  String get recActionLaylatAlQadr =>
+      'Suchen Sie Laylat al-Qadr in den ungeraden Nächten';
+
+  @override
+  String get recActionEidFitr => 'Verrichten Sie das Festgebet + Zakat al-Fitr';
+
+  @override
+  String get recActionEidFitrSocial =>
+      'Besuchen Sie die Familie und teilen Sie Essen';
+
+  @override
+  String get recActionFastArafah => 'Fasten Sie am Tag von Arafah';
+
+  @override
+  String get recActionDua => 'Machen Sie reichlich Bittgebete';
+
+  @override
+  String get recActionEidAdha => 'Verrichten Sie das Eid al-Adha-Gebet';
+
+  @override
+  String get recActionQurbani =>
+      'Opfern Sie ein Tier, wenn Sie dazu in der Lage sind (Qurbani)';
+
+  @override
+  String get recActionFastAshura => 'Fasten Sie an Ashura (davor/danach)';
+
+  @override
+  String get recActionVoluntaryFast =>
+      'Fasten Sie freiwillig, wenn Sie dazu in der Lage sind';
+
+  @override
+  String get recActionFastAyyamAlBid =>
+      'Fasten Sie an den Ayyam al-Bid (Weiße Tage)';
+
+  @override
+  String get recActionGeneralWorship =>
+      'Widmen Sie sich dem Dhikr, Gebet und guten Taten';
 }

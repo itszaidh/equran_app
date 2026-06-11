@@ -824,8 +824,9 @@ class _BookmarkRowState extends State<_BookmarkRow> {
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.titleSmall?.copyWith(
+                                    style: theme.textTheme.titleLarge?.copyWith(
                                       color: colors.textPrimary,
+                                      fontSize: 17,
                                       fontWeight: FontWeight.w900,
                                     ),
                                   ),
@@ -841,7 +842,7 @@ class _BookmarkRowState extends State<_BookmarkRow> {
                                           fontFamilyFallback: const <String>[
                                             'UthmanicHafs',
                                           ],
-                                          fontSize: 15,
+                                          fontSize: 17,
                                           height: 1.3,
                                         ).copyWith(
                                           color: colors.textPrimary.withAlpha(
@@ -849,17 +850,20 @@ class _BookmarkRowState extends State<_BookmarkRow> {
                                           ),
                                         ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    preview,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: colors.textSecondary,
-                                      height: 1.24,
-                                      fontWeight: FontWeight.w600,
+                                  if (preview.isNotEmpty) ...<Widget>[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      preview,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.bodyLarge
+                                          ?.copyWith(
+                                            color: colors.textSecondary,
+                                            height: 1.24,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
-                                  ),
+                                  ],
                                   if (hasMeta) ...<Widget>[
                                     const SizedBox(height: 7),
                                     Wrap(
@@ -1016,7 +1020,7 @@ class _BookmarkRowState extends State<_BookmarkRow> {
       details.add(entry.tags.map((tag) => '#$tag').join(' '));
     }
     if (details.isNotEmpty) return details.join(' • ');
-    return AppLocalizations.of(context)!.savedAyah;
+    return '';
   }
 }
 
@@ -1261,6 +1265,10 @@ Future<void> _showBookmarkEditor(
                         const SizedBox(width: 8),
                         IconButton.filledTonal(
                           tooltip: localizations.createFolder,
+                          style: IconButton.styleFrom(
+                            backgroundColor: colors.mint,
+                            foregroundColor: colors.primary,
+                          ),
                           onPressed: () async {
                             final String? folder = await _showFolderNameDialog(
                               context,
@@ -1393,7 +1401,7 @@ Future<String?> _showFolderNameDialog(
         : initialValue,
   );
   try {
-    return showDialog<String>(
+    return await showDialog<String>(
       context: context,
       builder: (context) {
         final AppLocalizations localizations = AppLocalizations.of(context)!;

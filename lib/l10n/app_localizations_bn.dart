@@ -4187,4 +4187,252 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get showSettings => 'Show settings';
+
+  @override
+  String get zakatCategoryCash => 'নগদ অর্থ ও পাওনা';
+
+  @override
+  String get zakatCategoryGold => 'স্বর্ণ';
+
+  @override
+  String get zakatCategorySilver => 'রৌপ্য';
+
+  @override
+  String get zakatCategoryInvestments => 'বিনিয়োগ ও সিকিউরিটিজ';
+
+  @override
+  String get zakatCategoryBusiness => 'ব্যবসায়িক পণ্য';
+
+  @override
+  String get zakatCategoryLivestock => 'গৃহপালিত পশু (ঐতিহ্যগত)';
+
+  @override
+  String get zakatCategoryAgriculture => 'কৃষি পণ্য';
+
+  @override
+  String get zakatCategoryOther => 'অন্যান্য সম্পদ';
+
+  @override
+  String zakatBelowNisabExplanation(String nisab) {
+    return 'আপনার সম্পদ নিসাব সীমা $nisab-এর নিচে। এখনও যাকাত প্রযোজ্য হয়নি।';
+  }
+
+  @override
+  String get saveToHistory => 'ইতিহাসে সংরক্ষণ করুন';
+
+  @override
+  String get enterWeight => 'ওজন লিখুন';
+
+  @override
+  String enterAmountInCurrency(String currency) {
+    return '$currency-এ পরিমাণ লিখুন';
+  }
+
+  @override
+  String amountInCurrency(String currency) {
+    return '$currency-এ পরিমাণ';
+  }
+
+  @override
+  String get livestockSubtitle => 'ভেড়া/ছাগল, গরু, উট — সরলীকৃত আধুনিক মূল্য';
+
+  @override
+  String get livestockSheepGoats => 'ভেড়া ও ছাগল';
+
+  @override
+  String get livestockCowsBuffalo => 'গরু / মহিষ';
+
+  @override
+  String get livestockCamels => 'উট';
+
+  @override
+  String get noHistoricalCalculations => 'কোনো অতীত হিসাব নেই';
+
+  @override
+  String get savedRecordsAppearHere => 'সংরক্ষিত তথ্য এখানে প্রদর্শিত হবে।';
+
+  @override
+  String calculationOnDate(String date) {
+    return '$date তারিখের হিসাব';
+  }
+
+  @override
+  String get historyLiquidCash => 'নগদ অর্থ:';
+
+  @override
+  String get historyInvestments => 'বিনিয়োগ:';
+
+  @override
+  String historyGoldGrams(String grams) {
+    return 'স্বর্ণ ($grams গ্রাম):';
+  }
+
+  @override
+  String historySilverGrams(String grams) {
+    return 'রৌপ্য ($grams গ্রাম):';
+  }
+
+  @override
+  String get historyLiabilities => 'ঋণ ও দায়:';
+
+  @override
+  String get historyZakatDue => 'প্রদেয় যাকাত:';
+
+  @override
+  String get moonPhaseNew => 'নতুন চাঁদ';
+
+  @override
+  String get moonPhaseWaxingCrescent => 'ক্রমবর্ধমান ক্রিসেন্ট';
+
+  @override
+  String get moonPhaseFull => 'পূর্ণিমা';
+
+  @override
+  String get moonPhaseWaningCrescent => 'ক্ষীয়মাণ ক্রিসেন্ট';
+
+  @override
+  String get moonPhaseCrescent => 'ক্রিসেন্ট চাঁদ';
+
+  @override
+  String get moonPhaseContextNew => 'নতুন শুরুর সময়';
+
+  @override
+  String get moonPhaseContextWaxing => 'আলো বাড়ছে';
+
+  @override
+  String get moonPhaseContextFull => 'সর্বোচ্চ আলোকপাত';
+
+  @override
+  String get moonPhaseContextWaning => 'ধীরে ধীরে হ্রাস পাচ্ছে';
+
+  @override
+  String get occasionRamadan => 'রমজান';
+
+  @override
+  String get occasionEidAlFitr => 'ঈদুল ফিতর';
+
+  @override
+  String get occasionDayOfArafah => 'আরাফার দিন';
+
+  @override
+  String get occasionDayOfArafahFasting => 'আরাফার দিন (রোজা)';
+
+  @override
+  String get occasionEidAlAdha => 'ঈদুল আজহা';
+
+  @override
+  String get occasionDayOfAshura => 'আশুরার দিন';
+
+  @override
+  String get occasionDayOfAshuraFasting => 'আশুরার দিন (রোজা)';
+
+  @override
+  String get occasionIsraAndMiraj => 'শবে মেরাজ';
+
+  @override
+  String get occasionRamadanBegins => 'রমজান শুরু';
+
+  @override
+  String get occasionRamadanFastingDay => 'রমজানের রোজার দিন';
+
+  @override
+  String get occasionLaylatAlQadr => 'শবে কদর';
+
+  @override
+  String get occasionLaylatAlQadrBlessed => 'শবে কদর (বরকতময় রাত)';
+
+  @override
+  String get occasionIslamicNewYear => 'ইসলামী নববর্ষ';
+
+  @override
+  String get occasionShabEBarat => 'শবে বরাত';
+
+  @override
+  String get occasionShabEBaratBlessed => 'শবে বরাত (বরকতময় রাত)';
+
+  @override
+  String get occasionTasuaFast => 'তাসুয়ার রোজা';
+
+  @override
+  String get occasionAyyamAlBid => 'আইয়ামে বীজ (সাদা দিন)';
+
+  @override
+  String get occasionAyyamAlBidFasting => 'আইয়ামে বীজ (রোজা)';
+
+  @override
+  String get occasionRecommendedFastingDay => 'নফল রোজার দিন';
+
+  @override
+  String get occasionFast => 'রোজা';
+
+  @override
+  String fastingNotificationBody(String date, String reason) {
+    return 'আগামীকাল $date ($reason)। আপনার নিয়ত এবং সাহরি প্রস্তুত করুন।';
+  }
+
+  @override
+  String shareIslamicDate(String date) {
+    return 'হিজরি তারিখ: $date';
+  }
+
+  @override
+  String shareGregorianDate(String date) {
+    return 'ঈসায়ী তারিখ: $date';
+  }
+
+  @override
+  String shareOccasion(String occasion) {
+    return 'উপলক্ষ: $occasion';
+  }
+
+  @override
+  String shareMoonPhase(String phase) {
+    return 'চাঁদের দশা: $phase';
+  }
+
+  @override
+  String get shareRecommendedFasting => 'সুপারিশকৃত: রোজা';
+
+  @override
+  String get moonPhase => 'চাঁদের দশা';
+
+  @override
+  String get recActionQuran => 'কুরআন তেলাওয়াত বৃদ্ধি করুন';
+
+  @override
+  String get recActionCharity => 'দান-সদকা করুন এবং অভাবীদের সাহায্য করুন';
+
+  @override
+  String get recActionLaylatAlQadr => 'বিজোড় রাতে লাইলাতুল কদর অনুসন্ধান করুন';
+
+  @override
+  String get recActionEidFitr => 'ঈদের নামাজ আদায় করুন + ফিতরা দিন';
+
+  @override
+  String get recActionEidFitrSocial =>
+      'আত্মীয়দের সাথে দেখা করুন ও খাবার ভাগ করুন';
+
+  @override
+  String get recActionFastArafah => 'আরাফার দিনে রোজা রাখুন';
+
+  @override
+  String get recActionDua => 'বেশি বেশি দোয়া করুন';
+
+  @override
+  String get recActionEidAdha => 'ঈদুল আজহার নামাজ আদায় করুন';
+
+  @override
+  String get recActionQurbani => 'সামর্থ্য থাকলে কোরবানি দিন';
+
+  @override
+  String get recActionFastAshura => 'আশুরার রোজা রাখুন (আগে/পরে)';
+
+  @override
+  String get recActionVoluntaryFast => 'সামর্থ্য থাকলে নফল রোজা রাখুন';
+
+  @override
+  String get recActionFastAyyamAlBid => 'আইয়ামে বিজের রোজা রাখুন';
+
+  @override
+  String get recActionGeneralWorship => 'জিকির, নামাজ ও নেক আমলে লিপ্ত থাকুন';
 }

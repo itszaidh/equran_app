@@ -2131,7 +2131,6 @@
   "allReciters": "All Reciters",
   "tapToAdjust": "Tap to adjust",
   "currency": "Currency",
-  "quranScriptStyle": "Quran Script Style",
   "selectCurrency": "Select Currency",
   "sleepTimerSettings": "Sleep Timer Settings",
   "numericMinutesDuration": "Numeric Minutes Duration",
@@ -2170,5 +2169,160 @@
   "quickActions": "Quick actions",
   "bookmarksAndNotes": "Bookmarks and notes",
   "hideSettings": "Hide settings",
-  "showSettings": "Show settings"
+  "showSettings": "Show settings",
+  "zakatCategoryCash": "Cash & Receivables",
+  "zakatCategoryGold": "Gold",
+  "zakatCategorySilver": "Silver",
+  "zakatCategoryInvestments": "Investments & Securities",
+  "zakatCategoryBusiness": "Business Inventory",
+  "zakatCategoryLivestock": "Livestock (Traditional)",
+  "zakatCategoryAgriculture": "Agricultural Produce",
+  "zakatCategoryOther": "Other Assets",
+  "zakatBelowNisabExplanation": "Your wealth is below the Nisab of {nisab}. No Zakat is due yet.",
+  "@zakatBelowNisabExplanation": {
+    "placeholders": {
+      "nisab": {
+        "type": "String"
+      }
+    }
+  },
+  "saveToHistory": "Save to History",
+  "enterWeight": "Enter weight",
+  "enterAmountInCurrency": "Enter amount in {currency}",
+  "@enterAmountInCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "amountInCurrency": "Amount in {currency}",
+  "@amountInCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "livestockSubtitle": "Sheep/Goats, Cows, Camels — simplified modern values",
+  "livestockSheepGoats": "Sheep & Goats",
+  "livestockCowsBuffalo": "Cows / Buffalo",
+  "livestockCamels": "Camels",
+  "noHistoricalCalculations": "No historical calculations",
+  "savedRecordsAppearHere": "Saved records will appear here.",
+  "calculationOnDate": "Calculation on {date}",
+  "@calculationOnDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "historyLiquidCash": "Liquid Cash:",
+  "historyInvestments": "Investments:",
+  "historyGoldGrams": "Gold ({grams}g):",
+  "@historyGoldGrams": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "historySilverGrams": "Silver ({grams}g):",
+  "@historySilverGrams": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "historyLiabilities": "Liabilities:",
+  "historyZakatDue": "Zakat Due:",
+  "moonPhaseNew": "New Moon",
+  "moonPhaseWaxingCrescent": "Waxing Crescent",
+  "moonPhaseFull": "Full Moon",
+  "moonPhaseWaningCrescent": "Waning Crescent",
+  "moonPhaseCrescent": "Crescent",
+  "moonPhaseContextNew": "Time for new beginnings",
+  "moonPhaseContextWaxing": "Growing light",
+  "moonPhaseContextFull": "Peak illumination",
+  "moonPhaseContextWaning": "Gentle release",
+  "occasionRamadan": "Ramadan",
+  "occasionEidAlFitr": "Eid al-Fitr",
+  "occasionDayOfArafah": "Day of Arafah",
+  "occasionDayOfArafahFasting": "Day of Arafah (Fasting)",
+  "occasionEidAlAdha": "Eid al-Adha",
+  "occasionDayOfAshura": "Day of Ashura",
+  "occasionDayOfAshuraFasting": "Day of Ashura (Fasting)",
+  "occasionIsraAndMiraj": "Isra' & Mi'raj",
+  "occasionRamadanBegins": "Ramadan begins",
+  "occasionRamadanFastingDay": "Ramadan Fasting Day",
+  "occasionLaylatAlQadr": "Laylat al-Qadr",
+  "occasionLaylatAlQadrBlessed": "Laylat al-Qadr (Blessed Night)",
+  "occasionIslamicNewYear": "Islamic New Year",
+  "occasionShabEBarat": "Shab-e-Barat",
+  "occasionShabEBaratBlessed": "Shab-e-Barat (Blessed Night)",
+  "occasionTasuaFast": "Tasua Fast",
+  "occasionAyyamAlBid": "Ayyam al-Bid (White Day)",
+  "occasionAyyamAlBidFasting": "Ayyam al-Bid (White Day - Fasting)",
+  "occasionRecommendedFastingDay": "Recommended Fasting Day",
+  "occasionFast": "Fast",
+  "fastingNotificationBody": "Tomorrow is {date} ({reason}). Prepare your intention and Suhoor.",
+  "@fastingNotificationBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "shareIslamicDate": "Islamic Date: {date}",
+  "@shareIslamicDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "shareGregorianDate": "Gregorian: {date}",
+  "@shareGregorianDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "shareOccasion": "Occasion: {occasion}",
+  "@shareOccasion": {
+    "placeholders": {
+      "occasion": {
+        "type": "String"
+      }
+    }
+  },
+  "shareMoonPhase": "Moon Phase: {phase}",
+  "@shareMoonPhase": {
+    "placeholders": {
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "shareRecommendedFasting": "Recommended: Fasting",
+  "moonPhase": "Moon Phase",
+  "recActionQuran": "Increase recitation of the Qur'an",
+  "recActionCharity": "Give charity and help those in need",
+  "recActionLaylatAlQadr": "Seek Laylat al-Qadr in the odd nights",
+  "recActionEidFitr": "Perform Eid prayer + Zakat al-Fitr",
+  "recActionEidFitrSocial": "Visit family and share food",
+  "recActionFastArafah": "Fast the Day of Arafah",
+  "recActionDua": "Make abundant du'a",
+  "recActionEidAdha": "Perform Eid al-Adha prayer",
+  "recActionQurbani": "Sacrifice an animal if able (Qurbani)",
+  "recActionFastAshura": "Fast Ashura (before/after)",
+  "recActionVoluntaryFast": "Observe voluntary fast if able",
+  "recActionFastAyyamAlBid": "Fast one of the Ayyam al-Bid (White Days)",
+  "recActionGeneralWorship": "Engage in dhikr, prayer, and good deeds"
 }

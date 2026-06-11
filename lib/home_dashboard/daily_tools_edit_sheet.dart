@@ -85,8 +85,10 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
     if (isCurrentlyVisible && _visibleTools.length <= 1) {
       // Prevent disabling the last tool
       final AppLocalizations localizations = AppLocalizations.of(context)!;
-      final String locale =
-          localizations.localeName.split('_').first.toLowerCase();
+      final String locale = localizations.localeName
+          .split('_')
+          .first
+          .toLowerCase();
       final String msg = locale == 'ar'
           ? 'يجب أن تظل أداة واحدة على الأقل مثبتة.'
           : locale == 'fa'
@@ -144,8 +146,7 @@ class _DailyToolsEditSheetState extends State<DailyToolsEditSheet> {
   Widget build(BuildContext context) {
     final EquranColors colors = context.equranColors;
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String lang =
-        localizations.localeName.split('_').first.toLowerCase();
+    final String lang = localizations.localeName.split('_').first.toLowerCase();
     final ThemeData theme = Theme.of(context);
 
     return DraggableScrollableSheet(

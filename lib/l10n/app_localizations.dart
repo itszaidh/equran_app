@@ -7340,6 +7340,456 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show settings'**
   String get showSettings;
+
+  /// No description provided for @zakatCategoryCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash & Receivables'**
+  String get zakatCategoryCash;
+
+  /// No description provided for @zakatCategoryGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold'**
+  String get zakatCategoryGold;
+
+  /// No description provided for @zakatCategorySilver.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver'**
+  String get zakatCategorySilver;
+
+  /// No description provided for @zakatCategoryInvestments.
+  ///
+  /// In en, this message translates to:
+  /// **'Investments & Securities'**
+  String get zakatCategoryInvestments;
+
+  /// No description provided for @zakatCategoryBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Inventory'**
+  String get zakatCategoryBusiness;
+
+  /// No description provided for @zakatCategoryLivestock.
+  ///
+  /// In en, this message translates to:
+  /// **'Livestock (Traditional)'**
+  String get zakatCategoryLivestock;
+
+  /// No description provided for @zakatCategoryAgriculture.
+  ///
+  /// In en, this message translates to:
+  /// **'Agricultural Produce'**
+  String get zakatCategoryAgriculture;
+
+  /// No description provided for @zakatCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Assets'**
+  String get zakatCategoryOther;
+
+  /// No description provided for @zakatBelowNisabExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your wealth is below the Nisab of {nisab}. No Zakat is due yet.'**
+  String zakatBelowNisabExplanation(String nisab);
+
+  /// No description provided for @saveToHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to History'**
+  String get saveToHistory;
+
+  /// No description provided for @enterWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter weight'**
+  String get enterWeight;
+
+  /// No description provided for @enterAmountInCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter amount in {currency}'**
+  String enterAmountInCurrency(String currency);
+
+  /// No description provided for @amountInCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount in {currency}'**
+  String amountInCurrency(String currency);
+
+  /// No description provided for @livestockSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sheep/Goats, Cows, Camels — simplified modern values'**
+  String get livestockSubtitle;
+
+  /// No description provided for @livestockSheepGoats.
+  ///
+  /// In en, this message translates to:
+  /// **'Sheep & Goats'**
+  String get livestockSheepGoats;
+
+  /// No description provided for @livestockCowsBuffalo.
+  ///
+  /// In en, this message translates to:
+  /// **'Cows / Buffalo'**
+  String get livestockCowsBuffalo;
+
+  /// No description provided for @livestockCamels.
+  ///
+  /// In en, this message translates to:
+  /// **'Camels'**
+  String get livestockCamels;
+
+  /// No description provided for @noHistoricalCalculations.
+  ///
+  /// In en, this message translates to:
+  /// **'No historical calculations'**
+  String get noHistoricalCalculations;
+
+  /// No description provided for @savedRecordsAppearHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved records will appear here.'**
+  String get savedRecordsAppearHere;
+
+  /// No description provided for @calculationOnDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculation on {date}'**
+  String calculationOnDate(String date);
+
+  /// No description provided for @historyLiquidCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Liquid Cash:'**
+  String get historyLiquidCash;
+
+  /// No description provided for @historyInvestments.
+  ///
+  /// In en, this message translates to:
+  /// **'Investments:'**
+  String get historyInvestments;
+
+  /// No description provided for @historyGoldGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold ({grams}g):'**
+  String historyGoldGrams(String grams);
+
+  /// No description provided for @historySilverGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'Silver ({grams}g):'**
+  String historySilverGrams(String grams);
+
+  /// No description provided for @historyLiabilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Liabilities:'**
+  String get historyLiabilities;
+
+  /// No description provided for @historyZakatDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Zakat Due:'**
+  String get historyZakatDue;
+
+  /// No description provided for @moonPhaseNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New Moon'**
+  String get moonPhaseNew;
+
+  /// No description provided for @moonPhaseWaxingCrescent.
+  ///
+  /// In en, this message translates to:
+  /// **'Waxing Crescent'**
+  String get moonPhaseWaxingCrescent;
+
+  /// No description provided for @moonPhaseFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Moon'**
+  String get moonPhaseFull;
+
+  /// No description provided for @moonPhaseWaningCrescent.
+  ///
+  /// In en, this message translates to:
+  /// **'Waning Crescent'**
+  String get moonPhaseWaningCrescent;
+
+  /// No description provided for @moonPhaseCrescent.
+  ///
+  /// In en, this message translates to:
+  /// **'Crescent'**
+  String get moonPhaseCrescent;
+
+  /// No description provided for @moonPhaseContextNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for new beginnings'**
+  String get moonPhaseContextNew;
+
+  /// No description provided for @moonPhaseContextWaxing.
+  ///
+  /// In en, this message translates to:
+  /// **'Growing light'**
+  String get moonPhaseContextWaxing;
+
+  /// No description provided for @moonPhaseContextFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak illumination'**
+  String get moonPhaseContextFull;
+
+  /// No description provided for @moonPhaseContextWaning.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle release'**
+  String get moonPhaseContextWaning;
+
+  /// No description provided for @occasionRamadan.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan'**
+  String get occasionRamadan;
+
+  /// No description provided for @occasionEidAlFitr.
+  ///
+  /// In en, this message translates to:
+  /// **'Eid al-Fitr'**
+  String get occasionEidAlFitr;
+
+  /// No description provided for @occasionDayOfArafah.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of Arafah'**
+  String get occasionDayOfArafah;
+
+  /// No description provided for @occasionDayOfArafahFasting.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of Arafah (Fasting)'**
+  String get occasionDayOfArafahFasting;
+
+  /// No description provided for @occasionEidAlAdha.
+  ///
+  /// In en, this message translates to:
+  /// **'Eid al-Adha'**
+  String get occasionEidAlAdha;
+
+  /// No description provided for @occasionDayOfAshura.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of Ashura'**
+  String get occasionDayOfAshura;
+
+  /// No description provided for @occasionDayOfAshuraFasting.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of Ashura (Fasting)'**
+  String get occasionDayOfAshuraFasting;
+
+  /// No description provided for @occasionIsraAndMiraj.
+  ///
+  /// In en, this message translates to:
+  /// **'Isra\' & Mi\'raj'**
+  String get occasionIsraAndMiraj;
+
+  /// No description provided for @occasionRamadanBegins.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan begins'**
+  String get occasionRamadanBegins;
+
+  /// No description provided for @occasionRamadanFastingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan Fasting Day'**
+  String get occasionRamadanFastingDay;
+
+  /// No description provided for @occasionLaylatAlQadr.
+  ///
+  /// In en, this message translates to:
+  /// **'Laylat al-Qadr'**
+  String get occasionLaylatAlQadr;
+
+  /// No description provided for @occasionLaylatAlQadrBlessed.
+  ///
+  /// In en, this message translates to:
+  /// **'Laylat al-Qadr (Blessed Night)'**
+  String get occasionLaylatAlQadrBlessed;
+
+  /// No description provided for @occasionIslamicNewYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Islamic New Year'**
+  String get occasionIslamicNewYear;
+
+  /// No description provided for @occasionShabEBarat.
+  ///
+  /// In en, this message translates to:
+  /// **'Shab-e-Barat'**
+  String get occasionShabEBarat;
+
+  /// No description provided for @occasionShabEBaratBlessed.
+  ///
+  /// In en, this message translates to:
+  /// **'Shab-e-Barat (Blessed Night)'**
+  String get occasionShabEBaratBlessed;
+
+  /// No description provided for @occasionTasuaFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasua Fast'**
+  String get occasionTasuaFast;
+
+  /// No description provided for @occasionAyyamAlBid.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayyam al-Bid (White Day)'**
+  String get occasionAyyamAlBid;
+
+  /// No description provided for @occasionAyyamAlBidFasting.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayyam al-Bid (White Day - Fasting)'**
+  String get occasionAyyamAlBidFasting;
+
+  /// No description provided for @occasionRecommendedFastingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended Fasting Day'**
+  String get occasionRecommendedFastingDay;
+
+  /// No description provided for @occasionFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast'**
+  String get occasionFast;
+
+  /// No description provided for @fastingNotificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow is {date} ({reason}). Prepare your intention and Suhoor.'**
+  String fastingNotificationBody(String date, String reason);
+
+  /// No description provided for @shareIslamicDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Islamic Date: {date}'**
+  String shareIslamicDate(String date);
+
+  /// No description provided for @shareGregorianDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Gregorian: {date}'**
+  String shareGregorianDate(String date);
+
+  /// No description provided for @shareOccasion.
+  ///
+  /// In en, this message translates to:
+  /// **'Occasion: {occasion}'**
+  String shareOccasion(String occasion);
+
+  /// No description provided for @shareMoonPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon Phase: {phase}'**
+  String shareMoonPhase(String phase);
+
+  /// No description provided for @shareRecommendedFasting.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended: Fasting'**
+  String get shareRecommendedFasting;
+
+  /// No description provided for @moonPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Moon Phase'**
+  String get moonPhase;
+
+  /// No description provided for @recActionQuran.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase recitation of the Qur\'an'**
+  String get recActionQuran;
+
+  /// No description provided for @recActionCharity.
+  ///
+  /// In en, this message translates to:
+  /// **'Give charity and help those in need'**
+  String get recActionCharity;
+
+  /// No description provided for @recActionLaylatAlQadr.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek Laylat al-Qadr in the odd nights'**
+  String get recActionLaylatAlQadr;
+
+  /// No description provided for @recActionEidFitr.
+  ///
+  /// In en, this message translates to:
+  /// **'Perform Eid prayer + Zakat al-Fitr'**
+  String get recActionEidFitr;
+
+  /// No description provided for @recActionEidFitrSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit family and share food'**
+  String get recActionEidFitrSocial;
+
+  /// No description provided for @recActionFastArafah.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast the Day of Arafah'**
+  String get recActionFastArafah;
+
+  /// No description provided for @recActionDua.
+  ///
+  /// In en, this message translates to:
+  /// **'Make abundant du\'a'**
+  String get recActionDua;
+
+  /// No description provided for @recActionEidAdha.
+  ///
+  /// In en, this message translates to:
+  /// **'Perform Eid al-Adha prayer'**
+  String get recActionEidAdha;
+
+  /// No description provided for @recActionQurbani.
+  ///
+  /// In en, this message translates to:
+  /// **'Sacrifice an animal if able (Qurbani)'**
+  String get recActionQurbani;
+
+  /// No description provided for @recActionFastAshura.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast Ashura (before/after)'**
+  String get recActionFastAshura;
+
+  /// No description provided for @recActionVoluntaryFast.
+  ///
+  /// In en, this message translates to:
+  /// **'Observe voluntary fast if able'**
+  String get recActionVoluntaryFast;
+
+  /// No description provided for @recActionFastAyyamAlBid.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast one of the Ayyam al-Bid (White Days)'**
+  String get recActionFastAyyamAlBid;
+
+  /// No description provided for @recActionGeneralWorship.
+  ///
+  /// In en, this message translates to:
+  /// **'Engage in dhikr, prayer, and good deeds'**
+  String get recActionGeneralWorship;
 }
 
 class _AppLocalizationsDelegate

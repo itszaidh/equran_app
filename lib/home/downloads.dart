@@ -38,11 +38,12 @@ class _DownloadsPageState extends State<DownloadsPage> {
   late Future<AudioDownloadsSummary> _summaryFuture;
   String _selectedReciterFilter = 'all';
   String _selectedCategoryFilter = 'all';
+  int? _selectedSurahFilter;
 
   // State for the modern Filter & Sort icon button + sheet
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  String _sortBy = 'surahAsc';
+  String _sortBy = 'reciterAsc';
   String _selectedTypeFilter = 'all';
 
   // Track which reciter sections are collapsed
@@ -71,8 +72,9 @@ class _DownloadsPageState extends State<DownloadsPage> {
     setState(() {
       _selectedReciterFilter = 'all';
       _selectedCategoryFilter = 'all';
+      _selectedSurahFilter = null;
       _selectedTypeFilter = 'all';
-      _sortBy = 'surahAsc';
+      _sortBy = 'reciterAsc';
       _searchQuery = '';
       _groupBy = 'reciter';
     });
@@ -211,17 +213,35 @@ class _DownloadsPageState extends State<DownloadsPage> {
               // Filter by category (place of revelation)
               var filteredSurahs = group.surahs.where((surah) {
                 if (_selectedCategoryFilter == 'all') return true;
-                final place = quran.getPlaceOfRevelation(surah.surah);
-                return place.toLowerCase() ==
-                    _selectedCategoryFilter.toLowerCase();
+                final place = quran
+                    .getPlaceOfRevelation(surah.surah)
+                    .toLowerCase();
+                final target = _selectedCategoryFilter.toLowerCase();
+                return place == target ||
+                    (place == 'makkah' && target == 'makki') ||
+                    (place == 'madinah' && target == 'madani');
               }).toList();
 
               var filteredAyahs = group.ayahs.where((ayah) {
                 if (_selectedCategoryFilter == 'all') return true;
-                final place = quran.getPlaceOfRevelation(ayah.surah);
-                return place.toLowerCase() ==
-                    _selectedCategoryFilter.toLowerCase();
+                final place = quran
+                    .getPlaceOfRevelation(ayah.surah)
+                    .toLowerCase();
+                final target = _selectedCategoryFilter.toLowerCase();
+                return place == target ||
+                    (place == 'makkah' && target == 'makki') ||
+                    (place == 'madinah' && target == 'madani');
               }).toList();
+
+              // Filter by surah
+              if (_selectedSurahFilter != null) {
+                filteredSurahs = filteredSurahs
+                    .where((s) => s.surah == _selectedSurahFilter)
+                    .toList();
+                filteredAyahs = filteredAyahs
+                    .where((a) => a.surah == _selectedSurahFilter)
+                    .toList();
+              }
 
               // Filter by type (surahs only / ayahs only)
               if (_selectedTypeFilter == 'surahs') {
@@ -256,13 +276,39 @@ class _DownloadsPageState extends State<DownloadsPage> {
             .whereType<ReciterDownloadsGroup>()
             .toList();
 
-        // Apply group-level sorting when sorting by size.
-        // This controls the order of the reciter cards themselves
-        // based on the total size shown in each reciter header.
-        if (_sortBy == 'sizeDesc') {
+        // Apply group-level sorting
+        if (_sortBy == 'reciterAsc') {
+          filteredGroups.sort(
+            (a, b) => reciterDisplayName(
+              a.reciterCode,
+            ).compareTo(reciterDisplayName(b.reciterCode)),
+          );
+        } else if (_sortBy == 'reciterDesc') {
+          filteredGroups.sort(
+            (a, b) => reciterDisplayName(
+              b.reciterCode,
+            ).compareTo(reciterDisplayName(a.reciterCode)),
+          );
+        } else if (_sortBy == 'sizeDesc') {
           filteredGroups.sort((a, b) => b.sizeBytes.compareTo(a.sizeBytes));
         } else if (_sortBy == 'sizeAsc') {
           filteredGroups.sort((a, b) => a.sizeBytes.compareTo(b.sizeBytes));
+        }
+
+        // Validate active filters to prevent assertions when content is deleted
+        final List<String> availableReciters = reciterGroups
+            .map((g) => g.reciterCode)
+            .toList();
+        if (_selectedReciterFilter != 'all' &&
+            !availableReciters.contains(_selectedReciterFilter)) {
+          _selectedReciterFilter = 'all';
+        }
+
+        final List<int> downloadedSurahs =
+            summary.allDownloads.map((e) => e.surah).toSet().toList()..sort();
+        if (_selectedSurahFilter != null &&
+            !downloadedSurahs.contains(_selectedSurahFilter)) {
+          _selectedSurahFilter = null;
         }
 
         return RefreshIndicator(
@@ -278,7 +324,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
               _buildCleanupPreviewCard(theme, summary),
               const SizedBox(height: 16),
               if (reciterGroups.isNotEmpty) ...<Widget>[
-                _buildFilterButton(reciterGroups),
+                _buildFilterButton(summary, reciterGroups),
                 const SizedBox(height: 16),
               ],
               if (filteredGroups.isEmpty)
@@ -299,22 +345,29 @@ class _DownloadsPageState extends State<DownloadsPage> {
     );
   }
 
-  Widget _buildFilterButton(List<ReciterDownloadsGroup> originalGroups) {
+  Widget _buildFilterButton(
+    AudioDownloadsSummary summary,
+    List<ReciterDownloadsGroup> originalGroups,
+  ) {
     final EquranColors colors = context.equranColors;
 
     final bool hasActive =
         _selectedReciterFilter != 'all' ||
         _selectedCategoryFilter != 'all' ||
+        _selectedSurahFilter != null ||
         _selectedTypeFilter != 'all' ||
         _searchQuery.isNotEmpty ||
-        _sortBy != 'surahAsc' ||
+        _sortBy != (_groupBy == 'reciter' ? 'reciterAsc' : 'surahAsc') ||
         _groupBy != 'reciter';
 
     int activeCount = 0;
     if (_selectedReciterFilter != 'all') activeCount++;
     if (_selectedCategoryFilter != 'all') activeCount++;
+    if (_selectedSurahFilter != null) activeCount++;
     if (_selectedTypeFilter != 'all') activeCount++;
-    if (_sortBy != 'surahAsc') activeCount++;
+    if (_sortBy != (_groupBy == 'reciter' ? 'reciterAsc' : 'surahAsc')) {
+      activeCount++;
+    }
     if (_searchQuery.isNotEmpty) activeCount++;
     if (_groupBy != 'reciter') activeCount++;
 
@@ -344,7 +397,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
             clipBehavior: Clip.none,
             children: <Widget>[
               IconButton(
-                onPressed: () => _showFilterSortSheet(originalGroups),
+                onPressed: () => _showFilterSortSheet(summary, originalGroups),
                 icon: const Icon(Icons.filter_list_rounded),
                 style: IconButton.styleFrom(
                   backgroundColor: colors.primary,
@@ -560,6 +613,16 @@ class _DownloadsPageState extends State<DownloadsPage> {
     final List<SurahDownloadsGroup> surahGroups = groupDownloadsBySurah(
       allEntries,
     );
+
+    if (_sortBy == 'surahAsc') {
+      surahGroups.sort((a, b) => a.surah.compareTo(b.surah));
+    } else if (_sortBy == 'surahDesc') {
+      surahGroups.sort((a, b) => b.surah.compareTo(a.surah));
+    } else if (_sortBy == 'sizeDesc') {
+      surahGroups.sort((a, b) => b.sizeBytes.compareTo(a.sizeBytes));
+    } else if (_sortBy == 'sizeAsc') {
+      surahGroups.sort((a, b) => a.sizeBytes.compareTo(b.sizeBytes));
+    }
 
     return surahGroups
         .expand(
@@ -962,13 +1025,17 @@ class _DownloadsPageState extends State<DownloadsPage> {
     );
   }
 
-  Future<void> _showFilterSortSheet(List<ReciterDownloadsGroup> groups) async {
+  Future<void> _showFilterSortSheet(
+    AudioDownloadsSummary summary,
+    List<ReciterDownloadsGroup> groups,
+  ) async {
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
     final AppLocalizations localizations = AppLocalizations.of(context)!;
 
     String pendingReciter = _selectedReciterFilter;
     String pendingCategory = _selectedCategoryFilter;
+    int? pendingSurah = _selectedSurahFilter;
     String pendingType = _selectedTypeFilter;
     String pendingSort = _sortBy;
     String pendingSearch = _searchQuery;
@@ -982,33 +1049,54 @@ class _DownloadsPageState extends State<DownloadsPage> {
     }
     if (!reciterNames.containsKey(pendingReciter)) pendingReciter = 'all';
 
-    final List<Map<String, dynamic>> sortOptions = <Map<String, dynamic>>[
-      {
-        'value': 'surahAsc',
-        'label': 'Surah (1 → 114)',
-        'icon': Icons.format_list_numbered_rounded,
-      },
-      {
-        'value': 'surahDesc',
-        'label': 'Surah (114 → 1)',
-        'icon': Icons.format_list_numbered_rounded,
-      },
-      {
-        'value': 'sizeDesc',
-        'label': 'Size (largest first)',
-        'icon': Icons.storage_rounded,
-      },
-      {
-        'value': 'sizeAsc',
-        'label': 'Size (smallest first)',
-        'icon': Icons.storage_rounded,
-      },
-      {
-        'value': 'nameAsc',
-        'label': 'Title (A → Z)',
-        'icon': Icons.sort_by_alpha_rounded,
-      },
+    final List<int> downloadedSurahs =
+        summary.allDownloads.map((e) => e.surah).toSet().toList()..sort();
+
+    final List<DropdownMenuItem<int?>> surahItems = [
+      DropdownMenuItem<int?>(
+        value: null,
+        child: const Text(
+          'All Surahs',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      ...downloadedSurahs.map((surahNum) {
+        return DropdownMenuItem<int?>(
+          value: surahNum,
+          child: Text(
+            '$surahNum. ${localizedSurahName(localizations, surahNum)}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      }),
     ];
+
+    final List<DropdownMenuItem<String>> categoryItems = [
+      DropdownMenuItem<String>(
+        value: 'all',
+        child: const Text('All', maxLines: 1, overflow: TextOverflow.ellipsis),
+      ),
+      DropdownMenuItem<String>(
+        value: 'makki',
+        child: const Text(
+          'Makki',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      DropdownMenuItem<String>(
+        value: 'madani',
+        child: const Text(
+          'Madani',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    ];
+
+    // sortOptions are dynamically built inside the stateful builder based on pendingGroupBy.
 
     final List<Map<String, String>> typeOptions = <Map<String, String>>[
       {'value': 'all', 'label': 'All'},
@@ -1026,6 +1114,52 @@ class _DownloadsPageState extends State<DownloadsPage> {
       builder: (BuildContext sheetContext) {
         return StatefulBuilder(
           builder: (BuildContext _, StateSetter setModalState) {
+            final List<Map<String, dynamic>> sortOptions =
+                pendingGroupBy == 'reciter'
+                ? <Map<String, dynamic>>[
+                    {
+                      'value': 'reciterAsc',
+                      'label': 'Reciter (A → Z)',
+                      'icon': Icons.sort_by_alpha_rounded,
+                    },
+                    {
+                      'value': 'reciterDesc',
+                      'label': 'Reciter (Z → A)',
+                      'icon': Icons.sort_by_alpha_rounded,
+                    },
+                    {
+                      'value': 'sizeDesc',
+                      'label': 'Size (largest first)',
+                      'icon': Icons.storage_rounded,
+                    },
+                    {
+                      'value': 'sizeAsc',
+                      'label': 'Size (smallest first)',
+                      'icon': Icons.storage_rounded,
+                    },
+                  ]
+                : <Map<String, dynamic>>[
+                    {
+                      'value': 'surahAsc',
+                      'label': 'Surah (1 → 114)',
+                      'icon': Icons.format_list_numbered_rounded,
+                    },
+                    {
+                      'value': 'surahDesc',
+                      'label': 'Surah (114 → 1)',
+                      'icon': Icons.format_list_numbered_rounded,
+                    },
+                    {
+                      'value': 'sizeDesc',
+                      'label': 'Size (largest first)',
+                      'icon': Icons.storage_rounded,
+                    },
+                    {
+                      'value': 'sizeAsc',
+                      'label': 'Size (smallest first)',
+                      'icon': Icons.storage_rounded,
+                    },
+                  ];
             return SafeArea(
               top: false,
               child: Padding(
@@ -1140,9 +1274,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
                               children: <Widget>[
                                 Expanded(
                                   child: InkWell(
-                                    onTap: () => setModalState(
-                                      () => pendingGroupBy = 'reciter',
-                                    ),
+                                    onTap: () => setModalState(() {
+                                      pendingGroupBy = 'reciter';
+                                      if (pendingSort == 'surahAsc' ||
+                                          pendingSort == 'surahDesc') {
+                                        pendingSort = 'reciterAsc';
+                                      }
+                                    }),
                                     borderRadius: BorderRadius.circular(
                                       AppRadii.medium,
                                     ),
@@ -1186,9 +1324,13 @@ class _DownloadsPageState extends State<DownloadsPage> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: InkWell(
-                                    onTap: () => setModalState(
-                                      () => pendingGroupBy = 'surah',
-                                    ),
+                                    onTap: () => setModalState(() {
+                                      pendingGroupBy = 'surah';
+                                      if (pendingSort == 'reciterAsc' ||
+                                          pendingSort == 'reciterDesc') {
+                                        pendingSort = 'surahAsc';
+                                      }
+                                    }),
                                     borderRadius: BorderRadius.circular(
                                       AppRadii.medium,
                                     ),
@@ -1365,6 +1507,96 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
                             const SizedBox(height: 16),
 
+                            // SURAH (as Dropdown)
+                            Text(
+                              'Surah',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceAlt,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.medium,
+                                ),
+                                border: Border.all(color: colors.border),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<int?>(
+                                  value: pendingSurah,
+                                  isExpanded: true,
+                                  dropdownColor: colors.surface,
+                                  icon: Icon(
+                                    Icons.arrow_drop_down_rounded,
+                                    color: colors.primary,
+                                  ),
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colors.textPrimary,
+                                  ),
+                                  onChanged: (value) {
+                                    setModalState(() {
+                                      pendingSurah = value;
+                                    });
+                                  },
+                                  items: surahItems,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // CATEGORY (as Dropdown)
+                            Text(
+                              'Category',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colors.surfaceAlt,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.medium,
+                                ),
+                                border: Border.all(color: colors.border),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: pendingCategory,
+                                  isExpanded: true,
+                                  dropdownColor: colors.surface,
+                                  icon: Icon(
+                                    Icons.arrow_drop_down_rounded,
+                                    color: colors.primary,
+                                  ),
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colors.textPrimary,
+                                  ),
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setModalState(() {
+                                        pendingCategory = value;
+                                      });
+                                    }
+                                  },
+                                  items: categoryItems,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
+
                             // CONTENT TYPE
                             Text(
                               'Content type',
@@ -1440,7 +1672,8 @@ class _DownloadsPageState extends State<DownloadsPage> {
                             onPressed: () => setModalState(() {
                               pendingReciter = pendingCategory = pendingType =
                                   'all';
-                              pendingSort = 'surahAsc';
+                              pendingSurah = null;
+                              pendingSort = 'reciterAsc';
                               pendingSearch = '';
                               pendingGroupBy = 'reciter';
                             }),
@@ -1466,6 +1699,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
                               setState(() {
                                 _selectedReciterFilter = pendingReciter;
                                 _selectedCategoryFilter = pendingCategory;
+                                _selectedSurahFilter = pendingSurah;
                                 _selectedTypeFilter = pendingType;
                                 _sortBy = pendingSort;
                                 _searchQuery = pendingSearch;

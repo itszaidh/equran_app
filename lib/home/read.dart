@@ -9300,6 +9300,10 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
                             const SizedBox(width: 8),
                             IconButton.filledTonal(
                               tooltip: localizations.createFolder,
+                              style: IconButton.styleFrom(
+                                backgroundColor: colors.mint,
+                                foregroundColor: colors.primary,
+                              ),
                               onPressed: () async {
                                 final String? folder =
                                     await _showBookmarkFolderNameDialog();
@@ -9405,7 +9409,7 @@ class _ReadPageState extends State<ReadPage> with WidgetsBindingObserver {
   Future<String?> _showBookmarkFolderNameDialog() async {
     final TextEditingController controller = TextEditingController();
     try {
-      return showDialog<String>(
+      return await showDialog<String>(
         context: context,
         builder: (context) {
           final AppLocalizations localizations = AppLocalizations.of(context)!;

@@ -231,8 +231,7 @@ class _ZakahCalculatorPageState extends State<ZakahCalculatorPage> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations localizations = AppLocalizations.of(context)!;
-    final String lang =
-        localizations.localeName.split('_').first.toLowerCase();
+    final String lang = localizations.localeName.split('_').first.toLowerCase();
     final EquranColors colors = context.equranColors;
     final ThemeData theme = Theme.of(context);
 

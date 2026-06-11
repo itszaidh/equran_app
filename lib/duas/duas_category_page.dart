@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:equran/backend/library.dart' show DuaInteractionsDB, SettingsDB;
+import 'package:equran/backend/library.dart' show DuaInteractionsDB;
 import 'package:equran/duas/hisn_al_muslim_models.dart';
 import 'package:equran/duas/hisn_al_muslim_repository.dart';
 import 'package:equran/duas/widgets/dua_card.dart';
@@ -115,14 +115,12 @@ class _CategoryContent extends StatefulWidget {
 
 class _CategoryContentState extends State<_CategoryContent> {
   late final ScrollController _scrollController;
-  bool _showSettings = true;
-  double _lastOffset = 0.0;
+  bool _showSettings = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(
         DuaInteractionsDB().recordCategoryView(
@@ -136,32 +134,8 @@ class _CategoryContentState extends State<_CategoryContent> {
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients) return;
-    final double offset = _scrollController.offset;
-    final double delta = offset - _lastOffset;
-    _lastOffset = offset;
-
-    if (offset <= 0) {
-      if (!_showSettings) {
-        setState(() {
-          _showSettings = true;
-        });
-      }
-    } else if (delta > 3 && _showSettings && offset > 30) {
-      setState(() {
-        _showSettings = false;
-      });
-    } else if (delta < -3 && !_showSettings) {
-      setState(() {
-        _showSettings = true;
-      });
-    }
   }
 
   @override
@@ -262,119 +236,6 @@ class _CategoryContentState extends State<_CategoryContent> {
                   sizeCurve: Curves.easeInOutCubic,
                   firstCurve: Curves.easeIn,
                   secondCurve: Curves.easeOut,
-                ),
-                const SizedBox(height: 12),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colors.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(AppRadii.medium),
-                    border: Border.all(color: colors.outlineVariant),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              '${localizations.translationLanguage}:',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            DropdownButton<String>(
-                              value: SettingsDB().get(
-                                "dua_language",
-                                defaultValue: "app",
-                              ),
-                              onChanged: (String? val) async {
-                                if (val != null) {
-                                  await SettingsDB().put("dua_language", val);
-                                  setState(() {});
-                                }
-                              },
-                              items: <DropdownMenuItem<String>>[
-                                DropdownMenuItem<String>(
-                                  value: 'app',
-                                  child: Text(localizations.systemDefault),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'en',
-                                  child: Text(localizations.english),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'bn',
-                                  child: Text(localizations.bengali),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'ur',
-                                  child: Text(localizations.urdu),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'id',
-                                  child: Text(localizations.indonesian),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'tr',
-                                  child: Text(localizations.turkish),
-                                ),
-                                DropdownMenuItem<String>(
-                                  value: 'de',
-                                  child: Text(localizations.german),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Text('${localizations.translation} '),
-                                Switch(
-                                  value: SettingsDB().get(
-                                    "dua_show_translation",
-                                    defaultValue: true,
-                                  ),
-                                  activeThumbColor: colors.primary,
-                                  onChanged: (bool val) async {
-                                    await SettingsDB().put(
-                                      "dua_show_translation",
-                                      val,
-                                    );
-                                    setState(() {});
-                                  },
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                Text('${localizations.transliterationOption} '),
-                                Switch(
-                                  value: SettingsDB().get(
-                                    "dua_show_transliteration",
-                                    defaultValue: true,
-                                  ),
-                                  activeThumbColor: colors.primary,
-                                  onChanged: (bool val) async {
-                                    await SettingsDB().put(
-                                      "dua_show_transliteration",
-                                      val,
-                                    );
-                                    setState(() {});
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 12),
                 for (int index = 0; index < category.duas.length; index++)

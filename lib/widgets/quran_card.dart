@@ -52,7 +52,9 @@ class QuranCard extends StatelessWidget {
                 : theme.textTheme.titleMedium)
             ?.copyWith(
               color: colors.textPrimary,
-              fontFamily: EquranTextStyles.activeFontFamily,
+              fontFamily: EquranTextStyles.activeFontFamily == 'QuranIndoPak'
+                  ? 'UthmanicHafs'
+                  : EquranTextStyles.activeFontFamily,
               fontFamilyFallback: const <String>['UthmanicHafs'],
               fontSize: compactText
                   ? 19

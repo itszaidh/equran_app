@@ -4174,4 +4174,254 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get showSettings => 'Show settings';
+
+  @override
+  String get zakatCategoryCash => 'Cash & Receivables';
+
+  @override
+  String get zakatCategoryGold => 'Gold';
+
+  @override
+  String get zakatCategorySilver => 'Silver';
+
+  @override
+  String get zakatCategoryInvestments => 'Investments & Securities';
+
+  @override
+  String get zakatCategoryBusiness => 'Business Inventory';
+
+  @override
+  String get zakatCategoryLivestock => 'Livestock (Traditional)';
+
+  @override
+  String get zakatCategoryAgriculture => 'Agricultural Produce';
+
+  @override
+  String get zakatCategoryOther => 'Other Assets';
+
+  @override
+  String zakatBelowNisabExplanation(String nisab) {
+    return 'Your wealth is below the Nisab of $nisab. No Zakat is due yet.';
+  }
+
+  @override
+  String get saveToHistory => 'Save to History';
+
+  @override
+  String get enterWeight => 'Enter weight';
+
+  @override
+  String enterAmountInCurrency(String currency) {
+    return 'Enter amount in $currency';
+  }
+
+  @override
+  String amountInCurrency(String currency) {
+    return 'Amount in $currency';
+  }
+
+  @override
+  String get livestockSubtitle =>
+      'Sheep/Goats, Cows, Camels — simplified modern values';
+
+  @override
+  String get livestockSheepGoats => 'Sheep & Goats';
+
+  @override
+  String get livestockCowsBuffalo => 'Cows / Buffalo';
+
+  @override
+  String get livestockCamels => 'Camels';
+
+  @override
+  String get noHistoricalCalculations => 'No historical calculations';
+
+  @override
+  String get savedRecordsAppearHere => 'Saved records will appear here.';
+
+  @override
+  String calculationOnDate(String date) {
+    return 'Calculation on $date';
+  }
+
+  @override
+  String get historyLiquidCash => 'Liquid Cash:';
+
+  @override
+  String get historyInvestments => 'Investments:';
+
+  @override
+  String historyGoldGrams(String grams) {
+    return 'Gold (${grams}g):';
+  }
+
+  @override
+  String historySilverGrams(String grams) {
+    return 'Silver (${grams}g):';
+  }
+
+  @override
+  String get historyLiabilities => 'Liabilities:';
+
+  @override
+  String get historyZakatDue => 'Zakat Due:';
+
+  @override
+  String get moonPhaseNew => 'New Moon';
+
+  @override
+  String get moonPhaseWaxingCrescent => 'Waxing Crescent';
+
+  @override
+  String get moonPhaseFull => 'Full Moon';
+
+  @override
+  String get moonPhaseWaningCrescent => 'Waning Crescent';
+
+  @override
+  String get moonPhaseCrescent => 'Crescent';
+
+  @override
+  String get moonPhaseContextNew => 'Time for new beginnings';
+
+  @override
+  String get moonPhaseContextWaxing => 'Growing light';
+
+  @override
+  String get moonPhaseContextFull => 'Peak illumination';
+
+  @override
+  String get moonPhaseContextWaning => 'Gentle release';
+
+  @override
+  String get occasionRamadan => 'Ramadan';
+
+  @override
+  String get occasionEidAlFitr => 'Eid al-Fitr';
+
+  @override
+  String get occasionDayOfArafah => 'Day of Arafah';
+
+  @override
+  String get occasionDayOfArafahFasting => 'Day of Arafah (Fasting)';
+
+  @override
+  String get occasionEidAlAdha => 'Eid al-Adha';
+
+  @override
+  String get occasionDayOfAshura => 'Day of Ashura';
+
+  @override
+  String get occasionDayOfAshuraFasting => 'Day of Ashura (Fasting)';
+
+  @override
+  String get occasionIsraAndMiraj => 'Isra\' & Mi\'raj';
+
+  @override
+  String get occasionRamadanBegins => 'Ramadan begins';
+
+  @override
+  String get occasionRamadanFastingDay => 'Ramadan Fasting Day';
+
+  @override
+  String get occasionLaylatAlQadr => 'Laylat al-Qadr';
+
+  @override
+  String get occasionLaylatAlQadrBlessed => 'Laylat al-Qadr (Blessed Night)';
+
+  @override
+  String get occasionIslamicNewYear => 'Islamic New Year';
+
+  @override
+  String get occasionShabEBarat => 'Shab-e-Barat';
+
+  @override
+  String get occasionShabEBaratBlessed => 'Shab-e-Barat (Blessed Night)';
+
+  @override
+  String get occasionTasuaFast => 'Tasua Fast';
+
+  @override
+  String get occasionAyyamAlBid => 'Ayyam al-Bid (White Day)';
+
+  @override
+  String get occasionAyyamAlBidFasting => 'Ayyam al-Bid (White Day - Fasting)';
+
+  @override
+  String get occasionRecommendedFastingDay => 'Recommended Fasting Day';
+
+  @override
+  String get occasionFast => 'Fast';
+
+  @override
+  String fastingNotificationBody(String date, String reason) {
+    return 'Tomorrow is $date ($reason). Prepare your intention and Suhoor.';
+  }
+
+  @override
+  String shareIslamicDate(String date) {
+    return 'Islamic Date: $date';
+  }
+
+  @override
+  String shareGregorianDate(String date) {
+    return 'Gregorian: $date';
+  }
+
+  @override
+  String shareOccasion(String occasion) {
+    return 'Occasion: $occasion';
+  }
+
+  @override
+  String shareMoonPhase(String phase) {
+    return 'Moon Phase: $phase';
+  }
+
+  @override
+  String get shareRecommendedFasting => 'Recommended: Fasting';
+
+  @override
+  String get moonPhase => 'Moon Phase';
+
+  @override
+  String get recActionQuran => 'Increase recitation of the Qur\'an';
+
+  @override
+  String get recActionCharity => 'Give charity and help those in need';
+
+  @override
+  String get recActionLaylatAlQadr => 'Seek Laylat al-Qadr in the odd nights';
+
+  @override
+  String get recActionEidFitr => 'Perform Eid prayer + Zakat al-Fitr';
+
+  @override
+  String get recActionEidFitrSocial => 'Visit family and share food';
+
+  @override
+  String get recActionFastArafah => 'Fast the Day of Arafah';
+
+  @override
+  String get recActionDua => 'Make abundant du\'a';
+
+  @override
+  String get recActionEidAdha => 'Perform Eid al-Adha prayer';
+
+  @override
+  String get recActionQurbani => 'Sacrifice an animal if able (Qurbani)';
+
+  @override
+  String get recActionFastAshura => 'Fast Ashura (before/after)';
+
+  @override
+  String get recActionVoluntaryFast => 'Observe voluntary fast if able';
+
+  @override
+  String get recActionFastAyyamAlBid =>
+      'Fast one of the Ayyam al-Bid (White Days)';
+
+  @override
+  String get recActionGeneralWorship =>
+      'Engage in dhikr, prayer, and good deeds';
 }

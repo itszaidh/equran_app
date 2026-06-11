@@ -219,8 +219,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     fontSizeFactor: chromeTextScale,
                   ),
                 );
-          final Widget themedChild = Theme(
+          final Widget themedChild = AnimatedTheme(
             data: effectiveTheme,
+            duration: Duration.zero,
             child: child ?? const SizedBox.shrink(),
           );
           return MediaQuery(
